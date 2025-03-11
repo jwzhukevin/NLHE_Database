@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h2><span class="title2">Add</span></h2>
+<div class="form-container">
+    <form method="post">
+        <span class="form-label">Name</span>
+        <input type="text" name="title" autocomplete="off" required>
+        <span class="form-label">Year</span>
+        <input type="text" name="year" autocomplete="off" required>
+        <input class="btn" type="submit" name="submit" value="Add">
+    </form>
+</div>
+{% endblock %}
+

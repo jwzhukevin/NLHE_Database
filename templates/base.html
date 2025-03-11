@@ -4,36 +4,62 @@
     <link rel="icon" href="{{ url_for('static', filename='images/head.png') }}">
     <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user.name }}'s Watchlist</title>
+    <title>{{ user.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
 </head>
 <body>
-
-<!-- 插入到页面标题上方 -->
-{% for message in get_flashed_messages() %}
-    <div class="alert">{{ message }}</div>
-{% endfor %}
-
-    <h2>
+    <div class="profile-header">
         <img 
             alt="Woo!!!" 
             src="{{ url_for('static', filename='images/head.png') }}" 
-            style="
-                display: inline-block;
-                width: 80px;          /* 固定宽度 */
-                height: 80px;         /* 固定高度 */
-                vertical-align: middle;
-            "
         >
-        {{ user.name }}'s Watchlist
-    </h2>
+        <h2>
+            <span>{{ user.name }}</span>
+        </h2>
+    </div>
 	
 	<nav>
         <ul>
-            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <!-- 使用 Font Awesome 图标库 -->
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+            
+            <li>
+                <a href="{{ url_for('index') }}">
+                    <i class="fas fa-home"></i>
+					<span class="title1">Home</span>
+                </a>
+            </li>
+            
+            {% if current_user.is_authenticated %}
+			<li>
+                <a href="{{ url_for('add') }}">
+                    <i class="fas fa-add"></i>
+					<span class="title1">Add</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('settings') }}">
+                    <i class="fas fa-cogs"></i>
+					<span class="title1">Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i>
+					<span class="title1">Logout</span>
+                </a>
+            </li>
+			{% else %}
+			<li>
+                <a href="{{ url_for('login') }}">
+                    <i class="fas fa-sign-in-alt"></i>
+					<span class="title1">Login</span>
+                </a>
+            </li>
+            {% endif %}
         </ul>
     </nav>
-	{% block content %}{% endblock %}
+    	{% block content %}{% endblock %}
     <img 
         alt="Hello!!!" 
         src="{{ url_for('static', filename='images/footer.webp') }}" 
