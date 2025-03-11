@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='images/head.png') }}">
+    <meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.name }}'s Watchlist</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
+</head>
+<body>
+    <h2>
+        <img 
+            alt="Woo!!!" 
+            src="{{ url_for('static', filename='images/head.png') }}" 
+            style="
+                display: inline-block;
+                width: 80px;          /* 固定宽度 */
+                height: 80px;         /* 固定高度 */
+                vertical-align: middle;
+            "
+        >
+        {{ user.name }}'s Watchlist
+    </h2>
+	
+	<nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+        </ul>
+    </nav>
+	{% block content %}{% endblock %}
+    <img 
+        alt="Hello!!!" 
+        src="{{ url_for('static', filename='images/footer.webp') }}" 
+        style="display: block; margin: 0 auto; max-width: 100%;"
+	>
+    <footer>
+        <small>&copy; 2025 <a href="https://jwzhukevin.github.io/en/">KEVIN</a></small>
+    </footer>
+</body>
+</html>
+
