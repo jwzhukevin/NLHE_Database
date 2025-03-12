@@ -1,11 +1,11 @@
 import click
 import os
 import sys
+import bcrypt
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from markupsafe import escape
 from flask import request, url_for, redirect, flash
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager
 from flask_login import login_user
 from flask_login import login_required, logout_user
@@ -25,6 +25,33 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 关闭对模型修改的
 # 在扩展类实例化前加载配置
 db = SQLAlchemy(app)
 
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+    username = db.Column(db.String(20), unique=True)  # 添加唯一约束
+    password_hash = db.Column(db.String(128))
+
+    def set_password(self, password):
+        # 增强盐值复杂度
+        self.password_hash = bcrypt.hashpw(
+            password.encode('utf-8'),
+            bcrypt.gensalt(rounds=12)  # 提升计算轮数
+        ).decode('utf-8')
+
+    def validate_password(self, password):
+        try:
+            return bcrypt.checkpw(
+                password.encode('utf-8'),
+                self.password_hash.encode('utf-8')
+            )
+        except Exception:
+            return False
+            
+class Movie(db.Model):  # 表名将会是 movie
+    id = db.Column(db.Integer, primary_key=True)  # 主键
+    title = db.Column(db.String(60))  # 电影标题
+    year = db.Column(db.String(4))  # 电影年份
+
 login_manager = LoginManager(app)  # 实例化扩展类
 @login_manager.user_loader
 
@@ -39,18 +66,10 @@ def forge():
     db.create_all()
 
     # 全局的两个变量移动到这个函数内
-    name = '1'
+    name = 'NLHE Datebase'
     movies = [
         {'title': 'My Neighbor Totoro', 'year': '1988'},
         {'title': 'Dead Poets Society', 'year': '1989'},
-        {'title': 'A Perfect World', 'year': '1993'},
-        {'title': 'Leon', 'year': '1994'},
-        {'title': 'Mahjong', 'year': '1996'},
-        {'title': 'Swallowtail Butterfly', 'year': '1996'},
-        {'title': 'King of Comedy', 'year': '1999'},
-        {'title': 'Devils on the Doorstep', 'year': '1999'},
-        {'title': 'WALL-E', 'year': '2008'},
-        {'title': 'The Pork of Music', 'year': '2012'},
     ]
 
     user = User(name=name)
@@ -70,11 +89,6 @@ def initdb(drop):
         db.drop_all()
     db.create_all()
     click.echo('Initialized database.')  # 输出提示信息
-
-class Movie(db.Model):  # 表名将会是 movie
-    id = db.Column(db.Integer, primary_key=True)  # 主键
-    title = db.Column(db.String(60))  # 电影标题
-    year = db.Column(db.String(4))  # 电影年份
 
 @app.errorhandler(404)  # 传入要处理的错误代码
 def page_not_found(e):  # 接受异常对象作为参数
@@ -152,21 +166,6 @@ def delete(movie_id):
     return redirect(url_for('index'))  # 重定向回主页
 
 
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(20))
-    username = db.Column(db.String(20))  # 用户名
-    password_hash = db.Column(db.String(128))  # 密码散列值
-
-    def set_password(self, password):  # 用来设置密码的方法，接受密码作为参数
-        self.password_hash = generate_password_hash(password)  # 将生成的密码保持到对应字段
-
-    def validate_password(self, password):  # 用于验证密码的方法，接受密码作为参数
-        return check_password_hash(self.password_hash, password)  # 返回布尔值
-
-
-
 @app.cli.command()
 @click.option('--username', prompt=True, help='The username used to login.')
 @click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True, help='The password used to login.')
@@ -175,19 +174,23 @@ def admin(username, password):
     """Create user."""
     db.create_all()
 
-    user = User.query.first()
-    if user is not None:
-        click.echo('Updating user...')
-        user.username = username
-        user.set_password(password)  # 设置密码
+    user = User.query.filter_by(username=username).first()
+    if user:
+        click.echo('Updating existing user...')
+        user.set_password(password)
     else:
-        click.echo('Creating user...')
-        user = User(username=username, name='Admin')
-        user.set_password(password)  # 设置密码
+        click.echo('Creating new admin user...')
+        user = User(
+            username=username,
+            name='Admin',
+            # 添加邮箱字段（如果模型需要）
+            # email='admin@example.com'  
+        )
+        user.set_password(password)
         db.session.add(user)
 
-    db.session.commit()  # 提交数据库会话
-    click.echo('Done.')
+    db.session.commit()
+    click.echo('Admin account updated successfully.')
 
 
 
@@ -242,5 +245,3 @@ def settings():
         return redirect(url_for('index'))
 
     return render_template('settings.html')
-
-

@@ -2,6 +2,7 @@
 
 
 {% block content %}
+
 <h2><span class="title2">Add</span></h2>
 <div class="form-container">
     <form method="post">
@@ -9,7 +10,7 @@
         <input type="text" name="title" autocomplete="off" required>
         <span class="form-label">Year</span>
         <input type="text" name="year" autocomplete="off" required>
-        <input class="btn" type="submit" name="submit" value="Add">
+        <input class="btn" type="submit" name="submit" value="Add" onclick="return confirm('添加成功！')">
     </form>
 </div>
 {% endblock %}
