@@ -268,41 +268,7 @@ footer {
 }
 
 
-/* 列表 */
-.movie-list {
-    list-style: none;
-    padding: 0;
-    margin: 2rem auto;
-    max-width: 800px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
-                0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.movie-list li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 2rem;
-    border-bottom: 1px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(
-        to right,
-        rgba(255,255,255,0) 50%,
-        #f8fafc 50%
-    );
-    background-size: 200% 100%;
-    background-position: right bottom;
-}
-
-.movie-list li:hover {
-    background-position: left bottom;
-    transform: translateX(4px);
-    box-shadow: inset 4px 0 0 #4299e1;
-}
-
-.imdb {
+.mp {
     font-size: clamp(0.8rem, 1.0vw + 0.1rem, 2.0rem); 
     font-weight: 1000;                      /* 中等加粗（400=正常，700=加粗） */
     text-decoration: none;
@@ -319,7 +285,7 @@ footer {
     transform: translateY(0);              /* 为悬停动画准备 */
 }
 /* 悬停状态 */
-.imdb:hover {
+.mp:hover {
     background-color: black;             /* 主色填充 */
     color: yellow;                          /* 文字反白 */
     border-color: transparent;             /* 隐藏边框 */
@@ -328,13 +294,13 @@ footer {
     transform: translateY(-2px);           /* 上移效果 */
 }
 /* 点击状态 */
-.imdb:active {
+.mp:active {
     transform: translateY(1px);             /* 按压下沉效果 */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 聚焦状态 */
-.imdb:focus {
+.mp:focus {
     outline: none;                         /* 移除默认轮廓 */
     box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.5); /* 自定义聚焦光环 */
 }
@@ -495,4 +461,33 @@ input.error {
     50% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
     100% { transform: translateX(0); }
+}
+
+
+/* 新增材料详情页样式 */
+.detail-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.material-property {
+    margin: 10px 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.material-property label {
+    font-weight: 600;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.material-property .value {
+    color: #3498db;
+    font-size: 1.1em;
 }

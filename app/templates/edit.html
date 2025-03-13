@@ -1,14 +1,274 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
+<div class="full-form-container">
+    <h2><span class="title2">Editing {{ material.name }}</span></h2>
+    <form method="post" class="material-form">
+        <!-- 核心属性 -->
+        <div class="form-section">
+            <h3>Core Properties</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Material Name <span class="required">*</span></label>
+                    <input type="text" name="name" 
+                           value="{{ material.name }}" 
+                           required
+                           pattern=".{2,120}"
+                           title="2-120 characters">
+                </div>
+                <div class="form-group">
+                    <label>Status <span class="required">*</span></label>
+                    <select name="status" required>
+                        <option value="done" {% if material.status == 'done' %}selected{% endif %}>Done</option>
+                        <option value="unconverged" {% if material.status == 'unconverged' %}selected{% endif %}>Unconverged</option>
+                        <option value="error" {% if material.status == 'error' %}selected{% endif %}>Error</option>
+                    </select>
+                </div>
+            </div>
+        </div>
 
-<h2><span class="title2">Edit</span></h2>
-<form method="post">
-    <span class="form-label">Name</span>
-	<input type="text" name="title" autocomplete="off" required value="{{ movie.title }}">
-    <span class="form-label">Year</span>
-	<input type="text" name="year" autocomplete="off" required value="{{ movie.year }}">
-    <input class="btn" type="submit" name="submit" value="Update">
-</form>
+        <!-- 能量属性 -->
+        <div class="form-section">
+            <h3>Energy Properties (eV)</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Total Energy <span class="required">*</span></label>
+                    <input type="number" step="0.000001" 
+                           name="total_energy" 
+                           value="{{ material.total_energy }}" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label>Formation Energy <span class="required">*</span></label>
+                    <input type="number" step="0.000001" 
+                           name="formation_energy" 
+                           value="{{ material.formation_energy }}" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label>Fermi Level (efermi)</label>
+                    <input type="number" step="0.00000001" 
+                           name="efermi" 
+                           value="{{ material.efermi }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- 表面属性 -->
+        <div class="form-section">
+            <h3>Surface Properties</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Vacuum Level</label>
+                    <input type="number" step="0.0001" 
+                           name="vacuum_level" 
+                           value="{{ material.vacuum_level }}">
+                </div>
+                <div class="form-group">
+                    <label>Work Function</label>
+                    <input type="number" step="0.0001" 
+                           name="workfunction" 
+                           value="{{ material.workfunction }}">
+                </div>
+                <div class="form-group">
+                    <label>Metal Type</label>
+                    <select name="metal_type">
+                        <option value="">Select Type</option>
+                        <option value="metal" {% if material.metal_type == 'metal' %}selected{% endif %}>Metal</option>
+                        <option value="semiconductor" {% if material.metal_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
+                        <option value="insulator" {% if material.metal_type == 'insulator' %}selected{% endif %}>Insulator</option>
+                        <option value="semimetallic" {% if material.metal_type == 'semimetallic' %}selected{% endif %}>Semimetallic</option>
+                        <option value="Unknown" {% if material.metal_type == 'Unknown' %}selected{% endif %}>Unknown</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 能带属性 -->
+        <div class="form-section">
+            <h3>Band Structure</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Band Gap (gap)</label>
+                    <input type="number" step="0.0001" 
+                           name="gap" 
+                           value="{{ material.gap }}">
+                </div>
+                <div class="form-group">
+                    <label>VBM Energy</label>
+                    <input type="number" step="0.0001" 
+                           name="vbm_energy" 
+                           value="{{ material.vbm_energy }}">
+                </div>
+                <div class="form-group">
+                    <label>CBM Energy</label>
+                    <input type="number" step="0.0001" 
+                           name="cbm_energy" 
+                           value="{{ material.cbm_energy }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- 坐标属性 -->
+        <div class="form-section">
+            <h3>Coordinates</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>VBM Coordinates</label>
+                    <input type="text" 
+                           name="vbm_coordi" 
+                           value="{{ material.vbm_coordi }}"
+                           placeholder="格式示例: ['0.333','0.333','0.000']">
+                </div>
+                <div class="form-group">
+                    <label>CBM Coordinates</label>
+                    <input type="text" 
+                           name="cbm_coordi" 
+                           value="{{ material.cbm_coordi }}"
+                           placeholder="格式示例: ['0.000','0.000','0.000']">
+                </div>
+            </div>
+        </div>
+
+        <!-- 索引属性 -->
+        <div class="form-section">
+            <h3>Band Indexes</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>VBM Index</label>
+                    <input type="number" 
+                           name="vbm_index" 
+                           value="{{ material.vbm_index }}">
+                </div>
+                <div class="form-group">
+                    <label>CBM Index</label>
+                    <input type="number" 
+                           name="cbm_index" 
+                           value="{{ material.cbm_index }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- 表单操作按钮 -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">
+                <i class="fas fa-save"></i> Update Material
+            </button>
+            <a href="{{ url_for('views.detail', material_id=material.id) }}" 
+               class="btn btn-cancel">
+                <i class="fas fa-times"></i> Discard Changes
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+.full-form-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.form-section {
+    margin-bottom: 35px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.form-section h3 {
+    color: #2c3e50;
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3498db;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #34495e;
+    font-size: 0.95em;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+}
+
+.form-group input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.form-group input[type="number"]::-webkit-outer-spin-button,
+.form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.required {
+    color: #e74c3c;
+    font-size: 0.8em;
+    vertical-align: super;
+}
+
+.form-actions {
+    margin-top: 35px;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+.btn-save {
+    background: #27ae60;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: #95a5a6;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.btn-save:hover,
+.btn-cancel:hover {
+    opacity: 0.9;
+}
+
+input::placeholder {
+    color: #95a5a6;
+    font-size: 0.9em;
+}
+</style>
 {% endblock %}

@@ -1,56 +1,131 @@
+# views.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, Movie
+from .models import User, Material
 from . import db
 
-# 独立定义视图蓝图
 bp = Blueprint('views', __name__)
 
-# 保持你的路由代码不变...
 @bp.route('/')
 def index():
-    movies = Movie.query.all()
-    return render_template('index.html', movies=movies)
+    materials = Material.query.all()
+    return render_template('index.html', materials=materials)
 
+# 修改 add 路由
 @bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
     if request.method == 'POST':
-        title = request.form.get('title')
-        year = request.form.get('year')
-        if not title or not year or len(year) > 4 or len(title) > 60:
-            flash('Invalid title or year!')
+        try:
+            # 获取所有表单字段
+            material_data = {
+                'name': request.form.get('name'),
+                'status': request.form.get('status'),
+                'total_energy': float(request.form.get('total_energy')),
+                'formation_energy': float(request.form.get('formation_energy')),
+                'efermi': safe_float(request.form.get('efermi')),
+                'vacuum_level': safe_float(request.form.get('vacuum_level')),
+                'workfunction': safe_float(request.form.get('workfunction')),
+                'metal_type': request.form.get('metal_type'),
+                'gap': safe_float(request.form.get('gap')),
+                'vbm_energy': safe_float(request.form.get('vbm_energy')),
+                'cbm_energy': safe_float(request.form.get('cbm_energy')),
+                'vbm_coordi': request.form.get('vbm_coordi'),
+                'cbm_coordi': request.form.get('cbm_coordi'),
+                'vbm_index': safe_int(request.form.get('vbm_index')),
+                'cbm_index': safe_int(request.form.get('cbm_index'))
+            }
+
+            # 必填字段验证
+            if not all([material_data['name'], material_data['status']]):
+                flash('Name and Status are required!')
+                return redirect(url_for('views.add'))
+
+            # 创建对象
+            material = Material(**material_data)
+            material.validate()  # 执行数据验证
+            
+            db.session.add(material)
+            db.session.commit()
+            flash('Material added successfully.')
             return redirect(url_for('views.index'))
-        movie = Movie(title=title, year=year)
-        db.session.add(movie)
-        db.session.commit()
-        flash('Item created.')
+
+        except ValueError as e:
+            flash(f'Invalid data: {str(e)}')
+            return redirect(url_for('views.add'))
+        except Exception as e:
+            db.session.rollback()
+            flash('Database error occurred')
+            return redirect(url_for('views.add'))
+
     return render_template('add.html')
 
-@bp.route('/movie/edit/<int:movie_id>', methods=['GET', 'POST'])
-@login_required
-def edit(movie_id):
-    movie = Movie.query.get_or_404(movie_id)
-    if request.method == 'POST':
-        title = request.form['title']
-        year = request.form['year']
-        if not title or not year or len(year) != 4 or len(title) > 60:
-            flash('Invalid input.')
-            return redirect(url_for('views.edit', movie_id=movie_id))
-        movie.title = title
-        movie.year = year
-        db.session.commit()
-        flash('Item updated.')
-        return redirect(url_for('views.index'))
-    return render_template('edit.html', movie=movie)
+# 新增辅助函数
+def safe_float(value):
+    try:
+        return float(value) if value else None
+    except ValueError:
+        return None
 
-@bp.route('/movie/delete/<int:movie_id>', methods=['POST'])
+def safe_int(value):
+    try:
+        return int(value) if value else None
+    except ValueError:
+        return None
+
+# 修改 edit 路由
+@bp.route('/material/edit/<int:material_id>', methods=['GET', 'POST'])
 @login_required
-def delete(movie_id):
-    movie = Movie.query.get_or_404(movie_id)
-    db.session.delete(movie)
+def edit(material_id):
+    material = Material.query.get_or_404(material_id)
+    if request.method == 'POST':
+        try:
+            # 更新所有字段
+            material.name = request.form.get('name')
+            material.status = request.form.get('status')
+            material.total_energy = float(request.form.get('total_energy'))
+            material.formation_energy = float(request.form.get('formation_energy'))
+            material.efermi = safe_float(request.form.get('efermi'))
+            material.vacuum_level = safe_float(request.form.get('vacuum_level'))
+            material.workfunction = safe_float(request.form.get('workfunction'))
+            material.metal_type = request.form.get('metal_type')
+            material.gap = safe_float(request.form.get('gap'))
+            material.vbm_energy = safe_float(request.form.get('vbm_energy'))
+            material.cbm_energy = safe_float(request.form.get('cbm_energy'))
+            material.vbm_coordi = request.form.get('vbm_coordi')
+            material.cbm_coordi = request.form.get('cbm_coordi')
+            material.vbm_index = safe_int(request.form.get('vbm_index'))
+            material.cbm_index = safe_int(request.form.get('cbm_index'))
+
+            material.validate()
+            
+            db.session.commit()
+            flash('Material updated.')
+            return redirect(url_for('views.detail', material_id=material.id))
+        
+        except ValueError as e:
+            flash(f'Invalid data: {str(e)}')
+            return redirect(url_for('views.edit', material_id=material.id))
+        except Exception:
+            db.session.rollback()
+            flash('Database error')
+            return redirect(url_for('views.edit', material_id=material.id))
+    
+    return render_template('edit.html', material=material)
+
+@bp.route('/material/<int:material_id>')
+def detail(material_id):
+    material = Material.query.get_or_404(material_id)
+    return render_template('detail.html', material=material)
+
+
+@bp.route('/material/delete/<int:material_id>', methods=['POST'])
+@login_required
+def delete(material_id):
+    material = Material.query.get_or_404(material_id)
+    db.session.delete(material)
     db.session.commit()
-    flash('Item deleted.')
+    flash('Material deleted.')
     return redirect(url_for('views.index'))
 
 @bp.route('/login', methods=['GET', 'POST'])

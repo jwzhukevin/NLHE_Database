@@ -1,64 +1,52 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
-
 <div class="data-table-container">
-    <!-- 表格标题显示数据统计 -->
     <div class="table-title">
-        <span class="title2">Found {{ movies|length }} Movies (showing all)</span>
+        <span class="title2">Found {{ materials|length }} Materials</span>
     </div>
 
-    <!-- 表格主体 -->
-    <table class="movie-data-table">
+    <table class="material-data-table">
         <thead>
             <tr>
-                <th class="col-index">#</th>
-                <th class="col-title">Movie Title</th>
-                <th class="col-year">Release Year</th>
-                <th class="col-actions">Actions</th>
+                <th>#</th>
+                <th>Material Name</th>
+                <th>Fermi Level (eV)</th>
+                <th>Total Energy (eV)</th>
+                <th>Formation Energy (eV)</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {% for movie in movies %}
+            {% for material in materials %}
             <tr>
-                <!-- 行号 -->
-                <td class="row-number">{{ loop.index }}</td>
-                
-                <!-- 标题列 -->
-                <td class="title-cell">
-                    <div class="title-wrapper">
-                        <span class="main-title">{{ movie.title }}</span>
-                    </div>
+                <td>{{ loop.index }}</td>
+                <td>
+                    <a href="{{ url_for('views.detail', material_id=material.id) }}" class="material-link">
+                        <span class="title2">{{ material.name }}</span>
+                    </a>
                 </td>
-                
-                <!-- 年份列 -->
-                <td class="year-cell">
-                    <span class="year-badge">{{ movie.year }}</span>
-                </td>
-                
-                <!-- 操作列 -->
-                <td class="action-cell">
+                <td>{{ material.efermi }}</td>
+                <td>{{ material.total_energy }}</td>
+                <td>{{ material.formation_energy }}</td>
+                <td>
                     <div class="action-buttons">
-                        <a class="imdb-btn" 
-                           href="https://www.imdb.com/find?q={{ movie.title }}" 
-                           target="_blank" 
-                           title="IMDb Search">
-                           <i class="search-icon"></i>
-						   IMDB
+                        <a class="mp" 
+                           href="https://materialsproject.org/materials/{{ material.name }}" 
+                           target="_blank"
+                           title="View in MP">
+                           MP
                         </a>
                         {% if current_user.is_authenticated %}
-                        <a class="edit-btn" 
-                           href="{{ url_for('views.edit', movie_id=movie.id) }}" 
-                           title="Edit">
+                        <a class="btn" 
+                           href="{{ url_for('views.edit', material_id=material.id) }}">
                            Edit
                         </a>
-                        <form class="delete-form" method="post" 
-                              action="{{ url_for('views.delete', movie_id=movie.id) }}">
-                            <button class="delete-btn" 
+                        <form method="post" 
+                              action="{{ url_for('views.delete', material_id=material.id) }}">
+                            <button class="btn" 
                                     type="submit" 
-                                    onclick="return confirm('Delete permanently?')"
-                                    title="Delete">×</button>
+                                    onclick="return confirm('Delete permanently?')">Delete</button>
                         </form>
                         {% endif %}
                     </div>
@@ -70,93 +58,50 @@
 </div>
 
 <style>
-/* 表格容器 */
-.data-table-container {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-/* 表格标题 */
-.table-title {
-    padding: 12px 16px;
-    background: #f5f5f5;
-    border-bottom: 1px solid #ddd;
-    font-weight: 600;
-}
-
-/* 表格主体 */
-.movie-data-table {
+.material-data-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-/* 表头样式 */
-th {
+/* 表格居中对齐 */
+.material-data-table th,
+.material-data-table td {
+    text-align: center;
+    vertical-align: middle;
     padding: 12px;
-    background: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-    text-align: left;
 }
 
-/* 数据行 */
-td {
-    padding: 12px;
+.material-data-table th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.material-data-table td {
     border-bottom: 1px solid #eee;
 }
 
-/* 斑马条纹效果 */
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-/* 交互效果 */
-tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* 年份徽章 */
-.year-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    background: #e9ecef;
-    border-radius: 8px;
-    font-size: 0.9em;
-}
-
-/* 操作按钮样式 */
+/* 按钮容器布局 */
 .action-buttons {
     display: flex;
-    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
 }
 
-.edit-btn, .delete-btn, .imdb-btn {
-    cursor: pointer;
-    padding: 2px 4px;
-    border: 1px solid transparent;
-    border-radius: 5px;
+/* 表单内联布局 */
+.action-buttons form {
+    display: inline-block;
+    margin: 0;
 }
 
-.imdb-btn {
-    background: #f5c518;
-    color: #000;
+.material-link {
+    color: #3498db;
+    text-decoration: none;
 }
 
-.edit-btn {
-    background: #ffe066;
-    color: #2d3436;
+.material-link:hover {
+    text-decoration: underline;
 }
-
-.delete-btn {
-    background: #ff7675;
-    color: white;
-}
-
-/* 列宽设置 */
-.col-index { width: 5%; }
-.col-title { width: 60%; }
-.col-year { width: 15%; }
-.col-actions { width: 20%; }
 </style>
-
 {% endblock %}
