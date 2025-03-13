@@ -1,4 +1,4 @@
-# 可选文件，用于数据导入前的校验
+# 数据导入前的校验
 import csv
 from decimal import Decimal, InvalidOperation
 

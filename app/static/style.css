@@ -1,5 +1,5 @@
 /* 页面整体 */
-@media (max-width: 480px) {
+@media (max-width: 320px) {
     body {
         padding: 0 10px;   /* 更窄屏幕下减少左右内边距 */
     }
@@ -18,15 +18,19 @@ body {
 nav ul {
     list-style-type: none;
     margin: 0;
-    padding: 0;
-    overflow: hidden;
+    padding: 0rem; /* 增加内边距 */
     background-color: #2d3748;
     border-radius: 10px;
-	
+    display: flex; /* 启用弹性布局 */
+    flex-wrap: wrap; /* 允许换行 */
+    justify-content: center; /* 主轴居中 */
+    gap: 0.5rem; /* 项间距 */
 }
 
 nav li {
-    float: left;
+    float: none; /* 移除浮动 */
+    /* 新增弹性项属性 */
+    flex: 0 0 auto; /* 不伸缩不收缩 */
 }
 
 nav li a {
@@ -35,23 +39,29 @@ nav li a {
     text-align: center;
     padding: 8px 12px;
     text-decoration: none;
+    transition: background 0.3s; /* 添加过渡效果 */
+    border-radius: 4px; /* 保持按钮圆角 */
 }
 
 nav li a:hover {
-    background-color: #111;
+    background-color: #4a5568; /* 调整悬停颜色更协调 */
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    nav ul {
+        gap: 0.5rem;
+        padding: 0.8rem;
+    }
+    
+    nav li a {
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
 }
 
 
-/* 页脚 */
-footer {
-    color: #888;
-    margin-top: 10px;
-    text-align: center;
-    padding: 0px;
-}
-
-
-/* ===== 用户资料头部容器 ===== */
+/* 网页标题 */
 .profile-header {
     /* 定位上下文：为子元素绝对定位提供参考 */
     position: relative;
@@ -68,36 +78,16 @@ footer {
 /* ===== 头像样式 ===== */
 .profile-header img {
     /* 尺寸规范：黄金比例尺寸 */
-    width: 90px;
-    height: 90px;
+    width: 60px;
+    height: 60px;
     /* 圆形裁剪：创建完美正圆 */
     border-radius: 50%;
     /* 图片填充模式：保持比例裁剪 */
     object-fit: cover;
-    /* 边框设计：三层边框叠加 */
-    border: 
-        3px solid #f0f0f0,
-        1px solid rgba(255,255,255,0.8) inset,
-        1px solid rgba(0,0,0,0.05);
-    /* 阴影系统：多层阴影增强立体感 */
-    box-shadow: 
-        0 4px 15px rgba(0,0,0,0.1),
-        0 2px 5px rgba(255,255,255,0.5) inset;
-    /* 过渡动画：贝塞尔曲线实现自然运动 */
-    transition: 
-        transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        box-shadow 0.3s ease;
     /* 性能优化：开启GPU加速 */
     transform: translateZ(0);
 }
 
-/* 悬停状态 */
-.profile-header img:hover {
-    transform: scale(1.05) rotate(2deg);
-    box-shadow: 
-        0 8px 25px rgba(0,0,0,0.15),
-        0 4px 10px rgba(255,255,255,0.6) inset;
-}
 
 /* ===== 主标题样式 - 添加动态渐变背景和光标效果 ===== */
 .profile-header h2 {
@@ -140,7 +130,7 @@ footer {
     }
 }
 
-/* ===== 交互增强 ===== */
+/* 交互增强*/
 @media (hover: hover) {
     .profile-header h2:hover {
         transform: translateX(5px) scale(1.05);
@@ -161,33 +151,6 @@ footer {
             transition: all 0.3s ease;
             box-shadow: 0 0 15px rgba(0,184,148,0.3);
         }
-    }
-}
-
-/* ===== 新增动态效果 ===== */
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-@keyframes neonPulse {
-    0%, 100% { 
-        filter: drop-shadow(0 0 2px rgba(108,92,231,0.5));
-    }
-    50% { 
-        filter: drop-shadow(0 0 8px rgba(108,92,231,0.9)) 
-                drop-shadow(0 0 12px rgba(0,184,148,0.6));
-    }
-}
-
-/* ===== 光标追踪效果 ===== */
-.profile-header {
-    position: relative;
-    overflow: hidden;
-    
-    &:hover h2 {
-        animation: neonPulse 2s ease-in-out infinite;
     }
 }
 
@@ -220,7 +183,7 @@ footer {
     
     /* 装饰性增强 */
     text-shadow: 0 1px 1px rgba(45, 55, 72, 0.05);  /* 微阴影提升立体感 */
-    transition: color 0.3s ease;     /* 颜色过渡动画 */
+    transition: color 0.2s ease;     /* 颜色过渡动画 */
     
     /* 伪元素装饰线 */
     position: relative;
@@ -239,14 +202,14 @@ footer {
 
 .title2 {
     /* 核心字体定义 */
-   font-family: 'Times New Roman', Times, serif;
+    font-family: 'Times New Roman', Times, serif;
     
     /* 动态尺寸系统 */
     font-size: clamp(1.0rem, 1.2vw + 0.1rem, 2.0rem); /* 响应式流体字号 */
-    font-weight: 600 ;         /* 半粗体显示 */
+    font-weight: 1000 ;         /* 半粗体显示 */
     font-style: normal;
     font-variant-ligatures: common-ligatures;  /* 启用连字优化 */
-    line-height: 1.3;                 /* 优化阅读节奏 */
+    line-height: 3.6;                 /* 优化阅读节奏 */
     
     /* 高级排版控制 */
     letter-spacing: 0.05em;           /* 精密字距调整 */
@@ -255,7 +218,7 @@ footer {
     
     /* 装饰性增强 */
     text-shadow: 0 1px 1px rgba(45, 55, 72, 0.05);  /* 微阴影提升立体感 */
-    transition: color 0.3s ease;     /* 颜色过渡动画 */
+    transition: color 0.2s ease;     /* 颜色过渡动画 */
     
     /* 伪元素装饰线 */
     position: relative;
@@ -267,13 +230,13 @@ footer {
     color: #3a86ff ;
 }
 
-
+/* MP链接图标 */
 .mp {
-    font-size: clamp(0.8rem, 1.0vw + 0.1rem, 2.0rem); 
+    font-size: clamp(0.8rem, 1.2vw + 0.1rem, 2.0rem); 
     font-weight: 1000;                      /* 中等加粗（400=正常，700=加粗） */
     text-decoration: none;
     border-radius: 5px;
-    padding: 4px 8px;
+    padding: 6px 12px;
 	
 	/* 颜色方案 */
     background-color: #f8f9fa;             /* 浅灰背景 */
@@ -293,11 +256,7 @@ footer {
                 0 3px 6px rgba(0, 0, 0, 0.08); /* 双层投影 */
     transform: translateY(-2px);           /* 上移效果 */
 }
-/* 点击状态 */
-.mp:active {
-    transform: translateY(1px);             /* 按压下沉效果 */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+
 
 /* 聚焦状态 */
 .mp:focus {
@@ -306,11 +265,11 @@ footer {
 }
 
 
-/*点击按钮设置：btn */
+/* 点击按钮设置 */
 .btn {
     /* 字体相关 */
     font-family: 'Times New Roman', Times, serif; /* 字体 */
-    font-size: clamp(0.8rem, 0.8vw, 2.0rem);                      /* 增大字号 */
+    font-size: clamp(0.8rem, 1.0vw, 2.0rem);                      /* 增大字号 */
     font-weight: 1000;                      /* 中等加粗（400=正常，700=加粗） */
     letter-spacing: 0.5px;                 /* 字母间距 */
 	text-decoration: none;

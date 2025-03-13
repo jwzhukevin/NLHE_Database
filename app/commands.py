@@ -1,3 +1,4 @@
+# commands.py
 import click
 from flask import Blueprint
 from . import db
@@ -85,7 +86,7 @@ def admin(username, password):
         user.set_password(password)
     else:
         click.echo('Creating new admin user...')
-        user = User(username=username, name='Admin')
+        user = User(username=username, name='NLHE Datebase')
         user.set_password(password)
         db.session.add(user)
     db.session.commit()

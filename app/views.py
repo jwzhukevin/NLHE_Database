@@ -1,15 +1,80 @@
-# views.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy import and_, or_
 from .models import User, Material
 from . import db
 
 bp = Blueprint('views', __name__)
 
+@bp.app_template_filter('any')
+def any_filter(d):
+    """检查字典是否有非空值的过滤器"""
+    return any(v for v in d.values() if v)
+
+@bp.app_template_filter('remove_key')
+def remove_key_filter(d, exclude_key):
+    """从字典中移除指定键的模板过滤器"""
+    return {k: v for k, v in d.items() if k != exclude_key}
+
 @bp.route('/')
 def index():
-    materials = Material.query.all()
-    return render_template('index.html', materials=materials)
+    # 基础查询
+    query = Material.query
+    
+    # 获取搜索参数
+    search_params = {
+        'q': request.args.get('q', '').strip(),
+        'status': request.args.get('status', '').strip(),
+        'metal_type': request.args.get('metal_type', '').strip(),
+        'formation_energy_min': request.args.get('formation_energy_min', '').strip(),
+        'formation_energy_max': request.args.get('formation_energy_max', '').strip(),
+    }
+    
+    # 构建过滤条件
+    filters = []
+    
+    # 文本搜索
+    if search_params['q']:
+        filters.append(or_(
+            Material.name.ilike(f'%{search_params["q"]}%'),
+            Material.vbm_coordi.ilike(f'%{search_params["q"]}%'),
+            Material.cbm_coordi.ilike(f'%{search_params["q"]}%')
+        ))
+    
+    # 精确匹配
+    if search_params['status']:
+        filters.append(Material.status == search_params['status'])
+    if search_params['metal_type']:
+        filters.append(Material.metal_type == search_params['metal_type'])
+    
+    # 范围搜索
+    if search_params['formation_energy_min']:
+        try:
+            filters.append(Material.formation_energy >= float(search_params['formation_energy_min']))
+        except ValueError:
+            pass
+    if search_params['formation_energy_max']:
+        try:
+            filters.append(Material.formation_energy <= float(search_params['formation_energy_max']))
+        except ValueError:
+            pass
+    
+    # 应用过滤条件
+    if filters:
+        query = query.filter(and_(*filters))
+    
+    # 分页设置
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    pagination = query.order_by(Material.name.asc()).paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('index.html',
+                         materials=pagination.items,
+                         pagination=pagination,
+                         search_params=search_params)
+
+
+
 
 # 修改 add 路由
 @bp.route('/add', methods=['GET', 'POST'])
