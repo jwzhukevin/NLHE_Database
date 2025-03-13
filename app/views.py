@@ -20,7 +20,7 @@ def add():
         year = request.form.get('year')
         if not title or not year or len(year) > 4 or len(title) > 60:
             flash('Invalid title or year!')
-            return redirect(url_for('views.add'))
+            return redirect(url_for('views.index'))
         movie = Movie(title=title, year=year)
         db.session.add(movie)
         db.session.commit()
