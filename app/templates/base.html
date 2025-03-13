@@ -24,7 +24,7 @@
             <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
             
             <li>
-                <a href="{{ url_for('index') }}">
+                <a href="{{ url_for('views.index') }}">
                     <i class="fas fa-home"></i>
 					<span class="title1">Home</span>
                 </a>
@@ -32,26 +32,26 @@
             
             {% if current_user.is_authenticated %}
 			<li>
-                <a href="{{ url_for('add') }}">
+                <a href="{{ url_for('views.add') }}">
                     <i class="fas fa-add"></i>
 					<span class="title1">Add</span>
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('settings') }}">
+                <a href="{{ url_for('views.settings') }}">
                     <i class="fas fa-cogs"></i>
 					<span class="title1">Settings</span>
                 </a>
             </li>
             <li>
-                <a href="{{ url_for('logout') }}">
+                <a href="{{ url_for('views.logout') }}">
                     <i class="fas fa-sign-out-alt"></i>
 					<span class="title1">Logout</span>
                 </a>
             </li>
 			{% else %}
 			<li>
-                <a href="{{ url_for('login') }}">
+                <a href="{{ url_for('views.login') }}">
                     <i class="fas fa-sign-in-alt"></i>
 					<span class="title1">Login</span>
                 </a>
