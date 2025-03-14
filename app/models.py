@@ -1,4 +1,4 @@
-# models.py
+# models.py:
 import bcrypt
 from flask_login import UserMixin
 from . import db
@@ -31,7 +31,7 @@ class Material(db.Model):
     status = db.Column(db.String(20), nullable=False)
     total_energy = db.Column(db.Float, nullable=False)
     formation_energy = db.Column(db.Float, nullable=False)
-    efermi = db.Column(db.Float)
+    fermi_level = db.Column(db.Float)
     vacuum_level = db.Column(db.Float)
     workfunction = db.Column(db.Float)
     metal_type = db.Column(db.String(20))

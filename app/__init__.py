@@ -1,8 +1,10 @@
+# __init__.py:
 import os
 import sys
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -21,6 +23,7 @@ def create_app():
 
     # 初始化扩展
     db.init_app(app)
+    migrate = Migrate(app, db)  # 新增此行
     login_manager.init_app(app)
 
     # 用户加载器

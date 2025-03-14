@@ -32,6 +32,8 @@
                         <option value="">All</option>
                         <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
                         <option value="semiconductor" {% if search_params.metal_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
+						<option value="semiconductor" {% if search_params.metal_type == 'Insulator' %}selected{% endif %}>Insulator</option>
+						<option value="semiconductor" {% if search_params.metal_type == 'semimetallic' %}selected{% endif %}>Semimetallic</option>
                     </select>
                 </div>
             </div>
@@ -46,17 +48,29 @@
                            placeholder="Max" value="{{ search_params.formation_energy_max }}">
                 </div>
             </div>
+			
+            <div class="search-row">
+                <div class="search-group">
+                    <label>Fermi Level:</label>
+                    <input type="number" step="0.01" name="fermi_level_min" 
+                           placeholder="Min" value="{{ search_params.fermi_level_min }}">
+                    <span>-</span>
+                    <input type="number" step="0.01" name="fermi_level_max" 
+                           placeholder="Max" value="{{ search_params.fermi_level_max }}">
+                </div>
+            </div>			
             
             <div class="search-actions">
                 <button type="submit" class="search-btn">Apply Filters</button>
-                <a href="{{ url_for('views.index') }}" class="clear-btn">Reset</a>
+                <a href="{{ url_for('views.index') }}" class="clear-btn">
+				<button type="submit" class="search-btn">Reset</button>
+				</a>
             </div>
         </div>
     </form>
 
     <!-- 搜索结果信息 -->
     <div class="search-info">
-        Found {{ pagination.total }} results
         {% if search_params|any %}
             <div class="active-filters">
                 {% for key, value in search_params.items() %}
@@ -72,7 +86,7 @@
     </div>
 	<!-- 表格 -->
     <div class="table-title">
-        <span class="title2">Total {{ materials|length }} Materials</span>
+        <span class="title2">Total {{ materials|length }} Materials This Page</span>
     </div>
 
     <table class="material-data-table">
@@ -92,10 +106,10 @@
                 <td>{{ loop.index }}</td>
                 <td>
                     <a href="{{ url_for('views.detail', material_id=material.id) }}" class="material-link">
-                        <span class="title2">{{ material.name }}</span>
+                        {{ material.name }}
                     </a>
                 </td>
-                <td>{{ material.efermi }}</td>
+                <td>{{ material.fermi_level }}</td>
                 <td>{{ material.total_energy }}</td>
                 <td>{{ material.formation_energy }}</td>
                 <td>
@@ -150,62 +164,145 @@
 </div>
 
 <style>
-/* 搜索表单样式 */
-
+/* ====================== 搜索表单容器 ====================== */
 .search-form {
-    margin: 20px 0;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 15px;
+  /* ---------- 可调节参数 ---------- */
+  --form-max-width: 800px;        /* 控制表单最大宽度，避免在大屏幕上过宽 */
+  --form-padding: 1.0rem;         /* 表单内边距，影响内容与边框的距离 */
+  --form-gap: 1.0rem;            /* 表单项之间的垂直间距 */
+  --border-width: 2px;           /* 表单整体边框粗细 */
+  --border-radius: 10px;         /* 表单整体圆角半径 */
+
+  /* 输入控件参数 */
+  --input-height: 5px;          /* 所有输入框/下拉框的统一高度（注意单位） */
+  --input-padding: 1.0rem;       /* 输入框内文字与边框的间距 */
+  --input-font-size: clamp(1rem, 1.0vw, 1.6rem); /* 响应式字体：最小1rem，随视口增长，最大1.2rem */
+
+  /* 按钮参数 */
+  --btn-padding: 0.2rem 0.6rem;  /* 按钮内边距（上下 左右） */
+  --btn-font-size: 1.0rem;       /* 按钮文字大小 */
+  --btn-radius: 5px;             /* 按钮圆角半径 */
+
+  /* ---------- 布局样式 ---------- */
+  margin: 2rem auto;             /* 上下2rem，左右居中 */
+  max-width: var(--form-max-width); /* 应用最大宽度变量 */
+  border: var(--border-width) solid #eee; /* 边框样式（颜色#eee） */
+  border-radius: var(--border-radius); /* 应用圆角变量 */
+  padding: var(--form-padding);  /* 内边距 */
+  display: flex;                 /* 弹性布局 */
+  flex-direction: column;        /* 垂直排列子元素 */
+  gap: var(--form-gap);          /* 子元素间垂直间距 */
 }
 
+/* ====================== 基础搜索区域 ====================== */
 .basic-search {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+  display: flex;                 /* 弹性布局使输入框和按钮横向排列 */
+  gap: 1rem;                      /* 子元素间距（搜索框和按钮之间） */
+  position: relative;            /* 为子元素定位提供参考系 */
+
+  /* 主搜索输入框特定样式 */
+  & input[type="text"] {
+    flex: 1;                     /* 占据剩余所有空间 */
+    height: var(--input-height); /* 应用统一高度 */
+    padding: var(--input-padding); /* 内边距 */
+    font-size: var(--input-font-size); /* 字体大小 */
+    border: 2px solid #3498db;   /* 蓝色边框突出主搜索框 */
+    border-radius: var(--border-radius); /* 圆角 */
+    transition: border-color 0.3s; /* 边框颜色过渡动画 */
+  }
+
+  /* 聚焦状态增强 */
+  & input[type="text"]:focus {
+    border-color: #2980b9;       /* 加深边框颜色 */
+    outline: none;               /* 移除浏览器默认轮廓线 */
+    box-shadow: 0 0 8px rgba(52,152,219,0.3); /* 添加发光效果 */
+  }
 }
 
+/* ====================== 高级搜索区域 ====================== */
 .advanced-search {
-    display: none;
-    border-top: 1px solid #eee;
-    padding-top: 15px;
+  display: none;                 /* 默认隐藏高级搜索区域 */
+  border-top: var(--border-width) solid #eee; /* 顶部分割线 */
+  padding-top: var(--form-gap);  /* 与上方内容保持间距 */
+
+  /* 展开时显示 */
+  &.show {
+    display: grid;               /* 网格布局便于排列表单行 */
+    gap: 1.0rem;                 /* 行间距 */
+  }
 }
 
-.advanced-search.show {
-    display: block;
-}
-
+/* ====================== 表单行布局 ====================== */
 .search-row {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 10px;
+  display: flex;                 /* 横向排列多个搜索组 */
+  gap: 1.5rem;                   /* 组间距 */
+  align-items: center;           /* 垂直居中对齐 */
 }
 
+/* ====================== 搜索组（标签+输入框） ====================== */
 .search-group {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  flex: 1;                       /* 每组平均分配宽度 */
+  display: flex;                 /* 横向排列标签和输入框 */
+  align-items: center;           /* 垂直居中 */
+  gap: 1rem;                     /* 标签与输入框间距 */
+
+  /* 标签样式 */
+  & label {
+    min-width: 140px;            /* 固定标签宽度保持对齐 */
+    font-weight: 600;            /* 加粗字体突出标签 */
+    font-size: var(--input-font-size); /* 字体大小与输入框一致 */
+  }
+
+  /* 统一输入控件样式 */
+  & select, 
+  & input[type="number"] {
+    width: 100%;                /* 填充父容器宽度 */
+    height: var(--input-height); /* 统一高度 */
+    padding: var(--input-padding); /* 内边距 */
+    font-size: var(--input-font-size); /* 字体大小 */
+    border: var(--border-width) solid #ddd; /* 浅灰色边框 */
+    border-radius: calc(var(--border-radius) - 4px); /* 稍小的圆角 */
+    background: #f9f9f9;         /* 浅灰色背景提升可视性 */
+  }
 }
 
-.search-group label {
-    min-width: 120px;
-    font-weight: 500;
-}
-
-select, input[type="number"] {
-    padding: 6px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    flex: 1;
-}
-
+/* ====================== 操作按钮区域 ====================== */
 .search-actions {
-    margin-top: 10px;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
+  display: flex;                 /* 横向排列按钮 */
+  gap: 0.2rem;                   /* 按钮间距 */
+  justify-content: flex-end;     /* 右对齐 */
+
+  /* 按钮通用样式 */
+  & button {
+    cursor: pointer;            /* 鼠标手型 */
+    padding: var(--btn-padding); /* 内边距 */
+    font-size: var(--btn-font-size); /* 字体大小 */
+    border-radius: var(--btn-radius); /* 圆角 */
+    transition: all 0.2s;       /* 所有属性过渡动画 */
+
+    /* 主按钮（搜索按钮） */
+    &:first-child {
+      background: #3498db;       /* 品牌蓝色 */
+      color: white;              /* 白色文字 */
+      border: none;             /* 无边框 */
+      &:hover {
+        background: #2980b9;     /* 悬停加深颜色 */
+        transform: translateY(-1px); /* 轻微上移效果 */
+      }
+    }
+
+    /* 次要按钮（重置按钮） */
+    &:last-child {
+      background: white;         /* 白色背景 */
+      border: 2px solid #3498db; /* 蓝色边框 */
+      color: #3498db;            /* 蓝色文字 */
+      &:hover {
+        background: #f0f8ff;     /* 悬停浅蓝色背景 */
+      }
+    }
+  }
 }
+
 
 /* 分页样式 */
 .pagination {

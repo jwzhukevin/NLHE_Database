@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="{{ url_for('static', filename='images/head.png') }}">
+    <link rel="icon" href="{{ url_for('static', filename='head.jpg') }}">
     <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user.name }}</title>
+    <title>{{ user.name }} by jwzhukevin</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
 </head>
 <body>
     <div class="profile-header">
         <img 
             alt="Woo!!!" 
-            src="{{ url_for('static', filename='images/head.png') }}" 
+            src="{{ url_for('static', filename='head.jpg') }}" 
         >
         <h2>
             <span>{{ user.name }}</span>
@@ -66,7 +66,9 @@
         style="display: block; margin: 0 auto; max-width: 100%;"
 	>
     <footer>
-        <small>&copy; 2025 <a href="https://jwzhukevin.github.io/en/">KEVIN</a></small>
+        <small>&copy; 2025 Powered by <a href="https://github.com/pallets/flask"> Flask </a>
+		                   & The web's <a href="https://github.com/jwzhukevin/watchlist"> Code </a>
+						   </small>
     </footer>
 </body>
 </html>

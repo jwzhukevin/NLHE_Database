@@ -1,4 +1,4 @@
-name,status,total_energy,formation_energy,efermi,vacuum_level,workfunction,metal_type,gap,vbm_energy,cbm_energy,vbm_coordi,cbm_coordi,vbm_index,cbm_index
+name,status,total_energy,formation_energy,fermi_level,vacuum_level,workfunction,metal_type,gap,vbm_energy,cbm_energy,vbm_coordi,cbm_coordi,vbm_index,cbm_index
 POSCAR-Bi2Br6-162-POSCAR-SnS-156,done,-61.367518,-7.827578,-2.68966466,3.549,6.239,indirect,2.3028,-2.9027,-2.9027,"['0.333333', '0.333333', '0.000000']","['0.000000', '0.000000', '0.000000']",76,77
 POSCAR-In2Zn2S5-156-POSCAR-SbTe2-187,done,-46.79364,-4.58821,0.28020498,7.14,6.86,metal,-5.3419,5.3419,5.3419,"['0.350877', '0.298246', '0.000000']","['0.000000', '0.000000', '0.000000']",0,0
 POSCAR-AlI2-164-POSCAR-BrSbTe-156,done,-19.104879,-1.369269,0.28556482,4.173,3.887,metal,-4.5161,4.5161,4.5161,"['0.315790', '0.315790', '0.000000']","['0.000000', '0.000000', '0.000000']",0,0

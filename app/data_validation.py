@@ -15,7 +15,7 @@ def validate_csv(filepath):
                     errors.append(f"Row {i}: Missing {field}")
             
             # 检查数值格式
-            numeric_fields = ['total_energy', 'formation_energy', 'efermi']
+            numeric_fields = ['total_energy', 'formation_energy', 'fermi_level']
             for field in numeric_fields:
                 if row.get(field):
                     try:

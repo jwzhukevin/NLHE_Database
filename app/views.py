@@ -1,3 +1,4 @@
+# view.py:
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy import and_, or_
@@ -28,6 +29,8 @@ def index():
         'metal_type': request.args.get('metal_type', '').strip(),
         'formation_energy_min': request.args.get('formation_energy_min', '').strip(),
         'formation_energy_max': request.args.get('formation_energy_max', '').strip(),
+        'fermi_level_min': request.args.get('fermi_level_min', '').strip(),
+        'fermi_level_max': request.args.get('fermi_level_max', '').strip(),
     }
     
     # 构建过滤条件
@@ -59,6 +62,16 @@ def index():
         except ValueError:
             pass
     
+    if search_params['fermi_level_min']:
+        try:
+            filters.append(Material.fermi_level >= float(search_params['fermi_level_min']))
+        except ValueError:
+            pass
+    if search_params['fermi_level_max']:
+        try:
+            filters.append(Material.fermi_level <= float(search_params['fermi_level_max']))
+        except ValueError:
+            pass   
     # 应用过滤条件
     if filters:
         query = query.filter(and_(*filters))
@@ -88,7 +101,7 @@ def add():
                 'status': request.form.get('status'),
                 'total_energy': float(request.form.get('total_energy')),
                 'formation_energy': float(request.form.get('formation_energy')),
-                'efermi': safe_float(request.form.get('efermi')),
+                'fermi_level': safe_float(request.form.get('fermi_level')),
                 'vacuum_level': safe_float(request.form.get('vacuum_level')),
                 'workfunction': safe_float(request.form.get('workfunction')),
                 'metal_type': request.form.get('metal_type'),
@@ -150,7 +163,7 @@ def edit(material_id):
             material.status = request.form.get('status')
             material.total_energy = float(request.form.get('total_energy'))
             material.formation_energy = float(request.form.get('formation_energy'))
-            material.efermi = safe_float(request.form.get('efermi'))
+            material.fermi_level = safe_float(request.form.get('fermi_level'))
             material.vacuum_level = safe_float(request.form.get('vacuum_level'))
             material.workfunction = safe_float(request.form.get('workfunction'))
             material.metal_type = request.form.get('metal_type')

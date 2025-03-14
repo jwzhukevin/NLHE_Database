@@ -8,7 +8,7 @@ body {
     width: 100%;           /* 宽度占满整个视口 */
     max-width: 1000px;      /* 最大宽度限制*/
     margin: 10px auto;        /* 上下外边距为0，左右自动（水平居中） */
-    font-size: clamp(1.0rem, 1.2vw + 0.1rem, 1.6rem); /* 响应式流体字号 */       /* 固定字体大小（不随视口缩放变化） */
+    font-size: clamp(0.6rem, 1.0vw, 1.6rem); /* 响应式流体字号 */       /* 固定字体大小（不随视口缩放变化） */
     font-family: 'Times New Roman', Times, serif;
     padding: 0 10px;       /* 左右内边距15px（防止移动端内容贴边） */
     box-sizing: border-box; /* 内边距和边框不额外增加元素宽度 */
@@ -170,14 +170,14 @@ nav li a:hover {
     font-family: 'Times New Roman', Times, serif;
     
     /* 动态尺寸系统 */
-    font-size: clamp(1.0rem, 1.6vw + 0.1rem, 2.0rem); /* 响应式流体字号 */
-    font-weight: 600 ;         /* 半粗体显示 */
+    font-size: clamp(1.0rem, 1.0vw + 0.1rem, 2.0rem); /* 响应式流体字号 */
+    font-weight: 1000 ;         /* 半粗体显示 */
     font-style: normal;
     font-variant-ligatures: common-ligatures;  /* 启用连字优化 */
     line-height: 1.2;                 /* 优化阅读节奏 */
     
     /* 高级排版控制 */
-    letter-spacing: 0.05em;           /* 精密字距调整 */
+    letter-spacing: 0.1em;           /* 精密字距调整 */
     text-rendering: geometricPrecision;  /* 优化渲染精度 */
     color: #ffffff ;        /* 深灰高对比度 */
     
@@ -232,11 +232,12 @@ nav li a:hover {
 
 /* MP链接图标 */
 .mp {
-    font-size: clamp(0.8rem, 1.2vw + 0.1rem, 2.0rem); 
+    font-size: clamp(0.6rem, 0.8vw, 2.0rem); 
     font-weight: 1000;                      /* 中等加粗（400=正常，700=加粗） */
+	font-family: 'Times New Roman', Times, serif;
     text-decoration: none;
     border-radius: 5px;
-    padding: 6px 12px;
+    padding: 3px 6px;
 	
 	/* 颜色方案 */
     background-color: #f8f9fa;             /* 浅灰背景 */
@@ -249,8 +250,8 @@ nav li a:hover {
 }
 /* 悬停状态 */
 .mp:hover {
-    background-color: black;             /* 主色填充 */
-    color: yellow;                          /* 文字反白 */
+    background-color: #2D2D2D;             /* 主色填充 */
+    color: #00CED1;                          /* 文字反白 */
     border-color: transparent;             /* 隐藏边框 */
     box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 
                 0 3px 6px rgba(0, 0, 0, 0.08); /* 双层投影 */
@@ -269,21 +270,21 @@ nav li a:hover {
 .btn {
     /* 字体相关 */
     font-family: 'Times New Roman', Times, serif; /* 字体 */
-    font-size: clamp(0.8rem, 1.0vw, 2.0rem);                      /* 增大字号 */
+    font-size: clamp(0.6rem, 0.8vw, 2.0rem);
     font-weight: 1000;                      /* 中等加粗（400=正常，700=加粗） */
     letter-spacing: 0.5px;                 /* 字母间距 */
 	text-decoration: none;
     text-transform: uppercase;             /* 文本大写转换 */
 
     /* 尺寸控制 */
-    min-width: 40px;                      /* 最小宽度保证统一性 */
-    padding: 4px 6px;                    /* 垂直 水平 内边距 */
-    margin: 4px;                           /* 按钮间距 */
+    min-width: 24px;                      /* 最小宽度保证统一性 */
+    padding: 3px 6px;                    /* 垂直 水平 内边距 */
+    margin: 0.5px;                           /* 按钮间距 */
 
     /* 边框与形状 */
-    border: 2px solid #3a86ff;             /* 边框样式 */
+    border: 1px solid #3a86ff;             /* 边框样式 */
     border-radius: 5px;                   /* 圆角大小（50%为胶囊按钮） */
-    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11); /* 投影效果 */
+    box-shadow: 0 3px 6px rgba(50, 50, 93, 0.11); /* 投影效果 */
 
     /* 颜色方案 */
     background-color: #f8f9fa;             /* 浅灰背景 */
@@ -325,7 +326,7 @@ nav li a:hover {
 }
 
 .form-label {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Times New Roman', Times, serif;
     font-size: clamp(0.8rem, 1.0vw + 0.1rem, 1.8rem); 
 	font-weight: 1000;                      /* 中等加粗（400=正常，700=加粗） */
     letter-spacing: 0.5px;                 /* 字母间距 */
@@ -341,17 +342,14 @@ nav li a:hover {
     text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
 }
 
-.inline-form {
-    display: inline;
-}
 
-/***** 输入框基础样式 (继承 .btn 风格) ​*****/
+/***** 输入框基础样式.btn风格) ​*****/
 input[type="text"],
 input[type="password"],
 input[type="email"],
 input[type="number"],
 textarea {
-    /* 继承按钮字体相关属性 */
+    /* 字体相关属性 */
     font-family: inherit;
     font-size: clamp(0.8rem, 1.0vw + 0.1rem, 2.0rem);  /* 与按钮最终字号一致 */
     font-weight: 1000;
@@ -363,11 +361,11 @@ textarea {
     border: 2px solid #555555; /* 按钮初始边框色 */
     border-radius: 5px;      /* 大圆角 */
     
-    /* 颜色方案调整（更适合输入场景） */
+    /* 颜色方案（适合输入场景） */
     background-color: #ffffff;  /* 纯白背景 */
     color: #2c3e50;           /* 深蓝灰文字 */
     
-    /* 继承交互效果 */
+    /* 交互效果 */
     transition: all 0.3s ease-in-out;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -423,30 +421,59 @@ input.error {
 }
 
 
-/* 新增材料详情页样式 */
-.detail-card {
-    background: #ffffff;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* 页脚样式 */
+footer {
+  /* 基础参数 (按需调整以下变量值) */
+  --footer-bg-color: #2c3e50;        /* 背景色 - 建议使用深色系 */
+  --footer-text-color: #ecf0f1;      /* 文字颜色 - 与背景形成对比 */
+  --footer-padding: 0.2rem;          /* 内边距 - 建议rem单位保持比例 */
+  --footer-font-size: clamp(0.8rem, 1.0vw, 1.6rem); /* 响应式字体大小 */
+  --footer-font-style: normal;       /* 斜体控制：可选 italic / normal */
+  --footer-letter-spacing: 0.05em;   /* 字母间距 - 推荐em单位适配字体 */
+  --footer-word-spacing: normal;     /* 词间距 - 可用像素(如 2px)或em单位 */
+
+  /* 链接参数 */
+  --link-hover-color: #3498db;       /* 悬停颜色 - 建议与主色搭配 */
+  --link-transition: 0.2s;           /* 悬停动画时间 - 单位秒(s) */
+
+  /* 实现样式 */
+  background-color: var(--footer-bg-color);
+  color: var(--footer-text-color);
+  padding: var(--footer-padding);
+  font-size: var(--footer-font-size);
+  font-style: var(--footer-font-style);    /* 应用斜体控制 */
+  letter-spacing: var(--footer-letter-spacing); /* 字母间距 */
+  word-spacing: var(--footer-word-spacing);    /* 词间距 */
+  text-align: center;
+  font-family: 'Times New Roman', Times, serif; /* 您的衬线字体选择 */
+  margin-top: auto; /* 自动填充底部空间 */
 }
 
-.material-property {
-    margin: 10px 0;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
+/* 链接样式 */
+footer a {
+  color: inherit; /* 继承父级文字颜色 */
+  text-decoration: none;
+  transition: 
+    color var(--link-transition),
+    letter-spacing 0.2s; /* 添加字母间距过渡效果 */
 }
 
-.material-property label {
-    font-weight: 600;
-    color: #2c3e50;
-    display: block;
-    margin-bottom: 5px;
+footer a:hover {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+  letter-spacing: 0.1em; /* 悬停时增加字母间距 */
 }
 
-.material-property .value {
-    color: #3498db;
-    font-size: 1.1em;
-}
+/* 使用建议 */
+/*
+1. 启用斜体：将 --footer-font-style 改为 italic
+   --footer-font-style: italic;
+
+2. 调整字间距示例（加大间距）：
+   --footer-letter-spacing: 0.1em;
+   --footer-word-spacing: 0.3em;
+
+3. 紧凑模式示例（减小间距）：
+   --footer-letter-spacing: -0.03em;
+   --footer-word-spacing: -1px;
+*/
