@@ -77,7 +77,7 @@ def import_energy_data(file):
                 # 使用更高效的批量插入方法
                 db.session.bulk_insert_mappings(Material, valid_data)
                 db.session.commit()
-                click.echo(f"成功插入 {len(valid_data)} 条记录")
+                click.echo(f"成功导入 {len(valid_data)} 条材料数据")
             except SQLAlchemyError as e:
                 db.session.rollback()
                 click.echo(f"数据库错误: {str(e)}")
