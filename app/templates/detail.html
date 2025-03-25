@@ -47,6 +47,33 @@
         </div>
     </div>
 
+    <!-- JSmol Container -->
+    <div id="jsmol_container" style="width:600px; height:400px;"></div>
+    <script>
+        console.log('Full static path:', "{{ url_for('static', filename=structure_file) }}");
+        console.log('J2S path:', "{{ url_for('static', filename='jsmol/j2s') }}");
+        
+        try {
+            var jmolApplet = Jmol.getApplet("jsmol", {
+                use: "HTML5",
+                j2sPath: "{{ url_for('static', filename='jsmol/j2s') }}",
+                script: "load '" + "{{ url_for('static', filename=structure_file) }}" + "'; wireframe off; spacefill 20%;"
+            });
+        });
+
+        Jmol.script(jmolApplet, 'set antialiasDisplay true');
+        Jmol.script(jmolApplet, 'set defaultVDW babel');
+    </script>
+    <div class="jsmol-container">
+        <div class="jsmol-viewer" id="jsmolApplet0"></div>
+        <div class="jsmol-controls">
+            <button onclick="rotateLeft()" class="btn">Rotate Left</button>
+            <button onclick="rotateRight()" class="btn">Rotate Right</button>
+            <button onclick="resetView()" class="btn">Reset View</button>
+            <button onclick="toggleSpin()" class="btn">Toggle Spin</button>
+        </div>
+    </div>
+
     <div class="action-buttons">
         <a href="{{ url_for('views.index') }}" class="btn">
             <i class="fas fa-arrow-left"></i> Back to List
@@ -60,6 +87,34 @@
         </a>
     </div>
 </div>
+
+<!-- JSmol Scripts -->
+<script type="text/javascript" src="{{ url_for('static', filename='jsmol/JSmol.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='jsmol/JSmol.js') }}"></script>
+
+<style>
+/* JSmol Styles */
+.jsmol-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.jsmol-viewer {
+    width: 600px;
+    height: 600px;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.jsmol-controls {
+    margin-top: 10px;
+}
+
+.jsmol-controls button {
+    margin: 0 5px;
+}
+</style>
 
 <style>
 /* ====================== 材料详情容器 ====================== */

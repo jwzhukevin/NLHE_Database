@@ -99,10 +99,25 @@ def index():
 def add():
     if request.method == 'POST':
         try:
+            # 获取并处理上传的文件
+            structure_file = request.files.get('structure_file')
+            if not structure_file or not structure_file.filename.endswith('.cif'):
+                flash('Please upload a valid CIF file!', 'error')
+                return redirect(url_for('views.add'))
+            
+            # 生成安全的文件名并保存
+            from werkzeug.utils import secure_filename
+            import os
+            filename = secure_filename(structure_file.filename)
+            file_path = os.path.join(current_app.root_path, 'static/structures', filename)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            structure_file.save(file_path)
+            
             # 获取并转换表单数据（使用safe_float处理空值）
             material_data = {
                 'name': request.form.get('name'),  # 材料名称（必填）
                 'status': request.form.get('status'),  # 状态（必填）
+                'structure_file': filename,  # 结构文件路径
                 'total_energy': float(request.form.get('total_energy')),  # 总能量
                 'formation_energy': float(request.form.get('formation_energy')),  # 形成能
                 'fermi_level': safe_float(request.form.get('fermi_level')),  # 费米能级（允许空）
@@ -169,7 +184,17 @@ def edit(material_id):
     material = Material.query.get_or_404(material_id)  # 获取材料或返回404
     if request.method == 'POST':
         try:
-            # 更新所有字段（与添加逻辑类似）
+            # 处理文件上传
+            structure_file = request.files.get('structure_file')
+            if structure_file and structure_file.filename.endswith('.cif'):
+                from werkzeug.utils import secure_filename
+                import os
+                filename = secure_filename(structure_file.filename)
+                file_path = os.path.join('app/static/structures', filename)
+                structure_file.save(file_path)
+                material.structure_file = filename
+
+            # 更新所有字段
             material.name = request.form.get('name')
             material.status = request.form.get('status')
             material.total_energy = float(request.form.get('total_energy'))
@@ -205,8 +230,11 @@ def edit(material_id):
 # 材料详情页
 @bp.route('/material/<int:material_id>')
 def detail(material_id):
-    material = Material.query.get_or_404(material_id)  # 获取记录或返回404
-    return render_template('detail.html', material=material)  # 渲染详情模板
+    material = Material.query.get_or_404(material_id)
+    structure_file = f'structures/{material.structure_file}'
+    return render_template('detail.html', 
+                          material=material,
+                          structure_file=structure_file)
 
 # 材料删除路由（仅POST请求）
 @bp.route('/material/delete/<int:material_id>', methods=['POST'])
@@ -228,8 +256,8 @@ def login():
             flash('Invalid input.', 'error')
             return redirect(url_for('views.login'))
         
-        user = User.query.first()  # 简化版用户查询（实际应通过用户名查询）
-        if user and username == user.username and user.validate_password(password):
+        user = User.query.filter_by(username=username).first()  # 根据用户名精确查询
+        if user and user.validate_password(password):
             login_user(user)  # Flask-Login登录方法
             flash('Login success.', 'success')
             return redirect(url_for('views.index'))

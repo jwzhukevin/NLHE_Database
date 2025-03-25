@@ -1,0 +1,46 @@
+
+#======================================================================
+# CRYSTAL DATA
+#----------------------------------------------------------------------
+data_VESTA_phase_1
+
+_chemical_name_common                  'Ac8 Cd4 Ge4'
+_cell_length_a                         7.949451
+_cell_length_b                         7.949451
+_cell_length_c                         7.949451
+_cell_angle_alpha                      90.000000
+_cell_angle_beta                       90.000000
+_cell_angle_gamma                      90.000000
+_cell_volume                           502.355782
+_space_group_name_H-M_alt              'P 1'
+_space_group_IT_number                 1
+
+loop_
+_space_group_symop_operation_xyz
+   'x, y, z'
+
+loop_
+   _atom_site_label
+   _atom_site_occupancy
+   _atom_site_fract_x
+   _atom_site_fract_y
+   _atom_site_fract_z
+   _atom_site_adp_type
+   _atom_site_U_iso_or_equiv
+   _atom_site_type_symbol
+   Ac0        1.0     0.250000     0.750000     0.750000    Uiso  ? Ac
+   Ac1        1.0     0.250000     0.250000     0.750000    Uiso  ? Ac
+   Ac2        1.0     0.250000     0.250000     0.250000    Uiso  ? Ac
+   Ac3        1.0     0.250000     0.750000     0.250000    Uiso  ? Ac
+   Ac4        1.0     0.750000     0.750000     0.250000    Uiso  ? Ac
+   Ac5        1.0     0.750000     0.250000     0.250000    Uiso  ? Ac
+   Ac6        1.0     0.750000     0.250000     0.750000    Uiso  ? Ac
+   Ac7        1.0     0.750000     0.750000     0.750000    Uiso  ? Ac
+   Cd8        1.0     0.500000     0.000000     0.000000    Uiso  ? Cd
+   Cd9        1.0     0.500000     0.500000     0.500000    Uiso  ? Cd
+   Cd10       1.0     0.000000     0.000000     0.500000    Uiso  ? Cd
+   Cd11       1.0     0.000000     0.500000     0.000000    Uiso  ? Cd
+   Ge12       1.0     0.000000     0.000000     0.000000    Uiso  ? Ge
+   Ge13       1.0     0.000000     0.500000     0.500000    Uiso  ? Ge
+   Ge14       1.0     0.500000     0.000000     0.500000    Uiso  ? Ge
+   Ge15       1.0     0.500000     0.500000     0.000000    Uiso  ? Ge

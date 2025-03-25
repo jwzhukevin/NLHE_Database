@@ -40,6 +40,7 @@ class Material(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # 主键ID
     name = db.Column(db.String(120), unique=True, nullable=False)  # 唯一材料名称（必填）
     status = db.Column(db.String(20), nullable=False)  # 材料状态（如实验/理论）
+    structure_file = db.Column(db.String(255))  # 结构文件路径
     
     # 能量相关参数（单位：eV）
     total_energy = db.Column(db.Float, nullable=False)        # 总能量（必填）
