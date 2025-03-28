@@ -1,45 +1,49 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- ====================== 外部脚本引入 ====================== -->
 <!-- Jmol Scripts: 用于加载和显示材料的3D结构 -->
 <script type="text/javascript" src="{{ url_for('static', filename='jsmol/JSmol.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='jsmol/JSmolApplet.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='jsmol/jmol-controls.js') }}"></script>
 <!-- Band Structure Scripts: 用于显示材料的能带结构图 -->
 <script type="text/javascript" src="{{ url_for('static', filename='band-plot.js') }}"></script>
+
+<!-- ====================== 主容器 ====================== -->
 <div class="material-detail-container">
-    <!-- Header Section: 包含材料名称和操作按钮 -->
-    <div class="header-section" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-        <span class="title2" style="font-size: 1.5em; color: #2c3e50;">{{ material.name }}</span>
-        <div class="action-buttons" style="margin-top: 16px; display: flex; gap: 10px; justify-content: center;">
-            <!-- 返回列表按钮 -->
-            <a href="{{ url_for('views.index') }}" class="btn" style="display: inline-flex; align-items: center; gap: 5px;">
-                <i class="fas fa-arrow-left"></i> Back to List
-            </a>
-            <!-- 材料项目链接 -->
-            <a class="mp" 
-               href="https://materialsproject.org/materials/{{ material.name }}" 
-               target="_blank"
-               title="View in MP">
-               MP
-            </a>
-            {% if current_user.is_authenticated %}
-            <!-- 编辑材料按钮 -->
-            <a class="btn" style="text-decoration: none;"
-               href="{{ url_for('views.edit', material_id=material.id) }}">
-               Edit
-            </a>
-            <form method="post" 
-            action="{{ url_for('views.delete', material_id=material.id) }}">
-            <button class="btn" 
-            type="submit" 
-            onclick="return confirm('Delete permanently?')">Del</button>
-            </form>
-            {% endif %}    
+    <!-- Header Section: 包含材料名称、导航栏和操作按钮 -->
+    <div class="header-section">
+        <!-- 左侧固定导航栏容器 -->
+        <div class="title-nav-container">
+            <nav class="nav-menu">
+                <ul>
+                    <!-- 材料名称显示 -->
+                    <li><a href="#" class="material-title">{{ material.name }}</a></li>
+                    <!-- 页内导航链接 -->
+                    <li><a href="#basic-properties">Basic Properties</a></li>
+                    <li><a href="#surface-properties">Surface Properties</a></li>
+                    <li><a href="#band-structure">Band Structure</a></li>
+                    <li><a href="#3d-structure">3D Structure</a></li>
+                    <li><a href="#band-plot">Band Plot</a></li>
+                    {% if current_user.is_authenticated %}
+                    <!-- 管理员操作按钮：编辑和删除 -->
+                    <li><a href="{{ url_for('views.edit', material_id=material.id) }}"><i class="fas fa-edit"></i> Edit</a></li>
+                    <li><a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
+                        type="submit" onclick="return confirm('Delete permanently?')"><i class="fas fa-trash"></i> Del</a></li>                    
+                    {% endif %} 
+                    <!-- 外部链接和返回按钮 -->
+                    <li><a href="https://materialsproject.org/materials/{{ material.name }}" target="_blank"><i class="fas fa-external-link-alt"></i> MP</a></li>
+                    <li><a href="{{ url_for('views.index') }}" class="back-link">
+                        <i class="fas fa-arrow-left"></i> Back to List</a></li>
+                </ul>
+            </nav>
         </div>
     </div>
+
+    <!-- ====================== 材料属性详情区域 ====================== -->
     <div class="detail-section">
-        <div class="detail-card">
+        <!-- 基本属性卡片 -->
+        <div class="detail-card" id="basic-properties">
             <h3>Basic Properties</h3>
             <ul>
                 <li>Status: {{ material.status }}</li>
@@ -49,7 +53,8 @@
             </ul>
         </div>
 
-        <div class="detail-card">
+        <!-- 表面属性卡片 -->
+        <div class="detail-card" id="surface-properties">
             <h3>Surface Properties</h3>
             <ul>
                 <li>Vacuum Level: {{ material.vacuum_level }} eV</li>
@@ -58,7 +63,8 @@
             </ul>
         </div>
 
-        <div class="detail-card">
+        <!-- 能带结构属性卡片 -->
+        <div class="detail-card" id="band-structure">
             <h3>Band Structure</h3>
             <ul>
                 <li>Band Gap: {{ material.gap }} eV</li>
@@ -70,134 +76,312 @@
         </div>
     </div>
 
-    <!-- Jmol Container -->
-    <div class="jmol-container">
+    <!-- ====================== 3D结构显示区域 ====================== -->
+    <div class="jmol-container" id="3d-structure">
+        <!-- JSmol 3D结构查看器：用于显示材料的三维晶体结构 -->
         <div class="jmol-viewer" id="jmolApplet0"></div>
+        <!-- 3D结构控制按钮：提供基本的结构操作功能 -->
         <div class="jmol-controls" style="margin-top: 20px;">
+            <!-- 向左旋转按钮：控制结构向左旋转 -->
             <button onclick="rotateLeft()" class="btn">Rotate Left</button>
+            <!-- 向右旋转按钮：控制结构向右旋转 -->
             <button onclick="rotateRight()" class="btn">Rotate Right</button>
+            <!-- 重置视图按钮：将结构恢复到初始视角 -->
             <button onclick="resetView()" class="btn">Reset View</button>
+            <!-- 自动旋转开关：控制结构是否自动旋转 -->
             <button onclick="toggleSpin()" class="btn">Toggle Spin</button>
         </div>
-    </div>
-
-    <!-- Band Structure Container -->
-    <div class="jmol-container" style="margin-top: 40px;">
-        <div id="bandStructure" style="width: 100%; height: 400px;"></div>
+        <!-- JSmol初始化和配置脚本：设置3D查看器的参数和行为 -->
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const bandDataPath = "{{ url_for('static', filename='band/' + material.name + '.dat') }}";
-                plotBandStructure('bandStructure', bandDataPath);
-            });
-        </script>
-        <script>
+            // 定义JSmol应用程序实例变量
             var jmolApplet;
+            // DOM加载完成后初始化JSmol
             document.addEventListener('DOMContentLoaded', function() {
+                // 记录结构文件的完整静态路径，用于调试
                 console.log('Full static path:', "{{ url_for('static', filename=structure_file) }}");
                 
                 try {
+                    // 初始化JSmol查看器并配置参数
                     jmolApplet = Jmol.getApplet("jmol", {
-                        width: '100%',
-                        height: '100%',
-                        use: 'HTML5',
-                        j2sPath: "{{ url_for('static', filename='jsmol/j2s') }}",
-                        script: "load '" + "{{ url_for('static', filename=structure_file) }}" + "'; wireframe off; spacefill 20%;",
-                        disableJ2SLoadMonitor: true,
-                        disableInitialConsole: true,
-                        allowJavaScript: true,
-                        color: '#FFFFFF',
-                        addSelectionOptions: false,
+                        width: '100%',          // 查看器宽度：充满容器
+                        height: '100%',         // 查看器高度：充满容器
+                        use: 'HTML5',           // 使用HTML5渲染模式
+                        j2sPath: "{{ url_for('static', filename='jsmol/j2s') }}", // JSmol核心文件路径
+                        script: "load '" + "{{ url_for('static', filename=structure_file) }}" + "'; wireframe off; spacefill 20%;", // 加载结构文件并设置初始显示样式
+                        disableJ2SLoadMonitor: true,    // 禁用加载监视器
+                        disableInitialConsole: true,    // 禁用初始控制台
+                        allowJavaScript: true,          // 允许JavaScript交互
+                        color: '#FFFFFF',               // 背景颜色设置
+                        addSelectionOptions: false,     // 禁用选择选项
+                        // JSmol初始化完成后的回调函数
                         readyFunction: function() {
+                            // 输出初始化成功信息
                             console.log('JSmol initialized successfully');
-                            Jmol.script(jmolApplet, 'set antialiasDisplay true');
-                            Jmol.script(jmolApplet, 'set defaultVDW babel');
-                            Jmol.script(jmolApplet, 'set zoomLarge false');
-                            Jmol.script(jmolApplet, 'set picking off');
+                            // 配置显示参数
+                            Jmol.script(jmolApplet, 'set antialiasDisplay true');  // 启用抗锯齿显示
+                            Jmol.script(jmolApplet, 'set defaultVDW babel');       // 设置默认范德华半径
+                            Jmol.script(jmolApplet, 'set zoomLarge false');        // 禁用大幅缩放
+                            Jmol.script(jmolApplet, 'set picking off');            // 禁用点选功能
+                            // 设置JSmol已准备就绪标志
+                            setJmolReady();
                         }
                     });
                 } catch(e) {
+                    // 捕获并记录初始化过程中的错误
                     console.error("Error initializing Jmol:", e);
                 }
             });
         </script>
+    </div>
 
+    <!-- ====================== 能带结构图显示区域 ====================== -->
+    <div class="jmol-container" id="band-plot">
+        <!-- 能带结构图容器 -->
+        <div id="bandStructure"></div>
+        <!-- 能带结构图初始化脚本 -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // 获取能带数据文件路径并绘制能带结构图
+                const bandDataPath = "{{ url_for('static', filename='band/' + material.name + '.dat') }}";
+                plotBandStructure('bandStructure', bandDataPath);
+            });
+        </script>
     </div>
 </div>
 
-
-
+<!-- ====================== 样式定义 ====================== -->
 <style>
-/* ====================== 材料详情容器 ====================== */
+/* ====================== 布局相关样式 ====================== */
+/* 主容器布局样式 */
 .material-detail-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
+    max-width: 800px;
+    margin: 10px auto 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-/* ====================== 详情区块布局 ====================== */
+/* ====================== 导航栏相关样式 ====================== */
+/* 导航栏容器基础样式 */
+.title-nav-container {
+    position: fixed;
+    left: 0;
+    top: 180px;
+    height: auto;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    background: rgba(34, 105, 168, 0.458);
+    padding: 5px;
+    border-radius: 0 4px 4px 0;
+    backdrop-filter: blur(5px);
+    margin-left: calc((100vw - 1200px) / 2 - 100px);
+    transition: all 0.1s ease;
+    border-left: 3px solid #2181b5;
+}
+
+/* 导航菜单基础样式 */
+.nav-menu {
+    background: transparent;
+    width: 100%;
+    padding: 5px;
+}
+
+/* 导航菜单列表样式 */
+.nav-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* 导航链接基础样式 */
+.nav-menu a {
+    font-family: "Times New Roman", Times, serif;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: clamp(0.9em, 1.5vw, 1.2em);
+    letter-spacing: 0.3px;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    display: block;
+    padding: 6px 8px;
+    border-radius: 3px;
+    text-align: center;
+}
+
+/* 导航链接激活状态样式 */
+.nav-menu a.active {
+    color: #18598f;
+    background: #ffffff;
+    box-shadow: 0 2px 4px rgba(8, 139, 221, 0.434);
+}
+
+
+/* 材料标题样式 */
+.material-title {
+    font-size: clamp(1.2em, 1.5vw, 1.8em);
+    padding: 15px 10px;
+    margin: 5px 0 25px 0;
+    font-weight: 800;
+    text-align: center;
+    position: relative;
+    display: block;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%;
+}
+
+/* 材料标题注释样式 */
+.material-title::after {
+    content: "{{ material.name }}";
+    position: absolute;
+    bottom: -22px;
+    right: 50%;
+    transform: translateX(50%);
+    padding: 2px 8px;
+    font-size: clamp(0.5em, 0.8vw, 0.9em);
+    color: #666;
+    font-weight: normal;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ====================== 详情卡片相关样式 ====================== */
+/* 详情区域布局样式 */
 .detail-section {
     display: flex;
-    flex-direction: row;
-    gap: 24px;
-    margin: 20px 0;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+    padding-top: 10px;
 }
 
+/* 详情卡片基础样式 */
 .detail-card {
-    flex: 1;
-    background: #fff;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 0;
-}
-
-/* ====================== 卡片标题样式 ====================== */
-.detail-card h3 {
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
-}
-
-/* ====================== 列表优化样式 ====================== */
-.detail-card ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-/* ====================== 列表项样式 ====================== */
-.detail-card li {
-    margin: 6px 0;
-    padding: 8px;
-}
-
-/* ====================== JSmol容器样式 ====================== */
-.jmol-container {
-    margin: 20px auto;
-    text-align: center;
+    width: 100%;
     max-width: 800px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: #ffffff;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    border: 2px solid #499cd7;
+    margin: 10px;
 }
 
+/* 详情卡片标题样式 */
+/* 详情卡片标题样式 */
+.detail-card h3 {
+    /* 设置标题文字颜色为蓝色 */
+    color: #2181b5;
+    /* 添加蓝色底部边框，宽度3px，实线样式 */
+    border-bottom: 3px solid #3498db;
+    /* 设置底部内边距为10px，使文字与边框有一定间距 */
+    padding-bottom: 10px;
+    /* 设置底部外边距为10px，与下方内容保持间距 */
+    margin-bottom: 10px;
+    /* 使用Times New Roman字体，如果不可用则降级使用Times或serif字体 */
+    font-family: "Times New Roman", Times, serif;
+    /* 使用clamp()函数设置响应式字体大小：
+       最小值1.2em
+       首选值2vw（视窗宽度的2%）
+       最大值1.5em */
+    font-size: clamp(1.2em, 2vw, 1.5em);
+    /* 设置字体粗细为粗体 */
+    font-weight: bold;
+}
+
+/* 详情卡片列表项样式 */
+.detail-card li {
+    margin: 5px 0;
+    padding: 2px;
+}
+
+/* ====================== JSmol相关样式 ====================== */
+/* JSmol容器基础样式 */
+.jmol-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 1000px;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    border: 2px solid #499cd7;
+    margin: 0;
+    align-items: center;
+}
+
+/* JSmol查看器样式 */
 .jmol-viewer {
     width: 100%;
     height: 400px;
     margin-bottom: 10px;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* JSmol控制按钮容器样式 */
 .jmol-controls {
     display: flex;
     gap: 10px;
     justify-content: center;
     margin-top: 10px;
 }
+
+/* ====================== 能带图相关样式 ====================== */
+/* 能带结构图容器样式 */
+/* 能带结构图容器的样式定义 */
+#bandStructure {
+    width: 100%;
+    height: 400px;
+    border: 2px solid #499cd7;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 0;
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取所有section元素和对应的导航链接
+    const sections = document.querySelectorAll('.detail-card, .jmol-container');
+    const navLinks = document.querySelectorAll('.nav-menu a[href^="#"]');
+    
+    // 创建Intersection Observer实例
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // 获取当前可见section的id
+                const id = entry.target.id;
+                // 移除所有导航链接的active类
+                navLinks.forEach(link => link.classList.remove('active'));
+                // 为当前section对应的导航链接添加active类
+                const currentLink = document.querySelector(`.nav-menu a[href="#${id}"]`);
+                if (currentLink) currentLink.classList.add('active');
+            }
+        });
+    }, {
+        threshold: 0.5 // 当section可见面积超过50%时触发回调
+    });
+
+    // 观察所有section元素
+    sections.forEach(section => observer.observe(section));
+});
+</script>
 
 {% endblock %}
