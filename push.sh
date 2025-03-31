@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # 添加所有文件到暂存区
+git init
 git add .
 
 
@@ -12,7 +13,7 @@ REPO_NAME=$(basename "$SOURCE_REPO_DIR")
 TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
 
 # 提交到部署仓库
-git commit -m "优化展示导航|Deploy: ${REPO_NAME}@${BRANCH_NAME}:${COMMIT_HASH} (${TIMESTAMP})"
+git commit -m "改用Three.js来显示3D结构|Deploy: ${REPO_NAME}@${BRANCH_NAME}:${COMMIT_HASH} (${TIMESTAMP})"
 
 # 推送
 git push origin master

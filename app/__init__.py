@@ -62,5 +62,9 @@ def create_app():
         app.register_blueprint(views_bp)
         app.register_blueprint(errors_bp)
         app.register_blueprint(commands_bp)
+        
+        # 注册API蓝图
+        from .api import bp as api_bp
+        app.register_blueprint(api_bp)
 
     return app  # 返回完全初始化的应用实例

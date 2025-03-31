@@ -2,10 +2,10 @@
 
 {% block content %}
 <!-- ====================== 外部脚本引入 ====================== -->
-<!-- Jmol Scripts: 用于加载和显示材料的3D结构 -->
-<script type="text/javascript" src="{{ url_for('static', filename='jsmol/JSmol.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='jsmol/JSmolApplet.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='jsmol/jmol-controls.js') }}"></script>
+<!-- Three.js Scripts: 用于加载和显示材料的3D结构 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='crystal-viewer.js') }}"></script>
 <!-- Band Structure Scripts: 用于显示材料的能带结构图 -->
 <script type="text/javascript" src="{{ url_for('static', filename='band-plot.js') }}"></script>
 
@@ -77,65 +77,35 @@
     </div>
 
     <!-- ====================== 3D结构显示区域 ====================== -->
-    <div class="jmol-container" id="3d-structure">
-        <!-- JSmol 3D结构查看器：用于显示材料的三维晶体结构 -->
-        <div class="jmol-viewer" id="jmolApplet0"></div>
+    <div class="crystal-container" id="3d-structure">
+        <!-- Three.js 3D结构查看器：用于显示材料的三维晶体结构 -->
+        <div class="crystal-viewer" id="crystalViewer"></div>
         <!-- 3D结构控制按钮：提供基本的结构操作功能 -->
-        <div class="jmol-controls" style="margin-top: 20px;">
+        <div class="crystal-controls" style="margin-top: 20px;">
             <!-- 向左旋转按钮：控制结构向左旋转 -->
-            <button onclick="rotateLeft()" class="btn">Rotate Left</button>
+            <button onclick="CrystalViewer.rotateLeft()" class="btn">Rotate Left</button>
             <!-- 向右旋转按钮：控制结构向右旋转 -->
-            <button onclick="rotateRight()" class="btn">Rotate Right</button>
+            <button onclick="CrystalViewer.rotateRight()" class="btn">Rotate Right</button>
             <!-- 重置视图按钮：将结构恢复到初始视角 -->
-            <button onclick="resetView()" class="btn">Reset View</button>
+            <button onclick="CrystalViewer.resetView()" class="btn">Reset View</button>
             <!-- 自动旋转开关：控制结构是否自动旋转 -->
-            <button onclick="toggleSpin()" class="btn">Toggle Spin</button>
+            <button onclick="CrystalViewer.toggleSpin()" class="btn">Toggle Spin</button>
         </div>
-        <!-- JSmol初始化和配置脚本：设置3D查看器的参数和行为 -->
+        <!-- Three.js初始化和配置脚本：设置3D查看器的参数和行为 -->
         <script>
-            // 定义JSmol应用程序实例变量
-            var jmolApplet;
-            // DOM加载完成后初始化JSmol
+            // DOM加载完成后初始化Three.js晶体查看器
             document.addEventListener('DOMContentLoaded', function() {
-                // 记录结构文件的完整静态路径，用于调试
-                console.log('Full static path:', "{{ url_for('static', filename=structure_file) }}");
+                // 初始化晶体查看器
+                CrystalViewer.init('crystalViewer');
                 
-                try {
-                    // 初始化JSmol查看器并配置参数
-                    jmolApplet = Jmol.getApplet("jmol", {
-                        width: '100%',          // 查看器宽度：充满容器
-                        height: '100%',         // 查看器高度：充满容器
-                        use: 'HTML5',           // 使用HTML5渲染模式
-                        j2sPath: "{{ url_for('static', filename='jsmol/j2s') }}", // JSmol核心文件路径
-                        script: "load '" + "{{ url_for('static', filename=structure_file) }}" + "'; wireframe off; spacefill 20%;", // 加载结构文件并设置初始显示样式
-                        disableJ2SLoadMonitor: true,    // 禁用加载监视器
-                        disableInitialConsole: true,    // 禁用初始控制台
-                        allowJavaScript: true,          // 允许JavaScript交互
-                        color: '#FFFFFF',               // 背景颜色设置
-                        addSelectionOptions: false,     // 禁用选择选项
-                        // JSmol初始化完成后的回调函数
-                        readyFunction: function() {
-                            // 输出初始化成功信息
-                            console.log('JSmol initialized successfully');
-                            // 配置显示参数
-                            Jmol.script(jmolApplet, 'set antialiasDisplay true');  // 启用抗锯齿显示
-                            Jmol.script(jmolApplet, 'set defaultVDW babel');       // 设置默认范德华半径
-                            Jmol.script(jmolApplet, 'set zoomLarge false');        // 禁用大幅缩放
-                            Jmol.script(jmolApplet, 'set picking off');            // 禁用点选功能
-                            // 设置JSmol已准备就绪标志
-                            setJmolReady();
-                        }
-                    });
-                } catch(e) {
-                    // 捕获并记录初始化过程中的错误
-                    console.error("Error initializing Jmol:", e);
-                }
+                // 加载当前材料的晶体结构
+                CrystalViewer.load({{ material.id }});
             });
         </script>
     </div>
 
     <!-- ====================== 能带结构图显示区域 ====================== -->
-    <div class="jmol-container" id="band-plot">
+    <div class="band-plot-container" id="band-plot">
         <!-- 能带结构图容器 -->
         <div id="bandStructure"></div>
         <!-- 能带结构图初始化脚本 -->
@@ -308,9 +278,9 @@
     padding: 2px;
 }
 
-/* ====================== JSmol相关样式 ====================== */
-/* JSmol容器基础样式 */
-.jmol-container {
+/* ====================== 晶体结构查看器相关样式 ====================== */
+/* 晶体容器基础样式 */
+.crystal-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -325,18 +295,19 @@
     align-items: center;
 }
 
-/* JSmol查看器样式 */
-.jmol-viewer {
+/* 晶体查看器样式 */
+.crystal-viewer {
     width: 100%;
     height: 400px;
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
 }
 
-/* JSmol控制按钮容器样式 */
-.jmol-controls {
+/* 晶体控制按钮容器样式 */
+.crystal-controls {
     display: flex;
     gap: 10px;
     justify-content: center;
@@ -345,6 +316,21 @@
 
 /* ====================== 能带图相关样式 ====================== */
 /* 能带结构图容器样式 */
+.band-plot-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 1000px;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    border: 2px solid #499cd7;
+    margin: 0;
+    align-items: center;
+}
+
 /* 能带结构图容器的样式定义 */
 #bandStructure {
     width: 100%;
@@ -359,7 +345,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 获取所有section元素和对应的导航链接
-    const sections = document.querySelectorAll('.detail-card, .jmol-container');
+    const sections = document.querySelectorAll('.detail-card, .band-plot-container');
     const navLinks = document.querySelectorAll('.nav-menu a[href^="#"]');
     
     // 创建Intersection Observer实例
