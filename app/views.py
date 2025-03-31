@@ -1,4 +1,7 @@
 # view.py:
+# 视图函数模块，处理所有用户界面相关的路由和请求
+# 包含首页、材料详情页、添加/编辑材料、用户认证等路由
+
 # 导入所需模块
 from flask import Blueprint, render_template, request, redirect, url_for, flash  # Flask 核心模块
 from flask_login import login_user, logout_user, login_required, current_user  # 用户认证模块
@@ -13,21 +16,42 @@ bp = Blueprint('views', __name__)
 @bp.app_template_filter('any')
 def any_filter(d):
     """检查字典是否存在至少一个非空值（用于前端条件判断）
-    参数d: 待检查的字典
-    返回: 布尔值，表示字典是否有有效数据"""
+    
+    参数:
+        d: 待检查的字典
+    
+    返回: 
+        布尔值，表示字典是否有有效数据，用于判断是否显示重置搜索按钮等
+    """
     return any(v for v in d.values() if v)
 
 @bp.app_template_filter('remove_key')
 def remove_key_filter(d, exclude_key):
     """生成排除指定键的新字典（用于清理搜索参数）
-    参数d: 原始字典
-    exclude_key: 需要排除的键
-    返回: 处理后的新字典"""
+    
+    参数:
+        d: 原始字典
+        exclude_key: 需要排除的键
+    
+    返回: 
+        处理后的新字典，用于构建去除某个过滤条件的URL
+    """
     return {k: v for k, v in d.items() if k != exclude_key}
 
 # 首页路由（支持复杂搜索和分页）
 @bp.route('/')
 def index():
+    """
+    网站首页 - 显示材料列表，支持搜索、筛选和分页
+    
+    支持的GET参数:
+        q: 搜索关键词
+        status: 材料状态筛选
+        metal_type: 金属类型筛选
+        formation_energy_min/max: 形成能范围筛选
+        fermi_level_min/max: 费米能级范围筛选
+        page: 当前页码
+    """
     # 基础查询（获取所有材料记录）
     query = Material.query
     
@@ -48,7 +72,7 @@ def index():
     # 文本搜索（支持名称、VBM/CBM坐标的模糊查询）
     if search_params['q']:
         filters.append(or_(
-            Material.name.ilike(f'%{search_params["q"]}%'),  # 名称模糊匹配
+            Material.name.ilike(f'%{search_params["q"]}%'),  # 名称模糊匹配（不区分大小写）
             Material.vbm_coordi.ilike(f'%{search_params["q"]}%'),  # VBM坐标匹配
             Material.cbm_coordi.ilike(f'%{search_params["q"]}%')  # CBM坐标匹配
         ))
@@ -59,7 +83,7 @@ def index():
     if search_params['metal_type']:
         filters.append(Material.metal_type == search_params['metal_type'])  # 金属类型精确匹配
     
-    # 数值范围过滤（包含异常处理）
+    # 数值范围过滤（包含异常处理，确保输入的是有效数值）
     for param in ['formation_energy', 'fermi_level']:
         min_val = search_params[f'{param}_min']
         max_val = search_params[f'{param}_max']
@@ -74,17 +98,17 @@ def index():
             except ValueError:
                 pass
     
-    # 应用所有过滤条件（使用AND逻辑组合）
+    # 应用所有过滤条件（使用AND逻辑组合，即所有条件都必须满足）
     if filters:
         query = query.filter(and_(*filters))
     
     # 分页配置（每页10条记录）
-    page = request.args.get('page', 1, type=int)  # 获取当前页码
+    page = request.args.get('page', 1, type=int)  # 获取当前页码，默认第1页
     per_page = 10  # 每页条目数
     pagination = query.order_by(Material.name.asc()).paginate(  # 按名称升序排序
         page=page, 
         per_page=per_page, 
-        error_out=False  # 禁用无效页码错误
+        error_out=False  # 禁用无效页码错误，超出范围会返回空列表
     )
     
     # 渲染模板并传递分页对象和搜索参数
@@ -95,23 +119,30 @@ def index():
 
 # 材料添加路由（需登录）
 @bp.route('/add', methods=['GET', 'POST'])
-@login_required  # 登录保护装饰器
+@login_required  # 登录保护装饰器，确保只有登录用户可以添加材料
 def add():
+    """
+    添加新材料记录的页面和处理逻辑
+    
+    GET请求: 显示添加材料表单
+    POST请求: 处理表单提交，添加新材料到数据库
+    """
     if request.method == 'POST':
         try:
             # 获取并处理上传的文件
             structure_file = request.files.get('structure_file')
+            # 验证CIF文件是否有效
             if not structure_file or not structure_file.filename.endswith('.cif'):
-                flash('Please upload a valid CIF file!', 'error')
-                return redirect(url_for('views.add'))
+                flash('Please upload a valid CIF file!', 'error')  # 显示错误消息
+                return redirect(url_for('views.add'))  # 重定向回添加页面
             
             # 生成安全的文件名并保存
             from werkzeug.utils import secure_filename
             import os
-            filename = secure_filename(structure_file.filename)
+            filename = secure_filename(structure_file.filename)  # 安全处理文件名，防止路径注入
             file_path = os.path.join(current_app.root_path, 'static/structures', filename)
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            structure_file.save(file_path)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)  # 确保目录存在
+            structure_file.save(file_path)  # 保存上传的文件
             
             # 获取并转换表单数据（使用safe_float处理空值）
             material_data = {
@@ -135,25 +166,25 @@ def add():
 
             # 必填字段验证
             if not all([material_data['name'], material_data['status']]):
-                flash('Name and Status are required!', 'error')  # 闪现错误消息
-                return redirect(url_for('views.add'))
+                flash('Name and Status are required!', 'error')  # 显示错误消息
+                return redirect(url_for('views.add'))  # 重定向回添加页面
 
             # 创建Material对象并验证数据
             material = Material(**material_data)
-            material.validate()  # 调用模型自定义验证方法
+            material.validate()  # 调用模型自定义验证方法，检查数据完整性
             
             # 数据库操作
-            db.session.add(material)
-            db.session.commit()  # 提交事务
-            flash('Material added successfully.', 'success')
-            return redirect(url_for('views.index'))
+            db.session.add(material)  # 添加到数据库会话
+            db.session.commit()  # 提交事务，写入数据库
+            flash('Material added successfully.', 'success')  # 显示成功消息
+            return redirect(url_for('views.index'))  # 重定向到首页
 
         except ValueError as e:  # 处理数据类型错误
-            flash(f'Invalid data: {str(e)}', 'error')
+            flash(f'Invalid data: {str(e)}', 'error')  # 显示详细错误消息
             return redirect(url_for('views.add'))
         except Exception as e:  # 处理其他数据库错误
-            db.session.rollback()  # 回滚事务
-            flash('Database error occurred', 'error')
+            db.session.rollback()  # 回滚事务，放弃所有更改
+            flash('Database error occurred', 'error')  # 显示一般错误消息
             return redirect(url_for('views.add'))
 
     return render_template('add.html')  # GET请求返回表单页
@@ -161,8 +192,13 @@ def add():
 # 安全数值转换辅助函数
 def safe_float(value):
     """将字符串安全转换为浮点数（允许空值）
-    参数value: 输入字符串
-    返回: float或None"""
+    
+    参数:
+        value: 输入字符串
+    
+    返回: 
+        float或None，如果转换失败或输入为空则返回None
+    """
     try:
         return float(value) if value else None
     except ValueError:
@@ -170,8 +206,13 @@ def safe_float(value):
 
 def safe_int(value):
     """将字符串安全转换为整数（允许空值）
-    参数value: 输入字符串
-    返回: int或None"""
+    
+    参数:
+        value: 输入字符串
+    
+    返回: 
+        int或None，如果转换失败或输入为空则返回None
+    """
     try:
         return int(value) if value else None
     except ValueError:
@@ -179,20 +220,29 @@ def safe_int(value):
 
 # 材料编辑路由
 @bp.route('/material/edit/<int:material_id>', methods=['GET', 'POST'])
-@login_required
+@login_required  # 登录保护装饰器
 def edit(material_id):
-    material = Material.query.get_or_404(material_id)  # 获取材料或返回404
+    """
+    编辑现有材料记录的页面和处理逻辑
+    
+    参数:
+        material_id: 要编辑的材料ID
+    
+    GET请求: 显示编辑表单，预填充当前材料数据
+    POST请求: 处理表单提交，更新材料记录
+    """
+    material = Material.query.get_or_404(material_id)  # 获取材料或返回404错误
     if request.method == 'POST':
         try:
-            # 处理文件上传
+            # 处理文件上传（如果有新文件）
             structure_file = request.files.get('structure_file')
             if structure_file and structure_file.filename.endswith('.cif'):
                 from werkzeug.utils import secure_filename
                 import os
                 filename = secure_filename(structure_file.filename)
                 file_path = os.path.join('app/static/structures', filename)
-                structure_file.save(file_path)
-                material.structure_file = filename
+                structure_file.save(file_path)  # 保存上传的文件
+                material.structure_file = filename  # 更新数据库中的文件路径
 
             # 更新所有字段
             material.name = request.form.get('name')
@@ -213,15 +263,15 @@ def edit(material_id):
 
             material.validate()  # 执行数据验证
             
-            db.session.commit()
-            flash('Material updated.', 'success')
-            return redirect(url_for('views.detail', material_id=material.id))
+            db.session.commit()  # 提交更改到数据库
+            flash('Material updated.', 'success')  # 显示成功消息
+            return redirect(url_for('views.detail', material_id=material.id))  # 重定向到详情页
         
-        except ValueError as e:
+        except ValueError as e:  # 处理数值转换错误
             flash(f'Invalid data: {str(e)}', 'error')
             return redirect(url_for('views.edit', material_id=material.id))
-        except Exception:
-            db.session.rollback()
+        except Exception:  # 处理其他数据库错误
+            db.session.rollback()  # 回滚事务
             flash('Database error', 'error')
             return redirect(url_for('views.edit', material_id=material.id))
     
@@ -230,62 +280,97 @@ def edit(material_id):
 # 材料详情页
 @bp.route('/material/<int:material_id>')
 def detail(material_id):
-    material = Material.query.get_or_404(material_id)
-    structure_file = f'structures/{material.structure_file}'
+    """
+    显示材料详细信息的页面
+    
+    参数:
+        material_id: 要显示的材料ID
+    
+    返回:
+        渲染的详情页模板，包含材料数据和结构文件路径
+    """
+    material = Material.query.get_or_404(material_id)  # 获取材料或返回404错误
+    structure_file = f'structures/{material.structure_file}'  # 构建结构文件的相对路径
     return render_template('detail.html', 
                           material=material,
                           structure_file=structure_file)
 
 # 材料删除路由（仅POST请求）
 @bp.route('/material/delete/<int:material_id>', methods=['POST'])
-@login_required
+@login_required  # 登录保护装饰器
 def delete(material_id):
-    material = Material.query.get_or_404(material_id)
+    """
+    删除材料记录
+    
+    参数:
+        material_id: 要删除的材料ID
+    
+    注意:
+        只接受POST请求，防止CSRF攻击
+    """
+    material = Material.query.get_or_404(material_id)  # 获取材料或返回404错误
     db.session.delete(material)  # 删除记录
-    db.session.commit()
-    flash('Material deleted.', 'success')
+    db.session.commit()  # 提交事务
+    flash('Material deleted.', 'success')  # 显示成功消息
     return redirect(url_for('views.index'))  # 重定向到首页
 
 # 用户登录路由
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    用户登录页面和处理逻辑
+    
+    GET请求: 显示登录表单
+    POST请求: 验证凭据并执行登录
+    """
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form['username']  # 获取表单中的用户名
+        password = request.form['password']  # 获取表单中的密码
         if not username or not password:  # 空值检查
-            flash('Invalid input.', 'error')
-            return redirect(url_for('views.login'))
+            flash('Invalid input.', 'error')  # 显示错误消息
+            return redirect(url_for('views.login'))  # 重定向回登录页
         
         user = User.query.filter_by(username=username).first()  # 根据用户名精确查询
-        if user and user.validate_password(password):
-            login_user(user)  # Flask-Login登录方法
-            flash('Login success.', 'success')
-            return redirect(url_for('views.index'))
+        if user and user.validate_password(password):  # 验证密码
+            login_user(user)  # Flask-Login登录方法，管理用户会话
+            flash('Login success.', 'success')  # 显示成功消息
+            return redirect(url_for('views.index'))  # 重定向到首页
         
-        flash('Invalid username or password.', 'error')
-        return redirect(url_for('views.login'))
+        flash('Invalid username or password.', 'error')  # 显示错误消息
+        return redirect(url_for('views.login'))  # 重定向回登录页
     return render_template('login.html')  # GET请求返回登录表单
 
 # 用户退出路由
 @bp.route('/logout')
-@login_required
+@login_required  # 登录保护装饰器，确保只有登录用户可以退出
 def logout():
-    logout_user()  # Flask-Login退出方法
-    flash('Goodbye.', 'info')
-    return redirect(url_for('views.index'))
+    """
+    处理用户退出登录
+    
+    执行登出操作并重定向到首页
+    """
+    logout_user()  # Flask-Login退出方法，清除用户会话
+    flash('Goodbye.', 'info')  # 显示信息消息
+    return redirect(url_for('views.index'))  # 重定向到首页
 
 # 用户设置路由
 @bp.route('/settings', methods=['GET', 'POST'])
-@login_required
+@login_required  # 登录保护装饰器
 def settings():
+    """
+    用户设置页面和处理逻辑
+    
+    GET请求: 显示设置表单
+    POST请求: 更新用户设置
+    """
     if request.method == 'POST':
-        name = request.form['name']
-        if not name or len(name) > 20:  # 输入验证
-            flash('Invalid input.', 'error')
-            return redirect(url_for('views.settings'))
+        name = request.form['name']  # 获取表单中的名称
+        if not name or len(name) > 20:  # 输入验证：不能为空且长度限制
+            flash('Invalid input.', 'error')  # 显示错误消息
+            return redirect(url_for('views.settings'))  # 重定向回设置页
         
-        current_user.name = name  # 更新当前用户信息
-        db.session.commit()
-        flash('Settings updated.', 'success')
-        return redirect(url_for('views.index'))
+        current_user.name = name  # 更新当前用户信息（使用Flask-Login的current_user）
+        db.session.commit()  # 提交更改到数据库
+        flash('Settings updated.', 'success')  # 显示成功消息
+        return redirect(url_for('views.index'))  # 重定向到首页
     return render_template('settings.html')  # GET请求返回设置表单
