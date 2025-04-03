@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<form method="post">
+    <h2><span class="title2">Web Name</span></h2>
+	<input type="text" name="name" autocomplete="off" required value="{{ current_user.name }}">
+    <input class="btn" type="submit" name="submit" value="Save">
+</form>
+{% endblock %}
