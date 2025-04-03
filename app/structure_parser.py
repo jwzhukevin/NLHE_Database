@@ -436,3 +436,84 @@ def get_cif_data(file_path, a=1, b=1, c=1, cell_type='primitive'):
         error_msg = f"Error generating CIF data: {str(e)}"
         current_app.logger.error(error_msg)
         raise Exception(error_msg)
+
+
+def generate_primitive_cell(file_path):
+    """
+    使用pymatgen生成晶体结构的原胞
+    
+    参数:
+        file_path: CIF文件路径
+    
+    返回:
+        原胞结构的JSON字符串，失败则返回错误JSON
+    """
+    try:
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            error_msg = f"Structure file not found: {file_path}"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+        
+        # 使用pymatgen加载晶体结构
+        structure = Structure.from_file(file_path)
+        
+        # 导入SpacegroupAnalyzer用于寻找原胞
+        from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+        
+        # 创建SpacegroupAnalyzer对象，使用合适的公差参数
+        # 使用较宽松的公差0.1，以便更稳健地找到原胞
+        analyzer = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5)
+        
+        # 获取原胞结构
+        primitive_structure = analyzer.find_primitive()
+        
+        # 如果无法找到原胞，则使用原始结构
+        if primitive_structure is None:
+            current_app.logger.warning(f"No primitive cell found, using original structure")
+            primitive_structure = structure
+        
+        # 提取晶格参数
+        lattice = primitive_structure.lattice
+        lattice_data = {
+            'a': lattice.a,  # a轴长度（埃）
+            'b': lattice.b,  # b轴长度（埃）
+            'c': lattice.c,  # c轴长度（埃）
+            'alpha': lattice.alpha,  # alpha角（度）
+            'beta': lattice.beta,    # beta角（度）
+            'gamma': lattice.gamma,  # gamma角（度）
+            'matrix': lattice.matrix.tolist()  # 晶格矩阵，转换为列表以便JSON序列化
+        }
+        
+        # 提取原子信息
+        atoms = []
+        for site in primitive_structure.sites:
+            atom = {
+                'element': site.species_string,  # 元素符号
+                'position': site.coords.tolist(),  # 笛卡尔坐标
+                'frac_coords': site.frac_coords.tolist(),  # 分数坐标
+                'properties': {
+                    'label': site.species_string,  # 原子标签（用于显示）
+                    'radius': get_atom_radius(site.species_string)  # 原子半径（用于3D渲染）
+                }
+            }
+            atoms.append(atom)
+        
+        # 构建完整的结构数据
+        structure_data = {
+            'formula': primitive_structure.formula,  # 化学式
+            'name': primitive_structure.composition.reduced_formula,  # 简化化学式
+            'lattice': lattice_data,        # 晶格参数
+            'atoms': atoms,                 # 原子列表
+            'num_atoms': len(atoms),        # 原子总数
+            'isPrimitive': True             # 标记为原胞
+        }
+        
+        # 返回JSON字符串
+        return json.dumps(structure_data)
+    
+    except Exception as e:
+        # 记录错误并返回错误JSON
+        error_msg = f"Error generating primitive cell: {str(e)}"
+        current_app.logger.error(error_msg)
+        return json.dumps({"error": error_msg})

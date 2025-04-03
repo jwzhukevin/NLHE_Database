@@ -80,24 +80,13 @@
     <div class="crystal-container" id="3d-structure">
         <!-- Three.js 3D结构查看器：用于显示材料的三维晶体结构 -->
         <div class="crystal-viewer" id="crystalViewer"></div>
-        <!-- 3D结构控制按钮：提供基本的结构操作功能 -->
-        <div class="crystal-controls" style="margin-top: 20px;">
-            <!-- 向左旋转按钮：控制结构向左旋转 -->
-            <button onclick="CrystalViewer.rotateLeft()" class="btn">Rotate Left</button>
-            <!-- 向右旋转按钮：控制结构向右旋转 -->
-            <button onclick="CrystalViewer.rotateRight()" class="btn">Rotate Right</button>
-            <!-- 重置视图按钮：将结构恢复到初始视角 -->
-            <button onclick="CrystalViewer.resetView()" class="btn">Reset View</button>
-            <!-- 自动旋转开关：控制结构是否自动旋转 -->
-            <button onclick="CrystalViewer.toggleSpin()" class="btn">Toggle Spin</button>
-        </div>
         <!-- Three.js初始化和配置脚本：设置3D查看器的参数和行为 -->
+        <h3>3D Structure</h3>
         <script>
             // DOM加载完成后初始化Three.js晶体查看器
             document.addEventListener('DOMContentLoaded', function() {
                 // 初始化晶体查看器
                 CrystalViewer.init('crystalViewer');
-                
                 // 加载当前材料的晶体结构
                 CrystalViewer.load({{ material.id }});
             });
@@ -109,6 +98,7 @@
         <!-- 能带结构图容器 -->
         <div id="bandStructure"></div>
         <!-- 能带结构图初始化脚本 -->
+        <h3>Band Structure</h3>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // 获取能带数据文件路径并绘制能带结构图
@@ -298,7 +288,7 @@
 /* 晶体查看器样式 */
 .crystal-viewer {
     width: 100%;
-    height: 400px;
+    height: 600px;
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -334,7 +324,7 @@
 /* 能带结构图容器的样式定义 */
 #bandStructure {
     width: 100%;
-    height: 400px;
+    height: 500px;
     border: 2px solid #499cd7;
     border-radius: 5px;
     padding: 10px;

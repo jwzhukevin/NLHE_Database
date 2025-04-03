@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="{{ url_for('static', filename='head.jpg') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/head.jpeg') }}">
     <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ user.name }} by jwzhukevin</title>
@@ -14,7 +14,7 @@
     <div class="profile-header">
         <img 
             alt="Woo!!!" 
-            src="{{ url_for('static', filename='head.jpg') }}" 
+            src="{{ url_for('static', filename='images/head.jpeg') }}" 
         >
         <h2>
             <span>{{ user.name }}</span>
@@ -65,7 +65,7 @@
     	{% block content %}{% endblock %}
     <img 
         alt="Hello!!!" 
-        src="{{ url_for('static', filename='images/footer.webp') }}" 
+        src="{{ url_for('static', filename='images/footer.png') }}" 
         style="display: block; margin: 0 auto; max-width: 100%;"
 	>
     <footer>

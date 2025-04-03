@@ -13,6 +13,11 @@ let raycaster, mouse; // 用于实现射线拾取功能，检测鼠标与3D对�
 let atomTooltip; // 显示原子信息的提示框元素
 let selectedAtom = null; // 当前选中的原子
 let hoveredAtom = null; // 当前悬停的原子
+let currentModelType = 'ball-and-stick'; // 默认使用球棍模型
+
+// 用于保存不同模型表示的对象组
+let ballsGroup = null; // 存储球模型的组
+let sticksGroup = null; // 存储棍模型的组
 
 // 元素颜色映射表 - 使用符合学术标准的CPK配色方案
 // 为每种化学元素定义特定的颜色，以便在3D视图中区分不同的原子
@@ -176,15 +181,22 @@ function initCrystalViewer(containerId) {
 
     // 获取容器尺寸，用于设置渲染器和相机
     const width = container.clientWidth;
-    const height = container.clientHeight || 400; // 如果高度未定义，使用默认值400px
+    const height = container.clientHeight || 600; // 如果高度未定义，使用默认值400px
 
     // 创建Three.js场景
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff); // 设置场景背景为白色
 
     // 创建透视相机
+    // 创建透视相机
+    // 参数1: 视场角(FOV) - 70度,决定视野范围的大小
+    // 参数2: 宽高比 - 根据容器尺寸计算,保持图像不变形
+    // 参数3: 近裁剪面 - 0.1,小于此距离的物体不会被渲染
+    // 参数4: 远裁剪面 - 1000,大于此距离的物体不会被渲染
     camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000);
-    camera.position.z = 10; // 设置相机初始位置
+    camera.position.x = 12; // 设置相机初始位置
+    camera.position.y = 12; // 设置相机初始位置
+    camera.position.z = 12; // 设置相机初始位置
 
     // 创建WebGL渲染器
     renderer = new THREE.WebGLRenderer({ 
@@ -199,8 +211,12 @@ function initCrystalViewer(containerId) {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // 启用阻尼效果，使控制更平滑
     controls.dampingFactor = 0.25; // 设置阻尼系数
-    controls.screenSpacePanning = false; // 禁用屏幕空间平移
+    controls.screenSpacePanning = true; // 启用屏幕空间平移，避免平移时改变旋转中心
     controls.maxDistance = 100; // 设置最大缩放距离
+    controls.minDistance = 1; // 设置最小缩放距离
+    controls.rotateSpeed = 0.8; // 设置适当的旋转速度
+    controls.zoomSpeed = 1.0; // 设置适当的缩放速度
+    controls.panSpeed = 0.8; // 设置适当的平移速度
     controls.addEventListener('change', function() {
         // 控制器变化时，确保更新射线以修复悬停问题
         updateRaycasterFromMouse();
@@ -209,7 +225,15 @@ function initCrystalViewer(containerId) {
 
     // 添加光照系统
     // 添加环境光，提供基础环境光照
+    // 创建环境光源
+    // 参数1: 0xffffff 表示白色光源
+    // 参数2: 0.7 表示光照强度为70%
+    // 环境光会均匀照亮场景中的所有物体,不产生阴影
+    // 用于提供基础环境照明,使物体不会完全黑暗
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    
+    // 将环境光添加到场景中
+    // 这样场景中的所有物体都会受到这个光源的影响
     scene.add(ambientLight);
 
     // 添加半球光以提供更自然的照明效果，模拟环境光反射
@@ -240,7 +264,7 @@ function initCrystalViewer(containerId) {
     // 添加窗口大小调整事件处理程序，确保画面自适应
     window.addEventListener('resize', () => {
         const width = container.clientWidth;
-        const height = container.clientHeight || 400;
+        const height = container.clientHeight || 600;
         
         camera.aspect = width / height; // 更新相机宽高比
         camera.updateProjectionMatrix(); // 更新相机投影矩阵
@@ -275,7 +299,7 @@ function createToolbar(container) {
     // 创建截图按钮
     const screenshotBtn = document.createElement('button');
     screenshotBtn.innerHTML = '<i class="fas fa-camera"></i>'; // 使用Font Awesome图标
-    screenshotBtn.title = '截图'; // 设置鼠标悬停提示文字
+    screenshotBtn.title = 'Screenshot'; // 设置鼠标悬停提示文字
     screenshotBtn.className = 'toolbar-btn'; // 设置CSS类名
     screenshotBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; // 半透明白色背景
     screenshotBtn.style.border = 'none'; // 无边框
@@ -289,7 +313,7 @@ function createToolbar(container) {
     // 创建下载CIF文件按钮
     const downloadCIFBtn = document.createElement('button');
     downloadCIFBtn.innerHTML = '<i class="fas fa-download"></i>'; // 使用下载图标
-    downloadCIFBtn.title = '下载CIF文件'; // 设置提示文字
+    downloadCIFBtn.title = 'Download CIF File'; // 设置提示文字
     downloadCIFBtn.className = 'toolbar-btn';
     downloadCIFBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
     downloadCIFBtn.style.border = 'none';
@@ -303,7 +327,7 @@ function createToolbar(container) {
     // 创建重置视图按钮
     const resetViewBtn = document.createElement('button');
     resetViewBtn.innerHTML = '<i class="fas fa-redo-alt"></i>'; // 使用重置图标
-    resetViewBtn.title = '重置视图'; // 设置提示文字
+    resetViewBtn.title = 'Reset View'; // 设置提示文字
     resetViewBtn.className = 'toolbar-btn';
     resetViewBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
     resetViewBtn.style.border = 'none';
@@ -313,6 +337,131 @@ function createToolbar(container) {
     resetViewBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
     resetViewBtn.addEventListener('click', resetView); // 添加重置视图的点击事件
     toolbar.appendChild(resetViewBtn);
+    
+    // 创建模型切换按钮（带下拉菜单）
+    const modelTypeContainer = document.createElement('div');
+    modelTypeContainer.className = 'model-type-container';
+    modelTypeContainer.style.position = 'relative'; // 设为相对定位，作为下拉菜单的参考点
+    
+    // 创建模型切换按钮
+    const modelTypeBtn = document.createElement('button');
+    modelTypeBtn.innerHTML = '<i class="fas fa-cubes"></i>'; // 使用立方体图标
+    modelTypeBtn.title = 'Switch model type'; // 设置提示文字
+    modelTypeBtn.className = 'toolbar-btn';
+    modelTypeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+    modelTypeBtn.style.border = 'none';
+    modelTypeBtn.style.borderRadius = '5px';
+    modelTypeBtn.style.padding = '8px';
+    modelTypeBtn.style.cursor = 'pointer';
+    modelTypeBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
+    
+    // 创建模型类型下拉菜单
+    const modelTypeDropdown = document.createElement('div');
+    modelTypeDropdown.className = 'model-type-dropdown';
+    modelTypeDropdown.style.position = 'absolute'; // 绝对定位
+    modelTypeDropdown.style.top = '100%'; // 定位在按钮下方
+    modelTypeDropdown.style.right = '0'; // 右对齐
+    modelTypeDropdown.style.backgroundColor = 'white'; // 白色背景
+    modelTypeDropdown.style.borderRadius = '5px'; // 圆角边框
+    modelTypeDropdown.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)'; // 阴影效果
+    modelTypeDropdown.style.display = 'none'; // 初始状态为隐藏
+    modelTypeDropdown.style.zIndex = '1001'; // 确保显示在最上层
+    modelTypeDropdown.style.marginTop = '5px'; // 与按钮保持间距
+    modelTypeDropdown.style.width = '150px'; // 设置下拉菜单宽度
+    
+    // 定义可选的模型类型选项
+    const modelOptions = [
+        { label: 'Ball&Stick', value: 'ball-and-stick' },
+        { label: 'Ball', value: 'ball' },
+        { label: 'Stick', value: 'stick' }
+    ];
+    
+    // 为每个模型类型创建DOM元素
+    modelOptions.forEach(option => {
+        // 创建模型类型选项容器
+        const modelOption = document.createElement('div');
+        modelOption.className = 'model-option';
+        modelOption.style.display = 'flex'; // 使用flex布局
+        modelOption.style.alignItems = 'center'; // 垂直居中对齐
+        modelOption.style.padding = '8px 12px'; // 内边距
+        modelOption.style.cursor = 'pointer'; // 鼠标悬停时显示手型光标
+        modelOption.style.borderBottom = '1px solid #eee'; // 底部分隔线
+        
+        // 创建选项图标
+        const optionIcon = document.createElement('div');
+        optionIcon.className = 'option-icon';
+        optionIcon.style.width = '16px'; // 设置宽度
+        optionIcon.style.height = '16px'; // 设置高度
+        optionIcon.style.marginRight = '10px'; // 右侧间距
+        optionIcon.style.display = 'flex'; // 使用flex布局
+        optionIcon.style.alignItems = 'center'; // 垂直居中对齐
+        optionIcon.style.justifyContent = 'center'; // 水平居中对齐
+        
+        // 根据模型类型设置不同的图标
+        let iconHTML = '';
+        switch (option.value) {
+            case 'ball-and-stick':
+                iconHTML = '<i class="fas fa-atom"></i>'; // 原子图标
+                break;
+            case 'ball':
+                iconHTML = '<i class="fas fa-circle"></i>'; // 圆形图标
+                break;
+            case 'stick':
+                iconHTML = '<i class="fas fa-minus"></i>'; // 横线图标
+                break;
+        }
+        optionIcon.innerHTML = iconHTML;
+        
+        // 创建选项标签文本
+        const optionLabel = document.createElement('span');
+        optionLabel.textContent = option.label; // 设置显示文本
+        
+        // 将图标和标签添加到选项容器
+        modelOption.appendChild(optionIcon);
+        modelOption.appendChild(optionLabel);
+        
+        // 添加悬停效果，鼠标移入时改变背景色
+        modelOption.addEventListener('mouseover', () => {
+            modelOption.style.backgroundColor = '#f5f5f5';
+        });
+        
+        // 鼠标移出时恢复原背景色
+        modelOption.addEventListener('mouseout', () => {
+            modelOption.style.backgroundColor = 'white';
+        });
+        
+        // 添加点击事件，切换模型类型并隐藏下拉菜单
+        modelOption.addEventListener('click', () => {
+            changeModelType(option.value); // 调用切换模型类型函数
+            modelTypeDropdown.style.display = 'none'; // 隐藏下拉菜单
+        });
+        
+        // 将模型类型选项添加到下拉菜单
+        modelTypeDropdown.appendChild(modelOption);
+    });
+    
+    // 处理下拉菜单的显示和隐藏
+    modelTypeBtn.addEventListener('click', () => {
+        // 切换下拉菜单的显示状态
+        if (modelTypeDropdown.style.display === 'none') {
+            modelTypeDropdown.style.display = 'block';
+        } else {
+            modelTypeDropdown.style.display = 'none';
+        }
+    });
+    
+    // 添加点击外部区域关闭下拉菜单的事件监听
+    document.addEventListener('click', (event) => {
+        // 如果点击的不是模型类型按钮区域，则隐藏下拉菜单
+        if (!modelTypeContainer.contains(event.target)) {
+            modelTypeDropdown.style.display = 'none';
+        }
+    });
+    
+    // 将按钮和下拉菜单添加到容器中
+    modelTypeContainer.appendChild(modelTypeBtn);
+    modelTypeContainer.appendChild(modelTypeDropdown);
+    toolbar.appendChild(modelTypeContainer);
     
     // 将工具栏添加到主容器中
     container.appendChild(toolbar);
@@ -401,14 +550,44 @@ function onAtomClick(event) {
     // 根据鼠标位置设置射线
     raycaster.setFromCamera(mouse, camera);
     
-    // 获取与射线相交的3D对象，即检测是否点击到原子
-    const intersects = raycaster.intersectObjects(crystalGroup.children);
+    // 首先检查球体组中的原子
+    const ballIntersects = ballsGroup.visible ? raycaster.intersectObjects(ballsGroup.children) : [];
     
-    // 如果点击到了原子
-    if (intersects.length > 0) {
-        const atom = intersects[0].object;
-        // 确认点击的是原子对象（具有element属性）
-        if (atom.userData.element) {
+    // 然后检查棍组中的连接
+    const stickIntersects = sticksGroup.visible ? raycaster.intersectObjects(sticksGroup.children) : [];
+    
+    // 合并交点结果并按距离排序
+    const allIntersects = [...ballIntersects, ...stickIntersects].sort((a, b) => a.distance - b.distance);
+    
+    // 如果点击到了对象
+    if (allIntersects.length > 0) {
+        const obj = allIntersects[0].object;
+        
+        // 处理不同类型的点击对象
+        if (obj.userData.type === 'ball') {
+            // 点击的是原子球体
+            handleAtomClick(obj);
+        } else if (obj.userData.type === 'stick') {
+            // 点击的是连接棍
+            // 如果需要处理键的点击，可以在这里添加逻辑
+            // 例如，显示键长或键的详细信息
+            console.log('Bond clicked', obj.userData);
+        }
+    } else {
+        // 点击空白处，取消选中状态
+        if (selectedAtom) {
+            resetAtomMaterial(selectedAtom); // 恢复原子材质
+            selectedAtom = null; // 清除选中的原子引用
+            atomTooltip.style.display = 'none'; // 隐藏提示框
+        }
+    }
+}
+
+/**
+ * 处理原子点击
+ * @param {THREE.Mesh} atom - 点击的原子对象
+ */
+function handleAtomClick(atom) {
             // 如果点击的是已选中的原子
             if (selectedAtom === atom) {
                 // 取消选中状态
@@ -441,15 +620,6 @@ function onAtomClick(event) {
                 `;
                 atomTooltip.style.display = 'block'; // 显示提示框
                 updateTooltipPosition(); // 更新提示框位置
-            }
-        }
-    } else {
-        // 点击空白处，取消选中状态
-        if (selectedAtom) {
-            resetAtomMaterial(selectedAtom); // 恢复原子材质
-            selectedAtom = null; // 清除选中的原子引用
-            atomTooltip.style.display = 'none'; // 隐藏提示框
-        }
     }
 }
 
@@ -476,6 +646,135 @@ function animate() {
     
     // 渲染当前场景，更新显示
     renderer.render(scene, camera);
+    
+    // 渲染独立的坐标轴，与主场景的旋转同步
+    if (window.renderAxes) {
+        window.renderAxes();
+    }
+}
+
+/**
+ * 切换模型类型
+ * 在球棍模型、球模型和棍模型之间切换
+ * @param {string} type - 模型类型: 'ball-and-stick', 'ball', 或 'stick'
+ */
+function changeModelType(type) {
+    // 如果选择了当前已经使用的模型类型，则不需要进行任何操作
+    if (type === currentModelType) return;
+    
+    // 更新当前模型类型变量
+    currentModelType = type;
+    
+    // 更新模型可见性，不需要重新生成模型
+    updateModelVisibility();
+}
+
+/**
+ * 更新模型可见性
+ * 根据当前选择的模型类型显示或隐藏相应的组件
+ */
+function updateModelVisibility() {
+    // 确保球和棍组已经创建
+    if (!ballsGroup || !sticksGroup) {
+        console.warn('Ball or stick groups not initialized');
+        return;
+    }
+    
+    // 根据当前模型类型设置可见性
+    switch (currentModelType) {
+        case 'ball': // 只显示球体
+            ballsGroup.visible = true;
+            sticksGroup.visible = false;
+            break;
+            
+        case 'stick': // 只显示棍
+            ballsGroup.visible = false;
+            sticksGroup.visible = true;
+            break;
+            
+        case 'ball-and-stick': // 同时显示球和棍
+        default:
+            ballsGroup.visible = true;
+            sticksGroup.visible = true;
+            break;
+    }
+    
+    // 记录状态变化，便于调试
+    console.log(`Model type changed to ${currentModelType}. Balls visible: ${ballsGroup.visible}, Sticks visible: ${sticksGroup.visible}`);
+}
+
+/**
+ * 获取当前加载的结构数据
+ * 注意：这个函数需要在应用中存储当前的结构数据才能正常工作
+ * 现在暂时返回null，需要实现具体逻辑
+ */
+function getCurrentStructureData() {
+    // 如果没有存储当前结构数据，则从晶体组中提取数据
+    if (!window.currentStructureData) {
+        // 这种方法不是最理想的，但可以在没有中央存储的情况下提供一个解决方案
+        // 为了更好的实现，应该在加载结构时保存结构数据
+        // 现在返回错误信息，让开发者知道需要改进这部分
+        console.warn('No stored structure data found. Structure rerendering may be incomplete.');
+        return null;
+    }
+    
+    return window.currentStructureData;
+}
+
+/**
+ * 根据当前模型类型重新渲染结构
+ * @param {Object} structureData - 结构数据
+ */
+function rerenderStructure(structureData) {
+    // 如果没有有效的结构数据，则停止渲染
+    if (!structureData) {
+        // 从当前原子对象中获取数据创建一个临时结构
+        const tempStructure = {
+            atoms: []
+        };
+        
+        // 遍历晶体组中的所有对象
+        crystalGroup.children.forEach(obj => {
+            // 只处理原子对象（具有element属性的对象）
+            if (obj.userData && obj.userData.element) {
+                tempStructure.atoms.push({
+                    element: obj.userData.element,
+                    position: obj.userData.position,
+                    properties: obj.userData.properties || { radius: 0.5 }
+                });
+            }
+        });
+        
+        // 使用临时结构
+        structureData = tempStructure;
+    }
+    
+    // 清除晶体组中的原子（保留晶胞和其他结构元素）
+    const nonAtoms = [];
+    while (crystalGroup.children.length > 0) {
+        const object = crystalGroup.children[0];
+        crystalGroup.remove(object);
+        
+        // 如果不是原子对象，保存起来以便后续添加回晶体组
+        if (!object.userData || !object.userData.element) {
+            nonAtoms.push(object);
+        } else {
+            // 释放原子对象资源
+            object.geometry.dispose();
+            object.material.dispose();
+        }
+    }
+    
+    // 将非原子对象添加回晶体组
+    nonAtoms.forEach(obj => crystalGroup.add(obj));
+    
+    // 清除材质缓存，以便应用新的模型类型
+    atomMaterials = {};
+    
+    // 重新添加原子，应用新的模型类型
+    structureData.atoms.forEach(atom => {
+        addAtom(atom);
+    });
 }
 
 /**
@@ -579,6 +878,9 @@ function loadCrystalStructure(materialId) {
     // 显示加载指示器，提示用户正在加载数据
     showLoadingIndicator();
     
+    // 保存当前正在加载的材料ID，以便后续使用
+    window.currentMaterialId = materialId;
+    
     // 从API获取结构数据
     fetch(`/api/structure/${materialId}`)
         .then(response => {
@@ -591,6 +893,14 @@ function loadCrystalStructure(materialId) {
         .then(data => {
             // 数据加载成功，隐藏加载指示器
             hideLoadingIndicator();
+            
+            // 保存结构数据以便后续使用
+            window.currentStructureData = data;
+            
+            // 如果数据中没有材料ID，添加它
+            if (!data.id && materialId) {
+                data.id = materialId;
+            }
             
             // 渲染晶体结构
             renderCrystalStructure(data);
@@ -609,6 +919,9 @@ function loadCrystalStructure(materialId) {
  * @param {Object} structureData - 晶体结构数据，包含晶格和原子信息
  */
 function renderCrystalStructure(structureData) {
+    // 存储结构数据以便后续使用
+    window.currentStructureData = structureData;
+    
     // 清除现有结构，避免重叠显示
     while (crystalGroup.children.length > 0) {
         const object = crystalGroup.children[0];
@@ -620,11 +933,32 @@ function renderCrystalStructure(structureData) {
     // 添加晶格框架，显示晶胞边界
     addUnitCell(structureData.lattice);
     
-    // 遍历所有原子数据，添加到场景中
+    // 创建新的球和棍组
+    ballsGroup = new THREE.Group();
+    sticksGroup = new THREE.Group();
+    
+    // 将球和棍组添加到晶体组
+    crystalGroup.add(ballsGroup);
+    crystalGroup.add(sticksGroup);
+    
+    // 首先向组中添加所有原子球体
     structureData.atoms.forEach(atom => {
-        addAtom(atom);
+        addBall(atom);
     });
-
+    
+    // 然后添加所有的键连接
+    generateBonds(structureData.atoms);
+    
+    // 根据当前选择的模型类型，显示或隐藏相应的组
+    updateModelVisibility();
+    
+    // 计算晶胞中心
+    const boundingBox = new THREE.Box3().setFromObject(crystalGroup);
+    const center = boundingBox.getCenter(new THREE.Vector3());
+    
+    // 将晶体组移动，使晶胞中心位于原点
+    crystalGroup.position.sub(center);
+    
     // 重置相机位置以适应整个结构
     resetCameraPosition(structureData);
     
@@ -684,11 +1018,12 @@ function addUnitCell(lattice) {
 }
 
 /**
- * 添加原子
- * 创建表示原子的彩色球体
+ * 添加原子球体
+ * 创建表示原子的彩色球体并添加到球体组
  * @param {Object} atom - 原子数据，包含元素类型、位置和属性
+ * @returns {THREE.Mesh} 创建的原子球体网格对象
  */
-function addAtom(atom) {
+function addBall(atom) {
     const element = atom.element; // 获取元素符号
     const position = atom.position; // 获取原子位置坐标
     const radius = atom.properties.radius || 0.5; // 获取原子半径，如果未定义则使用默认值
@@ -696,10 +1031,12 @@ function addAtom(atom) {
     // 获取元素颜色，如果未定义则使用默认的灰色
     const color = elementColors[element] || 0x808080;
     
-    // 创建或重用材质 - 使用MeshStandardMaterial提供更好的学术显示效果
-    if (!atomMaterials[element]) {
-        // 如果此元素的材质不存在，创建新材质
-        atomMaterials[element] = new THREE.MeshStandardMaterial({
+    // 创建材质的键
+    const materialKey = `${element}-ball`;
+    
+    // 如果材质不存在，创建新材质
+    if (!atomMaterials[materialKey]) {
+        atomMaterials[materialKey] = new THREE.MeshStandardMaterial({
             color: color, // 设置颜色
             metalness: 0.2,    // 低金属感
             roughness: 0.7,    // 较高粗糙度，减少强反射
@@ -710,14 +1047,14 @@ function addAtom(atom) {
     }
     
     // 创建球体几何体表示原子 - 增加细分以获得更光滑的外观
-    const geometry = new THREE.SphereGeometry(radius * 0.5, 32, 32);
+    const geometry = new THREE.SphereGeometry(radius * 0.6, 32, 32);
     
     // 创建网格对象并设置位置
-    const mesh = new THREE.Mesh(geometry, atomMaterials[element]);
+    const mesh = new THREE.Mesh(geometry, atomMaterials[materialKey]);
     mesh.position.set(position[0], position[1], position[2]); // 设置原子位置
     
     // 添加轮廓以增强原子间的区分度
-    const outlineGeometry = new THREE.SphereGeometry(radius * 0.53, 32, 32); // 稍大一点的球体作为轮廓
+    const outlineGeometry = new THREE.SphereGeometry(radius * 0.63, 32, 32); // 稍大一点的球体作为轮廓
     const outlineMaterial = new THREE.MeshBasicMaterial({
         color: 0x000000, // 黑色轮廓
         side: THREE.BackSide, // 背面渲染
@@ -733,11 +1070,139 @@ function addAtom(atom) {
     mesh.userData = {
         element: element, // 元素符号
         position: position, // 位置坐标
-        properties: atom.properties // 原子属性
+        properties: atom.properties, // 原子属性
+        type: 'ball' // 标记为球模型
     };
     
-    // 将原子添加到晶体组
-    crystalGroup.add(mesh);
+    // 将原子添加到球体组
+    ballsGroup.add(mesh);
+    
+    // 返回创建的网格对象，以便后续可能需要引用
+    return mesh;
+}
+
+/**
+ * 生成原子间的键连接
+ * 根据原子位置计算可能的键，并添加到棍组
+ * @param {Array} atoms - 原子数据数组
+ */
+function generateBonds(atoms) {
+    // 创建键连接前，先清除所有现有的键
+    while (sticksGroup.children.length > 0) {
+        const object = sticksGroup.children[0];
+        object.geometry.dispose();
+        object.material.dispose();
+        sticksGroup.remove(object);
+    }
+    
+    // 用于跟踪已处理的键对，避免重复添加相同的键
+    const bondPairs = new Set();
+    
+    // 遍历所有原子对，寻找可能的键连接
+    for (let i = 0; i < atoms.length; i++) {
+        const atom1 = atoms[i];
+        const pos1 = atom1.position;
+        const radius1 = atom1.properties.radius || 0.5;
+        
+        for (let j = i + 1; j < atoms.length; j++) {
+            const atom2 = atoms[j];
+            const pos2 = atom2.position;
+            const radius2 = atom2.properties.radius || 0.5;
+            
+            // 计算两个原子之间的距离
+            const dx = pos1[0] - pos2[0];
+            const dy = pos1[1] - pos2[1];
+            const dz = pos1[2] - pos2[2];
+            const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+            
+            // 根据元素类型和距离判断是否有键连接
+            // 这里使用一个估算的键距离判断标准，可以根据需要调整
+            // 合理的键距离通常是两个原子半径之和的1.2~1.8倍
+            const bondThreshold = (radius1 + radius2) * 1.6;
+            
+            if (distance > 0 && distance < bondThreshold) {
+                // 为避免重复添加，创建键的唯一标识符
+                const bondId = [i, j].sort().join('-');
+                
+                if (!bondPairs.has(bondId)) {
+                    bondPairs.add(bondId);
+                    
+                    // 创建键连接
+                    addBond(atom1, atom2, distance);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 添加键连接
+ * 在两个原子之间创建圆柱体表示化学键
+ * @param {Object} atom1 - 第一个原子数据
+ * @param {Object} atom2 - 第二个原子数据
+ * @param {number} distance - 两原子间的距离
+ */
+function addBond(atom1, atom2, distance) {
+    const pos1 = atom1.position;
+    const pos2 = atom2.position;
+    
+    // 获取元素颜色
+    const color1 = elementColors[atom1.element] || 0x808080;
+    const color2 = elementColors[atom2.element] || 0x808080;
+    
+    // 键的半径（可以调整）
+    const bondRadius = 0.1;
+    
+    // 创建圆柱体几何体表示键
+    const geometry = new THREE.CylinderGeometry(bondRadius, bondRadius, distance, 12);
+    
+    // 使用两端原子颜色的混合作为键的颜色
+    const materialKey = `bond-${atom1.element}-${atom2.element}`;
+    if (!atomMaterials[materialKey]) {
+        atomMaterials[materialKey] = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(color1).lerp(new THREE.Color(color2), 0.5),
+            metalness: 0.1,
+            roughness: 0.8
+        });
+    }
+    
+    // 创建键的网格对象
+    const bond = new THREE.Mesh(geometry, atomMaterials[materialKey]);
+    
+    // 计算键的中点位置
+    const midpoint = {
+        x: (pos1[0] + pos2[0]) / 2,
+        y: (pos1[1] + pos2[1]) / 2,
+        z: (pos1[2] + pos2[2]) / 2
+    };
+    
+    // 设置键的位置为中点
+    bond.position.set(midpoint.x, midpoint.y, midpoint.z);
+    
+    // 计算键的方向向量
+    const direction = new THREE.Vector3(
+        pos2[0] - pos1[0],
+        pos2[1] - pos1[1],
+        pos2[2] - pos1[2]
+    ).normalize();
+    
+    // 默认圆柱体是沿Y轴的，需要将其旋转为沿键方向
+    // 使用四元数计算从Y轴到键方向的旋转
+    const quaternion = new THREE.Quaternion();
+    quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+    bond.setRotationFromQuaternion(quaternion);
+    
+    // 添加标识数据
+    bond.userData = {
+        atom1: atom1,
+        atom2: atom2,
+        type: 'stick'
+    };
+    
+    // 将键添加到棍组
+    sticksGroup.add(bond);
+    
+    return bond;
 }
 
 /**
@@ -756,13 +1221,20 @@ function resetCameraPosition(structureData) {
     const fov = camera.fov * (Math.PI / 180);
     let cameraDistance = (maxDim / 2) / Math.tan(fov / 2);
     
-    // 设置相机位置
-    camera.position.set(center.x, center.y, center.z + cameraDistance * 1.5);
+    // 将相机定位到立体中心的正面位置
+    const direction = new THREE.Vector3(1, 1, 1).normalize();
+    camera.position.copy(center).add(direction.multiplyScalar(cameraDistance * 1.5));
     camera.lookAt(center);
     
-    // 更新控制器目标点
+    // 设置控制器的目标为晶体结构的中心，确保旋转围绕中心点进行
     controls.target.copy(center);
+    
+    // 更新控制器
     controls.update();
+    
+    console.log("Camera reset to center position:", center);
+    console.log("Camera distance:", cameraDistance);
+    console.log("Structure size:", size);
 }
 
 /**
@@ -844,167 +1316,91 @@ function hideLoadingIndicator() {
  * @param {Object} structureData - 晶体结构数据
  */
 function addTitleAndLegend(structureData) {
-    // 获取渲染器的父元素容器
-    const container = renderer.domElement.parentElement;
-    container.style.position = 'relative'; // 设置为相对定位，作为子元素的定位参考
-    
-    // 移除已存在的标题和图例（如果有），避免重复显示
+    // 移除现有标题和图例
     const existingTitle = document.getElementById('crystal-title');
-    if (existingTitle) existingTitle.remove();
+    if (existingTitle) {
+        existingTitle.remove();
+    }
     
     const existingLegend = document.getElementById('crystal-legend');
-    if (existingLegend) existingLegend.remove();
+    if (existingLegend) {
+        existingLegend.remove();
+    }
     
-    // 创建标题元素，显示晶体结构的名称
-    const titleElement = document.createElement('div');
-    titleElement.id = 'crystal-title'; // 设置ID便于后续引用
-    titleElement.className = 'crystal-title'; // 设置CSS类名
-    titleElement.innerHTML = `<h3>Crystal Structure - ${structureData.formula}</h3>`; // 显示晶体化学式
-    container.appendChild(titleElement); // 添加到容器
+    // 创建容器元素
+    const infoContainer = document.createElement('div');
+    infoContainer.style.position = 'absolute';
+    infoContainer.style.top = '10px';
+    infoContainer.style.left = '10px';
+    infoContainer.style.color = '#000';
+    infoContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+    infoContainer.style.padding = '10px';
+    infoContainer.style.borderRadius = '5px';
+    infoContainer.style.fontFamily = 'Arial, sans-serif';
+    infoContainer.style.maxWidth = '300px';
+    infoContainer.style.zIndex = '1000';
     
-    // 统计每种元素的原子数量，用于图例显示
-    const elementCounts = {};
-    structureData.atoms.forEach(atom => {
-        const element = atom.element;
-        if (!elementCounts[element]) {
-            elementCounts[element] = 1; // 如果是第一次遇到此元素，计数为1
-        } else {
-            elementCounts[element]++; // 增加计数
-        }
-    });
+    // 创建标题元素
+    const title = document.createElement('div');
+    title.id = 'crystal-title';
+    title.style.fontWeight = 'bold';
+    title.style.marginBottom = '8px';
+    title.style.fontSize = '16px';
     
-    // 创建图例面板，显示不同元素及其颜色
-    const legendElement = document.createElement('div');
-    legendElement.id = 'crystal-legend'; // 设置ID
-    legendElement.className = 'crystal-legend'; // 设置CSS类名
+    // 获取结构名称
+    let structureName = structureData.name || structureData.formula || `Structure ID: ${structureData.id || 'Unknown'}`;
     
-    // 添加图例标题
-    const legendTitle = document.createElement('div');
-    legendTitle.className = 'legend-title';
-    legendTitle.textContent = 'Atom Legend'; // 图例标题文本
-    legendElement.appendChild(legendTitle);
+    // 如果是原胞，添加标记
+    if (structureData.isPrimitive) {
+        structureName += ' (原胞)';
+    }
     
-    // 添加每种元素的图例项
-    const legendItems = document.createElement('div');
-    legendItems.className = 'legend-items';
+    title.textContent = structureName;
+    infoContainer.appendChild(title);
     
-    // 按元素符号字母顺序排序，使图例有序
-    const sortedElements = Object.keys(elementCounts).sort();
+    // 创建图例元素
+    const legend = document.createElement('div');
+    legend.id = 'crystal-legend';
     
-    // 为每种元素创建图例项
-    sortedElements.forEach(element => {
-        const count = elementCounts[element]; // 获取元素数量
-        const color = elementColors[element] || 0x808080; // 获取元素颜色
+    // 查找结构中的所有元素并去重
+    const elements = [...new Set(structureData.atoms.map(atom => atom.element))];
+    
+    // 对每个元素创建图例项
+    elements.forEach(element => {
+        const elementColor = elementColors[element] || 0x808080;
+        const colorHex = '#' + elementColor.toString(16).padStart(6, '0');
         
-        // 创建单个图例项
         const legendItem = document.createElement('div');
-        legendItem.className = 'legend-item';
+        legendItem.style.display = 'flex';
+        legendItem.style.alignItems = 'center';
+        legendItem.style.marginBottom = '5px';
         
-        // 创建颜色示例，显示元素的颜色
-        const colorSample = document.createElement('div');
-        colorSample.className = 'color-sample';
-        colorSample.style.backgroundColor = `#${color.toString(16).padStart(6, '0')}`; // 转换16进制颜色为CSS颜色
-        legendItem.appendChild(colorSample);
+        // 创建颜色示例
+        const colorSwatch = document.createElement('div');
+        colorSwatch.style.width = '15px';
+        colorSwatch.style.height = '15px';
+        colorSwatch.style.backgroundColor = colorHex;
+        colorSwatch.style.borderRadius = '50%';
+        colorSwatch.style.marginRight = '8px';
         
-        // 创建元素名称和数量文本
-        const elementInfo = document.createElement('div');
-        elementInfo.className = 'element-info';
-        elementInfo.textContent = `${element}: ${count} atoms`; // 显示"元素: 数量 atoms"
-        legendItem.appendChild(elementInfo);
+        // 创建元素标签
+        const elementLabel = document.createElement('span');
+        elementLabel.textContent = element;
         
-        // 添加到图例项容器
-        legendItems.appendChild(legendItem);
+        // 将颜色样例和标签添加到图例项
+        legendItem.appendChild(colorSwatch);
+        legendItem.appendChild(elementLabel);
+        
+        // 将图例项添加到图例
+        legend.appendChild(legendItem);
     });
     
-    // 将图例项容器添加到图例元素
-    legendElement.appendChild(legendItems);
-    // 将图例元素添加到主容器
-    container.appendChild(legendElement);
+    // 将图例添加到容器
+    infoContainer.appendChild(legend);
     
-    // 添加CSS样式，定义标题和图例的外观
-    const style = document.createElement('style');
-    style.textContent = `
-        .crystal-title {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%); /* 水平居中 */
-            background-color: rgba(255, 255, 255, 0.8); /* 半透明背景 */
-            padding: 5px 15px;
-            border-radius: 5px;
-            z-index: 100;
-            text-align: center;
-        }
-        
-        .crystal-title h3 {
-            margin: 0;
-            font-size: 16px;
-            color: #333;
-        }
-        
-        .crystal-legend {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 100;
-            max-width: 200px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        
-        .legend-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-align: center;
-            font-size: 14px;
-            color: #333;
-        }
-        
-        .legend-items {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .color-sample {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%; /* 圆形颜色样本 */
-            border: 1px solid #ddd;
-        }
-        
-        .element-info {
-            font-size: 12px;
-            color: #333;
-        }
-        
-        /* 响应式设计，在小屏幕上调整大小和位置 */
-        @media (max-width: 600px) {
-            .crystal-legend {
-                top: 10px;
-                left: 10px;
-                max-width: 150px;
-            }
-            
-            .crystal-title {
-                top: 5px;
-                padding: 3px 10px;
-            }
-            
-            .crystal-title h3 {
-                font-size: 14px;
-            }
-        }
-    `;
-    document.head.appendChild(style); // 将样式添加到文档头部
+    // 将容器添加到视图容器
+    const container = renderer.domElement.parentElement;
+    container.appendChild(infoContainer);
 }
 
 /**
@@ -1092,124 +1488,226 @@ function toggleSpin() {
 
 /**
  * 添加增强的坐标轴辅助
- * 创建带标签和箭头的3D坐标轴，显示在视图左下角
+ * 创建固定在左下角的坐标轴系统，与主场景的旋转同步但保持独立位置
  */
 function addEnhancedAxesHelper() {
-    // 移除现有的坐标轴辅助，避免重复显示
+    // 移除现有的坐标轴辅助
     scene.children.forEach(child => {
-        if (child instanceof THREE.AxesHelper) {
+        if (child.userData && child.userData.isAxesHelper) {
             scene.remove(child);
         }
     });
     
-    // 创建自定义坐标轴组，作为所有轴元素的容器
-    const axesGroup = new THREE.Group();
-    axesGroup.position.set(-4.5, -4.5, -4.5); // 放置在左下角
+    // 移除现有的坐标轴容器（如果存在）
+    const existingContainer = document.getElementById('axes-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
     
-    // 设置轴的长度和宽度
-    const axisLength = 3; // 轴长度
-    const axisWidth = 0.1; // 轴宽度
+    // 创建新的场景用于坐标轴，这样它可以独立于主场景
+    const axesScene = new THREE.Scene();
+    
+    // 创建自定义坐标轴组
+    const axesGroup = new THREE.Group();
+    axesGroup.userData = { isAxesHelper: true };
+    
+    // 设置轴的长度和宽度 - 稍微加大尺寸提高可视性
+    const axisLength = 4; // 更长的轴
+    const axisWidth = 0.12; // 更粗的轴
     
     // 创建X轴（红色）
     const xAxisGeometry = new THREE.CylinderGeometry(axisWidth, axisWidth, axisLength, 16);
-    xAxisGeometry.rotateZ(-Math.PI / 2); // 旋转使圆柱体沿X轴方向
-    const xAxisMaterial = new THREE.MeshStandardMaterial({ color: 0xFF0000, metalness: 0.5, roughness: 0.5 });
+    xAxisGeometry.rotateZ(-Math.PI / 2);
+    const xAxisMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xFF0000, 
+        metalness: 0.2, 
+        roughness: 0.5,
+        emissive: 0xFF0000,
+        emissiveIntensity: 0.3 // 添加发光效果增强可视性
+    });
     const xAxis = new THREE.Mesh(xAxisGeometry, xAxisMaterial);
-    xAxis.position.set(axisLength / 2, 0, 0); // 定位X轴
+    xAxis.position.set(axisLength / 2, 0, 0);
     
     // 创建Y轴（绿色）
     const yAxisGeometry = new THREE.CylinderGeometry(axisWidth, axisWidth, axisLength, 16);
-    // Y轴不需要旋转，默认就是垂直的
-    const yAxisMaterial = new THREE.MeshStandardMaterial({ color: 0x00FF00, metalness: 0.5, roughness: 0.5 });
+    const yAxisMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x00FF00, 
+        metalness: 0.2, 
+        roughness: 0.5,
+        emissive: 0x00FF00,
+        emissiveIntensity: 0.3
+    });
     const yAxis = new THREE.Mesh(yAxisGeometry, yAxisMaterial);
-    yAxis.position.set(0, axisLength / 2, 0); // 定位Y轴
+    yAxis.position.set(0, axisLength / 2, 0);
     
     // 创建Z轴（蓝色）
     const zAxisGeometry = new THREE.CylinderGeometry(axisWidth, axisWidth, axisLength, 16);
-    zAxisGeometry.rotateX(Math.PI / 2); // 旋转使圆柱体沿Z轴方向
-    const zAxisMaterial = new THREE.MeshStandardMaterial({ color: 0x0000FF, metalness: 0.5, roughness: 0.5 });
+    zAxisGeometry.rotateX(Math.PI / 2);
+    const zAxisMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x0000FF, 
+        metalness: 0.2, 
+        roughness: 0.5,
+        emissive: 0x0000FF,
+        emissiveIntensity: 0.3
+    });
     const zAxis = new THREE.Mesh(zAxisGeometry, zAxisMaterial);
-    zAxis.position.set(0, 0, axisLength / 2); // 定位Z轴
+    zAxis.position.set(0, 0, axisLength / 2);
     
-    // 创建箭头头部，提升可视性和方向感
-    const coneHeight = 0.5; // 箭头高度
-    const coneRadius = 0.2; // 箭头半径
+    // 创建箭头头部 - 更大的箭头
+    const coneHeight = 0.6;
+    const coneRadius = 0.25;
     
     // X轴箭头
     const xConeGeometry = new THREE.ConeGeometry(coneRadius, coneHeight, 16);
-    xConeGeometry.rotateZ(-Math.PI / 2); // 旋转使圆锥体沿X轴方向
+    xConeGeometry.rotateZ(-Math.PI / 2);
     const xCone = new THREE.Mesh(xConeGeometry, xAxisMaterial);
-    xCone.position.set(axisLength, 0, 0); // 放置在X轴末端
+    xCone.position.set(axisLength, 0, 0);
     
     // Y轴箭头
     const yConeGeometry = new THREE.ConeGeometry(coneRadius, coneHeight, 16);
-    // Y轴箭头不需要旋转
     const yCone = new THREE.Mesh(yConeGeometry, yAxisMaterial);
-    yCone.position.set(0, axisLength, 0); // 放置在Y轴末端
+    yCone.position.set(0, axisLength, 0);
     
     // Z轴箭头
     const zConeGeometry = new THREE.ConeGeometry(coneRadius, coneHeight, 16);
-    zConeGeometry.rotateX(Math.PI / 2); // 旋转使圆锥体沿Z轴方向
+    zConeGeometry.rotateX(Math.PI / 2);
     const zCone = new THREE.Mesh(zConeGeometry, zAxisMaterial);
-    zCone.position.set(0, 0, axisLength); // 放置在Z轴末端
+    zCone.position.set(0, 0, axisLength);
     
-    // 添加轴标签（X，Y，Z），提高可读性
-    // 创建文本标签函数
+    // 添加轴标签 - 更大的标签
     function createTextLabel(text, color) {
-        // 使用canvas创建纹理，用于标签显示
         const canvas = document.createElement('canvas');
-        canvas.width = 64; // 设置画布宽度
-        canvas.height = 64; // 设置画布高度
+        canvas.width = 128; // 更大的画布
+        canvas.height = 128;
         
-        // 获取绘图上下文
         const context = canvas.getContext('2d');
-        // 清除画布，设置透明背景
         context.fillStyle = 'rgba(255, 255, 255, 0)';
         context.fillRect(0, 0, canvas.width, canvas.height);
         
-        // 设置文本样式并绘制
-        context.font = 'Bold 40px Arial'; // 设置字体
-        context.textAlign = 'center'; // 文本居中
-        context.textBaseline = 'middle'; // 基线居中
-        context.fillStyle = '#' + color.toString(16).padStart(6, '0'); // 设置文本颜色
-        context.fillText(text, canvas.width / 2, canvas.height / 2); // 绘制文本
+        context.font = 'Bold 60px Arial'; // 更大的字体
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = '#' + color.toString(16).padStart(6, '0');
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
         
-        // 创建纹理
         const texture = new THREE.CanvasTexture(canvas);
-        
-        // 创建精灵材质，用于始终面向相机的标签
         const material = new THREE.SpriteMaterial({ 
-            map: texture, // 使用文本纹理
-            transparent: true // 启用透明度
+            map: texture,
+            transparent: true
         });
         
-        // 返回创建的精灵对象
         return new THREE.Sprite(material);
     }
     
-    // 创建X轴标签
-    const xLabel = createTextLabel('X', 0xFF0000); // 红色X标签
-    xLabel.position.set(axisLength + 0.6, 0, 0); // 放置位置
-    xLabel.scale.set(1, 1, 1); // 设置大小
+    // 创建标签
+    const xLabel = createTextLabel('X', 0xFF0000);
+    xLabel.position.set(axisLength + 0.8, 0, 0);
+    xLabel.scale.set(1.2, 1.2, 1.2); // 更大的标签
     
-    // 创建Y轴标签
-    const yLabel = createTextLabel('Y', 0x00FF00); // 绿色Y标签
-    yLabel.position.set(0, axisLength + 0.6, 0); // 放置位置
-    yLabel.scale.set(1, 1, 1); // 设置大小
+    const yLabel = createTextLabel('Y', 0x00FF00);
+    yLabel.position.set(0, axisLength + 0.8, 0);
+    yLabel.scale.set(1.2, 1.2, 1.2);
     
-    // 创建Z轴标签
-    const zLabel = createTextLabel('Z', 0x0000FF); // 蓝色Z标签
-    zLabel.position.set(0, 0, axisLength + 0.6); // 放置位置
-    zLabel.scale.set(1, 1, 1); // 设置大小
+    const zLabel = createTextLabel('Z', 0x0000FF);
+    zLabel.position.set(0, 0, axisLength + 0.8);
+    zLabel.scale.set(1.2, 1.2, 1.2);
     
     // 将所有组件添加到坐标轴组
     axesGroup.add(xAxis, yAxis, zAxis, xCone, yCone, zCone, xLabel, yLabel, zLabel);
     
-    // 添加坐标轴组到场景
-    scene.add(axesGroup);
+    // 添加坐标系原点指示器 - 小球体标记原点
+    const originGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+    const originMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xFFFFFF, 
+        emissive: 0xFFFFFF,
+        emissiveIntensity: 0.5
+    });
+    const originMarker = new THREE.Mesh(originGeometry, originMaterial);
+    originMarker.position.set(0, 0, 0);
+    axesGroup.add(originMarker);
     
-    // 返回坐标轴组，以便后续可能的操作
-    return axesGroup;
+    // 创建固定在左下角的坐标轴容器 - 更大的容器
+    const axesContainer = document.createElement('div');
+    axesContainer.id = 'axes-container';
+    axesContainer.style.position = 'absolute';
+    axesContainer.style.bottom = '20px';
+    axesContainer.style.left = '20px';
+    axesContainer.style.width = '150px'; // 更大的渲染区域
+    axesContainer.style.height = '150px';
+    axesContainer.style.pointerEvents = 'none'; // 允许鼠标事件穿透
+    axesContainer.style.zIndex = '1000'; // 确保在最上层
+    
+    // 创建渲染器并添加到容器
+    const axesRenderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true
+    });
+    axesRenderer.setSize(150, 150); // 匹配容器大小
+    axesRenderer.setClearColor(0x000000, 0); // 透明背景
+    axesRenderer.setPixelRatio(window.devicePixelRatio); // 提高渲染清晰度
+    axesContainer.appendChild(axesRenderer.domElement);
+    
+    // 获取主容器元素
+    const container = renderer.domElement.parentElement;
+    container.appendChild(axesContainer);
+    
+    // 创建独立的相机 - 调整视角以获得更好的观察角度
+    const axesCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 50);
+    axesCamera.position.set(6, 6, 6); // 稍微远一点，以便看清整个坐标系
+    axesCamera.lookAt(0, 0, 0);
+    
+    // 添加光源到坐标轴场景 - 更好的照明
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    axesScene.add(ambientLight);
+    
+    // 添加方向光以增强3D效果
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 5, 5);
+    axesScene.add(directionalLight);
+    
+    // 添加坐标轴组到独立场景
+    axesScene.add(axesGroup);
+    
+    // 创建更新函数，会在主渲染循环中调用，使坐标轴与主场景同步旋转
+    function renderAxes() {
+        // 从主相机和控制器同步旋转信息到坐标轴
+        if (camera && controls) {
+            // 保存当前相机位置并计算方向向量
+            const cameraPosition = new THREE.Vector3();
+            camera.getWorldPosition(cameraPosition);
+            
+            // 计算相机到原点的方向向量并归一化
+            const direction = new THREE.Vector3();
+            direction.subVectors(new THREE.Vector3(0, 0, 0), cameraPosition).normalize();
+            
+            // 使用朝向和向上向量重新定位坐标轴摄像机
+            // 保持坐标轴相机位置固定，但朝向与主相机同步
+            const upVector = camera.up.clone();
+            
+            // 根据主相机方向计算坐标轴相机的位置
+            // 保持距离固定但方向跟随主相机
+            const distance = 8; // 固定距离
+            const axesCameraPosition = new THREE.Vector3()
+                .copy(direction)
+                .multiplyScalar(-distance);
+                
+            // 更新坐标轴相机位置和朝向
+            axesCamera.position.copy(axesCameraPosition);
+            axesCamera.up.copy(upVector);
+            axesCamera.lookAt(0, 0, 0);
+        }
+        
+        // 渲染独立的坐标轴场景
+        axesRenderer.render(axesScene, axesCamera);
+    }
+    
+    // 导出渲染函数，使其可以被主循环调用
+    window.renderAxes = renderAxes;
+    
+    // 首次渲染
+    renderAxes();
+    
+    return { axesGroup, renderAxes, axesScene, axesCamera };
 }
 
 /**
@@ -1253,26 +1751,65 @@ function getCurrentMaterialId() {
         return id;
     }
     
-    // 如果没有，尝试从页面元素中获取
-    // 假设页面中有一个包含材料ID的元素
-    const idElement = document.getElementById('material-id');
-    if (idElement && idElement.textContent) {
-        return idElement.textContent.trim();
+    // 如果没有，尝试从window.currentStructureData获取
+    if (window.currentStructureData && window.currentStructureData.id) {
+        return window.currentStructureData.id;
     }
     
-    // 如果还是没有找到，返回null
-    return null;
+    // 如果没有，尝试从页面元素中获取
+    // 检查多种可能的元素ID和类名
+    const possibleIdElements = [
+        document.getElementById('material-id'),
+        document.getElementById('structure-id'),
+        document.getElementById('crystal-id'),
+        document.querySelector('.material-id'),
+        document.querySelector('.structure-id'),
+        document.querySelector('.crystal-id'),
+        document.querySelector('[data-id]')
+    ];
+    
+    // 检查第一个找到的非空元素
+    for (const element of possibleIdElements) {
+        if (element) {
+            // 尝试从innerHTML、textContent、value或data-id属性获取ID
+            const idValue = element.dataset?.id || element.value || element.textContent || element.innerHTML;
+            if (idValue && typeof idValue === 'string') {
+                const trimmedValue = idValue.trim();
+                if (trimmedValue) {
+                    return trimmedValue;
+                }
+            }
+        }
+    }
+    
+    // 尝试检查structureData.formula是否存在，如果存在，我们可以用formula作为id
+    if (window.currentStructureData && window.currentStructureData.formula) {
+        console.warn("Using structure formula as ID:", window.currentStructureData.formula);
+        return window.currentStructureData.formula;
+    }
+    
+    // 最后检查URL路径，看是否包含ID信息
+    const pathMatch = window.location.pathname.match(/\/(\d+)($|\/)/);
+    if (pathMatch && pathMatch[1]) {
+        return pathMatch[1];
+    }
+    
+    // 创建一个临时ID，以确保不会失败
+    const tempId = 'temp-' + Math.floor(Math.random() * 10000);
+    console.warn("Using temporary ID:", tempId);
+    return tempId;
 }
 
 /**
- * 创建扩胞控制面板
- * @param {HTMLElement} container - 容器元素
+ * 创建原胞转换按钮
+ * 添加一个简单的按钮，用于将晶体结构转换为原胞
+ * @param {HTMLElement} container - 添加按钮的DOM容器
  */
-function createSupercellPanel(container) {
-    // Create main button that expands to show controls
+function createPrimitiveCellButton(container) {
+    // 创建主按钮
     const mainButton = document.createElement('button');
-    mainButton.className = 'supercell-main-button';
-    mainButton.textContent = 'Edit Cell';
+    mainButton.className = 'primitive-cell-button';
+    mainButton.textContent = '显示原胞';
     mainButton.style.position = 'absolute';
     mainButton.style.bottom = '10px';
     mainButton.style.right = '10px';
@@ -1284,299 +1821,219 @@ function createSupercellPanel(container) {
     mainButton.style.cursor = 'pointer';
     mainButton.style.zIndex = '1000';
     mainButton.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-
-    // Create supercell panel container (initially hidden)
-    const supercellPanel = document.createElement('div');
-    supercellPanel.className = 'supercell-panel';
-    supercellPanel.style.position = 'absolute';
-    supercellPanel.style.bottom = '50px'; // Position above the button
-    supercellPanel.style.right = '10px';
-    supercellPanel.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-    supercellPanel.style.borderRadius = '5px';
-    supercellPanel.style.padding = '10px';
-    supercellPanel.style.display = 'none'; // Initially hidden
-    supercellPanel.style.flexDirection = 'column';
-    supercellPanel.style.gap = '10px';
-    supercellPanel.style.zIndex = '1000';
-    supercellPanel.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-    supercellPanel.style.width = '220px';
+    mainButton.style.transition = 'background-color 0.3s';
     
-    // Add panel title
-    const panelTitle = document.createElement('div');
-    panelTitle.className = 'panel-title';
-    panelTitle.style.fontWeight = 'bold';
-    panelTitle.style.fontSize = '14px';
-    panelTitle.style.borderBottom = '1px solid #ddd';
-    panelTitle.style.paddingBottom = '5px';
-    panelTitle.textContent = 'Cell Controls';
-    supercellPanel.appendChild(panelTitle);
-    
-    // Create expansion controls
-    const expansionControls = document.createElement('div');
-    expansionControls.style.display = 'flex';
-    expansionControls.style.flexDirection = 'column';
-    expansionControls.style.gap = '5px';
-    
-    // Direction labels (a, b, c)
-    const directions = ['a', 'b', 'c'];
-    const expansionValues = {a: 1, b: 1, c: 1}; // Default values
-    
-    directions.forEach(dir => {
-        const controlRow = document.createElement('div');
-        controlRow.style.display = 'flex';
-        controlRow.style.alignItems = 'center';
-        controlRow.style.gap = '8px';
-        
-        const label = document.createElement('label');
-        label.textContent = `${dir.toUpperCase()} direction:`;
-        label.style.width = '80px';
-        label.style.fontSize = '12px';
-        
-        const decreaseBtn = document.createElement('button');
-        decreaseBtn.className = 'control-btn';
-        decreaseBtn.textContent = '-';
-        decreaseBtn.style.width = '25px';
-        decreaseBtn.style.height = '25px';
-        decreaseBtn.style.backgroundColor = '#f0f0f0';
-        decreaseBtn.style.border = '1px solid #ddd';
-        decreaseBtn.style.borderRadius = '3px';
-        decreaseBtn.style.cursor = 'pointer';
-        
-        const valueDisplay = document.createElement('span');
-        valueDisplay.textContent = expansionValues[dir];
-        valueDisplay.style.width = '25px';
-        valueDisplay.style.textAlign = 'center';
-        valueDisplay.style.fontSize = '14px';
-        
-        const increaseBtn = document.createElement('button');
-        increaseBtn.className = 'control-btn';
-        increaseBtn.textContent = '+';
-        increaseBtn.style.width = '25px';
-        increaseBtn.style.height = '25px';
-        increaseBtn.style.backgroundColor = '#f0f0f0';
-        increaseBtn.style.border = '1px solid #ddd';
-        increaseBtn.style.borderRadius = '3px';
-        increaseBtn.style.cursor = 'pointer';
-        
-        // Add event listeners
-        decreaseBtn.addEventListener('click', () => {
-            if (expansionValues[dir] > 1) {
-                expansionValues[dir]--;
-                valueDisplay.textContent = expansionValues[dir];
-            }
-        });
-        
-        increaseBtn.addEventListener('click', () => {
-            if (expansionValues[dir] < 5) { // Set upper limit to 5 to avoid performance issues
-                expansionValues[dir]++;
-                valueDisplay.textContent = expansionValues[dir];
-            }
-        });
-        
-        controlRow.appendChild(label);
-        controlRow.appendChild(decreaseBtn);
-        controlRow.appendChild(valueDisplay);
-        controlRow.appendChild(increaseBtn);
-        
-        expansionControls.appendChild(controlRow);
+    // 添加按钮鼠标悬停效果
+    mainButton.addEventListener('mouseover', () => {
+        mainButton.style.backgroundColor = '#45a049';
     });
     
-    supercellPanel.appendChild(expansionControls);
-    
-    // Separator
-    const separator = document.createElement('div');
-    separator.style.height = '1px';
-    separator.style.backgroundColor = '#ddd';
-    separator.style.margin = '5px 0';
-    supercellPanel.appendChild(separator);
-    
-    // Cell type selection
-    const cellTypeControls = document.createElement('div');
-    cellTypeControls.style.display = 'flex';
-    cellTypeControls.style.flexDirection = 'column';
-    cellTypeControls.style.gap = '5px';
-    
-    const cellTypeLabel = document.createElement('div');
-    cellTypeLabel.textContent = 'Cell Type:';
-    cellTypeLabel.style.fontSize = '12px';
-    cellTypeLabel.style.marginBottom = '5px';
-    cellTypeControls.appendChild(cellTypeLabel);
-    
-    // Create radio button group
-    const cellTypes = [
-        { id: 'primitive', label: 'Primitive', value: 'primitive' },
-        { id: 'conventional', label: 'Conventional', value: 'conventional' }
-    ];
-    
-    const radioGroup = document.createElement('div');
-    radioGroup.style.display = 'flex';
-    radioGroup.style.gap = '10px';
-    
-    cellTypes.forEach(type => {
-        const radioContainer = document.createElement('div');
-        radioContainer.style.display = 'flex';
-        radioContainer.style.alignItems = 'center';
-        radioContainer.style.gap = '5px';
-        
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = 'cellType';
-        radio.id = type.id;
-        radio.value = type.value;
-        if (type.value === 'primitive') {
-            radio.checked = true; // Default select primitive cell
-        }
-        
-        const radioLabel = document.createElement('label');
-        radioLabel.textContent = type.label;
-        radioLabel.htmlFor = type.id;
-        radioLabel.style.fontSize = '12px';
-        
-        radioContainer.appendChild(radio);
-        radioContainer.appendChild(radioLabel);
-        radioGroup.appendChild(radioContainer);
+    mainButton.addEventListener('mouseout', () => {
+        mainButton.style.backgroundColor = '#4CAF50';
     });
     
-    cellTypeControls.appendChild(radioGroup);
-    supercellPanel.appendChild(cellTypeControls);
-    
-    // Apply button
-    const applyButton = document.createElement('button');
-    applyButton.textContent = 'Apply Changes';
-    applyButton.style.marginTop = '10px';
-    applyButton.style.padding = '6px 12px';
-    applyButton.style.backgroundColor = '#4CAF50';
-    applyButton.style.color = 'white';
-    applyButton.style.border = 'none';
-    applyButton.style.borderRadius = '4px';
-    applyButton.style.cursor = 'pointer';
-    applyButton.style.width = '100%';
-    
-    applyButton.addEventListener('mouseover', () => {
-        applyButton.style.backgroundColor = '#45a049';
-    });
-    
-    applyButton.addEventListener('mouseout', () => {
-        applyButton.style.backgroundColor = '#4CAF50';
-    });
-    
-    applyButton.addEventListener('click', () => {
-        const cellType = document.querySelector('input[name="cellType"]:checked').value;
-        updateSupercell(expansionValues.a, expansionValues.b, expansionValues.c, cellType);
-        // Hide panel after applying changes
-        supercellPanel.style.display = 'none';
-        mainButton.style.display = 'block';
-    });
-    
-    supercellPanel.appendChild(applyButton);
-    
-    // Toggle button to show/hide the panel
+    // 添加点击事件，转换为原胞
     mainButton.addEventListener('click', () => {
-        supercellPanel.style.display = 'flex';
-        mainButton.style.display = 'none';
+        convertToPrimitiveCell();
     });
     
-    // Add close button to panel
-    const closeButton = document.createElement('button');
-    closeButton.textContent = '×';
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '5px';
-    closeButton.style.right = '5px';
-    closeButton.style.backgroundColor = 'transparent';
-    closeButton.style.border = 'none';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.fontSize = '16px';
-    closeButton.style.padding = '0';
-    closeButton.style.width = '20px';
-    closeButton.style.height = '20px';
-    closeButton.style.textAlign = 'center';
-    closeButton.style.lineHeight = '20px';
-    
-    closeButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        supercellPanel.style.display = 'none';
-        mainButton.style.display = 'block';
-    });
-    
-    supercellPanel.appendChild(closeButton);
-    
-    // Add to container
+    // 将按钮添加到容器
     container.appendChild(mainButton);
-    container.appendChild(supercellPanel);
 }
 
 /**
- * 更新超晶胞
- * @param {number} a - Repetitions in a direction
- * @param {number} b - Repetitions in b direction
- * @param {number} c - Repetitions in c direction
- * @param {string} cellType - Cell type, either 'primitive' or 'conventional'
+ * 替换旧的超晶胞面板创建函数，保持API兼容性
+ * @param {HTMLElement} container - 容器元素
  */
-function updateSupercell(a, b, c, cellType) {
-    // Get current material ID
-    const materialId = getCurrentMaterialId();
+function createSupercellPanel(container) {
+    // 改为调用新的原胞按钮创建函数
+    createPrimitiveCellButton(container);
+}
+
+/**
+ * 转换晶体结构为原胞
+ * 请求API获取原胞数据并重新渲染晶体结构
+ */
+function convertToPrimitiveCell() {
+    // 获取当前材料ID
+    const materialId = window.currentMaterialId || getCurrentMaterialId();
+    
     if (!materialId) {
-        showErrorMessage('Material ID not found');
+        showErrorMessage('材料ID未找到');
+        console.error('无法确定材料ID以进行原胞转换');
         return;
     }
     
-    // Show loading indicator
+    // 显示加载指示器
     showLoadingIndicator();
     
-    // Build request URL
-    let url = `/api/structure/${materialId}/supercell?a=${a}&b=${b}&c=${c}`;
+    // 构建请求URL，请求原胞数据
+    const url = `/api/structure/${materialId}/primitive`;
     
-    // Add cell type parameter (if provided)
-    if (cellType) {
-        url += `&cellType=${cellType}`;
-    }
+    console.log(`请求原胞数据: 材料ID=${materialId}`);
     
-    // Send request to get supercell data
+    // 发送请求获取原胞数据
     fetch(url)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                throw new Error(`HTTP错误! 状态码: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
-            // Hide loading indicator
+            // 隐藏加载指示器
             hideLoadingIndicator();
             
-            // Render new crystal structure
+            // 保存数据以供后续使用
+            window.currentStructureData = data;
+            if (!data.id && materialId) {
+                data.id = materialId;
+            }
+            
+            // 标记此结构为原胞
+            data.isPrimitive = true;
+            
+            // 渲染新的晶体结构
             renderCrystalStructure(data);
         })
         .catch(error => {
-            console.error('Failed to get supercell data:', error);
+            console.error('获取原胞数据失败:', error);
             hideLoadingIndicator();
-            showErrorMessage('Failed to get supercell data. Please try again later.');
+            showErrorMessage(`转换为原胞失败。${error.message || '请稍后重试。'}`);
         });
 }
 
 /**
- * Change cell type
- * @param {string} cellType - Cell type, either 'primitive' or 'conventional'
+ * 更新原胞结构的标题和信息
+ * @param {Object} structureData - 结构数据
+ */
+function updatePrimitiveCellTitle(structureData) {
+    const titleElement = document.getElementById('crystal-title');
+    if (titleElement) {
+        const originalTitle = titleElement.textContent;
+        titleElement.textContent = `${originalTitle} (原胞)`;
+    }
+}
+
+/**
+ * 更新添加标题和图例的函数，支持原胞标记
+ * @param {Object} structureData - 结构数据
+ */
+function addTitleAndLegend(structureData) {
+    // 移除现有标题和图例
+    const existingTitle = document.getElementById('crystal-title');
+    if (existingTitle) {
+        existingTitle.remove();
+    }
+    
+    const existingLegend = document.getElementById('crystal-legend');
+    if (existingLegend) {
+        existingLegend.remove();
+    }
+    
+    // 创建容器元素
+    const infoContainer = document.createElement('div');
+    infoContainer.style.position = 'absolute';
+    infoContainer.style.top = '10px';
+    infoContainer.style.left = '10px';
+    infoContainer.style.color = '#000';
+    infoContainer.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+    infoContainer.style.padding = '10px';
+    infoContainer.style.borderRadius = '5px';
+    infoContainer.style.fontFamily = 'Arial, sans-serif';
+    infoContainer.style.maxWidth = '300px';
+    infoContainer.style.zIndex = '1000';
+    
+    // 创建标题元素
+    const title = document.createElement('div');
+    title.id = 'crystal-title';
+    title.style.fontWeight = 'bold';
+    title.style.marginBottom = '8px';
+    title.style.fontSize = '16px';
+    
+    // 获取结构名称
+    let structureName = structureData.name || structureData.formula || `Structure ID: ${structureData.id || 'Unknown'}`;
+    
+    // 如果是原胞，添加标记
+    if (structureData.isPrimitive) {
+        structureName += ' (原胞)';
+    }
+    
+    title.textContent = structureName;
+    infoContainer.appendChild(title);
+    
+    // 创建图例元素
+    const legend = document.createElement('div');
+    legend.id = 'crystal-legend';
+    
+    // 查找结构中的所有元素并去重
+    const elements = [...new Set(structureData.atoms.map(atom => atom.element))];
+    
+    // 对每个元素创建图例项
+    elements.forEach(element => {
+        const elementColor = elementColors[element] || 0x808080;
+        const colorHex = '#' + elementColor.toString(16).padStart(6, '0');
+        
+        const legendItem = document.createElement('div');
+        legendItem.style.display = 'flex';
+        legendItem.style.alignItems = 'center';
+        legendItem.style.marginBottom = '5px';
+        
+        // 创建颜色示例
+        const colorSwatch = document.createElement('div');
+        colorSwatch.style.width = '15px';
+        colorSwatch.style.height = '15px';
+        colorSwatch.style.backgroundColor = colorHex;
+        colorSwatch.style.borderRadius = '50%';
+        colorSwatch.style.marginRight = '8px';
+        
+        // 创建元素标签
+        const elementLabel = document.createElement('span');
+        elementLabel.textContent = element;
+        
+        // 将颜色样例和标签添加到图例项
+        legendItem.appendChild(colorSwatch);
+        legendItem.appendChild(elementLabel);
+        
+        // 将图例项添加到图例
+        legend.appendChild(legendItem);
+    });
+    
+    // 将图例添加到容器
+    infoContainer.appendChild(legend);
+    
+    // 将容器添加到视图容器
+    const container = renderer.domElement.parentElement;
+    container.appendChild(infoContainer);
+}
+
+/**
+ * 切换晶胞类型
+ * 在原胞和常规晶胞之间切换显示
+ * @param {string} cellType - 晶胞类型，可选值为'primitive'(原胞)或'conventional'(常规晶胞)
  */
 function changeCellType(cellType) {
-    // Get current expansion values from the controls
+    // 获取当前的扩胞参数值
     const expansionValues = getExpansionValues();
     
-    // Reload structure with new cell type
+    // 使用新的晶胞类型重新加载结构
     updateSupercell(expansionValues.a, expansionValues.b, expansionValues.c, cellType);
 }
 
 /**
- * Get current expansion values from the controls
- * @returns {Object} Object containing a, b, c values
+ * 获取当前扩胞参数值
+ * 从界面控件中读取a、b、c三个方向的扩胞倍数
+ * @returns {Object} 包含a、b、c三个方向扩胞倍数的对象
  */
 function getExpansionValues() {
-    // This is a new helper function to safely get expansion values
+    // 安全地获取扩胞参数值的辅助函数
     try {
-        // Try to get values from UI elements if they exist
+        // 尝试从UI元素中获取值（如果存在）
         const aElement = document.querySelector('.supercell-panel div:nth-child(2) div:nth-child(1) span');
         const bElement = document.querySelector('.supercell-panel div:nth-child(2) div:nth-child(2) span');
         const cElement = document.querySelector('.supercell-panel div:nth-child(2) div:nth-child(3) span');
         
+        // 如果所有元素都存在，返回它们的值
         if (aElement && bElement && cElement) {
             return {
                 a: parseInt(aElement.textContent, 10) || 1,
@@ -1585,12 +2042,74 @@ function getExpansionValues() {
             };
         }
         
-        // Fallback to default values
+        // 如果无法获取值，返回默认值
         return { a: 1, b: 1, c: 1 };
     } catch (error) {
-        console.error('Error getting expansion values:', error);
+        // 发生错误时记录并返回默认值
+        console.error('获取扩胞参数值时出错:', error);
         return { a: 1, b: 1, c: 1 };
     }
+}
+
+/**
+ * 更新超晶胞
+ * 根据给定的参数创建和显示扩展的晶胞结构
+ * @param {number} a - a方向的重复次数
+ * @param {number} b - b方向的重复次数
+ * @param {number} c - c方向的重复次数
+ * @param {string} cellType - 晶胞类型，可选值为'primitive'(原胞)或'conventional'(常规晶胞)
+ */
+function updateSupercell(a, b, c, cellType) {
+    // 获取当前材料ID - 首先检查全局变量，然后调用获取函数
+    const materialId = window.currentMaterialId || getCurrentMaterialId();
+    
+    // 如果找不到材料ID，显示错误信息并退出
+    if (!materialId) {
+        showErrorMessage('未找到材料ID');
+        console.error('无法确定超晶胞更新的材料ID');
+        return;
+    }
+    
+    // 显示加载指示器
+    showLoadingIndicator();
+    
+    // 记录请求信息
+    console.log(`正在更新超晶胞: 材料ID=${materialId}, a=${a}, b=${b}, c=${c}, 晶胞类型=${cellType}`);
+    
+    // 构建请求URL
+    let url = `/api/structure/${materialId}/supercell?a=${a}&b=${b}&c=${c}`;
+    
+    // 如果提供了晶胞类型，添加到URL参数中
+    if (cellType) {
+        url += `&cellType=${cellType}`;
+    }
+    
+    // 发送请求获取超晶胞数据
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP错误! 状态码: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 隐藏加载指示器
+            hideLoadingIndicator();
+            
+            // 存储数据以供后续使用
+            window.currentStructureData = data;
+            if (!data.id && materialId) {
+                data.id = materialId;
+            }
+            
+            // 渲染新的晶体结构
+            renderCrystalStructure(data);
+        })
+        .catch(error => {
+            console.error('获取超晶胞数据失败:', error);
+            hideLoadingIndicator();
+            showErrorMessage(`更新超晶胞失败。${error.message || '请稍后重试。'}`);
+        });
 }
 
 // 导出公共函数
@@ -1604,5 +2123,7 @@ window.CrystalViewer = {
     takeScreenshot: takeScreenshot,
     downloadCIFFile: downloadCIFFile,
     updateSupercell: updateSupercell,
-    changeCellType: changeCellType
+    changeCellType: changeCellType,
+    changeModelType: changeModelType,
+    convertToPrimitiveCell: convertToPrimitiveCell
 };

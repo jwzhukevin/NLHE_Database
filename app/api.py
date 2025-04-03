@@ -3,9 +3,10 @@
 # 本文件包含所有与晶体结构相关的API端点，处理结构数据的获取、上传和转换
 
 import json
+import os
 from flask import Blueprint, jsonify, request, current_app
 from .models import Material, db
-from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data
+from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data, generate_primitive_cell
 
 # 创建API蓝图
 # 定义前缀为/api的路由组
@@ -256,4 +257,51 @@ def download_cif(material_id):
     except Exception as e:
         # 记录错误并返回500错误
         current_app.logger.error(f"Error downloading CIF file: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@bp.route('/structure/<int:material_id>/primitive', methods=['GET'])
+def get_primitive_cell(material_id):
+    """
+    生成并返回晶体结构的原胞
+    
+    参数:
+        material_id: 材料ID
+    
+    返回:
+        包含原胞结构数据的JSON响应
+    """
+    try:
+        # 查询材料记录，如果不存在则返回404
+        material = Material.query.get_or_404(material_id)
+        
+        # 解析原始CIF文件
+        # 首先尝试使用material.structure_file（如果存在）
+        if hasattr(material, 'structure_file') and material.structure_file:
+            file_path = material.structure_file
+        else:
+            # 否则，使用材料ID或名称查找CIF文件
+            file_path = find_structure_file(material_id=material_id, material_name=material.name)
+        
+        # 检查是否找到文件
+        if not file_path:
+            return jsonify({"error": "Structure file not found"}), 404
+        
+        # 文件路径需要完整，所以要添加应用根目录路径
+        full_file_path = os.path.join(current_app.root_path, 'static/structures', file_path)
+        
+        # 生成原胞
+        primitive_data = generate_primitive_cell(full_file_path)
+        
+        # 检查是否有错误
+        result = json.loads(primitive_data)
+        if 'error' in result:
+            return jsonify(result), 500
+        
+        # 返回JSON响应，设置正确的内容类型
+        return primitive_data, 200, {'Content-Type': 'application/json'}
+    
+    except Exception as e:
+        # 记录错误并返回500错误
+        current_app.logger.error(f"Error generating primitive cell: {str(e)}")
         return jsonify({"error": str(e)}), 500
