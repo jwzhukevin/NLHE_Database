@@ -20,8 +20,13 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Structure File (CIF) <span class="required">*</span></label>
-                    <input type="file" name="structure_file" accept=".cif" required>
+                    <label>Structure File (CIF)</label>
+                    <input type="file" name="structure_file" accept=".cif">
+                </div>
+                <div class="form-group">
+                    <label>Band Structure File</label>
+                    <input type="file" name="band_file" accept=".json,.dat">
+                    <small class="help-text">支持.json或.dat格式的能带数据文件</small>
                 </div>
             </div>
         </div>
@@ -186,7 +191,7 @@
     padding: 10px;           /* 输入舒适度 */
     border: 1px solid #bdc3c7; /* 浅灰色边框 */
     border-radius: 5px;     /* 统一圆角 */
-    font-size: clamp(0.6rem, 0.8vw, 1.6rem);  /* 字体大小 */
+    font-size: clamp(0.6rem, 0.8vw, 2.0rem);  /* 字体大小 */
 }
 
 /* 数字输入特殊处理 */

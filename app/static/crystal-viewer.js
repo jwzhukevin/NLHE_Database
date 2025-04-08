@@ -21,6 +21,70 @@ let sticksGroup = null; // 存储棍模型的组
 
 // 元素颜色映射表 - 使用符合学术标准的CPK配色方案
 // 为每种化学元素定义特定的颜色，以便在3D视图中区分不同的原子
+// 用于存储已生成的颜色，避免重复生成
+let generatedColors = new Set();
+
+/**
+ * 生成独特的颜色
+ * @param {string} element - 元素符号
+ * @returns {number} - 生成的颜色值
+ */
+function generateDistinctColor(element) {
+    // 使用元素符号的字符编码作为基础生成色相值
+    let hue = 0;
+    for (let i = 0; i < element.length; i++) {
+        hue += element.charCodeAt(i);
+    }
+    hue = hue % 360; // 将色相值限制在0-360范围内
+
+    // 使用较高的饱和度和亮度以确保颜色鲜明
+    const saturation = 0.7 + Math.random() * 0.3; // 70%-100%
+    const lightness = 0.4 + Math.random() * 0.3;  // 40%-70%
+
+    // 转换HSL为RGB
+    const rgb = hslToRgb(hue / 360, saturation, lightness);
+    const color = (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+
+    // 确保颜色的唯一性
+    if (generatedColors.has(color)) {
+        return generateDistinctColor(element + '1'); // 递归生成新颜色
+    }
+    generatedColors.add(color);
+    return color;
+}
+
+/**
+ * 将HSL颜色值转换为RGB
+ * @param {number} h - 色相 (0-1)
+ * @param {number} s - 饱和度 (0-1)
+ * @param {number} l - 亮度 (0-1)
+ * @returns {number[]} - RGB颜色值数组 [r, g, b]
+ */
+function hslToRgb(h, s, l) {
+    let r, g, b;
+
+    if (s === 0) {
+        r = g = b = l; // 灰度
+    } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+}
+
 const elementColors = {
     'H': 0xFFFFFF,   // 氢 - 白色
     'He': 0xD9FFFF,  // 氦 - 浅青色
@@ -181,13 +245,12 @@ function initCrystalViewer(containerId) {
 
     // 获取容器尺寸，用于设置渲染器和相机
     const width = container.clientWidth;
-    const height = container.clientHeight || 600; // 如果高度未定义，使用默认值400px
+    const height = container.clientHeight || 600; // 如果高度未定义，使用默认值600px
 
     // 创建Three.js场景
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff); // 设置场景背景为白色
 
-    // 创建透视相机
     // 创建透视相机
     // 参数1: 视场角(FOV) - 70度,决定视野范围的大小
     // 参数2: 宽高比 - 根据容器尺寸计算,保持图像不变形
@@ -271,12 +334,12 @@ function initCrystalViewer(containerId) {
         renderer.setSize(width, height); // 调整渲染器尺寸
     });
     
-    // 添加点击事件监听器 - 仅需点击事件，不需要悬停事件
+    // 添加点击事件监听器
     renderer.domElement.addEventListener('click', onAtomClick);
     
-    // 添加鼠标移动事件用于获取光标位置，但不显示悬停效果
+    // 添加鼠标移动事件用于获取光标位置
     renderer.domElement.addEventListener('mousemove', function(event) {
-        // 更新鼠标位置但不显示悬停效果
+        // 更新鼠标位置
         updateMousePosition(event);
     });
 }
@@ -299,7 +362,7 @@ function createToolbar(container) {
     // 创建截图按钮
     const screenshotBtn = document.createElement('button');
     screenshotBtn.innerHTML = '<i class="fas fa-camera"></i>'; // 使用Font Awesome图标
-    screenshotBtn.title = 'Screenshot'; // 设置鼠标悬停提示文字
+    screenshotBtn.title = '截图'; // 设置鼠标悬停提示文字
     screenshotBtn.className = 'toolbar-btn'; // 设置CSS类名
     screenshotBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; // 半透明白色背景
     screenshotBtn.style.border = 'none'; // 无边框
@@ -313,7 +376,7 @@ function createToolbar(container) {
     // 创建下载CIF文件按钮
     const downloadCIFBtn = document.createElement('button');
     downloadCIFBtn.innerHTML = '<i class="fas fa-download"></i>'; // 使用下载图标
-    downloadCIFBtn.title = 'Download CIF File'; // 设置提示文字
+    downloadCIFBtn.title = '下载CIF文件'; // 设置提示文字
     downloadCIFBtn.className = 'toolbar-btn';
     downloadCIFBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
     downloadCIFBtn.style.border = 'none';
@@ -327,7 +390,7 @@ function createToolbar(container) {
     // 创建重置视图按钮
     const resetViewBtn = document.createElement('button');
     resetViewBtn.innerHTML = '<i class="fas fa-redo-alt"></i>'; // 使用重置图标
-    resetViewBtn.title = 'Reset View'; // 设置提示文字
+    resetViewBtn.title = '重置视图'; // 设置提示文字
     resetViewBtn.className = 'toolbar-btn';
     resetViewBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
     resetViewBtn.style.border = 'none';
@@ -346,7 +409,7 @@ function createToolbar(container) {
     // 创建模型切换按钮
     const modelTypeBtn = document.createElement('button');
     modelTypeBtn.innerHTML = '<i class="fas fa-cubes"></i>'; // 使用立方体图标
-    modelTypeBtn.title = 'Switch model type'; // 设置提示文字
+    modelTypeBtn.title = '切换模型类型'; // 设置提示文字
     modelTypeBtn.className = 'toolbar-btn';
     modelTypeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
     modelTypeBtn.style.border = 'none';
@@ -371,9 +434,9 @@ function createToolbar(container) {
     
     // 定义可选的模型类型选项
     const modelOptions = [
-        { label: 'Ball&Stick', value: 'ball-and-stick' },
-        { label: 'Ball', value: 'ball' },
-        { label: 'Stick', value: 'stick' }
+        { label: '球棍模型', value: 'ball-and-stick' },
+        { label: '球模型', value: 'ball' },
+        { label: '棍模型', value: 'stick' }
     ];
     
     // 为每个模型类型创建DOM元素
@@ -485,31 +548,6 @@ function takeScreenshot() {
 }
 
 /**
- * 设置背景颜色
- * @param {string} type - 背景类型: 'white'(白色), 'black'(黑色), 或 'transparent'(透明)
- */
-function setBackgroundColor(type) {
-    switch (type) {
-        case 'white':
-            // 设置为白色背景
-            scene.background = new THREE.Color(0xffffff);
-            break;
-        case 'black':
-            // 设置为黑色背景
-            scene.background = new THREE.Color(0x000000);
-            break;
-        case 'transparent':
-            // 设置为透明背景，适用于截图叠加
-            scene.background = null;
-            renderer.setClearColor(0x000000, 0); // 设置清除颜色为透明
-            break;
-        default:
-            // 默认为白色背景
-            scene.background = new THREE.Color(0xffffff);
-    }
-}
-
-/**
  * 更新鼠标光标位置
  * 跟踪鼠标在渲染区域中的位置坐标，转换为Three.js中的标准化坐标系
  * @param {Event} event - 鼠标事件对象
@@ -571,7 +609,7 @@ function onAtomClick(event) {
             // 点击的是连接棍
             // 如果需要处理键的点击，可以在这里添加逻辑
             // 例如，显示键长或键的详细信息
-            console.log('Bond clicked', obj.userData);
+            console.log('键连接被点击', obj.userData);
         }
     } else {
         // 点击空白处，取消选中状态
@@ -613,9 +651,9 @@ function handleAtomClick(atom) {
                 atomTooltip.innerHTML = `
                     <div class="element-symbol">${element}</div>
                     <div class="element-details">
-                        <div>Position: (${position[0].toFixed(3)}, ${position[1].toFixed(3)}, ${position[2].toFixed(3)})</div>
-                        ${properties.charge ? `<div>Charge: ${properties.charge}</div>` : ''}
-                        ${properties.coordination ? `<div>Coordination: ${properties.coordination}</div>` : ''}
+                        <div>位置: (${position[0].toFixed(3)}, ${position[1].toFixed(3)}, ${position[2].toFixed(3)})</div>
+                        ${properties.charge ? `<div>电荷: ${properties.charge}</div>` : ''}
+                        ${properties.coordination ? `<div>配位数: ${properties.coordination}</div>` : ''}
                     </div>
                 `;
                 atomTooltip.style.display = 'block'; // 显示提示框
@@ -676,7 +714,7 @@ function changeModelType(type) {
 function updateModelVisibility() {
     // 确保球和棍组已经创建
     if (!ballsGroup || !sticksGroup) {
-        console.warn('Ball or stick groups not initialized');
+        console.warn('球或棍组未初始化');
         return;
     }
     
@@ -700,7 +738,7 @@ function updateModelVisibility() {
     }
     
     // 记录状态变化，便于调试
-    console.log(`Model type changed to ${currentModelType}. Balls visible: ${ballsGroup.visible}, Sticks visible: ${sticksGroup.visible}`);
+    console.log(`模型类型已更改为 ${currentModelType}。球体可见性: ${ballsGroup.visible}, 棍可见性: ${sticksGroup.visible}`);
 }
 
 /**
@@ -711,14 +749,192 @@ function updateModelVisibility() {
 function getCurrentStructureData() {
     // 如果没有存储当前结构数据，则从晶体组中提取数据
     if (!window.currentStructureData) {
-        // 这种方法不是最理想的，但可以在没有中央存储的情况下提供一个解决方案
-        // 为了更好的实现，应该在加载结构时保存结构数据
-        // 现在返回错误信息，让开发者知道需要改进这部分
-        console.warn('No stored structure data found. Structure rerendering may be incomplete.');
+        console.warn('未找到存储的结构数据。结构重新渲染可能不完整。');
         return null;
     }
     
     return window.currentStructureData;
+}
+
+/**
+ * 转换为原胞
+ * 将当前结构转换为原胞并重新渲染
+ */
+function convertToPrimitiveCell() {
+    // 获取当前材料ID
+    const materialId = window.currentMaterialId;
+    if (!materialId) {
+        console.error('未找到当前材料ID');
+        return;
+    }
+    
+    // 显示加载提示
+    showLoadingIndicator();
+    
+    // 调用后端API获取原胞数据
+    fetch(`/api/structure/${materialId}/primitive`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('转换原胞失败:', data.error);
+                showErrorMessage('转换原胞失败，请稍后重试');
+                return;
+            }
+            
+            // 保存新的结构数据
+            window.currentStructureData = data;
+            
+            // 清除场景中的现有结构
+            clearStructure();
+            
+            // 重新渲染结构
+            renderStructure(data);
+            
+            // 更新UI状态
+            updateCellTypeIndicator('primitive');
+            
+            // 隐藏加载提示
+            hideLoadingIndicator();
+        })
+        .catch(error => {
+            console.error('转换原胞请求失败:', error);
+            showErrorMessage('网络错误，请稍后重试');
+            hideLoadingIndicator();
+        });
+}
+
+/**
+ * 转换为传统胞
+ * 将当前结构转换为传统胞并重新渲染
+ */
+function convertToConventionalCell() {
+    // 获取当前材料ID
+    const materialId = window.currentMaterialId;
+    if (!materialId) {
+        console.error('未找到当前材料ID');
+        return;
+    }
+    
+    // 显示加载提示
+    showLoadingIndicator();
+    
+    // 调用后端API获取传统胞数据
+    fetch(`/api/structure/${materialId}/conventional`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('转换传统胞失败:', data.error);
+                showErrorMessage('转换传统胞失败，请稍后重试');
+                return;
+            }
+            
+            // 保存新的结构数据
+            window.currentStructureData = data;
+            
+            // 清除场景中的现有结构
+            clearStructure();
+            
+            // 重新渲染结构
+            renderStructure(data);
+            
+            // 更新UI状态
+            updateCellTypeIndicator('conventional');
+            
+            // 隐藏加载提示
+            hideLoadingIndicator();
+        })
+        .catch(error => {
+            console.error('转换传统胞请求失败:', error);
+            showErrorMessage('网络错误，请稍后重试');
+            hideLoadingIndicator();
+        });
+}
+
+/**
+ * 清除当前结构
+ * 从场景中移除所有结构相关的对象
+ */
+function clearStructure() {
+    if (!crystalGroup) return;
+    
+    // 移除所有子对象并释放资源
+    while (crystalGroup.children.length > 0) {
+        const object = crystalGroup.children[0];
+        crystalGroup.remove(object);
+        
+        // 释放几何体和材质
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+            if (Array.isArray(object.material)) {
+                object.material.forEach(material => material.dispose());
+            } else {
+                object.material.dispose();
+            }
+        }
+    }
+    
+    // 清除材质缓存
+    atomMaterials = {};
+}
+
+/**
+ * 显示加载提示
+ */
+function showLoadingIndicator() {
+    // 创建或显示加载提示元素
+    let loadingIndicator = document.getElementById('loading-indicator');
+    if (!loadingIndicator) {
+        loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'loading-indicator';
+        loadingIndicator.className = 'loading-indicator';
+        loadingIndicator.innerHTML = '<div class="spinner"></div><div class="loading-text">正在处理...</div>';
+        document.body.appendChild(loadingIndicator);
+    }
+    loadingIndicator.style.display = 'flex';
+}
+
+/**
+ * 隐藏加载提示
+ */
+function hideLoadingIndicator() {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+}
+
+/**
+ * 显示错误消息
+ * @param {string} message - 错误消息文本
+ */
+function showErrorMessage(message) {
+    // 创建或更新错误消息元素
+    let errorMessage = document.getElementById('error-message');
+    if (!errorMessage) {
+        errorMessage = document.createElement('div');
+        errorMessage.id = 'error-message';
+        errorMessage.className = 'error-message';
+        document.body.appendChild(errorMessage);
+    }
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+    
+    // 3秒后自动隐藏错误消息
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 3000);
+}
+
+/**
+ * 更新晶胞类型指示器
+ * @param {string} cellType - 晶胞类型（'primitive' 或 'conventional'）
+ */
+function updateCellTypeIndicator(cellType) {
+    // 更新UI元素以反映当前晶胞类型
+    const indicator = document.getElementById('cell-type-indicator');
+    if (indicator) {
+        indicator.textContent = cellType === 'primitive' ? '原胞' : '传统胞';
+    }
 }
 
 /**
@@ -886,7 +1102,7 @@ function loadCrystalStructure(materialId) {
         .then(response => {
             // 检查API响应状态
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                throw new Error(`HTTP错误! 状态码: ${response.status}`);
             }
             return response.json(); // 将响应解析为JSON
         })
@@ -907,9 +1123,9 @@ function loadCrystalStructure(materialId) {
         })
         .catch(error => {
             // 处理错误情况
-            console.error('Error loading crystal structure:', error);
+            console.error('加载晶体结构出错:', error);
             hideLoadingIndicator(); // 隐藏加载指示器
-            showErrorMessage('Failed to load crystal structure data'); // 显示错误信息
+            showErrorMessage('加载晶体结构数据失败'); // 显示错误信息
         });
 }
 
@@ -922,12 +1138,70 @@ function renderCrystalStructure(structureData) {
     // 存储结构数据以便后续使用
     window.currentStructureData = structureData;
     
+    // 检查是否为原胞结构
+    const isPrimitive = structureData.isPrimitive || false;
+    
+    // 重置场景状态
+    selectedAtom = null;
+    hoveredAtom = null;
+    if (atomTooltip) {
+        atomTooltip.style.display = 'none';
+    }
+    
+    // 如果是原胞，添加标识到场景中
+    if (isPrimitive) {
+        const primitiveLabel = document.createElement('div');
+        primitiveLabel.className = 'primitive-cell-label';
+        primitiveLabel.textContent = '原胞';
+        primitiveLabel.style.position = 'absolute';
+        primitiveLabel.style.top = '10px';
+        primitiveLabel.style.left = '10px';
+        primitiveLabel.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        primitiveLabel.style.color = 'white';
+        primitiveLabel.style.padding = '5px 10px';
+        primitiveLabel.style.borderRadius = '3px';
+        primitiveLabel.style.fontSize = '14px';
+        primitiveLabel.style.zIndex = '1000';
+        document.querySelector('#crystalViewer').appendChild(primitiveLabel);
+    }
+
     // 清除现有结构，避免重叠显示
+    function disposeObject(object) {
+        if (object.geometry) {
+            object.geometry.dispose();
+        }
+        if (object.material) {
+            if (Array.isArray(object.material)) {
+                object.material.forEach(mat => {
+                    if (mat.map) mat.map.dispose();
+                    mat.dispose();
+                });
+            } else {
+                if (object.material.map) object.material.map.dispose();
+                object.material.dispose();
+            }
+        }
+        if (object.children && object.children.length > 0) {
+            object.children.forEach(child => disposeObject(child));
+        }
+    }
+
+    // 递归清理所有对象
     while (crystalGroup.children.length > 0) {
         const object = crystalGroup.children[0];
-        object.geometry.dispose(); // 释放几何体资源
-        object.material.dispose(); // 释放材质资源
-        crystalGroup.remove(object); // 从场景中移除对象
+        disposeObject(object);
+        crystalGroup.remove(object);
+        object.parent = null; // 确保对象完全从场景中移除
+    }
+
+    // 重置全局组引用
+    if (ballsGroup) {
+        ballsGroup.clear();
+        ballsGroup = null;
+    }
+    if (sticksGroup) {
+        sticksGroup.clear();
+        sticksGroup = null;
     }
 
     // 添加晶格框架，显示晶胞边界
@@ -1028,8 +1302,14 @@ function addBall(atom) {
     const position = atom.position; // 获取原子位置坐标
     const radius = atom.properties.radius || 0.5; // 获取原子半径，如果未定义则使用默认值
     
-    // 获取元素颜色，如果未定义则使用默认的灰色
-    const color = elementColors[element] || 0x808080;
+    // 获取或生成元素颜色
+    let color = elementColors[element];
+    if (!color) {
+        // 如果颜色未定义，根据元素特性生成独特的颜色
+        color = generateDistinctColor(element);
+        // 将生成的颜色缓存到elementColors中
+        elementColors[element] = color;
+    }
     
     // 创建材质的键
     const materialKey = `${element}-ball`;
@@ -1232,19 +1512,19 @@ function resetCameraPosition(structureData) {
     // 更新控制器
     controls.update();
     
-    console.log("Camera reset to center position:", center);
-    console.log("Camera distance:", cameraDistance);
-    console.log("Structure size:", size);
+    console.log("相机已重置到中心位置:", center);
+    console.log("相机距离:", cameraDistance);
+    console.log("结构大小:", size);
 }
 
 /**
  * 显示加载指示器
  */
 function showLoadingIndicator() {
-    // Check if loading indicator already exists
+    // 检查加载指示器是否已存在
     let loadingIndicator = document.getElementById('loading-indicator');
     
-    // If not, create new loading indicator
+    // 如果不存在，创建新的加载指示器
     if (!loadingIndicator) {
         loadingIndicator = document.createElement('div');
         loadingIndicator.id = 'loading-indicator';
@@ -1262,7 +1542,7 @@ function showLoadingIndicator() {
         loadingIndicator.style.zIndex = '2000';
         loadingIndicator.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
         
-        // Add spinner animation
+        // 添加旋转动画
         const spinner = document.createElement('div');
         spinner.style.width = '40px';
         spinner.style.height = '40px';
@@ -1271,7 +1551,7 @@ function showLoadingIndicator() {
         spinner.style.borderRadius = '50%';
         spinner.style.animation = 'spin 1s linear infinite';
         
-        // Add keyframes animation
+        // 添加关键帧动画
         const style = document.createElement('style');
         style.textContent = `
             @keyframes spin {
@@ -1281,9 +1561,9 @@ function showLoadingIndicator() {
         `;
         document.head.appendChild(style);
         
-        // Add text
+        // 添加文本
         const text = document.createElement('div');
-        text.textContent = 'Loading...';
+        text.textContent = '加载中...';
         text.style.marginTop = '10px';
         
         loadingIndicator.appendChild(spinner);
@@ -1846,8 +2126,160 @@ function createPrimitiveCellButton(container) {
  * @param {HTMLElement} container - 容器元素
  */
 function createSupercellPanel(container) {
-    // 改为调用新的原胞按钮创建函数
-    createPrimitiveCellButton(container);
+    // 创建扩胞控制面板容器
+    const panel = document.createElement('div');
+    panel.className = 'supercell-panel';
+    panel.style.position = 'absolute';
+    panel.style.right = '10px';
+    panel.style.bottom = '10px';
+    panel.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+    panel.style.padding = '15px';
+    panel.style.borderRadius = '8px';
+    panel.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+    panel.style.zIndex = '1000';
+    panel.style.display = 'flex';
+    panel.style.flexDirection = 'column';
+    panel.style.gap = '10px';
+
+    // 创建转换按钮
+    const transformBtn = document.createElement('button');
+    transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+    transformBtn.className = 'transform-btn';
+    transformBtn.style.padding = '8px 15px';
+    transformBtn.style.backgroundColor = '#4CAF50';
+    transformBtn.style.color = 'white';
+    transformBtn.style.border = 'none';
+    transformBtn.style.borderRadius = '4px';
+    transformBtn.style.cursor = 'pointer';
+    transformBtn.style.fontSize = '14px';
+    transformBtn.style.display = 'flex';
+    transformBtn.style.alignItems = 'center';
+    transformBtn.style.justifyContent = 'center';
+    transformBtn.style.gap = '5px';
+    panel.appendChild(transformBtn);
+
+    // 创建编辑界面容器
+    const editPanel = document.createElement('div');
+    editPanel.className = 'edit-panel';
+    editPanel.style.display = 'none';
+    editPanel.style.flexDirection = 'column';
+    editPanel.style.gap = '10px';
+
+    // 创建三个方向的扩胞输入框
+    const directions = ['X', 'Y', 'Z'];
+    directions.forEach(dir => {
+        const inputGroup = document.createElement('div');
+        inputGroup.style.display = 'flex';
+        inputGroup.style.alignItems = 'center';
+        inputGroup.style.gap = '5px';
+
+        const label = document.createElement('label');
+        label.textContent = `${dir}方向:`;
+        label.style.width = '60px';
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '1';
+        input.value = '1';
+        input.style.width = '60px';
+        input.style.padding = '4px';
+        input.style.border = '1px solid #ccc';
+        input.style.borderRadius = '4px';
+
+        inputGroup.appendChild(label);
+        inputGroup.appendChild(input);
+        editPanel.appendChild(inputGroup);
+    });
+
+    // 创建按钮组
+    const buttonGroup = document.createElement('div');
+    buttonGroup.style.display = 'flex';
+    buttonGroup.style.gap = '10px';
+    buttonGroup.style.marginTop = '10px';
+
+    // 创建显示原胞按钮
+    const primitiveBtn = document.createElement('button');
+    primitiveBtn.textContent = '显示原胞';
+    primitiveBtn.className = 'cell-btn';
+    primitiveBtn.style.flex = '1';
+    primitiveBtn.style.padding = '6px';
+    primitiveBtn.style.backgroundColor = '#2196F3';
+    primitiveBtn.style.color = 'white';
+    primitiveBtn.style.border = 'none';
+    primitiveBtn.style.borderRadius = '4px';
+    primitiveBtn.style.cursor = 'pointer';
+
+    // 创建显示传统胞按钮
+    const conventionalBtn = document.createElement('button');
+    conventionalBtn.textContent = '显示传统胞';
+    conventionalBtn.className = 'cell-btn';
+    conventionalBtn.style.flex = '1';
+    conventionalBtn.style.padding = '6px';
+    conventionalBtn.style.backgroundColor = '#2196F3';
+    conventionalBtn.style.color = 'white';
+    conventionalBtn.style.border = 'none';
+    conventionalBtn.style.borderRadius = '4px';
+    conventionalBtn.style.cursor = 'pointer';
+
+    // 创建完成按钮
+    const doneBtn = document.createElement('button');
+    doneBtn.textContent = '完成';
+    doneBtn.className = 'cell-btn';
+    doneBtn.style.flex = '1';
+    doneBtn.style.padding = '6px';
+    doneBtn.style.backgroundColor = '#4CAF50';
+    doneBtn.style.color = 'white';
+    doneBtn.style.border = 'none';
+    doneBtn.style.borderRadius = '4px';
+    doneBtn.style.cursor = 'pointer';
+
+    buttonGroup.appendChild(primitiveBtn);
+    buttonGroup.appendChild(conventionalBtn);
+    buttonGroup.appendChild(doneBtn);
+    editPanel.appendChild(buttonGroup);
+
+    panel.appendChild(editPanel);
+
+    // 添加转换按钮点击事件
+    transformBtn.addEventListener('click', () => {
+        if (editPanel.style.display === 'none') {
+            editPanel.style.display = 'flex';
+            transformBtn.style.backgroundColor = '#f44336';
+            transformBtn.innerHTML = '<i class="fas fa-times"></i> 关闭';
+        } else {
+            editPanel.style.display = 'none';
+            transformBtn.style.backgroundColor = '#4CAF50';
+            transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+        }
+    });
+
+    // 添加按钮点击事件
+    primitiveBtn.addEventListener('click', () => {
+        const [x, y, z] = Array.from(editPanel.querySelectorAll('input')).map(input => parseInt(input.value));
+        updateSupercell(x, y, z, 'primitive');
+        editPanel.style.display = 'none';
+        transformBtn.style.backgroundColor = '#4CAF50';
+        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+    });
+
+    conventionalBtn.addEventListener('click', () => {
+        const [x, y, z] = Array.from(editPanel.querySelectorAll('input')).map(input => parseInt(input.value));
+        updateSupercell(x, y, z, 'conventional');
+        editPanel.style.display = 'none';
+        transformBtn.style.backgroundColor = '#4CAF50';
+        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+    });
+
+    doneBtn.addEventListener('click', () => {
+        const [x, y, z] = Array.from(editPanel.querySelectorAll('input')).map(input => parseInt(input.value));
+        updateSupercell(x, y, z);
+        editPanel.style.display = 'none';
+        transformBtn.style.backgroundColor = '#4CAF50';
+        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+    });
+
+    // 添加面板到容器
+    container.appendChild(panel);
 }
 
 /**
@@ -2114,16 +2546,16 @@ function updateSupercell(a, b, c, cellType) {
 
 // 导出公共函数
 window.CrystalViewer = {
-    init: initCrystalViewer,
-    load: loadCrystalStructure,
-    rotateLeft: rotateLeft,
-    rotateRight: rotateRight,
-    resetView: resetView,
-    toggleSpin: toggleSpin,
-    takeScreenshot: takeScreenshot,
-    downloadCIFFile: downloadCIFFile,
-    updateSupercell: updateSupercell,
-    changeCellType: changeCellType,
-    changeModelType: changeModelType,
-    convertToPrimitiveCell: convertToPrimitiveCell
+    init: initCrystalViewer,         // 初始化晶体查看器
+    load: loadCrystalStructure,      // 加载晶体结构
+    rotateLeft: rotateLeft,          // 向左旋转
+    rotateRight: rotateRight,        // 向右旋转
+    resetView: resetView,            // 重置视图
+    toggleSpin: toggleSpin,          // 切换自动旋转
+    takeScreenshot: takeScreenshot,  // 截图保存
+    downloadCIFFile: downloadCIFFile, // 下载CIF文件
+    updateSupercell: updateSupercell, // 更新超晶胞
+    changeCellType: changeCellType,   // 切换晶胞类型
+    changeModelType: changeModelType, // 切换模型类型
+    convertToPrimitiveCell: convertToPrimitiveCell // 转换为原胞
 };

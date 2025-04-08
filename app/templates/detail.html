@@ -33,6 +33,10 @@
                     {% endif %} 
                     <!-- 外部链接和返回按钮 -->
                     <li><a href="https://materialsproject.org/materials/{{ material.name }}" target="_blank"><i class="fas fa-external-link-alt"></i> MP</a></li>
+                    {% if request.referrer and 'q=' in request.referrer %}
+                    <li><a href="{{ request.referrer }}" class="back-link">
+                        <i class="fas fa-search"></i> Back to Search</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('views.index') }}" class="back-link">
                         <i class="fas fa-arrow-left"></i> Back to List</a></li>
                 </ul>
@@ -165,7 +169,7 @@
     font-family: "Times New Roman", Times, serif;
     color: #ffffff;
     text-decoration: none;
-    font-size: clamp(0.9em, 1.5vw, 1.2em);
+    font-size: clamp(0.6rem, 1,2vw, 2.0rem);
     letter-spacing: 0.3px;
     transition: all 0.2s ease;
     font-weight: 600;
@@ -185,7 +189,7 @@
 
 /* 材料标题样式 */
 .material-title {
-    font-size: clamp(1.2em, 1.5vw, 1.8em);
+    font-size: clamp(0.6rem, 1.0vw, 2.0rem);
     padding: 15px 10px;
     margin: 5px 0 25px 0;
     font-weight: 800;
@@ -202,15 +206,15 @@
 
 /* 材料标题注释样式 */
 .material-title::after {
-    content: "{{ material.name }}";
+    content: "No.{{ material.id }} ";
     position: absolute;
-    bottom: -22px;
+    bottom: -32px;
     right: 50%;
     transform: translateX(50%);
-    padding: 2px 8px;
-    font-size: clamp(0.5em, 0.8vw, 0.9em);
-    color: #666;
-    font-weight: normal;
+    padding: 4px 8px;
+    font-size: clamp(0.6rem, 0.8vw, 2.0rem);
+    color: #105493;
+    font-weight: 800;
     white-space: nowrap;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 3px;
@@ -257,7 +261,7 @@
        最小值1.2em
        首选值2vw（视窗宽度的2%）
        最大值1.5em */
-    font-size: clamp(1.2em, 2vw, 1.5em);
+    font-size: clamp(0.6rem, 1.2vw, 2.0rem);
     /* 设置字体粗细为粗体 */
     font-weight: bold;
 }

@@ -10,8 +10,8 @@
                    placeholder="Search materials..." 
                    value="{{ search_params.q }}"
                    aria-label="Search">
-            <button type="submit" class="search-btn">Search</button>
-            <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">Advanced</button>
+            <button type="submit" class="btn">Search</button>
+            <button type="button" class="btn" onclick="toggleAdvanced()">Advanced</button>
         </div>
 
         <!-- 高级搜索 -->
@@ -167,20 +167,20 @@
 /* ====================== 搜索表单容器 ====================== */
 .search-form {
   /* ---------- 可调节参数 ---------- */
-  --form-max-width: 800px;        /* 控制表单最大宽度，避免在大屏幕上过宽 */
+  --form-max-width: 1000px;        /* 控制表单最大宽度，避免在大屏幕上过宽 */
   --form-padding: 1.0rem;         /* 表单内边距，影响内容与边框的距离 */
   --form-gap: 1.0rem;            /* 表单项之间的垂直间距 */
   --border-width: 2px;           /* 表单整体边框粗细 */
   --border-radius: 10px;         /* 表单整体圆角半径 */
 
   /* 输入控件参数 */
-  --input-height: 5px;          /* 所有输入框/下拉框的统一高度（注意单位） */
-  --input-padding: 1.0rem;       /* 输入框内文字与边框的间距 */
-  --input-font-size: clamp(1rem, 1.0vw, 1.6rem); /* 响应式字体：最小1rem，随视口增长，最大1.2rem */
+  --input-height: 2rem;          /* 所有输入框/下拉框的统一高度（注意单位） */
+  --input-padding: 0.2rem;       /* 输入框内文字与边框的间距 */
+  --input-font-size: clamp(0.6rem, 1.0vw, 2.0rem); /* 响应式字体：最小1rem，随视口增长，最大1.2rem */
 
   /* 按钮参数 */
   --btn-padding: 0.2rem 0.6rem;  /* 按钮内边距（上下 左右） */
-  --btn-font-size: 1.0rem;       /* 按钮文字大小 */
+  --btn-font-size: clamp(0.6rem, 1.2vw, 2.0rem);       /* 按钮文字大小 */
   --btn-radius: 5px;             /* 按钮圆角半径 */
 
   /* ---------- 布局样式 ---------- */
@@ -208,7 +208,7 @@
     font-size: var(--input-font-size); /* 字体大小 */
     border: 2px solid #3498db;   /* 蓝色边框突出主搜索框 */
     border-radius: var(--border-radius); /* 圆角 */
-    transition: border-color 0.3s; /* 边框颜色过渡动画 */
+    transition: border-color 0.1s; /* 边框颜色过渡动画 */
   }
 
   /* 聚焦状态增强 */
@@ -228,14 +228,14 @@
   /* 展开时显示 */
   &.show {
     display: grid;               /* 网格布局便于排列表单行 */
-    gap: 1.0rem;                 /* 行间距 */
+    gap: 1.2rem;                 /* 行间距 */
   }
 }
 
 /* ====================== 表单行布局 ====================== */
 .search-row {
   display: flex;                 /* 横向排列多个搜索组 */
-  gap: 1.5rem;                   /* 组间距 */
+  gap: 1.2rem;                   /* 组间距 */
   align-items: center;           /* 垂直居中对齐 */
 }
 
@@ -249,7 +249,7 @@
   /* 标签样式 */
   & label {
     min-width: 140px;            /* 固定标签宽度保持对齐 */
-    font-weight: 600;            /* 加粗字体突出标签 */
+    font-weight: 800;            /* 加粗字体突出标签 */
     font-size: var(--input-font-size); /* 字体大小与输入框一致 */
   }
 

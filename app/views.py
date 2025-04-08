@@ -131,18 +131,30 @@ def add():
         try:
             # 获取并处理上传的文件
             structure_file = request.files.get('structure_file')
+            band_file = request.files.get('band_file')
+            
             # 验证CIF文件是否有效
             if not structure_file or not structure_file.filename.endswith('.cif'):
                 flash('Please upload a valid CIF file!', 'error')  # 显示错误消息
                 return redirect(url_for('views.add'))  # 重定向回添加页面
             
-            # 生成安全的文件名并保存
+            # 生成安全的文件名并保存结构文件
             from werkzeug.utils import secure_filename
             import os
-            filename = secure_filename(structure_file.filename)  # 安全处理文件名，防止路径注入
-            file_path = os.path.join(current_app.root_path, 'static/structures', filename)
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)  # 确保目录存在
-            structure_file.save(file_path)  # 保存上传的文件
+            from flask import current_app
+            
+            # 保存结构文件
+            structure_filename = secure_filename(structure_file.filename)  # 安全处理文件名，防止路径注入
+            structure_path = os.path.join(current_app.root_path, 'static/structures', structure_filename)
+            os.makedirs(os.path.dirname(structure_path), exist_ok=True)  # 确保目录存在
+            structure_file.save(structure_path)  # 保存上传的文件
+            
+            # 如果有能带文件，保存到band目录
+            if band_file and band_file.filename.endswith(('.json', '.dat')):
+                band_filename = secure_filename(band_file.filename)
+                band_path = os.path.join(current_app.root_path, 'static/band', band_filename)
+                os.makedirs(os.path.dirname(band_path), exist_ok=True)
+                band_file.save(band_path)
             
             # 获取并转换表单数据（使用safe_float处理空值）
             material_data = {
@@ -236,13 +248,37 @@ def edit(material_id):
         try:
             # 处理文件上传（如果有新文件）
             structure_file = request.files.get('structure_file')
+            band_file = request.files.get('band_file')
+            
+            from werkzeug.utils import secure_filename
+            import os
+            from flask import current_app
+            
+            # 处理结构文件上传
             if structure_file and structure_file.filename.endswith('.cif'):
-                from werkzeug.utils import secure_filename
-                import os
+                # 删除旧的结构文件
+                if material.structure_file:
+                    old_structure_path = os.path.join(current_app.root_path, 'static/structures', material.structure_file)
+                    if os.path.exists(old_structure_path):
+                        os.remove(old_structure_path)
+                
+                # 保存新的结构文件
                 filename = secure_filename(structure_file.filename)
-                file_path = os.path.join('app/static/structures', filename)
-                structure_file.save(file_path)  # 保存上传的文件
+                structure_path = os.path.join(current_app.root_path, 'static/structures', filename)
+                structure_file.save(structure_path)  # 保存上传的文件
                 material.structure_file = filename  # 更新数据库中的文件路径
+            
+            # 处理能带文件上传
+            if band_file and band_file.filename.endswith(('.json', '.dat')):
+                # 删除旧的能带文件（如果存在）
+                old_band_path = os.path.join(current_app.root_path, 'static/band', f'{material.id}.dat')
+                if os.path.exists(old_band_path):
+                    os.remove(old_band_path)
+                
+                # 保存新的能带文件
+                band_filename = f'{material.id}.dat'
+                band_path = os.path.join(current_app.root_path, 'static/band', band_filename)
+                band_file.save(band_path)
 
             # 更新所有字段
             material.name = request.form.get('name')
@@ -309,6 +345,22 @@ def delete(material_id):
         只接受POST请求，防止CSRF攻击
     """
     material = Material.query.get_or_404(material_id)  # 获取材料或返回404错误
+    
+    # 删除相关文件
+    import os
+    from flask import current_app
+    
+    # 删除结构文件
+    if material.structure_file:
+        structure_path = os.path.join(current_app.root_path, 'static/structures', material.structure_file)
+        if os.path.exists(structure_path):
+            os.remove(structure_path)
+    
+    # 删除能带文件
+    band_path = os.path.join(current_app.root_path, 'static/band', f'{material.id}.dat')
+    if os.path.exists(band_path):
+        os.remove(band_path)
+    
     db.session.delete(material)  # 删除记录
     db.session.commit()  # 提交事务
     flash('Material deleted.', 'success')  # 显示成功消息

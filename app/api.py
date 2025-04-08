@@ -206,14 +206,21 @@ def download_cif(material_id):
         # 解析原始CIF文件
         # 首先尝试使用material.structure_file（如果存在）
         if hasattr(material, 'structure_file') and material.structure_file:
-            file_path = material.structure_file
+            file_name = material.structure_file
         else:
             # 否则，使用材料ID或名称查找CIF文件
-            file_path = find_structure_file(material_id=material_id, material_name=material.name)
+            file_name = find_structure_file(material_id=material_id, material_name=material.name)
         
         # 检查是否找到文件
-        if not file_path:
+        if not file_name:
             return jsonify({"error": "Structure file not found"}), 404
+            
+        # 构建完整的文件路径
+        file_path = os.path.join(current_app.root_path, 'static/structures', file_name)
+        
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            return jsonify({"error": f"Structure file not found: {file_name}"}), 404
         
         # 如果需要超晶胞，生成超晶胞的CIF数据
         if is_supercell:

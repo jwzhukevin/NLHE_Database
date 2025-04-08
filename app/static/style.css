@@ -8,7 +8,7 @@ body {
     width: 100%;           /* 宽度占满整个视口 */
     max-width: 1000px;      /* 最大宽度限制*/
     margin: 10px auto;        /* 上下外边距为0，左右自动（水平居中） */
-    font-size: clamp(0.6rem, 1.0vw, 1.6rem); /* 响应式流体字号 */       /* 固定字体大小（不随视口缩放变化） */
+    font-size: clamp(0.6rem, 1.0vw, 2.0rem); /* 响应式流体字号 */       /* 固定字体大小（不随视口缩放变化） */
     font-family: 'Times New Roman', Times, serif;
     padding: 0 10px;       /* 左右内边距15px（防止移动端内容贴边） */
     box-sizing: border-box; /* 内边距和边框不额外增加元素宽度 */
@@ -315,7 +315,7 @@ nav li a:hover {
     outline: none;                         /* 移除默认轮廓 */
     box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.5); /* 自定义聚焦光环 */
 }
-}
+
 
 .form-container {
     padding: 10px;

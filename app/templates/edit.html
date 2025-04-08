@@ -25,10 +25,18 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Structure File (CIF) <span class="required">*</span></label>
-                    <input type="file" name="structure_file" accept=".cif" {% if not material.structure_file %}required{% endif %}>
+                    <label>Structure File (CIF)</label>
+                    <input type="file" name="structure_file" accept=".cif">
                     {% if material.structure_file %}
                     <p class="file-info">当前文件: {{ material.structure_file }}</p>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Band Structure File</label>
+                    <input type="file" name="band_file" accept=".json,.dat">
+                    <small class="help-text">支持.json或.dat格式的能带数据文件</small>
+                    {% if material.id %}
+                    <p class="file-info">当前文件: {{ material.id }}.dat</p>
                     {% endif %}
                 </div>
             </div>
@@ -192,7 +200,7 @@
 /* ====================== 区块标题样式 ====================== */
 .form-section h3 {
     color: #2c3e50;          /* 深蓝灰色标题（对比度7.3:1） */
-    font-size: 1.2em;        /* 相对单位适配不同设备 */
+    font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* 相对单位适配不同设备 */
     margin-bottom: 20px;     /* 标题与内容间距 */
     padding-bottom: 8px;     /* 下划线留白空间 */
     border-bottom: 2px solid #3498db; /* 品牌蓝色下划线强调 */
@@ -217,7 +225,7 @@
     margin-bottom: 8px;      /* 标签与输入框间距 */
     font-weight: 600;       /* 中等加粗突出标签层级 */
     color: #34495e;          /* 深灰蓝色（对比度7:1） */
-    font-size: 0.95em;      /* 略小于常规文本形成层次 */
+    font-size: clamp(0.6rem, 1.0vw, 2.0rem);      /* 略小于常规文本形成层次 */
 }
 
 /* ====================== 输入控件通用样式 ====================== */
@@ -227,7 +235,7 @@
     padding: 10px;          /* 舒适点击区域（推荐10-12px） */
     border: 1px solid #bdc3c7; /* 中性灰色边框（对比度3.2:1） */
     border-radius: 5px;     /* 匹配整体圆角风格 */
-    font-size: clamp(0.8rem, 1.0vw, 1.6rem);        /* 标准字体大小 */
+    font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* 标准字体大小 */
     transition: border-color 0.3s; /* 边框颜色过渡动画 */
 }
 
@@ -294,7 +302,7 @@
 /* ====================== 占位符样式 ====================== */
 input::placeholder {
     color: #95a5a6;         /* 浅灰色降低占位符显著性 */
-    font-size: 0.9em;       /* 略小于常规文本 */
+    font-size: clamp(0.6rem, 0.8vw, 2.0rem);       /* 略小于常规文本 */
 }
 
 </style>

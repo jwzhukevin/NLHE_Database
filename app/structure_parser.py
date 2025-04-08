@@ -312,29 +312,65 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
         包含超晶胞结构的JSON字符串，出错则返回错误JSON
     """
     try:
+        # 验证输入参数
+        if not isinstance(a, (int, float)) or not isinstance(b, (int, float)) or not isinstance(c, (int, float)):
+            error_msg = "Supercell parameters (a, b, c) must be numbers"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+        
+        if a <= 0 or b <= 0 or c <= 0:
+            error_msg = "Supercell parameters (a, b, c) must be positive"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+        
+        if cell_type not in ['primitive', 'conventional']:
+            error_msg = "Cell type must be either 'primitive' or 'conventional'"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+        
+        # 规范化文件路径
+        if not os.path.isabs(file_path):
+            file_path = os.path.join(current_app.root_path, 'static/structures', file_path)
+        file_path = os.path.normpath(file_path)
+        
         # 检查文件是否存在
         if not os.path.exists(file_path):
             error_msg = f"Structure file not found: {file_path}"
             current_app.logger.error(error_msg)
             return json.dumps({"error": error_msg})
         
-        # 获取完整路径（如果传入的是相对路径）
-        if not os.path.isabs(file_path):
-            file_path = os.path.join(current_app.root_path, 'static/structures', file_path)
-        
-        # 使用pymatgen加载晶体结构
-        structure = Structure.from_file(file_path)
+        try:
+            # 使用pymatgen加载晶体结构
+            structure = Structure.from_file(file_path)
+        except Exception as e:
+            error_msg = f"Error loading structure file: {str(e)}"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
         
         # 根据需要转换为常规胞（如果选择了conventional类型）
         if cell_type == 'conventional':
-            from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-            analyzer = SpacegroupAnalyzer(structure)
-            structure = analyzer.get_conventional_standard_structure()
+            try:
+                from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+                analyzer = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5)
+                conventional_structure = analyzer.get_conventional_standard_structure()
+                if conventional_structure is not None:
+                    structure = conventional_structure
+                else:
+                    current_app.logger.warning("Could not determine conventional cell, using original structure")
+            except Exception as e:
+                error_msg = f"Error converting to conventional cell: {str(e)}"
+                current_app.logger.error(error_msg)
+                return json.dumps({"error": error_msg})
         
-        # 创建超晶胞（通过复制原胞）
-        supercell = structure.copy()
-        supercell.make_supercell([a, b, c])  # 指定a、b、c方向的扩展倍数
-        
+        try:
+            # 创建超晶胞（通过复制原胞）
+            supercell = structure.copy()
+            supercell.make_supercell([float(a), float(b), float(c)])  # 确保使用浮点数
+        except Exception as e:
+            error_msg = f"Error creating supercell: {str(e)}"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+            
         # 提取晶格参数
         lattice = supercell.lattice
         lattice_data = {
@@ -438,9 +474,142 @@ def get_cif_data(file_path, a=1, b=1, c=1, cell_type='primitive'):
         raise Exception(error_msg)
 
 
+def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tolerance=5):
+    """
+    处理晶体结构，转换为指定类型的晶胞并提取结构数据
+    
+    参数:
+        structure: pymatgen Structure对象
+        cell_type: 晶胞类型，'primitive'或'conventional'
+        symprec: 对称性判断的容差
+        angle_tolerance: 角度判断的容差（度）
+    
+    返回:
+        转换后的结构数据字典
+    """
+    try:
+        from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+        analyzer = SpacegroupAnalyzer(structure, symprec=symprec, angle_tolerance=angle_tolerance)
+        
+        # 获取空间群信息
+        spacegroup = analyzer.get_space_group_symbol()
+        
+        # 根据cell_type选择合适的转换方法
+        if cell_type == 'primitive':
+            converted_structure = analyzer.find_primitive()
+            if converted_structure is None:
+                current_app.logger.warning(f"Could not find primitive cell, using original structure")
+                converted_structure = structure
+            is_primitive = True
+        else:  # conventional
+            converted_structure = analyzer.get_conventional_standard_structure()
+            if converted_structure is None:
+                current_app.logger.warning(f"Could not determine conventional cell, using original structure")
+                converted_structure = structure
+            is_primitive = False
+        
+        # 提取晶格参数
+        lattice = converted_structure.lattice
+        lattice_data = {
+            'a': lattice.a,
+            'b': lattice.b,
+            'c': lattice.c,
+            'alpha': lattice.alpha,
+            'beta': lattice.beta,
+            'gamma': lattice.gamma,
+            'matrix': lattice.matrix.tolist(),
+            'volume': lattice.volume
+        }
+        
+        # 提取原子信息
+        atoms = []
+        for site in converted_structure.sites:
+            atom = {
+                'element': site.species_string,
+                'position': site.coords.tolist(),
+                'frac_coords': site.frac_coords.tolist(),
+                'properties': {
+                    'label': site.species_string,
+                    'radius': get_atom_radius(site.species_string)
+                }
+            }
+            atoms.append(atom)
+        
+        # 构建完整的结构数据
+        structure_data = {
+            'formula': converted_structure.formula,
+            'lattice': lattice_data,
+            'atoms': atoms,
+            'num_atoms': len(atoms),
+            'spacegroup': spacegroup,
+            'cell_type': cell_type,
+            'is_primitive': is_primitive
+        }
+        
+        return structure_data
+        
+    except Exception as e:
+        error_msg = f"Error processing structure: {str(e)}"
+        current_app.logger.error(error_msg)
+        raise Exception(error_msg)
+    if converted_structure is None:
+        current_app.logger.warning(f"No {cell_type} cell found, using original structure")
+        converted_structure = structure
+    
+    # 提取晶格参数
+    lattice = converted_structure.lattice
+    lattice_data = {
+        'a': lattice.a,
+        'b': lattice.b,
+        'c': lattice.c,
+        'alpha': lattice.alpha,
+        'beta': lattice.beta,
+        'gamma': lattice.gamma,
+        'matrix': lattice.matrix.tolist(),
+        'volume': lattice.volume  # 添加晶胞体积信息
+    }
+    
+    # 提取空间群信息
+    spacegroup_data = {
+        'symbol': analyzer.get_space_group_symbol(),
+        'number': analyzer.get_space_group_number(),
+        'crystal_system': analyzer.get_crystal_system(),
+        'point_group': analyzer.get_point_group_symbol()
+    }
+    
+    # 提取原子信息
+    atoms = []
+    for site in converted_structure.sites:
+        atom = {
+            'element': site.species_string,
+            'position': site.coords.tolist(),
+            'frac_coords': site.frac_coords.tolist(),
+            'properties': {
+                'label': site.species_string,
+                'radius': get_atom_radius(site.species_string),
+                'oxidation_state': site.species.get_oxidation_states()[0] if site.species.get_oxidation_states() else None
+            }
+        }
+        atoms.append(atom)
+    
+    # 构建完整的结构数据
+    structure_data = {
+        'formula': converted_structure.formula,
+        'name': converted_structure.composition.reduced_formula,
+        'lattice': lattice_data,
+        'atoms': atoms,
+        'num_atoms': len(atoms),
+        'isPrimitive': is_primitive,
+        'spacegroup': spacegroup_data,
+        'density': converted_structure.density,
+        'cell_type': cell_type
+    }
+    
+    return structure_data
+
 def generate_primitive_cell(file_path):
     """
-    使用pymatgen生成晶体结构的原胞
+    生成晶体结构的原胞
     
     参数:
         file_path: CIF文件路径
@@ -455,65 +624,47 @@ def generate_primitive_cell(file_path):
             current_app.logger.error(error_msg)
             return json.dumps({"error": error_msg})
         
-        # 使用pymatgen加载晶体结构
+        # 加载晶体结构
         structure = Structure.from_file(file_path)
         
-        # 导入SpacegroupAnalyzer用于寻找原胞
-        from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-        
-        # 创建SpacegroupAnalyzer对象，使用合适的公差参数
-        # 使用较宽松的公差0.1，以便更稳健地找到原胞
-        analyzer = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5)
-        
-        # 获取原胞结构
-        primitive_structure = analyzer.find_primitive()
-        
-        # 如果无法找到原胞，则使用原始结构
-        if primitive_structure is None:
-            current_app.logger.warning(f"No primitive cell found, using original structure")
-            primitive_structure = structure
-        
-        # 提取晶格参数
-        lattice = primitive_structure.lattice
-        lattice_data = {
-            'a': lattice.a,  # a轴长度（埃）
-            'b': lattice.b,  # b轴长度（埃）
-            'c': lattice.c,  # c轴长度（埃）
-            'alpha': lattice.alpha,  # alpha角（度）
-            'beta': lattice.beta,    # beta角（度）
-            'gamma': lattice.gamma,  # gamma角（度）
-            'matrix': lattice.matrix.tolist()  # 晶格矩阵，转换为列表以便JSON序列化
-        }
-        
-        # 提取原子信息
-        atoms = []
-        for site in primitive_structure.sites:
-            atom = {
-                'element': site.species_string,  # 元素符号
-                'position': site.coords.tolist(),  # 笛卡尔坐标
-                'frac_coords': site.frac_coords.tolist(),  # 分数坐标
-                'properties': {
-                    'label': site.species_string,  # 原子标签（用于显示）
-                    'radius': get_atom_radius(site.species_string)  # 原子半径（用于3D渲染）
-                }
-            }
-            atoms.append(atom)
-        
-        # 构建完整的结构数据
-        structure_data = {
-            'formula': primitive_structure.formula,  # 化学式
-            'name': primitive_structure.composition.reduced_formula,  # 简化化学式
-            'lattice': lattice_data,        # 晶格参数
-            'atoms': atoms,                 # 原子列表
-            'num_atoms': len(atoms),        # 原子总数
-            'isPrimitive': True             # 标记为原胞
-        }
+        # 处理结构并获取数据
+        structure_data = _process_structure(structure, cell_type='primitive')
         
         # 返回JSON字符串
         return json.dumps(structure_data)
-    
+        
     except Exception as e:
-        # 记录错误并返回错误JSON
         error_msg = f"Error generating primitive cell: {str(e)}"
+        current_app.logger.error(error_msg)
+        return json.dumps({"error": error_msg})
+
+def generate_conventional_cell(file_path):
+    """
+    生成晶体结构的常规胞（传统胞）
+    
+    参数:
+        file_path: CIF文件路径
+    
+    返回:
+        常规胞结构的JSON字符串，失败则返回错误JSON
+    """
+    try:
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            error_msg = f"Structure file not found: {file_path}"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+        
+        # 加载晶体结构
+        structure = Structure.from_file(file_path)
+        
+        # 处理结构并获取数据
+        structure_data = _process_structure(structure, cell_type='conventional')
+        
+        # 返回JSON字符串
+        return json.dumps(structure_data)
+        
+    except Exception as e:
+        error_msg = f"Error generating conventional cell: {str(e)}"
         current_app.logger.error(error_msg)
         return json.dumps({"error": error_msg})
