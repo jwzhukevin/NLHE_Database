@@ -6,7 +6,7 @@ import json
 import os
 from flask import Blueprint, jsonify, request, current_app
 from .models import Material, db
-from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data, generate_primitive_cell
+from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data, _process_structure, generate_primitive_cell
 
 # 创建API蓝图
 # 定义前缀为/api的路由组
@@ -47,6 +47,47 @@ def get_structure(material_id):
         # 捕获所有异常并返回500错误
         return jsonify({"error": str(e)}), 500
 
+
+
+
+@bp.route('/structure/<int:material_id>/conventional', methods=['GET'])
+def get_conventional_cell(material_id):
+    """
+    获取指定材料的传统胞结构数据
+    
+    参数:
+        material_id: 材料ID，用于在数据库中查找对应的材料记录
+    
+    返回:
+        包含传统胞结构数据的JSON响应
+    """
+    try:
+        # 查询材料记录
+        material = Material.query.get_or_404(material_id)
+        
+        # 获取CIF文件名
+        filename = material.structure_file if hasattr(material, 'structure_file') else None
+        if not filename:
+            filename = find_structure_file(material_id=material_id, material_name=material.name)
+            if not filename:
+                return jsonify({"error": "Structure file not found"}), 404
+        
+        # 构建文件路径
+        file_path = os.path.join(current_app.root_path, 'static/structures', filename)
+        if not os.path.exists(file_path):
+            return jsonify({"error": "Structure file not found"}), 404
+        
+        # 加载结构并转换为传统胞
+        from pymatgen.core import Structure
+        structure = Structure.from_file(file_path)
+        structure_data = _process_structure(structure, cell_type='conventional')
+        
+        # 返回JSON响应
+        return jsonify(structure_data)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error converting to conventional cell: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @bp.route('/structure/upload/<int:material_id>', methods=['POST'])
 def upload_structure(material_id):

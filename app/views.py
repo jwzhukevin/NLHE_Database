@@ -3,11 +3,13 @@
 # 包含首页、材料详情页、添加/编辑材料、用户认证等路由
 
 # 导入所需模块
-from flask import Blueprint, render_template, request, redirect, url_for, flash  # Flask 核心模块
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app  # Flask 核心模块
 from flask_login import login_user, logout_user, login_required, current_user  # 用户认证模块
 from sqlalchemy import and_, or_  # 数据库查询条件构造器
-from .models import User, Material  # 自定义数据模型
+from .models import User, Material, BlockedIP  # 自定义数据模型
 from . import db  # 数据库实例
+import datetime  # 处理日期和时间
+import functools  # 用于装饰器
 
 # 创建名为'views'的蓝图，用于模块化路由管理
 bp = Blueprint('views', __name__)
@@ -40,9 +42,13 @@ def remove_key_filter(d, exclude_key):
 
 # 首页路由（支持复杂搜索和分页）
 @bp.route('/')
+def landing():
+    """网站介绍页面 - 展示网站特性和功能概览"""
+    return render_template('landing.html')
+
+@bp.route('/database')
 def index():
-    """
-    网站首页 - 显示材料列表，支持搜索、筛选和分页
+    """材料数据库页面 - 显示材料列表，支持搜索、筛选和分页
     
     支持的GET参数:
         q: 搜索关键词
@@ -160,7 +166,7 @@ def add():
             material_data = {
                 'name': request.form.get('name'),  # 材料名称（必填）
                 'status': request.form.get('status'),  # 状态（必填）
-                'structure_file': filename,  # 结构文件路径
+                'structure_file': structure_filename,  # 结构文件路径
                 'total_energy': float(request.form.get('total_energy')),  # 总能量
                 'formation_energy': float(request.form.get('formation_energy')),  # 形成能
                 'fermi_level': safe_float(request.form.get('fermi_level')),  # 费米能级（允许空）
@@ -366,30 +372,96 @@ def delete(material_id):
     flash('Material deleted.', 'success')  # 显示成功消息
     return redirect(url_for('views.index'))  # 重定向到首页
 
+# 获取客户端IP的辅助函数
+def get_client_ip():
+    """获取当前请求的客户端IP地址
+    
+    返回: 
+        字符串，表示客户端的IP地址
+    """
+    if request.environ.get('HTTP_X_FORWARDED_FOR'):
+        return request.environ['HTTP_X_FORWARDED_FOR']
+    elif request.environ.get('HTTP_X_REAL_IP'):
+        return request.environ['HTTP_X_REAL_IP']
+    else:
+        return request.remote_addr
+
+# IP封锁检查装饰器
+def check_ip_blocked(view_func):
+    """检查IP是否被封锁的装饰器
+    
+    如果IP被封锁，重定向到首页并显示警告信息
+    """
+    @functools.wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        client_ip = get_client_ip()
+        
+        # 检查IP是否在封锁列表中
+        blocked = BlockedIP.query.filter_by(ip_address=client_ip).first()
+        if blocked:
+            flash('Access denied. Your IP has been blocked due to multiple failed login attempts.', 'error')
+            return redirect(url_for('views.landing'))
+        
+        return view_func(*args, **kwargs)
+    
+    return wrapped_view
+
 # 用户登录路由
 @bp.route('/login', methods=['GET', 'POST'])
+@check_ip_blocked  # 应用IP封锁检查装饰器
 def login():
     """
     用户登录页面和处理逻辑
     
     GET请求: 显示登录表单
-    POST请求: 验证凭据并执行登录
+    POST请求: 验证凭据并执行登录，跟踪失败尝试次数
     """
     if request.method == 'POST':
         username = request.form['username']  # 获取表单中的用户名
         password = request.form['password']  # 获取表单中的密码
+        client_ip = get_client_ip()  # 获取客户端IP
+        
+        # 使用会话存储登录尝试次数
+        if 'login_attempts' not in session:
+            session['login_attempts'] = 0
+        
         if not username or not password:  # 空值检查
             flash('Invalid input.', 'error')  # 显示错误消息
             return redirect(url_for('views.login'))  # 重定向回登录页
         
         user = User.query.filter_by(username=username).first()  # 根据用户名精确查询
         if user and user.validate_password(password):  # 验证密码
+            # 登录成功，重置尝试次数
+            session.pop('login_attempts', None)
             login_user(user)  # Flask-Login登录方法，管理用户会话
             flash('Login success.', 'success')  # 显示成功消息
             return redirect(url_for('views.index'))  # 重定向到首页
         
-        flash('Invalid username or password.', 'error')  # 显示错误消息
-        return redirect(url_for('views.login'))  # 重定向回登录页
+        # 登录失败，增加尝试次数
+        session['login_attempts'] += 1
+        current_attempts = session['login_attempts']
+        
+        # 检查是否达到最大尝试次数
+        if current_attempts >= 10:
+            # 创建新的IP封锁记录
+            blocked_ip = BlockedIP(
+                ip_address=client_ip,
+                blocked_at=datetime.datetime.now()
+            )
+            db.session.add(blocked_ip)
+            db.session.commit()
+            
+            # 清除会话中的尝试计数
+            session.pop('login_attempts', None)
+            
+            flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+            return redirect(url_for('views.landing'))
+        
+        # 显示错误消息和剩余尝试次数
+        remaining_attempts = 10 - current_attempts
+        flash(f'Invalid username or password. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
+        return redirect(url_for('views.login'))
+        
     return render_template('login.html')  # GET请求返回登录表单
 
 # 用户退出路由

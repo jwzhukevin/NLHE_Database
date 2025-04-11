@@ -1,12 +1,188 @@
 {% extends 'base.html' %}
 
-
 {% block content %}
+<section class="settings-hero">
+    <div class="container">
+        <h1>User Settings</h1>
+        <p>Customize your experience with the NLHE Database</p>
+    </div>
+</section>
 
-<form method="post">
-    <h2><span class="title2">Setting</span></h2>
-    <label style="display: inline-block; width: 100px; margin-bottom: 5px;">Web name</label>
-	<input type="text" name="name" autocomplete="off" required value="{{ current_user.name }}">
-    <input class="btn" type="submit" name="submit" value="Save">
-</form>
+<section class="settings-container">
+    <div class="container">
+        <div class="settings-card">
+            <div class="card-header">
+                <h3>Account Settings</h3>
+            </div>
+            <div class="card-content">
+                <form method="post" class="settings-form">
+                    <div class="form-group">
+                        <label for="name">Website Name</label>
+                        <input type="text" id="name" name="name" autocomplete="off" required value="{{ current_user.name }}">
+                        <p class="field-hint">This name will be displayed throughout the website interface.</p>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" name="submit" class="btn primary-btn">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <a href="{{ url_for('views.index') }}" class="btn secondary-btn">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Hero section */
+    .settings-hero {
+        padding: 4rem 0 2rem;
+        text-align: center;
+        background: linear-gradient(135deg, #0047AB, #1E5CB3);
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .settings-hero h1 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .settings-hero p {
+        font-size: clamp(1rem, 2vw, 1.25rem);
+        max-width: 800px;
+        margin: 0 auto;
+        opacity: 0.9;
+    }
+
+    /* Settings container */
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto 3rem;
+        padding: 0 1rem;
+    }
+
+    /* Card styling */
+    .settings-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
+
+    .card-header {
+        background: #f1f5f9;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+
+    /* Form styling */
+    .settings-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #333;
+        font-size: 1rem;
+    }
+
+    .form-group input {
+        height: 2.5rem;
+        padding: 0 1rem;
+        border: 1px solid #D9E2F0;
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-group input:focus {
+        border-color: #0047AB;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+    }
+
+    .field-hint {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    /* Button styling */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    .primary-btn {
+        background-color: #0047AB;
+        color: white;
+    }
+
+    .primary-btn:hover {
+        background-color: #003A8C;
+        transform: translateY(-1px);
+    }
+
+    .secondary-btn {
+        background-color: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        text-decoration: none;
+    }
+
+    .secondary-btn:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .card-content {
+            padding: 1.25rem;
+        }
+    }
+</style>
 {% endblock %}

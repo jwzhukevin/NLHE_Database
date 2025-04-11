@@ -1,78 +1,373 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <link rel="icon" href="{{ url_for('static', filename='images/head.jpeg') }}">
-    <meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user.name }} by jwzhukevin</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLHE Database - Nonlinear Hall Effect Materials Database</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ========== 全局变量和基础样式 ========== */
+        :root {
+            /* Theme colors */
+            --primary-color: #0047AB;    /* Cobalt blue - primary color */
+            --secondary-color: #1E5CB3;   /* Lighter blue */
+            --accent-color: #007FFF;      /* Sky blue - accent color */
+            --text-color: #333333;        /* Dark gray text */
+            --light-bg: #F5F8FF;          /* Very light blue background */
+            
+            /* Shadows and borders */
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+            --input-border: #D9E2F0;
+            --input-focus: #0047AB;
+            --button-hover: #003A8C;
+            
+            /* Spacing and font sizes */
+            --spacing-xs: 0.25rem;    /* 4px */
+            --spacing-sm: 0.5rem;     /* 8px */
+            --spacing-md: 1rem;       /* 16px */
+            --spacing-lg: 1.5rem;     /* 24px */
+            --spacing-xl: 2rem;       /* 32px */
+            
+            /* Font sizes - using clamp for responsive sizing */
+            --font-size-sm: clamp(0.75rem, 0.8vw, 0.875rem);
+            --font-size-base: clamp(0.875rem, 1vw, 1rem);
+            --font-size-lg: clamp(1rem, 1.2vw, 1.25rem);
+            --font-size-xl: clamp(1.25rem, 1.5vw, 1.5rem);
+            
+            /* Button styles */
+            --button-padding: 0.5rem 1rem;
+            --button-radius: 0.375rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* ========== 公共组件样式 ========== */
+        /* 按钮基础样式 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: var(--button-padding);
+            border-radius: var(--button-radius);
+            transition: background-color 0.3s;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-base);
+        }
+
+        .btn:hover {
+            background-color: var(--button-hover);
+        }
+
+        /* 输入框样式 */
+        input, select, textarea {
+            width: 100%;
+            padding: var(--spacing-sm);
+            border: 1px solid var(--input-border);
+            border-radius: var(--button-radius);
+            font-size: var(--font-size-base);
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--input-focus);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        /* 主内容区域样式 */
+        .main-content {
+            padding-top: 64px; /* 与导航栏高度匹配 */
+            min-height: calc(100vh - 350px); /* 基于页脚高度调整 */
+        }
+
+        /* 详情页专用调整 */
+        .main-content .material-detail-container {
+            padding-top: 0;
+        }
+    </style>
 </head>
 <body>
-    <div class="profile-header">
-        <img 
-            alt="Woo!!!" 
-            src="{{ url_for('static', filename='images/head.jpeg') }}" 
-        >
-        <h2>
-            <span>{{ user.name }}</span>
-        </h2>
-    </div>
-	
-	<nav>
-        <ul>
-            <!-- 使用 Font Awesome 图标库 -->
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-            
-            <li>
+    <!-- ========== 导航栏 ========== -->
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> NLHE Database</a>
+            <div class="nav-links">
+                <a href="{{ url_for('views.landing') }}">
+                    <i class="fas fa-home"></i> Home
+                </a>
                 <a href="{{ url_for('views.index') }}">
-                    <i class="fas fa-home"></i>
-					<span class="title1">Home</span>
+                    <i class="fas fa-table"></i> Database
                 </a>
-            </li>
-            
-            {% if current_user.is_authenticated %}
-			<li>
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" id="tools-dropdown">
+                        <i class="fas fa-tools"></i> Tools <i class="fas fa-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu" id="tools-menu">
+                        <a href="https://materialsproject.org/ml" target="_blank">
+                            <i class="fas fa-brain"></i> MP Machine Learning
+                        </a>
+                        <a href="https://www.materialscloud.org/work/tools" target="_blank">
+                            <i class="fas fa-cloud"></i> Materials Cloud Tools
+                        </a>
+                        <a href="https://nomad-lab.eu/nomad-lab/" target="_blank">
+                            <i class="fas fa-atom"></i> NOMAD Laboratory
+                        </a>
+                    </div>
+                </div>
+                {% if current_user.is_authenticated %}
                 <a href="{{ url_for('views.add') }}">
-                    <i class="fas fa-add"></i>
-					<span class="title1">Add</span>
+                    <i class="fas fa-plus"></i> Add
                 </a>
-            </li>
-            <li>
                 <a href="{{ url_for('views.settings') }}">
-                    <i class="fas fa-cogs"></i>
-					<span class="title1">Settings</span>
+                    <i class="fas fa-cogs"></i> Settings
                 </a>
-            </li>
-            <li>
                 <a href="{{ url_for('views.logout') }}">
-                    <i class="fas fa-sign-out-alt"></i>
-					<span class="title1" >Logout</span>
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
-            </li>
-			{% else %}
-			<li>
+                {% else %}
                 <a href="{{ url_for('views.login') }}">
-                    <i class="fas fa-sign-in-alt"></i>
-					<span class="title1">Login</span>
+                    <i class="fas fa-sign-in-alt"></i> Login
                 </a>
-            </li>
-            {% endif %}
-        </ul>
+                {% endif %}
+            </div>
+        </div>
     </nav>
-    	{% block content %}{% endblock %}
-    <img 
-        alt="Hello!!!" 
-        src="{{ url_for('static', filename='images/footer.jpg') }}" 
-        style="display: block; margin: 20px auto; max-width: 100%;"
-    >
-    <footer>
-        <small>&copy; 2025 Powered by <a href="https://github.com/pallets/flask"> Flask </a>
-		                   & The web's <a href="https://github.com/jwzhukevin/watchlist"> Code </a>
-						   </small>
+
+    <style>
+        /* ========== 导航栏样式 ========== */
+        .navbar {
+            background-color: rgb(181, 222, 253);
+            box-shadow: var(--card-shadow);
+            padding: var(--spacing-md) 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-xl);
+            position: relative;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--button-radius);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            background-color: var(--light-bg);
+        }
+
+        .nav-links a i {
+            font-size: 1rem;
+        }
+
+        /* 下拉菜单样式 */
+        .dropdown {
+            position: relative;
+        }
+        
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: rgb(181, 222, 253);
+            border-radius: var(--button-radius);
+            box-shadow: var(--card-shadow);
+            min-width: 200px;
+            z-index: 1001;
+            flex-direction: column;
+            margin-top: 5px;
+        }
+
+        .dropdown-menu a {
+            padding: var(--spacing-md);
+            border-radius: 0;
+            width: 100%;
+        }
+
+        .dropdown-menu a:first-child {
+            border-top-left-radius: var(--button-radius);
+            border-top-right-radius: var(--button-radius);
+        }
+
+        .dropdown-menu a:last-child {
+            border-bottom-left-radius: var(--button-radius);
+            border-bottom-right-radius: var(--button-radius);
+        }
+
+        .dropdown-menu a:hover {
+            background-color: var(--light-bg);
+        }
+
+        .dropdown-menu.show {
+            display: flex;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+
+    <!-- ========== 主内容区域 ========== -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- ========== 页脚 ========== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>NLHE Database</h3>
+                    <p>Nonlinear Hall Effect Materials Database</p>
+                    <p>Explore and discover novel nonlinear Hall effect materials</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Related Links</h3>
+                    <ul>
+                        <li><a href="https://gs.imr.ac.cn/" target="_blank">IMR Graduate School, CAS</a></li>
+                        <li><a href="http://www.imr.cas.cn/" target="_blank">Institute of Metal Research, CAS</a></li>
+                        <li><a href="https://www.cas.cn/" target="_blank">Chinese Academy of Sciences</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <p>Address: 72 Wenhua Road, Shenhe District, Shenyang</p>
+                    <p>Postal Code: 110016</p>
+                    <p>Email: contact@nlhe-database.org</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 NLHE Database. Powered by <a href="https://github.com/pallets/flask">Flask</a> & <a href="https://github.com/jwzhukevin/watchlist">Code</a></p>
+            </div>
+        </div>
     </footer>
+
+    <style>
+        /* ========== 页脚样式 ========== */
+        .footer {
+            background-color: rgb(181, 222, 253);
+            padding: var(--spacing-xl) 0;
+            box-shadow: var(--card-shadow);
+            font-size: var(--font-size-sm);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: var(--font-size-lg);
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--input-border);
+            padding-top: 1.5rem;
+            text-align: center;
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            color: var(--secondary-color);
+        }
+    </style>
+    
+    <!-- ========== 下拉菜单脚本 ========== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toolsDropdown = document.getElementById('tools-dropdown');
+            const toolsMenu = document.getElementById('tools-menu');
+            
+            // 点击Tools下拉按钮时切换菜单显示
+            toolsDropdown.addEventListener('click', function(e) {
+                e.preventDefault();
+                toolsMenu.classList.toggle('show');
+            });
+            
+            // 点击页面其他位置时关闭下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!toolsDropdown.contains(e.target) && !toolsMenu.contains(e.target)) {
+                    toolsMenu.classList.remove('show');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 

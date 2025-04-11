@@ -256,10 +256,10 @@ function initCrystalViewer(containerId) {
     // 参数2: 宽高比 - 根据容器尺寸计算,保持图像不变形
     // 参数3: 近裁剪面 - 0.1,小于此距离的物体不会被渲染
     // 参数4: 远裁剪面 - 1000,大于此距离的物体不会被渲染
-    camera = new THREE.PerspectiveCamera(70, width / height, 0.1, 1000);
-    camera.position.x = 12; // 设置相机初始位置
-    camera.position.y = 12; // 设置相机初始位置
-    camera.position.z = 12; // 设置相机初始位置
+    camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+    camera.position.x = 8; // 设置相机初始位置
+    camera.position.y = 8; // 设置相机初始位置
+    camera.position.z = 8; // 设置相机初始位置
 
     // 创建WebGL渲染器
     renderer = new THREE.WebGLRenderer({ 
@@ -275,11 +275,11 @@ function initCrystalViewer(containerId) {
     controls.enableDamping = true; // 启用阻尼效果，使控制更平滑
     controls.dampingFactor = 0.25; // 设置阻尼系数
     controls.screenSpacePanning = true; // 启用屏幕空间平移，避免平移时改变旋转中心
-    controls.maxDistance = 100; // 设置最大缩放距离
-    controls.minDistance = 1; // 设置最小缩放距离
-    controls.rotateSpeed = 0.8; // 设置适当的旋转速度
-    controls.zoomSpeed = 1.0; // 设置适当的缩放速度
-    controls.panSpeed = 0.8; // 设置适当的平移速度
+    controls.maxDistance = 50; // 设置最大缩放距离
+    controls.minDistance = 2; // 设置最小缩放距离
+    controls.rotateSpeed = 0.6; // 设置适当的旋转速度
+    controls.zoomSpeed = 0.8; // 设置适当的缩放速度
+    controls.panSpeed = 0.6; // 设置适当的平移速度
     controls.addEventListener('change', function() {
         // 控制器变化时，确保更新射线以修复悬停问题
         updateRaycasterFromMouse();
@@ -353,23 +353,29 @@ function createToolbar(container) {
     const toolbar = document.createElement('div');
     toolbar.className = 'crystal-toolbar'; // 设置CSS类名便于样式调整
     toolbar.style.position = 'absolute'; // 使用绝对定位
-    toolbar.style.top = '10px'; // 距顶部10px
-    toolbar.style.right = '10px'; // 定位在右上角
+    toolbar.style.top = '20px'; // 距顶部20px
+    toolbar.style.right = '20px'; // 定位在右上角
     toolbar.style.display = 'flex'; // 使用flex布局排列按钮
-    toolbar.style.gap = '10px'; // 按钮之间的间距
+    toolbar.style.gap = '15px'; // 按钮之间的间距增加到15px
     toolbar.style.zIndex = '1000'; // 设置层级确保在上层显示
+    toolbar.style.padding = '10px'; // 添加内边距
+    toolbar.style.backgroundColor = 'rgba(255, 255, 255, 0.9)'; // 半透明白色背景
+    toolbar.style.borderRadius = '5px'; // 圆角边框
+    toolbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)'; // 添加阴影效果
     
     // 创建截图按钮
     const screenshotBtn = document.createElement('button');
     screenshotBtn.innerHTML = '<i class="fas fa-camera"></i>'; // 使用Font Awesome图标
     screenshotBtn.title = '截图'; // 设置鼠标悬停提示文字
     screenshotBtn.className = 'toolbar-btn'; // 设置CSS类名
-    screenshotBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; // 半透明白色背景
-    screenshotBtn.style.border = 'none'; // 无边框
-    screenshotBtn.style.borderRadius = '5px'; // 圆角边框
-    screenshotBtn.style.padding = '8px'; // 内边距
+    screenshotBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)'; // 更高透明度的白色背景
+    screenshotBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)'; // 添加细边框
+    screenshotBtn.style.borderRadius = '6px'; // 圆角边框
+    screenshotBtn.style.padding = '10px 12px'; // 增加内边距
     screenshotBtn.style.cursor = 'pointer'; // 鼠标悬停时显示手型光标
-    screenshotBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)'; // 添加阴影效果
+    screenshotBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)'; // 柔和的阴影效果
+    screenshotBtn.style.fontSize = '16px'; // 设置字体大小
+    screenshotBtn.style.transition = 'all 0.2s ease'; // 添加过渡效果
     screenshotBtn.addEventListener('click', takeScreenshot); // 添加点击事件监听器
     toolbar.appendChild(screenshotBtn); // 将按钮添加到工具栏
     
@@ -378,12 +384,14 @@ function createToolbar(container) {
     downloadCIFBtn.innerHTML = '<i class="fas fa-download"></i>'; // 使用下载图标
     downloadCIFBtn.title = '下载CIF文件'; // 设置提示文字
     downloadCIFBtn.className = 'toolbar-btn';
-    downloadCIFBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-    downloadCIFBtn.style.border = 'none';
-    downloadCIFBtn.style.borderRadius = '5px';
-    downloadCIFBtn.style.padding = '8px';
+    downloadCIFBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+    downloadCIFBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+    downloadCIFBtn.style.borderRadius = '6px';
+    downloadCIFBtn.style.padding = '10px 12px';
     downloadCIFBtn.style.cursor = 'pointer';
-    downloadCIFBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
+    downloadCIFBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)';
+    downloadCIFBtn.style.fontSize = '16px';
+    downloadCIFBtn.style.transition = 'all 0.2s ease';
     downloadCIFBtn.addEventListener('click', downloadCIFFile); // 添加下载CIF文件的点击事件
     toolbar.appendChild(downloadCIFBtn);
     
@@ -392,12 +400,14 @@ function createToolbar(container) {
     resetViewBtn.innerHTML = '<i class="fas fa-redo-alt"></i>'; // 使用重置图标
     resetViewBtn.title = '重置视图'; // 设置提示文字
     resetViewBtn.className = 'toolbar-btn';
-    resetViewBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-    resetViewBtn.style.border = 'none';
-    resetViewBtn.style.borderRadius = '5px';
-    resetViewBtn.style.padding = '8px';
+    resetViewBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+    resetViewBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+    resetViewBtn.style.borderRadius = '6px';
+    resetViewBtn.style.padding = '10px 12px';
     resetViewBtn.style.cursor = 'pointer';
-    resetViewBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
+    resetViewBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)';
+    resetViewBtn.style.fontSize = '16px';
+    resetViewBtn.style.transition = 'all 0.2s ease';
     resetViewBtn.addEventListener('click', resetView); // 添加重置视图的点击事件
     toolbar.appendChild(resetViewBtn);
     
@@ -409,14 +419,16 @@ function createToolbar(container) {
     // 创建模型切换按钮
     const modelTypeBtn = document.createElement('button');
     modelTypeBtn.innerHTML = '<i class="fas fa-cubes"></i>'; // 使用立方体图标
-    modelTypeBtn.title = '切换模型类型'; // 设置提示文字
+    modelTypeBtn.title = 'Switch Model Type'; // 设置提示文字
     modelTypeBtn.className = 'toolbar-btn';
-    modelTypeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-    modelTypeBtn.style.border = 'none';
-    modelTypeBtn.style.borderRadius = '5px';
-    modelTypeBtn.style.padding = '8px';
+    modelTypeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+    modelTypeBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+    modelTypeBtn.style.borderRadius = '6px';
+    modelTypeBtn.style.padding = '10px 12px';
     modelTypeBtn.style.cursor = 'pointer';
-    modelTypeBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
+    modelTypeBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)';
+    modelTypeBtn.style.fontSize = '16px';
+    modelTypeBtn.style.transition = 'all 0.2s ease';
     
     // 创建模型类型下拉菜单
     const modelTypeDropdown = document.createElement('div');
@@ -425,18 +437,20 @@ function createToolbar(container) {
     modelTypeDropdown.style.top = '100%'; // 定位在按钮下方
     modelTypeDropdown.style.right = '0'; // 右对齐
     modelTypeDropdown.style.backgroundColor = 'white'; // 白色背景
-    modelTypeDropdown.style.borderRadius = '5px'; // 圆角边框
-    modelTypeDropdown.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)'; // 阴影效果
+    modelTypeDropdown.style.borderRadius = '8px'; // 增加圆角
+    modelTypeDropdown.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.15)'; // 更柔和的阴影
     modelTypeDropdown.style.display = 'none'; // 初始状态为隐藏
     modelTypeDropdown.style.zIndex = '1001'; // 确保显示在最上层
-    modelTypeDropdown.style.marginTop = '5px'; // 与按钮保持间距
-    modelTypeDropdown.style.width = '150px'; // 设置下拉菜单宽度
+    modelTypeDropdown.style.marginTop = '8px'; // 增加与按钮的间距
+    modelTypeDropdown.style.width = '180px'; // 增加下拉菜单宽度
+    modelTypeDropdown.style.border = '1px solid rgba(0, 0, 0, 0.1)'; // 添加边框
+    modelTypeDropdown.style.padding = '6px 0'; // 添加内边距
     
     // 定义可选的模型类型选项
     const modelOptions = [
-        { label: '球棍模型', value: 'ball-and-stick' },
-        { label: '球模型', value: 'ball' },
-        { label: '棍模型', value: 'stick' }
+        { label: 'ball-and-stick', value: 'ball-and-stick' },
+        { label: 'ball', value: 'ball' },
+        { label: 'stick', value: 'stick' }
     ];
     
     // 为每个模型类型创建DOM元素
@@ -446,9 +460,20 @@ function createToolbar(container) {
         modelOption.className = 'model-option';
         modelOption.style.display = 'flex'; // 使用flex布局
         modelOption.style.alignItems = 'center'; // 垂直居中对齐
-        modelOption.style.padding = '8px 12px'; // 内边距
+        modelOption.style.padding = '10px 15px'; // 增加内边距
         modelOption.style.cursor = 'pointer'; // 鼠标悬停时显示手型光标
-        modelOption.style.borderBottom = '1px solid #eee'; // 底部分隔线
+        modelOption.style.borderBottom = '1px solid rgba(0, 0, 0, 0.06)'; // 更淡的分隔线
+        modelOption.style.fontSize = '14px'; // 设置字体大小
+        modelOption.style.transition = 'background-color 0.2s ease'; // 添加过渡效果
+        modelOption.style.color = '#333'; // 设置文字颜色
+        
+        // 添加悬停效果
+        modelOption.addEventListener('mouseover', () => {
+            modelOption.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+        });
+        modelOption.addEventListener('mouseout', () => {
+            modelOption.style.backgroundColor = 'transparent';
+        });
         
         // 创建选项图标
         const optionIcon = document.createElement('div');
@@ -651,9 +676,9 @@ function handleAtomClick(atom) {
                 atomTooltip.innerHTML = `
                     <div class="element-symbol">${element}</div>
                     <div class="element-details">
-                        <div>位置: (${position[0].toFixed(3)}, ${position[1].toFixed(3)}, ${position[2].toFixed(3)})</div>
-                        ${properties.charge ? `<div>电荷: ${properties.charge}</div>` : ''}
-                        ${properties.coordination ? `<div>配位数: ${properties.coordination}</div>` : ''}
+                        <div>Position: (${position[0].toFixed(3)}, ${position[1].toFixed(3)}, ${position[2].toFixed(3)})</div>
+                        ${properties.charge ? `<div>Charge: ${properties.charge}</div>` : ''}
+                        ${properties.coordination ? `<div>Coordination Number: ${properties.coordination}</div>` : ''}
                     </div>
                 `;
                 atomTooltip.style.display = 'block'; // 显示提示框
@@ -1146,23 +1171,6 @@ function renderCrystalStructure(structureData) {
     hoveredAtom = null;
     if (atomTooltip) {
         atomTooltip.style.display = 'none';
-    }
-    
-    // 如果是原胞，添加标识到场景中
-    if (isPrimitive) {
-        const primitiveLabel = document.createElement('div');
-        primitiveLabel.className = 'primitive-cell-label';
-        primitiveLabel.textContent = '原胞';
-        primitiveLabel.style.position = 'absolute';
-        primitiveLabel.style.top = '10px';
-        primitiveLabel.style.left = '10px';
-        primitiveLabel.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        primitiveLabel.style.color = 'white';
-        primitiveLabel.style.padding = '5px 10px';
-        primitiveLabel.style.borderRadius = '3px';
-        primitiveLabel.style.fontSize = '14px';
-        primitiveLabel.style.zIndex = '1000';
-        document.querySelector('#crystalViewer').appendChild(primitiveLabel);
     }
 
     // 清除现有结构，避免重叠显示
@@ -2089,7 +2097,7 @@ function createPrimitiveCellButton(container) {
     // 创建主按钮
     const mainButton = document.createElement('button');
     mainButton.className = 'primitive-cell-button';
-    mainButton.textContent = '显示原胞';
+    mainButton.textContent = 'Primitive Cell';
     mainButton.style.position = 'absolute';
     mainButton.style.bottom = '10px';
     mainButton.style.right = '10px';
@@ -2133,29 +2141,30 @@ function createSupercellPanel(container) {
     panel.style.right = '10px';
     panel.style.bottom = '10px';
     panel.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-    panel.style.padding = '15px';
+    panel.style.padding = '10px';
     panel.style.borderRadius = '8px';
     panel.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
     panel.style.zIndex = '1000';
     panel.style.display = 'flex';
     panel.style.flexDirection = 'column';
-    panel.style.gap = '10px';
+    panel.style.gap = '8px';
+    panel.style.minWidth = '220px';
 
     // 创建转换按钮
     const transformBtn = document.createElement('button');
-    transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+    transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Transform';
     transformBtn.className = 'transform-btn';
-    transformBtn.style.padding = '8px 15px';
+    transformBtn.style.padding = '2px 4px';
     transformBtn.style.backgroundColor = '#4CAF50';
     transformBtn.style.color = 'white';
     transformBtn.style.border = 'none';
     transformBtn.style.borderRadius = '4px';
     transformBtn.style.cursor = 'pointer';
-    transformBtn.style.fontSize = '14px';
+    transformBtn.style.fontSize = '16px';
     transformBtn.style.display = 'flex';
     transformBtn.style.alignItems = 'center';
     transformBtn.style.justifyContent = 'center';
-    transformBtn.style.gap = '5px';
+    transformBtn.style.gap = '3px';
     panel.appendChild(transformBtn);
 
     // 创建编辑界面容器
@@ -2171,20 +2180,47 @@ function createSupercellPanel(container) {
         const inputGroup = document.createElement('div');
         inputGroup.style.display = 'flex';
         inputGroup.style.alignItems = 'center';
-        inputGroup.style.gap = '5px';
+        inputGroup.style.justifyContent = 'center';
+        // 设置输入组内元素之间的间距为10像素
+        inputGroup.style.gap = '8px';
+        // 设置输入组底部外边距为5像素，使布局更紧凑
+        inputGroup.style.marginBottom = '5px';
 
         const label = document.createElement('label');
-        label.textContent = `${dir}方向:`;
-        label.style.width = '60px';
+        label.textContent = `${dir} Direction:`;
+        // 设置标签宽度为80像素，减少留白
+        label.style.width = '80px';
+        // 统一字体大小为14像素
+        label.style.fontSize = '14px';
+        // 使用正常字重，保持一致性
+        label.style.fontWeight = 'normal';
+        // 设置文本右对齐,使标签文本与输入框之间有清晰的视觉分隔
+        label.style.textAlign = 'right';
 
         const input = document.createElement('input');
         input.type = 'number';
         input.min = '1';
         input.value = '1';
-        input.style.width = '60px';
-        input.style.padding = '4px';
+        input.style.width = '80px';
+        input.style.padding = '4px 8px';
         input.style.border = '1px solid #ccc';
         input.style.borderRadius = '4px';
+        input.style.fontSize = '14px';
+        input.style.transition = 'all 0.1s ease';
+        input.style.textAlign = 'center';
+        
+        // 添加输入框悬停和焦点效果
+        input.addEventListener('mouseover', () => {
+            input.style.borderColor = '#2196F3';
+            input.style.boxShadow = '0 0 5px rgba(33, 150, 243, 0.3)';
+        });
+        
+        input.addEventListener('mouseout', () => {
+            if (document.activeElement !== input) {
+                input.style.borderColor = '#ccc';
+                input.style.boxShadow = 'none';
+            }
+        });
 
         inputGroup.appendChild(label);
         inputGroup.appendChild(input);
@@ -2194,44 +2230,87 @@ function createSupercellPanel(container) {
     // 创建按钮组
     const buttonGroup = document.createElement('div');
     buttonGroup.style.display = 'flex';
-    buttonGroup.style.gap = '10px';
+    buttonGroup.style.gap = '8px';
     buttonGroup.style.marginTop = '10px';
+    buttonGroup.style.justifyContent = 'center';
 
     // 创建显示原胞按钮
     const primitiveBtn = document.createElement('button');
-    primitiveBtn.textContent = '显示原胞';
+    primitiveBtn.textContent = 'Primitive Cell';
     primitiveBtn.className = 'cell-btn';
     primitiveBtn.style.flex = '1';
-    primitiveBtn.style.padding = '6px';
+    primitiveBtn.style.padding = '4px 6px';
     primitiveBtn.style.backgroundColor = '#2196F3';
     primitiveBtn.style.color = 'white';
     primitiveBtn.style.border = 'none';
     primitiveBtn.style.borderRadius = '4px';
     primitiveBtn.style.cursor = 'pointer';
+    primitiveBtn.style.fontSize = '14px';
+    primitiveBtn.style.fontWeight = 'normal';
+    primitiveBtn.style.transition = 'all 0.1s ease';
+    
+    // 添加按钮悬停效果
+    primitiveBtn.addEventListener('mouseover', () => {
+        primitiveBtn.style.backgroundColor = '#1976D2';
+        primitiveBtn.style.transform = 'scale(1.05)';
+    });
+    
+    primitiveBtn.addEventListener('mouseout', () => {
+        primitiveBtn.style.backgroundColor = '#2196F3';
+        primitiveBtn.style.transform = 'scale(1)';
+    });
 
     // 创建显示传统胞按钮
     const conventionalBtn = document.createElement('button');
-    conventionalBtn.textContent = '显示传统胞';
+    conventionalBtn.textContent = 'Conventional Cell';
     conventionalBtn.className = 'cell-btn';
     conventionalBtn.style.flex = '1';
-    conventionalBtn.style.padding = '6px';
+    conventionalBtn.style.padding = '4px 6px';
     conventionalBtn.style.backgroundColor = '#2196F3';
     conventionalBtn.style.color = 'white';
     conventionalBtn.style.border = 'none';
     conventionalBtn.style.borderRadius = '4px';
     conventionalBtn.style.cursor = 'pointer';
+    conventionalBtn.style.fontSize = '14px';
+    conventionalBtn.style.fontWeight = 'normal';
+    conventionalBtn.style.transition = 'all 0.1s ease';
+    
+    // 添加按钮悬停效果
+    conventionalBtn.addEventListener('mouseover', () => {
+        conventionalBtn.style.backgroundColor = '#1976D2';
+        conventionalBtn.style.transform = 'scale(1.05)';
+    });
+    
+    conventionalBtn.addEventListener('mouseout', () => {
+        conventionalBtn.style.backgroundColor = '#2196F3';
+        conventionalBtn.style.transform = 'scale(1)';
+    });
 
     // 创建完成按钮
     const doneBtn = document.createElement('button');
-    doneBtn.textContent = '完成';
+    doneBtn.textContent = 'Cell expansion';
     doneBtn.className = 'cell-btn';
     doneBtn.style.flex = '1';
-    doneBtn.style.padding = '6px';
+    doneBtn.style.padding = '4px 6px';
     doneBtn.style.backgroundColor = '#4CAF50';
     doneBtn.style.color = 'white';
     doneBtn.style.border = 'none';
     doneBtn.style.borderRadius = '4px';
     doneBtn.style.cursor = 'pointer';
+    doneBtn.style.fontSize = '14px';
+    doneBtn.style.fontWeight = 'normal';
+    doneBtn.style.transition = 'all 0.1s ease';
+    
+    // 添加按钮悬停效果
+    doneBtn.addEventListener('mouseover', () => {
+        doneBtn.style.backgroundColor = '#388E3C';
+        doneBtn.style.transform = 'scale(1.05)';
+    });
+    
+    doneBtn.addEventListener('mouseout', () => {
+        doneBtn.style.backgroundColor = '#4CAF50';
+        doneBtn.style.transform = 'scale(1)';
+    });
 
     buttonGroup.appendChild(primitiveBtn);
     buttonGroup.appendChild(conventionalBtn);
@@ -2245,29 +2324,102 @@ function createSupercellPanel(container) {
         if (editPanel.style.display === 'none') {
             editPanel.style.display = 'flex';
             transformBtn.style.backgroundColor = '#f44336';
-            transformBtn.innerHTML = '<i class="fas fa-times"></i> 关闭';
+            transformBtn.innerHTML = '<i class="fas fa-times"></i> Close';
         } else {
             editPanel.style.display = 'none';
             transformBtn.style.backgroundColor = '#4CAF50';
-            transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+            transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Transform';
         }
     });
 
     // 添加按钮点击事件
     primitiveBtn.addEventListener('click', () => {
-        const [x, y, z] = Array.from(editPanel.querySelectorAll('input')).map(input => parseInt(input.value));
-        updateSupercell(x, y, z, 'primitive');
+        // 获取当前材料ID
+        const materialId = window.currentMaterialId || getCurrentMaterialId();
+        if (!materialId) {
+            showErrorMessage('未找到材料ID');
+            return;
+        }
+
+        // 显示加载指示器
+        showLoadingIndicator();
+
+        // 调用原胞API
+        fetch(`/api/structure/${materialId}/primitive`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 隐藏加载指示器
+                hideLoadingIndicator();
+                
+                // 保存数据并标记为原胞
+                window.currentStructureData = data;
+                if (!data.id && materialId) {
+                    data.id = materialId;
+                }
+                data.isPrimitive = true;
+                
+                // 渲染新的晶体结构
+                renderCrystalStructure(data);
+            })
+            .catch(error => {
+                console.error('获取原胞数据失败:', error);
+                hideLoadingIndicator();
+                showErrorMessage(`转换为原胞失败。${error.message || '请稍后重试。'}`);
+            });
+
+        // 关闭编辑面板
         editPanel.style.display = 'none';
         transformBtn.style.backgroundColor = '#4CAF50';
-        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Transform';
     });
 
     conventionalBtn.addEventListener('click', () => {
-        const [x, y, z] = Array.from(editPanel.querySelectorAll('input')).map(input => parseInt(input.value));
-        updateSupercell(x, y, z, 'conventional');
+        // 获取当前材料ID
+        const materialId = window.currentMaterialId || getCurrentMaterialId();
+        if (!materialId) {
+            showErrorMessage('未找到材料ID');
+            return;
+        }
+
+        // 显示加载指示器
+        showLoadingIndicator();
+
+        // 调用传统胞API
+        fetch(`/api/structure/${materialId}/conventional`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 隐藏加载指示器
+                hideLoadingIndicator();
+                
+                // 保存数据
+                window.currentStructureData = data;
+                if (!data.id && materialId) {
+                    data.id = materialId;
+                }
+                
+                // 渲染新的晶体结构
+                renderCrystalStructure(data);
+            })
+            .catch(error => {
+                console.error('获取传统胞数据失败:', error);
+                hideLoadingIndicator();
+                showErrorMessage(`转换为传统胞失败。${error.message || '请稍后重试。'}`);
+            });
+
+        // 关闭编辑面板
         editPanel.style.display = 'none';
         transformBtn.style.backgroundColor = '#4CAF50';
-        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Transform';
     });
 
     doneBtn.addEventListener('click', () => {
@@ -2275,7 +2427,7 @@ function createSupercellPanel(container) {
         updateSupercell(x, y, z);
         editPanel.style.display = 'none';
         transformBtn.style.backgroundColor = '#4CAF50';
-        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> 转换';
+        transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Transform';
     });
 
     // 添加面板到容器
@@ -2291,8 +2443,8 @@ function convertToPrimitiveCell() {
     const materialId = window.currentMaterialId || getCurrentMaterialId();
     
     if (!materialId) {
-        showErrorMessage('材料ID未找到');
-        console.error('无法确定材料ID以进行原胞转换');
+        showErrorMessage('Material ID not found');
+        console.error('Cannot determine material ID for primitive cell conversion');
         return;
     }
     
@@ -2343,7 +2495,7 @@ function updatePrimitiveCellTitle(structureData) {
     const titleElement = document.getElementById('crystal-title');
     if (titleElement) {
         const originalTitle = titleElement.textContent;
-        titleElement.textContent = `${originalTitle} (原胞)`;
+        titleElement.textContent = `${originalTitle} (Prim)`;
     }
 }
 
@@ -2388,7 +2540,7 @@ function addTitleAndLegend(structureData) {
     
     // 如果是原胞，添加标记
     if (structureData.isPrimitive) {
-        structureName += ' (原胞)';
+        structureName += ' (Prim)';
     }
     
     title.textContent = structureName;
@@ -2478,7 +2630,7 @@ function getExpansionValues() {
         return { a: 1, b: 1, c: 1 };
     } catch (error) {
         // 发生错误时记录并返回默认值
-        console.error('获取扩胞参数值时出错:', error);
+        console.error('Error getting supercell parameters:', error);
         return { a: 1, b: 1, c: 1 };
     }
 }
@@ -2498,7 +2650,7 @@ function updateSupercell(a, b, c, cellType) {
     // 如果找不到材料ID，显示错误信息并退出
     if (!materialId) {
         showErrorMessage('未找到材料ID');
-        console.error('无法确定超晶胞更新的材料ID');
+        console.error('Cannot determine material ID for supercell update');
         return;
     }
     
@@ -2506,7 +2658,7 @@ function updateSupercell(a, b, c, cellType) {
     showLoadingIndicator();
     
     // 记录请求信息
-    console.log(`正在更新超晶胞: 材料ID=${materialId}, a=${a}, b=${b}, c=${c}, 晶胞类型=${cellType}`);
+    console.log(`Updating supercell: Material ID=${materialId}, a=${a}, b=${b}, c=${c}, Cell Type=${cellType}`);
     
     // 构建请求URL
     let url = `/api/structure/${materialId}/supercell?a=${a}&b=${b}&c=${c}`;
@@ -2538,9 +2690,9 @@ function updateSupercell(a, b, c, cellType) {
             renderCrystalStructure(data);
         })
         .catch(error => {
-            console.error('获取超晶胞数据失败:', error);
+            console.error('Failed to get supercell data:', error);
             hideLoadingIndicator();
-            showErrorMessage(`更新超晶胞失败。${error.message || '请稍后重试。'}`);
+            showErrorMessage(`Failed to update supercell. ${error.message || 'Please try again later.'}`);
         });
 }
 

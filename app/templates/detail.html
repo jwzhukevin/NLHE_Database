@@ -11,74 +11,354 @@
 
 <!-- ====================== 主容器 ====================== -->
 <div class="material-detail-container">
-    <!-- Header Section: 包含材料名称、导航栏和操作按钮 -->
-    <div class="header-section">
-        <!-- 左侧固定导航栏容器 -->
-        <div class="title-nav-container">
-            <nav class="nav-menu">
-                <ul>
-                    <!-- 材料名称显示 -->
-                    <li><a href="#" class="material-title">{{ material.name }}</a></li>
-                    <!-- 页内导航链接 -->
-                    <li><a href="#basic-properties">Basic Properties</a></li>
-                    <li><a href="#surface-properties">Surface Properties</a></li>
-                    <li><a href="#band-structure">Band Structure</a></li>
-                    <li><a href="#3d-structure">3D Structure</a></li>
-                    <li><a href="#band-plot">Band Plot</a></li>
-                    {% if current_user.is_authenticated %}
-                    <!-- 管理员操作按钮：编辑和删除 -->
-                    <li><a href="{{ url_for('views.edit', material_id=material.id) }}"><i class="fas fa-edit"></i> Edit</a></li>
-                    <li><a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
-                        type="submit" onclick="return confirm('Delete permanently?')"><i class="fas fa-trash"></i> Del</a></li>                    
-                    {% endif %} 
-                    <!-- 外部链接和返回按钮 -->
-                    <li><a href="https://materialsproject.org/materials/{{ material.name }}" target="_blank"><i class="fas fa-external-link-alt"></i> MP</a></li>
-                    {% if request.referrer and 'q=' in request.referrer %}
-                    <li><a href="{{ request.referrer }}" class="back-link">
-                        <i class="fas fa-search"></i> Back to Search</a></li>
-                    {% endif %}
-                    <li><a href="{{ url_for('views.index') }}" class="back-link">
-                        <i class="fas fa-arrow-left"></i> Back to List</a></li>
-                </ul>
-            </nav>
-        </div>
+    <style>
+    /* 主容器布局样式 */
+    .material-detail-container {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 24px;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 24px 24px 24px;
+        min-height: calc(100vh - 64px);
+        background: #f8fafc;
+        padding-top: 0;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .material-detail-container {
+            padding: 0 16px;
+        }
+    }
+    </style>
+
+    <!-- 左侧固定导航栏 -->
+    <div class="title-nav-container">
+        <nav class="nav-menu">
+            <div class="nav-header">
+                <h2 class="material-title">{{ material.name }}</h2>
+            </div>
+            <ul class="nav-list">
+                <!-- 页内导航链接 -->
+                <li><a href="#basic-properties">Basic Properties</a></li>
+                <li><a href="#surface-properties">Surface Properties</a></li>
+                <li><a href="#band-structure">Band Structure</a></li>
+                <li><a href="#3d-structure">3D Structure</a></li>
+                <li><a href="#band-plot">Band Plot</a></li>
+                {% if current_user.is_authenticated %}
+                <!-- 管理员操作按钮：编辑和删除 -->
+                <li><a href="{{ url_for('views.edit', material_id=material.id) }}"><i class="fas fa-edit"></i> Edit</a></li>
+                <li><a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
+                    type="submit" onclick="return confirm('Delete permanently?')"><i class="fas fa-trash"></i> Del</a></li>                    
+                {% endif %} 
+                <!-- 外部链接和返回按钮 -->
+                <li><a href="https://materialsproject.org/materials/{{ material.name }}" target="_blank"><i class="fas fa-external-link-alt"></i> MP</a></li>
+                {% if request.referrer and 'q=' in request.referrer %}
+                <li><a href="{{ request.referrer }}" class="back-link">
+                    <i class="fas fa-search"></i> Back to Search</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('views.index') }}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back to List</a></li>
+            </ul>
+        </nav>
+        <style>
+        /* 导航菜单样式 */
+        .nav-menu {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            border: 1px solid #e5e7eb;
+            margin-top: 12px;
+        }
+
+        .nav-menu .nav-header {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nav-menu .material-title {
+            margin: 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .nav-menu .nav-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-menu .nav-list li {
+            margin: 8px 0;
+        }
+
+        .nav-menu .nav-list a {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: #64748b;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu .nav-list a:hover {
+            background: #F5F8FF;
+            color: #0047AB;
+        }
+
+        .nav-menu .nav-list a.active {
+            background: #D9E2F0;
+            color: #0047AB;
+            font-weight: 500;
+        }
+
+        .nav-menu .nav-list i {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
+        </style>
     </div>
+    
+    <!-- 主内容区域 -->
+    <div class="main-content">
 
     <!-- ====================== 材料属性详情区域 ====================== -->
     <div class="detail-section">
+        <style>
+        /* 详情区域布局 */
+        .detail-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            width: 100%;
+            padding-top: 0;
+        }
+
+        /* 详情卡片样式 */
+        .detail-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-2px);
+            box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+        }
+
+        .card-header {
+            background: #f1f5f9;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .card-content li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .card-content li:last-child {
+            border-bottom: none;
+        }
+
+        .property-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .property-value {
+            color: #0047AB;
+            font-weight: 600;
+            padding: 4px 12px;
+            background: #F5F8FF;
+            border-radius: 6px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .detail-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        </style>
+
         <!-- 基本属性卡片 -->
         <div class="detail-card" id="basic-properties">
-            <h3>Basic Properties</h3>
-            <ul>
-                <li>Status: {{ material.status }}</li>
-                <li>Total Energy: {{ material.total_energy }} eV</li>
-                <li>Formation Energy: {{ material.formation_energy }} eV</li>
-                <li>Fermi Level: {{ material.fermi_level }} eV</li>
-            </ul>
+            <div class="card-header">
+                <h3>Basic Properties</h3>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li><span class="property-label">Status:</span> <span class="property-value">{{ material.status }}</span></li>
+                    <li><span class="property-label">Total Energy:</span> <span class="property-value">{{ material.total_energy }} eV</span></li>
+                    <li><span class="property-label">Formation Energy:</span> <span class="property-value">{{ material.formation_energy }} eV</span></li>
+                    <li><span class="property-label">Fermi Level:</span> <span class="property-value">{{ material.fermi_level }} eV</span></li>
+                </ul>
+            </div>
         </div>
 
         <!-- 表面属性卡片 -->
         <div class="detail-card" id="surface-properties">
-            <h3>Surface Properties</h3>
-            <ul>
-                <li>Vacuum Level: {{ material.vacuum_level }} eV</li>
-                <li>Work Function: {{ material.workfunction }} eV</li>
-                <li>Metal Type: {{ material.metal_type }}</li>
-            </ul>
+            <div class="card-header">
+                <h3>Surface Properties</h3>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li><span class="property-label">Vacuum Level:</span> <span class="property-value">{{ material.vacuum_level }} eV</span></li>
+                    <li><span class="property-label">Work Function:</span> <span class="property-value">{{ material.workfunction }} eV</span></li>
+                    <li><span class="property-label">Metal Type:</span> <span class="property-value">{{ material.metal_type }}</span></li>
+                </ul>
+            </div>
         </div>
 
         <!-- 能带结构属性卡片 -->
         <div class="detail-card" id="band-structure">
-            <h3>Band Structure</h3>
-            <ul>
-                <li>Band Gap: {{ material.gap }} eV</li>
-                <li>VBM Energy: {{ material.vbm_energy }} eV</li>
-                <li>CBM Energy: {{ material.cbm_energy }} eV</li>
-                <li>VBM Coordinates: {{ material.vbm_coordi }}</li>
-                <li>CBM Coordinates: {{ material.cbm_coordi }}</li>
-            </ul>
+            <div class="card-header">
+                <h3>Band Structure</h3>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li><span class="property-label">Band Gap:</span> <span class="property-value">{{ material.gap }} eV</span></li>
+                    <li><span class="property-label">VBM Energy:</span> <span class="property-value">{{ material.vbm_energy }} eV</span></li>
+                    <li><span class="property-label">CBM Energy:</span> <span class="property-value">{{ material.cbm_energy }} eV</span></li>
+                    <li><span class="property-label">VBM Coordinates:</span> <span class="property-value">{{ material.vbm_coordi }}</span></li>
+                    <li><span class="property-label">CBM Coordinates:</span> <span class="property-value">{{ material.cbm_coordi }}</span></li>
+                </ul>
+            </div>
         </div>
     </div>
+
+    <style>
+    /* 共享容器样式 */
+    .crystal-container, .band-plot-container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: rgba(17, 12, 46, 0.1) 0px 8px 24px;
+        margin: 24px 0;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+    }
+
+    /* 3D结构查看器样式 */
+    .crystal-container {
+        padding: 24px;
+        height: auto;
+    }
+
+    .crystal-container h3 {
+        margin: 0 0 16px 0;
+        color: #1e293b;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .crystal-viewer {
+        width: 100%;
+        height: 500px;
+        border-radius: 8px;
+        background: #f8fafc;
+        margin-top: 16px;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    /* 能带结构图样式 */
+    .band-plot-container {
+        padding: 40px 32px;
+        min-height: 820px;
+    }
+
+    .band-plot-container h3 {
+        margin: 0 0 24px 0;
+        color: #1e293b;
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    #bandStructure {
+        width: 100%;
+        height: 700px;
+        border-radius: 8px;
+        background: #f8fafc;
+        margin-top: 16px;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    /* 共享交互效果 */
+    .crystal-viewer::before, #bandStructure::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.1);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .crystal-viewer:hover, #bandStructure:hover {
+        border-color: #0047AB;
+        box-shadow: rgba(0, 71, 171, 0.15) 0px 0px 0px 4px;
+    }
+
+    .crystal-viewer:hover::before, #bandStructure:hover::before {
+        opacity: 1;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .crystal-container, .band-plot-container {
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .crystal-viewer, #bandStructure {
+            height: 350px;
+        }
+    }
+    </style>
 
     <!-- ====================== 3D结构显示区域 ====================== -->
     <div class="crystal-container" id="3d-structure">
@@ -92,7 +372,7 @@
                 // 初始化晶体查看器
                 CrystalViewer.init('crystalViewer');
                 // 加载当前材料的晶体结构
-                CrystalViewer.load({{ material.id }});
+                CrystalViewer.load("{{ material.id }}");
             });
         </script>
     </div>
@@ -113,229 +393,7 @@
     </div>
 </div>
 
-<!-- ====================== 样式定义 ====================== -->
-<style>
-/* ====================== 布局相关样式 ====================== */
-/* 主容器布局样式 */
-.material-detail-container {
-    max-width: 800px;
-    margin: 10px auto 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ====================== 导航栏相关样式 ====================== */
-/* 导航栏容器基础样式 */
-.title-nav-container {
-    position: fixed;
-    left: 0;
-    top: 180px;
-    height: auto;
-    width: 240px;
-    display: flex;
-    flex-direction: column;
-    z-index: 1000;
-    background: rgba(34, 105, 168, 0.458);
-    padding: 5px;
-    border-radius: 0 4px 4px 0;
-    backdrop-filter: blur(5px);
-    margin-left: calc((100vw - 1200px) / 2 - 100px);
-    transition: all 0.1s ease;
-    border-left: 3px solid #2181b5;
-}
-
-/* 导航菜单基础样式 */
-.nav-menu {
-    background: transparent;
-    width: 100%;
-    padding: 5px;
-}
-
-/* 导航菜单列表样式 */
-.nav-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-/* 导航链接基础样式 */
-.nav-menu a {
-    font-family: "Times New Roman", Times, serif;
-    color: #ffffff;
-    text-decoration: none;
-    font-size: clamp(0.6rem, 1,2vw, 2.0rem);
-    letter-spacing: 0.3px;
-    transition: all 0.2s ease;
-    font-weight: 600;
-    display: block;
-    padding: 6px 8px;
-    border-radius: 3px;
-    text-align: center;
-}
-
-/* 导航链接激活状态样式 */
-.nav-menu a.active {
-    color: #18598f;
-    background: #ffffff;
-    box-shadow: 0 2px 4px rgba(8, 139, 221, 0.434);
-}
-
-
-/* 材料标题样式 */
-.material-title {
-    font-size: clamp(0.6rem, 1.0vw, 2.0rem);
-    padding: 15px 10px;
-    margin: 5px 0 25px 0;
-    font-weight: 800;
-    text-align: center;
-    position: relative;
-    display: block;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    hyphens: auto;
-    max-width: 100%;
-}
-
-/* 材料标题注释样式 */
-.material-title::after {
-    content: "No.{{ material.id }} ";
-    position: absolute;
-    bottom: -32px;
-    right: 50%;
-    transform: translateX(50%);
-    padding: 4px 8px;
-    font-size: clamp(0.6rem, 0.8vw, 2.0rem);
-    color: #105493;
-    font-weight: 800;
-    white-space: nowrap;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-/* ====================== 详情卡片相关样式 ====================== */
-/* 详情区域布局样式 */
-.detail-section {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    align-items: center;
-    padding-top: 10px;
-}
-
-/* 详情卡片基础样式 */
-.detail-card {
-    width: 100%;
-    max-width: 800px;
-    background: #ffffff;
-    border-radius: 5px;
-    padding: 10px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-    border: 2px solid #499cd7;
-    margin: 10px;
-}
-
-/* 详情卡片标题样式 */
-/* 详情卡片标题样式 */
-.detail-card h3 {
-    /* 设置标题文字颜色为蓝色 */
-    color: #2181b5;
-    /* 添加蓝色底部边框，宽度3px，实线样式 */
-    border-bottom: 3px solid #3498db;
-    /* 设置底部内边距为10px，使文字与边框有一定间距 */
-    padding-bottom: 10px;
-    /* 设置底部外边距为10px，与下方内容保持间距 */
-    margin-bottom: 10px;
-    /* 使用Times New Roman字体，如果不可用则降级使用Times或serif字体 */
-    font-family: "Times New Roman", Times, serif;
-    /* 使用clamp()函数设置响应式字体大小：
-       最小值1.2em
-       首选值2vw（视窗宽度的2%）
-       最大值1.5em */
-    font-size: clamp(0.6rem, 1.2vw, 2.0rem);
-    /* 设置字体粗细为粗体 */
-    font-weight: bold;
-}
-
-/* 详情卡片列表项样式 */
-.detail-card li {
-    margin: 5px 0;
-    padding: 2px;
-}
-
-/* ====================== 晶体结构查看器相关样式 ====================== */
-/* 晶体容器基础样式 */
-.crystal-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 1000px;
-    background: #ffffff;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-    border: 2px solid #499cd7;
-    margin: 0;
-    align-items: center;
-}
-
-/* 晶体查看器样式 */
-.crystal-viewer {
-    width: 100%;
-    height: 600px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    position: relative;
-}
-
-/* 晶体控制按钮容器样式 */
-.crystal-controls {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-/* ====================== 能带图相关样式 ====================== */
-/* 能带结构图容器样式 */
-.band-plot-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 1000px;
-    background: #ffffff;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-    border: 2px solid #499cd7;
-    margin: 0;
-    align-items: center;
-}
-
-/* 能带结构图容器的样式定义 */
-#bandStructure {
-    width: 100%;
-    height: 500px;
-    border: 2px solid #499cd7;
-    border-radius: 5px;
-    padding: 10px;
-    margin: 0;
-}
-</style>
-
+<!-- JavaScript区域 -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 获取所有section元素和对应的导航链接
@@ -363,5 +421,4 @@ document.addEventListener('DOMContentLoaded', function() {
     sections.forEach(section => observer.observe(section));
 });
 </script>
-
 {% endblock %}

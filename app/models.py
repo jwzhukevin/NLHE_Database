@@ -8,6 +8,8 @@ import bcrypt
 from flask_login import UserMixin
 # 从当前包导入共享的SQLAlchemy实例
 from . import db
+from werkzeug.security import generate_password_hash, check_password_hash
+import datetime
 
 # 用户模型类（同时继承SQLAlchemy模型和Flask-Login用户接口）
 class User(db.Model, UserMixin):
@@ -126,3 +128,26 @@ class Material(db.Model):
         # 可扩展其他参数验证逻辑
         # 例如验证带隙、功函数等是否在合理范围内
         # 或检查坐标格式是否正确
+
+# IP封锁模型
+class BlockedIP(db.Model):
+    """存储被封锁的IP地址
+    
+    Attributes:
+        id: 主键
+        ip_address: 被封锁的IP地址
+        blocked_at: 封锁时间
+        reason: 封锁原因
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(45), unique=True, nullable=False)  # IPv6最长45字符
+    blocked_at = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+    reason = db.Column(db.String(100), default="Multiple failed login attempts")
+    
+    def __repr__(self):
+        """返回封锁IP的字符串表示
+        
+        返回:
+            字符串，格式为: "<BlockedIP ip_address>"
+        """
+        return f"<BlockedIP {self.ip_address}>"

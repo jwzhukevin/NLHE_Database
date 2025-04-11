@@ -1,7 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- ====================== 主容器 ====================== -->
 <div class="full-form-container">
+    <style>
+    /* 主容器 */
+    .full-form-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 25px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: var(--card-shadow);
+    }
+    </style>
+
     <span class="title2">Editing {{ material.name }}</span>
     <form method="post" class="material-form" enctype="multipart/form-data">
         <!-- 核心属性 -->
@@ -28,19 +41,102 @@
                     <label>Structure File (CIF)</label>
                     <input type="file" name="structure_file" accept=".cif">
                     {% if material.structure_file %}
-                    <p class="file-info">当前文件: {{ material.structure_file }}</p>
+                    <p class="file-info">Current file: {{ material.structure_file }}</p>
                     {% endif %}
                 </div>
                 <div class="form-group">
                     <label>Band Structure File</label>
                     <input type="file" name="band_file" accept=".json,.dat">
-                    <small class="help-text">支持.json或.dat格式的能带数据文件</small>
+                    <small class="help-text">Supports .json or .dat format band data files</small>
                     {% if material.id %}
-                    <p class="file-info">当前文件: {{ material.id }}.dat</p>
+                    <p class="file-info">Current file: {{ material.id }}.dat</p>
                     {% endif %}
                 </div>
             </div>
         </div>
+        <style>
+        /* 表单区块分割 */
+        .form-section {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 区块标题样式 */
+        .form-section h3 {
+            color: #2c3e50;          /* 深蓝灰色标题（对比度7.3:1） */
+            font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* 相对单位适配不同设备 */
+            margin-bottom: 20px;     /* 标题与内容间距 */
+            padding-bottom: 8px;     /* 下划线留白空间 */
+            border-bottom: 2px solid #3498db; /* 品牌蓝色下划线强调 */
+        }
+
+        /* 响应式网格布局 */
+        .form-grid {
+            display: grid;  /* 启用CSS Grid布局系统 */
+            /* 自动列数：每列最小80px，不足则换（auto-fit+minmax组合技） */
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 32px;               /* 网格间隙（建议保持≥20px） */
+        }
+
+        /* 表单项组 */
+        .form-group {
+            margin-bottom: 10px;    /* 垂直间距保证表单元素呼吸空间 */
+        }
+
+        /* 标签样式 */
+        .form-group label {
+            display: block;          /* 独占整行保证垂直流布局 */
+            margin-bottom: 8px;      /* 标签与输入框间距 */
+            font-weight: 600;       /* 中等加粗突出标签层级 */
+            color: #34495e;          /* 深灰蓝色（对比度7:1） */
+            font-size: clamp(0.6rem, 1.0vw, 2.0rem);      /* 略小于常规文本形成层次 */
+        }
+
+        /* 输入控件通用样式 */
+        .form-group input,
+        .form-group select {
+            width: 100%;            /* 填充父容器宽度 */
+            padding: 10px;          /* 舒适点击区域（推荐10-12px） */
+            border: 1px solid #bdc3c7; /* 中性灰色边框（对比度3.2:1） */
+            border-radius: 5px;     /* 匹配整体圆角风格 */
+            font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* 标准字体大小 */
+            transition: border-color 0.3s; /* 边框颜色过渡动画 */
+        }
+
+        /* 输入控件聚焦状态 */
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #3498db;  /* 品牌蓝色强调激活状态 */
+            outline: none;           /* 移除默认轮廓线 */
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2); /* 发光效果增强可见性 */
+        }
+
+        /* 数字输入框优化 */
+        .form-group input[type="number"] {
+            -moz-appearance: textfield; /* Firefox隐藏数字旋转按钮 */
+        }
+
+        /* 针对Webkit浏览器隐藏数字输入框的上下箭头 */
+        .form-group input[type="number"]::-webkit-outer-spin-button,
+        .form-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* 必填标记 */
+        .required {
+            color: #e74c3c;         /* 警告红色突出必填项 */
+            font-size: 0.8em;       /* 小尺寸避免干扰主文本 */
+            vertical-align: super;  /* 上标对齐方式 */
+        }
+
+        /* 占位符样式 */
+        input::placeholder {
+            color: #95a5a6;         /* 浅灰色降低占位符显著性 */
+            font-size: clamp(0.6rem, 0.8vw, 2.0rem);       /* 略小于常规文本 */
+        }
+        </style>
 
         <!-- 能量属性 -->
         <div class="form-section">
@@ -133,14 +229,14 @@
                     <input type="text" 
                            name="vbm_coordi" 
                            value="{{ material.vbm_coordi }}"
-                           placeholder="格式示例: ['0.333','0.333','0.000']">
+                           placeholder="Format example: ['0.333','0.333','0.000']">
                 </div>
                 <div class="form-group">
                     <label>CBM Coordinates</label>
                     <input type="text" 
                            name="cbm_coordi" 
                            value="{{ material.cbm_coordi }}"
-                           placeholder="格式示例: ['0.000','0.000','0.000']">
+                           placeholder="Format example: ['0.000','0.000','0.000']">
                 </div>
             </div>
         </div>
@@ -175,135 +271,63 @@
                 <i class="fas fa-times"></i> Discard Changes
             </a>
         </div>
+        <style>
+        /* 按钮操作区 */
+        .form-actions {
+            margin-top: 10px;       /* 与最后表单项的间距 */
+            display: flex;          /* 弹性布局排列按钮 */
+            gap: 15px;              /* 按钮间距（建议≥8px） */
+            justify-content: flex-end; /* 按钮右对齐 */
+        }
+
+        /* 按钮共同样式 */
+        .btn-save,
+        .btn-cancel {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        /* 保存按钮 */
+        .btn-save {
+            background: #27ae60;    /* 品牌绿色象征确认操作 */
+            color: white;           /* 高对比度文字 */
+            padding: 12px 25px;     /* 舒适点击区域（推荐44x44px最小热区） */
+            border: none;          /* 移除默认边框 */
+            border-radius: 5px;    /* 匹配整体圆角 */
+            cursor: pointer;       /* 手型指针提示可点击 */
+            background-color: var(--primary-color);
+        }
+
+        .btn-save:hover {
+            background-color: var(--button-hover);
+            opacity: 0.9;          /* 统一悬停透明效果 */
+        }
+
+        /* 取消按钮 */
+        .btn-cancel {
+            background: #95a5a6;    /* 中性灰色表示次要操作 */
+            color: white;          
+            padding: 12px 25px;    
+            border-radius: 5px;    
+            text-decoration: none; /* 移除超链接下划线 */
+            background-color: #e53e3e;
+            margin-left: 1rem;
+        }
+
+        .btn-cancel:hover {
+            background-color: #c53030;
+            opacity: 0.9;          /* 统一悬停透明效果 */
+        }
+        </style>
     </form>
 </div>
-
-<style>
-
-/* ====================== 主容器 ====================== */
-.full-form-container {
-    max-width: 1000px;       /* 限制表单最大宽度保持可读性 */
-    margin: 20px auto;       /* 上下20px间距+水平居中 */
-    padding: 30px;           /* 内容安全间距 */
-    background: #ffffff;     /* 纯白背景确保对比度 */
-    border-radius: 10px;      /* 现代圆角效果 */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* X轴0 Y轴4px模糊6px的柔和阴影 */
-}
-
-/* ====================== 表单区块分割 ====================== */
-.form-section {
-    margin-bottom: 35px;    /* 区块底部间距创建垂直节奏 */
-    padding-bottom: 5px;    /* 底部内边距为分割线预留空间 */
-    border-bottom: 2px solid #f0f0f0; /* 浅灰分割线（HEX透明度≈6%） */
-}
-
-/* ====================== 区块标题样式 ====================== */
-.form-section h3 {
-    color: #2c3e50;          /* 深蓝灰色标题（对比度7.3:1） */
-    font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* 相对单位适配不同设备 */
-    margin-bottom: 20px;     /* 标题与内容间距 */
-    padding-bottom: 8px;     /* 下划线留白空间 */
-    border-bottom: 2px solid #3498db; /* 品牌蓝色下划线强调 */
-}
-
-/* ====================== 响应式网格布局 ====================== */
-.form-grid {
-    display: grid;  /* 启用CSS Grid布局系统 */
-    /* 自动列数：每列最小80px，不足则换（auto-fit+minmax组合技） */
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 32px;               /* 网格间隙（建议保持≥20px） */
-}
-
-/* ====================== 表单项组 ====================== */
-.form-group {
-    margin-bottom: 10px;    /* 垂直间距保证表单元素呼吸空间 */
-}
-
-/* ====================== 标签样式 ====================== */
-.form-group label {
-    display: block;          /* 独占整行保证垂直流布局 */
-    margin-bottom: 8px;      /* 标签与输入框间距 */
-    font-weight: 600;       /* 中等加粗突出标签层级 */
-    color: #34495e;          /* 深灰蓝色（对比度7:1） */
-    font-size: clamp(0.6rem, 1.0vw, 2.0rem);      /* 略小于常规文本形成层次 */
-}
-
-/* ====================== 输入控件通用样式 ====================== */
-.form-group input,
-.form-group select {
-    width: 100%;            /* 填充父容器宽度 */
-    padding: 10px;          /* 舒适点击区域（推荐10-12px） */
-    border: 1px solid #bdc3c7; /* 中性灰色边框（对比度3.2:1） */
-    border-radius: 5px;     /* 匹配整体圆角风格 */
-    font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* 标准字体大小 */
-    transition: border-color 0.3s; /* 边框颜色过渡动画 */
-}
-
-/* ====================== 输入控件聚焦状态 ====================== */
-.form-group input:focus,
-.form-group select:focus {
-    border-color: #3498db;  /* 品牌蓝色强调激活状态 */
-    outline: none;           /* 移除默认轮廓线 */
-    box-shadow: 0 0 0 2px rgba(52,152,219,0.2); /* 发光效果增强可见性 */
-}
-
-/* ====================== 数字输入框优化 ====================== */
-.form-group input[type="number"] {
-    -moz-appearance: textfield; /* Firefox隐藏数字旋转按钮 */
-}
-
-/* 针对Webkit浏览器隐藏数字输入框的上下箭头 */
-.form-group input[type="number"]::-webkit-outer-spin-button,
-.form-group input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* ====================== 必填标记 ====================== */
-.required {
-    color: #e74c3c;         /* 警告红色突出必填项 */
-    font-size: 0.8em;       /* 小尺寸避免干扰主文本 */
-    vertical-align: super;  /* 上标对齐方式 */
-}
-
-/* ====================== 按钮操作区 ====================== */
-.form-actions {
-    margin-top: 10px;       /* 与最后表单项的间距 */
-    display: flex;          /* 弹性布局排列按钮 */
-    gap: 15px;              /* 按钮间距（建议≥8px） */
-    justify-content: flex-end; /* 按钮右对齐 */
-}
-
-/* ====================== 保存按钮 ====================== */
-.btn-save {
-    background: #27ae60;    /* 品牌绿色象征确认操作 */
-    color: white;           /* 高对比度文字 */
-    padding: 12px 25px;     /* 舒适点击区域（推荐44x44px最小热区） */
-    border: none;          /* 移除默认边框 */
-    border-radius: 5px;    /* 匹配整体圆角 */
-    cursor: pointer;       /* 手型指针提示可点击 */
-}
-
-/* ====================== 取消按钮 ====================== */
-.btn-cancel {
-    background: #95a5a6;    /* 中性灰色表示次要操作 */
-    color: white;          
-    padding: 12px 25px;    
-    border-radius: 5px;    
-    text-decoration: none; /* 移除超链接下划线 */
-}
-
-/* ====================== 按钮悬停状态 ====================== */
-.btn-save:hover,
-.btn-cancel:hover {
-    opacity: 0.9;          /* 统一悬停透明效果 */
-}
-
-/* ====================== 占位符样式 ====================== */
-input::placeholder {
-    color: #95a5a6;         /* 浅灰色降低占位符显著性 */
-    font-size: clamp(0.6rem, 0.8vw, 2.0rem);       /* 略小于常规文本 */
-}
-
-</style>
 {% endblock %}

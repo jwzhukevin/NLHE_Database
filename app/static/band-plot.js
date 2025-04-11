@@ -112,18 +112,23 @@ async function plotBandStructure(containerId, bandDataPath) {
                 font: {
                     family: 'Times New Roman',
                     size: 24
-                }
+                },
+                y: 0.96, // 将标题上移，增加与图表内容的距离
+                x: 0.5,  // 确保水平居中
+                xanchor: 'center', // 锚点居中对齐
+                yanchor: 'top'     // 顶部对齐
             },
             // 设置图表尺寸
-            width: 800,  // 恢复原始宽度
-            height: 400, // 恢复原始高度
+            autosize: true,  // 启用自动尺寸调整
+            height: 700,  // 增加高度以提供更多绘图空间
             xaxis: {
                 title: {
                     text: 'High Symmetry Path',
                     font: {
                         family: 'Times New Roman',
-                        size: 20
-                    }
+                        size: 20,
+                    },
+                    standoff: 10, // 增加标题与坐标轴的距离
                 },
                 showgrid: false,
                 zeroline: false,
@@ -149,7 +154,8 @@ async function plotBandStructure(containerId, bandDataPath) {
                     font: {
                         family: 'Times New Roman',
                         size: 20
-                    }
+                    },
+                    standoff: 0, // 增加标题与坐标轴的距离
                 },
                 showgrid: true,
                 gridwidth: 1,
@@ -169,12 +175,11 @@ async function plotBandStructure(containerId, bandDataPath) {
             hovermode: 'closest',
             plot_bgcolor: 'white',
             paper_bgcolor: 'white',
-            // 调整边距，优化显示空间
-            margin: {l: 60, r: 30, t: 50, b: 50},
+            // 大幅增加边距，确保所有元素与边框保持舒适距离
+            margin: {l: 100, r: 50, t: 80, b: 80},
             font: {
                 family: 'Times New Roman'
             }
-
         };
         
         // 绘图配置
