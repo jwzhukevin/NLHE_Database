@@ -12,23 +12,38 @@
 <style>
     /* ========== 登录英雄区域样式 ========== */
     .login-hero {
-        padding: 6rem 0 3rem;
+        /* 设置上下内边距创造良好的视觉空间 */
+        padding: 4rem 0 2rem;
+        /* 文本居中对齐,使标题和描述文字居中显示 */
         text-align: center;
+        /* 使用渐变背景色创建深蓝色到深靛蓝的过渡效果 */
+        /* 135deg - 从左上角到右下角的对角线渐变 */
+        /* #003c85 - 起始颜色：深蓝色 */
+        /* #0d274b - 结束颜色：深靛蓝色 */
         background: linear-gradient(135deg, #003c85, #0d274b);
+        /* 文字颜色设为白色,在深色背景上形成鲜明对比 */
         color: white;
-        margin-bottom: 2rem;
     }
 
     .login-hero h1 {
+        /* 使用clamp()函数设置响应式字体大小 */
+        /* 最小2rem,最大3rem,中间值为5vw(视窗宽度的5%) */
         font-size: clamp(2rem, 5vw, 3rem);
+        /* 标题底部外边距1rem,与描述文字保持间距 */
         margin-bottom: 1rem;
+        /* 行高1.2,提高标题文字的可读性 */
         line-height: 1.2;
     }
 
     .login-hero p {
+        /* 使用clamp()函数设置响应式字体大小 */
+        /* 最小1rem,最大1.25rem,中间值为2vw */
         font-size: clamp(1rem, 2vw, 1.25rem);
+        /* 最大宽度600px,防止文字行过长影响阅读 */
         max-width: 600px;
+        /* 水平居中对齐 */
         margin: 0 auto;
+        /* 设置90%不透明度,使文字略微柔和 */
         opacity: 0.9;
     }
 </style>
@@ -71,45 +86,68 @@
 <style>
     /* ========== 登录表单区域样式 ========== */
     .login-form-section {
+        /* 设置上下内边距2rem和4rem,左右内边距0 */
         padding: 2rem 0 4rem;
+        /* 设置浅灰色背景 */
         background-color: #f8fafc;
     }
 
     .login-container {
+        /* 设置最大宽度800px */
         max-width: 800px;
-        margin: 0 auto;
+        /* 水平居中 */
+        margin: 0 auto; /* 设置上下外边距为0,左右外边距自动,实现容器水平居中 */
+        /* 使用flex布局,垂直排列 */
         display: flex;
         flex-direction: column;
+        /* 设置元素间距为2rem */
         gap: 2rem;
     }
 
     /* 警告提示样式 */
     .login-warning {
+        /* 使用flex布局,水平排列 */
         display: flex;
+        /* 顶部对齐 */
         align-items: flex-start;
+        /* 设置元素间距为1.5rem */
         gap: 1.5rem;
+        /* 设置浅黄色警告背景 */
         background-color: #fff3cd;
+        /* 左边框加粗显示警告色 */
         border-left: 5px solid #ffc107;
+        /* 设置内边距1.5rem */
         padding: 1.5rem;
+        /* 圆角8px */
         border-radius: 8px;
+        /* 添加浅阴影效果 */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     }
 
     .warning-icon {
+        /* 设置图标大小2rem */
         font-size: 2rem;
+        /* 设置橙色警告图标 */
         color: #ff9800;
+        /* 微调图标顶部间距 */
         margin-top: 0.2rem;
     }
 
     .warning-text h3 {
+        /* 设置深褐色标题 */
         color: #654500;
+        /* 设置底部间距0.5rem */
         margin-bottom: 0.5rem;
+        /* 设置标题字号1.2rem */
         font-size: 1.2rem;
     }
 
     .warning-text p {
+        /* 设置深褐色文字 */
         color: #654500;
+        /* 设置文字大小0.95rem */
         font-size: 0.95rem;
+        /* 设置行高1.5倍 */
         line-height: 1.5;
     }
 
@@ -171,7 +209,11 @@
 
     .login-btn, .cancel-btn {
         padding: 0.75rem 1.5rem;
-        font-size: 1rem;
+        /* clamp(最小值, 首选值, 最大值)
+           - 最小值: 按钮文字最小不小于
+           - 首选值: 按钮文字随视窗宽度变化,为视窗宽度的0.8%
+           - 最大值: 按钮文字最大不超过 */
+        font-size: clamp(1.0rem, 0.8vw, 1.5rem);
         border-radius: 6px;
         font-weight: 600;
         cursor: pointer;
