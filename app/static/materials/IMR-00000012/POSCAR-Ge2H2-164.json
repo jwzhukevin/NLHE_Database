@@ -1,0 +1,18 @@
+{
+  "name": "POSCAR-Ge2H2-164",
+  "status": "done",
+  "structure_file": "POSCAR-Ge2H2-164-POSCAR-Ta2Se2-164.cif",
+  "total_energy": -48.782424,
+  "formation_energy": 0.211976,
+  "fermi_level": -0.96081935,
+  "vacuum_level": 2.819,
+  "workfunction": 3.78,
+  "metal_type": "metal",
+  "gap": -0.8692,
+  "vbm_energy": -0.4935,
+  "cbm_energy": -0.4935,
+  "vbm_coordi": "['0.070175', '0.070175', '0.000000']",
+  "cbm_coordi": "['0.333333', '0.333333', '0.000000']",
+  "vbm_index": 32,
+  "cbm_index": 33
+} 

@@ -5,9 +5,9 @@
 <!-- Three.js Scripts: 用于加载和显示材料的3D结构 -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='crystal-viewer.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/crystal-viewer.js') }}"></script>
 <!-- Band Structure Scripts: 用于显示材料的能带结构图 -->
-<script type="text/javascript" src="{{ url_for('static', filename='band-plot.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/band-plot.js') }}"></script>
 
 <!-- ====================== 主容器 ====================== -->
 <div class="material-detail-container">
@@ -235,10 +235,11 @@
             </div>
             <div class="card-content">
                 <ul>
-                    <li><span class="property-label">Status:</span> <span class="property-value">{{ material.status }}</span></li>
-                    <li><span class="property-label">Total Energy:</span> <span class="property-value">{{ material.total_energy }} eV</span></li>
-                    <li><span class="property-label">Formation Energy:</span> <span class="property-value">{{ material.formation_energy }} eV</span></li>
-                    <li><span class="property-label">Fermi Level:</span> <span class="property-value">{{ material.fermi_level }} eV</span></li>
+                    <li><span class="property-label">ID:</span> <span class="property-value">{{ material.formatted_id or 'IMR-' + '%08d'|format(material.id) }}</span></li>
+                    <li><span class="property-label">Status:</span> <span class="property-value">{{ material.status or 'Not available yet' }}</span></li>
+                    <li><span class="property-label">Total Energy:</span> <span class="property-value">{{ material.total_energy ~ ' eV' if material.total_energy is not none else 'Not available yet' }}</span></li>
+                    <li><span class="property-label">Formation Energy:</span> <span class="property-value">{{ material.formation_energy ~ ' eV' if material.formation_energy is not none else 'Not available yet' }}</span></li>
+                    <li><span class="property-label">Fermi Level:</span> <span class="property-value">{{ material.fermi_level ~ ' eV' if material.fermi_level is not none else 'Not available yet' }}</span></li>
                 </ul>
             </div>
         </div>
@@ -250,9 +251,9 @@
             </div>
             <div class="card-content">
                 <ul>
-                    <li><span class="property-label">Vacuum Level:</span> <span class="property-value">{{ material.vacuum_level }} eV</span></li>
-                    <li><span class="property-label">Work Function:</span> <span class="property-value">{{ material.workfunction }} eV</span></li>
-                    <li><span class="property-label">Metal Type:</span> <span class="property-value">{{ material.metal_type }}</span></li>
+                    <li><span class="property-label">Vacuum Level:</span> <span class="property-value">{{ material.vacuum_level ~ ' eV' if material.vacuum_level is not none else 'Not available yet' }}</span></li>
+                    <li><span class="property-label">Work Function:</span> <span class="property-value">{{ material.workfunction ~ ' eV' if material.workfunction is not none else 'Not available yet' }}</span></li>
+                    <li><span class="property-label">Metal Type:</span> <span class="property-value">{{ material.metal_type or 'Not available yet' }}</span></li>
                 </ul>
             </div>
         </div>
@@ -264,11 +265,11 @@
             </div>
             <div class="card-content">
                 <ul>
-                    <li><span class="property-label">Band Gap:</span> <span class="property-value">{{ material.gap }} eV</span></li>
-                    <li><span class="property-label">VBM Energy:</span> <span class="property-value">{{ material.vbm_energy }} eV</span></li>
-                    <li><span class="property-label">CBM Energy:</span> <span class="property-value">{{ material.cbm_energy }} eV</span></li>
-                    <li><span class="property-label">VBM Coordinates:</span> <span class="property-value">{{ material.vbm_coordi }}</span></li>
-                    <li><span class="property-label">CBM Coordinates:</span> <span class="property-value">{{ material.cbm_coordi }}</span></li>
+                    <li><span class="property-label">Band Gap:</span> <span class="property-value">{{ material.gap ~ ' eV' if material.gap is not none else 'Not available yet' }}</span></li>
+                    <li><span class="property-label">VBM Energy:</span> <span class="property-value">{{ material.vbm_energy ~ ' eV' if material.vbm_energy is not none else 'Not available yet' }}</span></li>
+                    <li><span class="property-label">CBM Energy:</span> <span class="property-value">{{ material.cbm_energy ~ ' eV' if material.cbm_energy is not none else 'Not available yet' }}</span></li>
+                    <li><span class="property-label">VBM Coordinates:</span> <span class="property-value">{{ material.vbm_coordi or 'Not available yet' }}</span></li>
+                    <li><span class="property-label">CBM Coordinates:</span> <span class="property-value">{{ material.cbm_coordi or 'Not available yet' }}</span></li>
                 </ul>
             </div>
         </div>

@@ -1,0 +1,18 @@
+{
+  "name": "POSCAR-TaTe2-164",
+  "status": "done",
+  "structure_file": "POSCAR-TaTe2-164-POSCAR-TiTe2-187.cif",
+  "total_energy": -37.479329,
+  "formation_energy": -2.219819,
+  "fermi_level": 0.38047114,
+  "vacuum_level": 5.367,
+  "workfunction": 4.986,
+  "metal_type": "metal",
+  "gap": -3.2282,
+  "vbm_energy": 3.2282,
+  "cbm_energy": 3.2282,
+  "vbm_coordi": "['0.000000', '0.000000', '0.000000']",
+  "cbm_coordi": "['0.000000', '0.000000', '0.000000']",
+  "vbm_index": 0,
+  "cbm_index": 0
+} 

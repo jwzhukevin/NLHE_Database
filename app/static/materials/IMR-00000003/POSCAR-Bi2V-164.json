@@ -1,0 +1,18 @@
+{
+  "name": "POSCAR-Bi2V-164",
+  "status": "unconverged",
+  "structure_file": "POSCAR-Bi2V-164-POSCAR-CuS2-164.cif",
+  "total_energy": -28.76513,
+  "formation_energy": null,
+  "fermi_level": null,
+  "vacuum_level": null,
+  "workfunction": null,
+  "metal_type": "semimetallic",
+  "gap": 0.2134,
+  "vbm_energy": null,
+  "cbm_energy": null,
+  "vbm_coordi": null,
+  "cbm_coordi": null,
+  "vbm_index": null,
+  "cbm_index": null
+} 

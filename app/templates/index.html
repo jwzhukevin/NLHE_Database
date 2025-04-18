@@ -331,7 +331,7 @@
     <table class="material-data-table">
         <thead>
             <tr>
-                <th>#</th>
+                <th>ID</th>
                 <th>Material Name</th>
                 <th>Fermi Level (eV)</th>
                 <th>Total Energy (eV)</th>
@@ -342,15 +342,15 @@
         <tbody>
             {% for material in materials %}
             <tr>
-                <td>{{ loop.index }}</td>
+                <td>{{ material.formatted_id or 'IMR-' + '%08d'|format(material.id) }}</td>
                 <td>
                     <a href="{{ url_for('views.detail', material_id=material.id) }}" class="material-link">
                         {{ material.name }}
                     </a>
                 </td>
-                <td>{{ material.fermi_level }}</td>
-                <td>{{ material.total_energy }}</td>
-                <td>{{ material.formation_energy }}</td>
+                <td>{{ material.fermi_level if material.fermi_level is not none else 'N/A' }}</td>
+                <td>{{ material.total_energy if material.total_energy is not none else 'N/A' }}</td>
+                <td>{{ material.formation_energy if material.formation_energy is not none else 'N/A' }}</td>
                 <td>
                     <div class="action-buttons">
                         <a class="mp" 

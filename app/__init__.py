@@ -87,6 +87,62 @@ def create_app():
         user = User.query.first()  # 示例：注入第一个用户（可替换为实际逻辑）
         return dict(user=user)  # 模板中可通过 {{ user }} 访问
 
+    # --- 初始化格式化ID ---
+    def init_formatted_ids():
+        """
+        初始化材料格式化ID:
+        1. 确保数据库中存在formatted_id列
+        2. 为所有空的格式化ID赋值
+        """
+        from sqlalchemy import inspect, text
+        from sqlalchemy.exc import SQLAlchemyError
+        
+        try:
+            # 导入Material模型
+            from .models import Material
+            
+            # 检查formatted_id列是否存在
+            inspector = inspect(db.engine)
+            columns = [col['name'] for col in inspector.get_columns('material')]
+            
+            # 如果不存在formatted_id列，添加它（不带UNIQUE约束）
+            if 'formatted_id' not in columns:
+                # SQLite不支持直接添加带UNIQUE约束的列，所以先添加普通列
+                db.engine.execute("ALTER TABLE material ADD COLUMN formatted_id VARCHAR(20)")
+                app.logger.info("已添加formatted_id列到material表")
+            
+            # 更新所有没有格式化ID的记录
+            materials = Material.query.filter(Material.formatted_id.is_(None)).all()
+            count = 0
+            
+            for material in materials:
+                material.formatted_id = f"IMR-{material.id:08d}"
+                count += 1
+            
+            if count > 0:
+                db.session.commit()
+                app.logger.info(f"已更新 {count} 条材料记录的格式化ID")
+            
+            # 尝试添加唯一索引（如果不存在）
+            try:
+                # 检查索引是否存在
+                indices = inspector.get_indexes('material')
+                has_index = any(idx.get('name') == 'ix_material_formatted_id' for idx in indices)
+                
+                if not has_index:
+                    # 创建唯一索引
+                    db.engine.execute(text("CREATE UNIQUE INDEX ix_material_formatted_id ON material (formatted_id)"))
+                    app.logger.info("已为formatted_id列创建唯一索引")
+            except SQLAlchemyError as e:
+                # 如果创建索引失败，记录错误但不终止应用启动
+                app.logger.warning(f"创建唯一索引失败: {str(e)}")
+        
+        except SQLAlchemyError as e:
+            app.logger.error(f"初始化格式化ID时发生错误: {str(e)}")
+            db.session.rollback()
+        except Exception as e:
+            app.logger.error(f"初始化格式化ID时发生未知错误: {str(e)}")
+
     # --- 蓝图注册（模块化路由） ---
     # 使用应用上下文确保数据库操作在正确的环境中执行
     with app.app_context():  # 确保在应用上下文中操作（避免上下文缺失错误）
@@ -103,5 +159,8 @@ def create_app():
         # 注册API蓝图（用于提供JSON接口）
         from .api import bp as api_bp
         app.register_blueprint(api_bp)  # 注册API路由
+
+        # 初始化格式化ID
+        init_formatted_ids()
 
     return app  # 返回完全初始化的应用实例

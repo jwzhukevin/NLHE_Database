@@ -1,0 +1,18 @@
+{
+  "name": "POSCAR-VSeTe-156",
+  "status": "done",
+  "structure_file": "POSCAR-VSeTe-156-POSCAR-Y4N3O2-164.cif",
+  "total_energy": -99.996121,
+  "formation_energy": -22.070091,
+  "fermi_level": -0.59997861,
+  "vacuum_level": 5.428,
+  "workfunction": 6.028,
+  "metal_type": "metal",
+  "gap": -0.5411,
+  "vbm_energy": -0.124,
+  "cbm_energy": -0.124,
+  "vbm_coordi": "['0.000000', '0.000000', '0.000000']",
+  "cbm_coordi": "['0.473684', '0.052632', '0.000000']",
+  "vbm_index": 48,
+  "cbm_index": 49
+} 

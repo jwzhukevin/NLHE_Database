@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="full-form-container">
+    <style>
+    /* 容器样式 */
+    .full-form-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 25px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* 标题样式 */
+    .title2 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: block;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* 选项卡样式 */
+    .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .tab.active {
+        border-bottom-color: #3498db;
+        color: #3498db;
+        font-weight: 500;
+    }
+    
+    /* 表单面板样式 */
+    .panel {
+        display: none;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .panel.active {
+        display: block;
+    }
+    
+    /* 表单样式 */
+    .form-section {
+        margin-bottom: 20px;
+    }
+    
+    .form-section h3 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-size: 1.25rem;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #34495e;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .primary-btn {
+        background-color: #3498db;
+        color: white;
+    }
+    
+    .primary-btn:hover {
+        background-color: #2980b9;
+    }
+    
+    .secondary-btn {
+        background-color: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .secondary-btn:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
+    </style>
+
+    <span class="title2">Import Materials from JSON</span>
+    
+    <div class="tabs">
+        <div class="tab active" data-target="all-materials">Import All Materials</div>
+        <div class="tab" data-target="single-material">Import Single Material</div>
+    </div>
+    
+    <!-- 导入所有材料面板 -->
+    <div id="all-materials" class="panel active">
+        <form method="post" action="{{ url_for('views.import_materials') }}">
+            <input type="hidden" name="import_type" value="all">
+            
+            <div class="form-section">
+                <h3>Import All Materials from JSON Files</h3>
+                <p>This will scan all folders in the <code>app/static/materials</code> directory and import material data from JSON files.</p>
+                <p>Each folder should be named with a material ID (e.g., <code>IMR-00000001</code>) and contain at least one JSON file with material properties.</p>
+                <p>For materials without data, default values will be used.</p>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn primary-btn" onclick="return confirm('Import all materials?')">
+                    <i class="fas fa-file-import"></i> Import All Materials
+                </button>
+                <a href="{{ url_for('views.index') }}" class="btn secondary-btn">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- 导入单个材料面板 -->
+    <div id="single-material" class="panel">
+        <form method="post" action="{{ url_for('views.import_materials') }}">
+            <input type="hidden" name="import_type" value="single">
+            
+            <div class="form-section">
+                <h3>Import Single Material from JSON File</h3>
+                <p>Enter the material ID to import data from its JSON file.</p>
+                
+                <div class="form-group">
+                    <label for="material_id">Material ID</label>
+                    <input type="text" id="material_id" name="material_id" placeholder="e.g., IMR-00000001" required>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn primary-btn">
+                    <i class="fas fa-file-import"></i> Import Material
+                </button>
+                <a href="{{ url_for('views.index') }}" class="btn secondary-btn">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // 选项卡切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 移除所有选项卡和面板的激活状态
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                
+                // 激活当前选项卡
+                this.classList.add('active');
+                
+                // 显示对应的面板
+                const targetPanel = this.getAttribute('data-target');
+                document.getElementById(targetPanel).classList.add('active');
+            });
+        });
+    </script>
+</div>
+{% endblock %} 

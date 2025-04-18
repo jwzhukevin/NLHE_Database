@@ -1,0 +1,18 @@
+{
+  "name": "POSCAR-RuCl2-187",
+  "status": "done",
+  "structure_file": "POSCAR-RuCl2-187-POSCAR-TiSSe-156.cif",
+  "total_energy": -32.824284,
+  "formation_energy": -2.756734,
+  "fermi_level": -1.35185929,
+  "vacuum_level": 4.806,
+  "workfunction": 6.158,
+  "metal_type": "metal",
+  "gap": -0.0618,
+  "vbm_energy": -1.2923,
+  "cbm_energy": -1.2923,
+  "vbm_coordi": "['0.333333', '0.333333', '0.000000']",
+  "cbm_coordi": "['0.394737', '0.000000', '0.000000']",
+  "vbm_index": 26,
+  "cbm_index": 27
+} 

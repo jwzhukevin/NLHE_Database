@@ -75,13 +75,14 @@ class Material(db.Model):
     """
     # 材料表字段定义
     id = db.Column(db.Integer, primary_key=True)  # 主键ID（用于唯一标识材料）
+    formatted_id = db.Column(db.String(20), unique=True)  # 格式化ID（如IMR-00000001）
     name = db.Column(db.String(120), unique=True, nullable=False)  # 唯一材料名称（必填，防重复）
-    status = db.Column(db.String(20), nullable=False)  # 材料状态（如"实验"或"理论"，指示数据来源）
+    status = db.Column(db.String(20))  # 材料状态（如"实验"或"理论"，指示数据来源）
     structure_file = db.Column(db.String(255))  # 结构文件路径（存储CIF文件的相对路径）
     
     # 能量相关参数（单位：eV，电子伏特）
-    total_energy = db.Column(db.Float, nullable=False)        # 总能量（材料的总能量计算值，必填）
-    formation_energy = db.Column(db.Float, nullable=False)    # 形成能（材料的形成能，用于评估稳定性）
+    total_energy = db.Column(db.Float)        # 总能量（材料的总能量计算值）
+    formation_energy = db.Column(db.Float)    # 形成能（材料的形成能，用于评估稳定性）
     
     # 表面特性参数（允许空值，这些值通常用于表面科学和电子学应用）
     fermi_level = db.Column(db.Float)          # 费米能级（eV，决定电子分布）
@@ -103,7 +104,7 @@ class Material(db.Model):
     # 能带索引参数（用于能带数据分析和绘图）
     vbm_index = db.Column(db.Integer)         # 价带顶能带索引（在能带数据中的索引位置）
     cbm_index = db.Column(db.Integer)         # 导带底能带索引（在能带数据中的索引位置）
-
+    
     # 数据验证方法
     def validate(self):
         """
@@ -112,17 +113,20 @@ class Material(db.Model):
         如果数据无效，将抛出ValueError异常
         
         验证规则:
-            1. 总能量必须在合理物理范围内
-            2. 形成能必须在合理物理范围内
-            3. 可扩展添加其他物理属性的验证规则
+            1. 名称不能为空
+            2. 如果提供了总能量，必须在合理范围内
+            3. 如果提供了形成能，必须在合理范围内
         """
-        # 验证总能量在合理物理范围内（防止异常值）
-        if not (-1e6 < self.total_energy < 1e6):
-            # 抛出值错误异常（后续由视图层捕获处理）
+        # 验证名称不能为空
+        if not self.name:
+            raise ValueError("Material name is required")
+            
+        # 验证总能量在合理物理范围内（如果有值）
+        if self.total_energy is not None and not (-1e6 < self.total_energy < 1e6):
             raise ValueError("Total energy out of valid range")
         
         # 当存在形成能时验证其范围（防止异常值）
-        if self.formation_energy and not (-1e4 < self.formation_energy < 1e4):
+        if self.formation_energy is not None and not (-1e4 < self.formation_energy < 1e4):
             raise ValueError("Formation energy out of valid range")
         
         # 可扩展其他参数验证逻辑
@@ -151,3 +155,32 @@ class BlockedIP(db.Model):
             字符串，格式为: "<BlockedIP ip_address>"
         """
         return f"<BlockedIP {self.ip_address}>"
+
+# 添加材料创建前的事件监听器，自动设置格式化ID
+from sqlalchemy import event
+
+@event.listens_for(Material, 'before_insert')
+def set_formatted_id(mapper, connection, target):
+    """
+    在材料记录插入前自动设置格式化ID
+    
+    由于此时还没有实际ID，我们会在after_insert中再设置一次格式化ID
+    这里先插入一个占位符
+    """
+    target.formatted_id = 'IMR-PENDING'  # 设置一个临时占位符
+
+@event.listens_for(Material, 'after_insert')
+def update_formatted_id(mapper, connection, target):
+    """
+    在材料记录插入后更新格式化ID
+    
+    这时material.id已经生成，可以使用它来构建格式化ID
+    """
+    # 使用原始SQL更新，避免触发额外的事件
+    connection.execute(
+        Material.__table__.update().
+        where(Material.__table__.c.id == target.id).
+        values(formatted_id=f"IMR-{target.id:08d}")
+    )
+    # 更新内存中的对象
+    target.formatted_id = f"IMR-{target.id:08d}"

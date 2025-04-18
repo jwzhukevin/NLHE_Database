@@ -30,8 +30,8 @@
                            title="2-120 characters">
                 </div>
                 <div class="form-group">
-                    <label>Status <span class="required">*</span></label>
-                    <select name="status" required>
+                    <label>Status</label>
+                    <select name="status">
                         <option value="done" {% if material.status == 'done' %}selected{% endif %}>Done</option>
                         <option value="unconverged" {% if material.status == 'unconverged' %}selected{% endif %}>Unconverged</option>
                         <option value="error" {% if material.status == 'error' %}selected{% endif %}>Error</option>
@@ -143,18 +143,16 @@
             <h3>Energy Properties (eV)</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Total Energy <span class="required">*</span></label>
+                    <label>Total Energy</label>
                     <input type="number" step="0.000001" 
                            name="total_energy" 
-                           value="{{ material.total_energy }}" 
-                           required>
+                           value="{{ material.total_energy }}">
                 </div>
                 <div class="form-group">
-                    <label>Formation Energy <span class="required">*</span></label>
+                    <label>Formation Energy</label>
                     <input type="number" step="0.000001" 
                            name="formation_energy" 
-                           value="{{ material.formation_energy }}" 
-                           required>
+                           value="{{ material.formation_energy }}">
                 </div>
                 <div class="form-group">
                     <label>Fermi Level</label>

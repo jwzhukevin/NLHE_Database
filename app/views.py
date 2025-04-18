@@ -10,6 +10,7 @@ from .models import User, Material, BlockedIP  # 自定义数据模型
 from . import db  # 数据库实例
 import datetime  # 处理日期和时间
 import functools  # 用于装饰器
+from .material_importer import import_material_from_json, scan_and_import_all_materials  # 导入材料数据模块
 
 # 创建名为'views'的蓝图，用于模块化路由管理
 bp = Blueprint('views', __name__)
@@ -165,11 +166,11 @@ def add():
             # 获取并转换表单数据（使用safe_float处理空值）
             material_data = {
                 'name': request.form.get('name'),  # 材料名称（必填）
-                'status': request.form.get('status'),  # 状态（必填）
-                'structure_file': structure_filename,  # 结构文件路径
-                'total_energy': float(request.form.get('total_energy')),  # 总能量
-                'formation_energy': float(request.form.get('formation_energy')),  # 形成能
-                'fermi_level': safe_float(request.form.get('fermi_level')),  # 费米能级（允许空）
+                'status': request.form.get('status'),  # 状态
+                'structure_file': structure_filename if structure_file and structure_file.filename else None,  # 结构文件路径
+                'total_energy': safe_float(request.form.get('total_energy')),  # 总能量
+                'formation_energy': safe_float(request.form.get('formation_energy')),  # 形成能
+                'fermi_level': safe_float(request.form.get('efermi')),  # 费米能级
                 'vacuum_level': safe_float(request.form.get('vacuum_level')),  # 真空能级
                 'workfunction': safe_float(request.form.get('workfunction')),  # 功函数
                 'metal_type': request.form.get('metal_type'),  # 金属类型
@@ -183,8 +184,8 @@ def add():
             }
 
             # 必填字段验证
-            if not all([material_data['name'], material_data['status']]):
-                flash('Name and Status are required!', 'error')  # 显示错误消息
+            if not material_data['name']:
+                flash('Material name is required!', 'error')  # 显示错误消息
                 return redirect(url_for('views.add'))  # 重定向回添加页面
 
             # 创建Material对象并验证数据
@@ -241,57 +242,56 @@ def safe_int(value):
 @login_required  # 登录保护装饰器
 def edit(material_id):
     """
-    编辑现有材料记录的页面和处理逻辑
+    编辑现有材料记录
+    
+    GET请求: 显示编辑表单，预填充当前数据
+    POST请求: 处理表单提交，更新数据库记录
     
     参数:
         material_id: 要编辑的材料ID
-    
-    GET请求: 显示编辑表单，预填充当前材料数据
-    POST请求: 处理表单提交，更新材料记录
     """
-    material = Material.query.get_or_404(material_id)  # 获取材料或返回404错误
+    # 查询要编辑的材料记录
+    material = Material.query.get_or_404(material_id)  # 获取材料或返回404
+    
     if request.method == 'POST':
         try:
-            # 处理文件上传（如果有新文件）
+            # 处理结构文件更新
             structure_file = request.files.get('structure_file')
+            if structure_file and structure_file.filename:
+                if not structure_file.filename.endswith('.cif'):
+                    flash('Please upload a valid CIF file!', 'error')
+                    return redirect(url_for('views.edit', material_id=material_id))
+                
+                # 保存新结构文件
+                from werkzeug.utils import secure_filename
+                import os
+                structure_filename = secure_filename(structure_file.filename)
+                structure_path = os.path.join(current_app.root_path, 'static/structures', structure_filename)
+                os.makedirs(os.path.dirname(structure_path), exist_ok=True)
+                structure_file.save(structure_path)
+                material.structure_file = structure_filename
+            
+            # 处理能带文件更新
             band_file = request.files.get('band_file')
+            if band_file and band_file.filename:
+                if band_file.filename.endswith(('.json', '.dat')):
+                    band_filename = secure_filename(band_file.filename)
+                    band_path = os.path.join(current_app.root_path, 'static/band', band_filename)
+                    os.makedirs(os.path.dirname(band_path), exist_ok=True)
+                    band_file.save(band_path)
             
-            from werkzeug.utils import secure_filename
-            import os
-            from flask import current_app
-            
-            # 处理结构文件上传
-            if structure_file and structure_file.filename.endswith('.cif'):
-                # 删除旧的结构文件
-                if material.structure_file:
-                    old_structure_path = os.path.join(current_app.root_path, 'static/structures', material.structure_file)
-                    if os.path.exists(old_structure_path):
-                        os.remove(old_structure_path)
-                
-                # 保存新的结构文件
-                filename = secure_filename(structure_file.filename)
-                structure_path = os.path.join(current_app.root_path, 'static/structures', filename)
-                structure_file.save(structure_path)  # 保存上传的文件
-                material.structure_file = filename  # 更新数据库中的文件路径
-            
-            # 处理能带文件上传
-            if band_file and band_file.filename.endswith(('.json', '.dat')):
-                # 删除旧的能带文件（如果存在）
-                old_band_path = os.path.join(current_app.root_path, 'static/band', f'{material.id}.dat')
-                if os.path.exists(old_band_path):
-                    os.remove(old_band_path)
-                
-                # 保存新的能带文件
-                band_filename = f'{material.id}.dat'
-                band_path = os.path.join(current_app.root_path, 'static/band', band_filename)
-                band_file.save(band_path)
-
-            # 更新所有字段
+            # 更新材料属性
             material.name = request.form.get('name')
+            
+            # 验证名称不为空
+            if not material.name:
+                flash('Material name is required!', 'error')
+                return redirect(url_for('views.edit', material_id=material_id))
+                
             material.status = request.form.get('status')
-            material.total_energy = float(request.form.get('total_energy'))
-            material.formation_energy = float(request.form.get('formation_energy'))
-            material.fermi_level = safe_float(request.form.get('fermi_level'))
+            material.total_energy = safe_float(request.form.get('total_energy'))
+            material.formation_energy = safe_float(request.form.get('formation_energy'))
+            material.fermi_level = safe_float(request.form.get('efermi'))
             material.vacuum_level = safe_float(request.form.get('vacuum_level'))
             material.workfunction = safe_float(request.form.get('workfunction'))
             material.metal_type = request.form.get('metal_type')
@@ -302,22 +302,64 @@ def edit(material_id):
             material.cbm_coordi = request.form.get('cbm_coordi')
             material.vbm_index = safe_int(request.form.get('vbm_index'))
             material.cbm_index = safe_int(request.form.get('cbm_index'))
-
-            material.validate()  # 执行数据验证
             
-            db.session.commit()  # 提交更改到数据库
-            flash('Material updated.', 'success')  # 显示成功消息
-            return redirect(url_for('views.detail', material_id=material.id))  # 重定向到详情页
-        
-        except ValueError as e:  # 处理数值转换错误
-            flash(f'Invalid data: {str(e)}', 'error')
-            return redirect(url_for('views.edit', material_id=material.id))
-        except Exception:  # 处理其他数据库错误
-            db.session.rollback()  # 回滚事务
-            flash('Database error', 'error')
-            return redirect(url_for('views.edit', material_id=material.id))
+            # 验证数据有效性
+            material.validate()
+            
+            # 提交更改
+            db.session.commit()
+            flash('Material updated successfully.', 'success')
+            return redirect(url_for('views.detail', material_id=material.id))
+            
+        except ValueError as e:
+            db.session.rollback()  # 错误时回滚事务
+            flash(f'Error: {str(e)}', 'error')
     
-    return render_template('edit.html', material=material)  # GET请求返回编辑表单
+    # GET请求：渲染编辑表单
+    return render_template('edit.html', material=material)
+
+# 材料导入路由（需要登录）
+@bp.route('/import_materials', methods=['GET', 'POST'])
+@login_required
+def import_materials():
+    """
+    从JSON文件导入材料数据
+    
+    GET请求: 显示导入页面
+    POST请求: 执行导入操作
+    """
+    if request.method == 'POST':
+        # 判断请求类型
+        import_type = request.form.get('import_type', 'all')
+        
+        if import_type == 'single':
+            # 导入单个材料
+            material_id = request.form.get('material_id', '').strip()
+            if not material_id or not material_id.startswith('IMR-'):
+                flash('Invalid material ID format. ID should start with "IMR-".', 'error')
+                return redirect(url_for('views.import_materials'))
+            
+            try:
+                material = import_material_from_json(material_id)
+                if material and material.name != "No Data":
+                    flash(f'Successfully imported material: {material.name}', 'success')
+                else:
+                    flash(f'Material {material_id} has no data or JSON file not found.', 'error')
+            except Exception as e:
+                flash(f'Error importing material: {str(e)}', 'error')
+                
+        elif import_type == 'all':
+            # 导入所有材料
+            try:
+                count = scan_and_import_all_materials()
+                flash(f'Successfully imported {count} materials.', 'success')
+            except Exception as e:
+                flash(f'Error importing materials: {str(e)}', 'error')
+        
+        return redirect(url_for('views.index'))
+    
+    # GET请求，显示导入页面
+    return render_template('import_materials.html')
 
 # 材料详情页
 @bp.route('/material/<int:material_id>')
@@ -331,8 +373,16 @@ def detail(material_id):
     返回:
         渲染的详情页模板，包含材料数据和结构文件路径
     """
-    material = Material.query.get_or_404(material_id)  # 获取材料或返回404错误
-    structure_file = f'structures/{material.structure_file}'  # 构建结构文件的相对路径
+    # 从数据库获取材料，不存在则返回404
+    material = Material.query.get_or_404(material_id)
+    
+    # 如果需要，这里可以添加从JSON文件更新材料数据的逻辑
+    # 例如：如果材料状态为"需更新"，则自动从JSON刷新数据
+    
+    # 构建结构文件路径
+    structure_file = f'structures/{material.structure_file}' if material.structure_file else None
+    
+    # 渲染详情页模板
     return render_template('detail.html', 
                           material=material,
                           structure_file=structure_file)
