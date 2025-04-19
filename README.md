@@ -73,6 +73,7 @@ NLHE_Database/
 4. 初始化数据库：
    ```bash
    ./initdb.sh
+   ./admin.sh
    ```
    按照提示输入管理员用户名和密码。
 
