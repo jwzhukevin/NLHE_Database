@@ -13,41 +13,58 @@ from .models import Material
 
 def save_structure_file(file_content, filename, material_id=None, material_name=None):
     """
-    保存上传的CIF文件到结构目录
+    保存上传的CIF文件到材料对应的结构目录
     
     参数:
         file_content: 文件内容（二进制数据）
         filename: 原始文件名
-        material_id: 材料ID（可选），用于标识文件
+        material_id: 材料ID，用于标识文件目录
         material_name: 材料名称（可选），用于命名文件
     
     返回:
-        保存的文件名，保存失败则返回None
+        保存的文件相对路径，保存失败则返回None
     """
     try:
-        # 构建结构文件目录路径（相对于Flask应用根目录）
-        structures_dir = os.path.join(current_app.root_path, 'static/structures')
+        # 构建材料ID格式化字符串
+        formatted_id = f"IMR-{int(material_id):08d}" if material_id else None
         
-        # 确保目录存在，如果不存在则创建
-        if not os.path.exists(structures_dir):
-            os.makedirs(structures_dir)
+        if not formatted_id and not material_name:
+            current_app.logger.error("Neither material_id nor material_name provided")
+            return None
         
-        # 如果提供了材料名称，使用它来命名文件（更有意义的文件名）
-        if material_name:
-            # 清理材料名称，移除不适合文件名的字符（只保留字母、数字和下划线）
-            safe_name = ''.join(c for c in material_name if c.isalnum() or c in '_-')
-            filename = f"{safe_name}.cif"
+        # 构建材料目录路径
+        materials_dir = os.path.join(current_app.root_path, 'static/materials')
+        
+        # 确保基础目录存在
+        if not os.path.exists(materials_dir):
+            os.makedirs(materials_dir)
+        
+        # 构建特定材料目录
+        material_dir = os.path.join(materials_dir, formatted_id)
+        if not os.path.exists(material_dir):
+            os.makedirs(material_dir)
+        
+        # 构建结构文件目录
+        structure_dir = os.path.join(material_dir, 'structure')
+        if not os.path.exists(structure_dir):
+            os.makedirs(structure_dir)
+        
+        # 设置保存的文件名（统一使用structure.cif）
+        save_filename = "structure.cif"
         
         # 构建完整的文件保存路径
-        file_path = os.path.join(structures_dir, filename)
+        file_path = os.path.join(structure_dir, save_filename)
         
         # 以二进制模式写入文件内容
         with open(file_path, 'wb') as f:
             f.write(file_content)
         
         # 记录日志
-        current_app.logger.info(f"Saved structure file: {filename}")
-        return filename
+        current_app.logger.info(f"Saved structure file for material {formatted_id}: {file_path}")
+        
+        # 返回相对于static的路径
+        relative_path = os.path.join('materials', formatted_id, 'structure', save_filename)
+        return relative_path
     
     except Exception as e:
         # 记录错误并返回None
@@ -60,43 +77,56 @@ def find_structure_file(material_id=None, material_name=None):
     根据材料ID或名称查找对应的CIF文件
     
     参数:
-        material_id: 材料ID，用于查询数据库获取材料名称
-        material_name: 材料名称，用于直接查找文件
+        material_id: 材料ID，用于构建目录路径
+        material_name: 材料名称，用于向后兼容旧版本的查找方式
     
     返回:
-        CIF文件名（不包含路径），未找到则返回None
+        CIF文件相对路径，未找到则返回None
     """
     try:
-        # 如果提供了材料ID，则通过ID查询材料记录获取名称
+        # 首先尝试使用材料ID查找文件
         if material_id is not None:
-            material = Material.query.get_or_404(material_id)
-            material_name = material.name
+            # 构建材料ID格式化字符串
+            formatted_id = f"IMR-{int(material_id):08d}"
+            
+            # 构建结构文件路径
+            material_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id)
+            structure_dir = os.path.join(material_dir, 'structure')
+            structure_file = os.path.join(structure_dir, 'structure.cif')
+            
+            # 检查文件是否存在
+            if os.path.exists(structure_file):
+                # 返回相对于static目录的路径
+                relative_path = os.path.join('materials', formatted_id, 'structure', 'structure.cif')
+                return relative_path
         
-        # 如果没有材料名称，则无法查找结构文件
-        if not material_name:
-            current_app.logger.error(f"No material name provided for ID: {material_id}")
-            return None
+        # 如果通过材料ID没有找到，或未提供材料ID，尝试使用材料名称查找
+        # 这部分用于向后兼容，查找旧版系统的结构文件
+        if material_name:
+            # 尝试在旧的结构目录中查找文件
+            old_structures_dir = os.path.join(current_app.root_path, 'static/structures')
+            
+            # 使用材料名称构建可能的文件名（精确匹配）
+            file_pattern = os.path.join(old_structures_dir, f"{material_name}.cif")
+            matching_files = glob.glob(file_pattern)
+            
+            if matching_files:
+                # 如果找到文件，返回相对于static的路径
+                file_path = matching_files[0]
+                relative_path = os.path.relpath(file_path, os.path.join(current_app.root_path, 'static'))
+                return relative_path
+            
+            # 尝试模糊匹配
+            file_pattern = os.path.join(old_structures_dir, f"*{material_name}*.cif")
+            matching_files = glob.glob(file_pattern)
+            
+            if matching_files:
+                file_path = matching_files[0]
+                relative_path = os.path.relpath(file_path, os.path.join(current_app.root_path, 'static'))
+                return relative_path
         
-        # 构建结构文件路径模式（使用精确的材料名称）
-        structures_dir = os.path.join(current_app.root_path, 'static/structures')
-        file_pattern = os.path.join(structures_dir, f"{material_name}.cif")
-        
-        # 使用glob查找匹配的文件
-        matching_files = glob.glob(file_pattern)
-        
-        # 如果找到精确匹配的文件，返回文件名（不包含路径）
-        if matching_files:
-            return os.path.basename(matching_files[0])
-        
-        # 如果没有找到精确匹配，尝试使用模糊匹配（文件名包含材料名称）
-        file_pattern = os.path.join(structures_dir, f"*{material_name}*.cif")
-        matching_files = glob.glob(file_pattern)
-        
-        if matching_files:
-            return os.path.basename(matching_files[0])
-        
-        # 如果仍然没有找到，记录错误并返回None
-        current_app.logger.error(f"No structure file found for material: {material_name}")
+        # 记录未找到文件的信息
+        current_app.logger.error(f"No structure file found for material ID: {material_id} or name: {material_name}")
         return None
     
     except Exception as e:
@@ -110,7 +140,7 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
     使用pymatgen解析CIF文件，返回结构数据的JSON格式
     
     参数:
-        filename: CIF文件名（不包含路径）
+        filename: CIF文件相对路径
         material_id: 材料ID（如果未提供filename），用于查找文件
         material_name: 材料名称（如果未提供filename和material_id），用于查找文件
     
@@ -128,8 +158,8 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
                 current_app.logger.error(error_msg)
                 return json.dumps({"error": error_msg})
         
-        # 构建完整的文件路径
-        file_path = os.path.join(current_app.root_path, 'static/structures', filename)
+        # 构建完整的文件路径（filename现在是相对于static目录的路径）
+        file_path = os.path.join(current_app.root_path, 'static', filename)
         
         # 检查文件是否存在
         if not os.path.exists(file_path):
@@ -171,7 +201,8 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
             'formula': structure.formula,  # 化学式
             'lattice': lattice_data,        # 晶格参数
             'atoms': atoms,                 # 原子列表
-            'num_atoms': len(atoms)         # 原子总数
+            'num_atoms': len(atoms),        # 原子总数
+            'id': material_id               # 添加材料ID便于前端引用
         }
         
         # 返回JSON字符串

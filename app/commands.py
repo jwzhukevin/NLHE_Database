@@ -309,7 +309,6 @@ def initialize_database(drop, json_dir, test):
     # 测试模式：直接从CIF文件创建材料记录
     if test and json_dir == 'app/static/structures':
         click.echo('Test mode enabled: Creating materials from CIF files...')
-        import os
         
         # 获取结构文件目录
         structures_dir = os.path.abspath(json_dir)

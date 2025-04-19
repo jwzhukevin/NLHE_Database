@@ -7,6 +7,7 @@ import os
 from flask import Blueprint, jsonify, request, current_app
 from .models import Material, db
 from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data, _process_structure, generate_primitive_cell
+from pymatgen.io.cif import CifWriter
 
 # 创建API蓝图
 # 定义前缀为/api的路由组
@@ -28,23 +29,25 @@ def get_structure(material_id):
         material = Material.query.get_or_404(material_id)
         
         # 解析CIF文件并获取结构数据
-        # 首先尝试使用material.structure_file（如果存在）
-        if hasattr(material, 'structure_file') and material.structure_file:
-            structure_data = parse_cif_file(filename=material.structure_file)
-        else:
-            # 否则，使用材料ID或名称查找并解析CIF文件
-            structure_data = parse_cif_file(material_id=material_id, material_name=material.name)
+        # 现在直接使用material_id查找对应目录中的结构文件
+        structure_data = parse_cif_file(material_id=material_id)
         
         # 检查是否有错误
         result = json.loads(structure_data)
         if 'error' in result:
-            return jsonify(result), 404  # 返回错误信息和404状态码
+            # 如果新目录结构下没有找到文件，尝试使用材料名称在旧目录结构中查找
+            if 'No structure file found' in result['error']:
+                structure_data = parse_cif_file(material_name=material.name)
+                result = json.loads(structure_data)
+                if 'error' in result:
+                    return jsonify(result), 404  # 返回错误信息和404状态码
         
         # 返回JSON响应，设置正确的内容类型
         return structure_data, 200, {'Content-Type': 'application/json'}
     
     except Exception as e:
         # 捕获所有异常并返回500错误
+        current_app.logger.error(f"Error getting structure data: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -65,15 +68,22 @@ def get_conventional_cell(material_id):
         # 查询材料记录
         material = Material.query.get_or_404(material_id)
         
-        # 获取CIF文件名
-        filename = material.structure_file if hasattr(material, 'structure_file') else None
-        if not filename:
-            filename = find_structure_file(material_id=material_id, material_name=material.name)
-            if not filename:
-                return jsonify({"error": "Structure file not found"}), 404
+        # 构建材料ID格式化字符串
+        formatted_id = f"IMR-{int(material_id):08d}"
         
-        # 构建文件路径
-        file_path = os.path.join(current_app.root_path, 'static/structures', filename)
+        # 获取结构文件路径
+        file_relative_path = find_structure_file(material_id=material_id)
+        
+        if not file_relative_path:
+            # 如果在新目录结构中没有找到，尝试在旧目录中查找
+            file_relative_path = find_structure_file(material_name=material.name)
+            
+        if not file_relative_path:
+            return jsonify({"error": "Structure file not found"}), 404
+        
+        # 构建完整文件路径
+        file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
+        
         if not os.path.exists(file_path):
             return jsonify({"error": "Structure file not found"}), 404
         
@@ -81,6 +91,9 @@ def get_conventional_cell(material_id):
         from pymatgen.core import Structure
         structure = Structure.from_file(file_path)
         structure_data = _process_structure(structure, cell_type='conventional')
+        
+        # 添加材料ID到结构数据中
+        structure_data['id'] = material_id
         
         # 返回JSON响应
         return jsonify(structure_data)
@@ -244,63 +257,70 @@ def download_cif(material_id):
         # 判断是否为普通下载还是超晶胞下载
         is_supercell = all([a, b, c])
         
-        # 解析原始CIF文件
-        # 首先尝试使用material.structure_file（如果存在）
-        if hasattr(material, 'structure_file') and material.structure_file:
-            file_name = material.structure_file
-        else:
-            # 否则，使用材料ID或名称查找CIF文件
-            file_name = find_structure_file(material_id=material_id, material_name=material.name)
+        # 构建材料ID格式化字符串
+        formatted_id = f"IMR-{int(material_id):08d}"
         
-        # 检查是否找到文件
-        if not file_name:
-            return jsonify({"error": "Structure file not found"}), 404
+        # 获取结构文件路径
+        file_relative_path = find_structure_file(material_id=material_id)
+        
+        if not file_relative_path:
+            # 如果在新目录结构中没有找到，尝试在旧目录中查找
+            file_relative_path = find_structure_file(material_name=material.name)
             
-        # 构建完整的文件路径
-        file_path = os.path.join(current_app.root_path, 'static/structures', file_name)
+        if not file_relative_path:
+            return jsonify({"error": "Structure file not found"}), 404
         
-        # 检查文件是否存在
+        # 构建完整文件路径
+        file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
+        
         if not os.path.exists(file_path):
-            return jsonify({"error": f"Structure file not found: {file_name}"}), 404
+            return jsonify({"error": "Structure file not found"}), 404
         
-        # 如果需要超晶胞，生成超晶胞的CIF数据
+        # 根据请求参数处理文件
         if is_supercell:
-            try:
-                # 将字符串参数转换为整数
-                a = int(a)
-                b = int(b)
-                c = int(c)
-                
-                # 参数验证：确保扩展倍数在有效范围内
-                if a < 1 or b < 1 or c < 1 or a > 5 or b > 5 or c > 5:
-                    return jsonify({"error": "Invalid supercell dimensions. Must be between 1 and 5."}), 400
-                
-                # 参数验证：确保晶胞类型是有效值
-                if cell_type and cell_type not in ['primitive', 'conventional']:
-                    return jsonify({"error": "Invalid cell type. Must be 'primitive' or 'conventional'."}), 400
-                
-                # 获取超晶胞CIF数据
-                cif_data = get_cif_data(
-                    file_path, 
-                    a=a, 
-                    b=b, 
-                    c=c,
-                    cell_type=cell_type or 'primitive'  # 如果未提供cell_type，默认使用primitive
-                )
-            except Exception as e:
-                # 记录错误并返回500错误
-                current_app.logger.error(f"Error generating supercell CIF: {str(e)}")
-                return jsonify({"error": f"Error generating supercell: {str(e)}"}), 500
+            # 如果请求超晶胞，生成并返回超晶胞CIF
+            from pymatgen.core import Structure
+            structure = Structure.from_file(file_path)
+            
+            # 将参数转换为整数
+            a_val = int(a)
+            b_val = int(b)
+            c_val = int(c)
+            
+            # 参数验证
+            if a_val < 1 or b_val < 1 or c_val < 1 or a_val > 5 or b_val > 5 or c_val > 5:
+                return jsonify({"error": "Invalid supercell dimensions. Must be between 1 and 5."}), 400
+            
+            # 处理晶胞类型
+            if cell_type == 'conventional':
+                from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+                analyzer = SpacegroupAnalyzer(structure)
+                structure = analyzer.get_conventional_standard_structure()
+            
+            # 生成超晶胞
+            supercell = structure.make_supercell([a_val, b_val, c_val])
+            
+            # 创建CIF写入器
+            cif_writer = CifWriter(supercell)
+            cif_string = cif_writer.write_str()
+            
+            # 构建文件名
+            filename = f"{material.name}_supercell_{a_val}x{b_val}x{c_val}.cif"
         else:
-            # 读取原始CIF文件
-            with open(file_path, 'r', encoding='utf-8') as f:
-                cif_data = f.read()
+            # 普通下载，直接读取文件内容
+            with open(file_path, 'r') as f:
+                cif_string = f.read()
+            
+            # 使用材料名称作为文件名
+            filename = f"{material.name}.cif"
         
-        # 返回CIF数据，设置正确的MIME类型和文件名
-        return cif_data, 200, {
-            'Content-Type': 'chemical/x-cif',  # CIF文件的标准MIME类型
-            'Content-Disposition': f'attachment; filename="{material.name or material_id}.cif"'  # 设置下载文件名
-        }
+        # 返回CIF文件内容，设置正确的响应头
+        response = current_app.response_class(
+            cif_string,
+            mimetype="chemical/x-cif",
+            headers={"Content-Disposition": f"attachment;filename={filename}"}
+        )
+        return response
     
     except Exception as e:
         # 记录错误并返回500错误
@@ -311,45 +331,48 @@ def download_cif(material_id):
 @bp.route('/structure/<int:material_id>/primitive', methods=['GET'])
 def get_primitive_cell(material_id):
     """
-    生成并返回晶体结构的原胞
+    获取指定材料的原始胞结构数据
     
     参数:
-        material_id: 材料ID
+        material_id: 材料ID，用于在数据库中查找对应的材料记录
     
     返回:
-        包含原胞结构数据的JSON响应
+        包含原始胞结构数据的JSON响应
     """
     try:
-        # 查询材料记录，如果不存在则返回404
+        # 查询材料记录
         material = Material.query.get_or_404(material_id)
         
-        # 解析原始CIF文件
-        # 首先尝试使用material.structure_file（如果存在）
-        if hasattr(material, 'structure_file') and material.structure_file:
-            file_path = material.structure_file
-        else:
-            # 否则，使用材料ID或名称查找CIF文件
-            file_path = find_structure_file(material_id=material_id, material_name=material.name)
+        # 构建材料ID格式化字符串
+        formatted_id = f"IMR-{int(material_id):08d}"
         
-        # 检查是否找到文件
-        if not file_path:
+        # 获取结构文件路径
+        file_relative_path = find_structure_file(material_id=material_id)
+        
+        if not file_relative_path:
+            # 如果在新目录结构中没有找到，尝试在旧目录中查找
+            file_relative_path = find_structure_file(material_name=material.name)
+            
+        if not file_relative_path:
             return jsonify({"error": "Structure file not found"}), 404
         
-        # 文件路径需要完整，所以要添加应用根目录路径
-        full_file_path = os.path.join(current_app.root_path, 'static/structures', file_path)
+        # 构建完整文件路径
+        file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
         
-        # 生成原胞
-        primitive_data = generate_primitive_cell(full_file_path)
+        if not os.path.exists(file_path):
+            return jsonify({"error": "Structure file not found"}), 404
         
-        # 检查是否有错误
-        result = json.loads(primitive_data)
-        if 'error' in result:
-            return jsonify(result), 500
+        # 加载结构并转换为原始胞
+        from pymatgen.core import Structure
+        structure = Structure.from_file(file_path)
+        structure_data = _process_structure(structure, cell_type='primitive')
         
-        # 返回JSON响应，设置正确的内容类型
-        return primitive_data, 200, {'Content-Type': 'application/json'}
+        # 添加材料ID到结构数据中
+        structure_data['id'] = material_id
+        
+        # 返回JSON响应
+        return jsonify(structure_data)
     
     except Exception as e:
-        # 记录错误并返回500错误
-        current_app.logger.error(f"Error generating primitive cell: {str(e)}")
+        current_app.logger.error(f"Error converting to primitive cell: {str(e)}")
         return jsonify({"error": str(e)}), 500

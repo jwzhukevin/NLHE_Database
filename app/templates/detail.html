@@ -403,7 +403,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // 获取能带数据文件路径并绘制能带结构图
-                const bandDataPath = "{{ url_for('static', filename='band/' + material.name + '.dat') }}";
+                const bandDataPath = "{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/band/band.dat') }}";
                 plotBandStructure('bandStructure', bandDataPath);
             });
         </script>

@@ -1,0 +1,18 @@
+{
+  "name": "MoS2-monolayer",
+  "status": "done",
+  "structure_file": "structure.cif",
+  "total_energy": -56.28475,
+  "formation_energy": -0.89216,
+  "fermi_level": 2.86732,
+  "vacuum_level": 4.12547,
+  "workfunction": 5.23814,
+  "metal_type": "semiconductor",
+  "gap": 1.8945,
+  "vbm_energy": -0.5832,
+  "cbm_energy": 1.3113,
+  "vbm_coordi": "['0.333','0.333','0.000']",
+  "cbm_coordi": "['0.500','0.000','0.000']",
+  "vbm_index": 46,
+  "cbm_index": 47
+} 

@@ -76,7 +76,7 @@ class Material(db.Model):
     # 材料表字段定义
     id = db.Column(db.Integer, primary_key=True)  # 主键ID（用于唯一标识材料）
     formatted_id = db.Column(db.String(20), unique=True)  # 格式化ID（如IMR-00000001）
-    name = db.Column(db.String(120), unique=True, nullable=False)  # 唯一材料名称（必填，防重复）
+    name = db.Column(db.String(120), nullable=False)  # 材料名称（必填，允许重复）
     status = db.Column(db.String(20))  # 材料状态（如"实验"或"理论"，指示数据来源）
     structure_file = db.Column(db.String(255))  # 结构文件路径（存储CIF文件的相对路径）
     
