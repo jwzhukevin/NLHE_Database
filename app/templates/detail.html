@@ -41,6 +41,7 @@
             <li><a href="#basic-properties">Basic Properties</a></li>
             <li><a href="#surface-properties">Surface Properties</a></li>
             <li><a href="#band-structure">Band Structure</a></li>
+            <li><a href="#crystal-structure">Crystal Structure</a></li>
             <li><a href="#3d-structure">3D Structure</a></li>
             <li><a href="#band-plot">Band Plot</a></li>
             {% if current_user.is_authenticated %}
@@ -273,6 +274,27 @@
                 </ul>
             </div>
         </div>
+
+        <!-- 晶体结构卡片 -->
+        <div class="detail-card" id="crystal-structure">
+            <div class="card-header">
+                <h3>Crystal Structure</h3>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li><span class="property-label">Crystal System:</span> <span class="property-value" id="crystal-system">Loading...</span></li>
+                    <li><span class="property-label">Space Group:</span> <span class="property-value" id="space-group">Loading...</span></li>
+                    <li><span class="property-label">Lattice a:</span> <span class="property-value" id="lattice-a">Loading...</span></li>
+                    <li><span class="property-label">Lattice b:</span> <span class="property-value" id="lattice-b">Loading...</span></li>
+                    <li><span class="property-label">Lattice c:</span> <span class="property-value" id="lattice-c">Loading...</span></li>
+                    <li><span class="property-label">α:</span> <span class="property-value" id="lattice-alpha">Loading...</span></li>
+                    <li><span class="property-label">β:</span> <span class="property-value" id="lattice-beta">Loading...</span></li>
+                    <li><span class="property-label">γ:</span> <span class="property-value" id="lattice-gamma">Loading...</span></li>
+                    <li><span class="property-label">Volume:</span> <span class="property-value" id="lattice-volume">Loading...</span></li>
+                    <li><span class="property-label">Density:</span> <span class="property-value" id="structure-density">Loading...</span></li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <style>
@@ -465,6 +487,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 观察所有section元素
     sections.forEach(section => observer.observe(section));
+    
+    // 加载晶体结构数据
+    loadCrystalStructureData();
 });
+
+// 加载晶体结构数据的函数
+function loadCrystalStructureData() {
+    const materialId = "{{ material.id }}";
+    const materialName = "{{ material.name }}";
+    
+    // 创建API请求URL
+    let url = `/api/structure?material_id=${materialId}`;
+    if (!materialId && materialName) {
+        url = `/api/structure?material_name=${materialName}`;
+    }
+    
+    // 发送请求获取晶体结构数据
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error("Error loading crystal structure data:", data.error);
+                document.querySelectorAll('#crystal-structure .property-value').forEach(el => {
+                    el.textContent = 'Data not available';
+                });
+                return;
+            }
+            
+            // 更新晶体结构卡片中的数据
+            // 晶体系统
+            if (data.symmetry && data.symmetry.crystal_system) {
+                document.getElementById('crystal-system').textContent = data.symmetry.crystal_system;
+            }
+            
+            // 空间群
+            if (data.symmetry && data.symmetry.space_group_symbol) {
+                const spaceGroup = `${data.symmetry.space_group_symbol} (${data.symmetry.space_group_number})`;
+                document.getElementById('space-group').textContent = spaceGroup;
+            }
+            
+            // 晶格参数
+            if (data.lattice) {
+                document.getElementById('lattice-a').textContent = `${data.lattice.a.toFixed(2)} Å`;
+                document.getElementById('lattice-b').textContent = `${data.lattice.b.toFixed(2)} Å`;
+                document.getElementById('lattice-c').textContent = `${data.lattice.c.toFixed(2)} Å`;
+                document.getElementById('lattice-alpha').textContent = `${data.lattice.alpha.toFixed(2)}°`;
+                document.getElementById('lattice-beta').textContent = `${data.lattice.beta.toFixed(2)}°`;
+                document.getElementById('lattice-gamma').textContent = `${data.lattice.gamma.toFixed(2)}°`;
+                document.getElementById('lattice-volume').textContent = `${data.lattice.volume.toFixed(2)} Å³`;
+            }
+            
+            // 密度
+            if (data.density) {
+                document.getElementById('structure-density').textContent = `${data.density.toFixed(2)} g/cm³`;
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching crystal structure data:", error);
+            document.querySelectorAll('#crystal-structure .property-value').forEach(el => {
+                el.textContent = 'Error loading data';
+            });
+        });
+}
 </script>
 {% endblock %}

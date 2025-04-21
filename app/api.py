@@ -8,6 +8,7 @@ from flask import Blueprint, jsonify, request, current_app
 from .models import Material, db
 from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data, _process_structure, generate_primitive_cell
 from pymatgen.io.cif import CifWriter
+from .material_importer import extract_chemical_formula_from_cif
 
 # 创建API蓝图
 # 定义前缀为/api的路由组
@@ -38,9 +39,9 @@ def get_structure(material_id):
             # 如果新目录结构下没有找到文件，尝试使用材料名称在旧目录结构中查找
             if 'No structure file found' in result['error']:
                 structure_data = parse_cif_file(material_name=material.name)
-                result = json.loads(structure_data)
-                if 'error' in result:
-                    return jsonify(result), 404  # 返回错误信息和404状态码
+        result = json.loads(structure_data)
+        if 'error' in result:
+            return jsonify(result), 404  # 返回错误信息和404状态码
         
         # 返回JSON响应，设置正确的内容类型
         return structure_data, 200, {'Content-Type': 'application/json'}
@@ -79,7 +80,7 @@ def get_conventional_cell(material_id):
             file_relative_path = find_structure_file(material_name=material.name)
             
         if not file_relative_path:
-            return jsonify({"error": "Structure file not found"}), 404
+                return jsonify({"error": "Structure file not found"}), 404
         
         # 构建完整文件路径
         file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
@@ -134,7 +135,7 @@ def upload_structure(material_id):
         # 读取文件内容
         file_content = file.read()
         
-        # 保存文件到指定目录
+        # 保存文件到指定目录（使用新路径结构：app/static/materials/IMR-0000xxxx/structure/structure.cif）
         filename = save_structure_file(
             file_content, 
             file.filename, 
@@ -146,11 +147,36 @@ def upload_structure(material_id):
         if not filename:
             return jsonify({"error": "Failed to save structure file"}), 500
         
-        # 更新材料记录以关联新的结构文件
-        if hasattr(material, 'structure_file'):
-            material.structure_file = filename
-            db.session.commit()  # 提交数据库更改
-            current_app.logger.info(f"Updated structure file for material ID {material_id}: {filename}")
+        # 更新材料数据库记录，更新化学式等信息
+        try:
+            # 构建完整文件路径
+            file_path = os.path.join(current_app.root_path, 'static', filename)
+            
+            # 从CIF文件提取化学式
+            chemical_name = extract_chemical_formula_from_cif(file_path)
+            
+            # 如果成功提取到化学式，更新材料名称
+            if chemical_name:
+                material.name = chemical_name
+                current_app.logger.info(f"Updated material name to '{material.name}' from CIF chemical formula")
+            else:
+                # 如果无法直接提取化学式，尝试解析CIF获取计算的化学式
+                structure_data_json = parse_cif_file(filename=filename)
+                structure_data = json.loads(structure_data_json)
+                
+                if 'error' not in structure_data:
+                    if 'formula' in structure_data:
+                        material.name = structure_data.get('formula')
+                        current_app.logger.info(f"Updated material name to '{material.name}' from CIF formula")
+            
+            # 更新金属类型等其他属性
+            # 在这里可以添加其他需要从CIF文件更新的属性
+            
+            db.session.commit()
+            current_app.logger.info(f"Updated material record for ID {material_id} from CIF file")
+        except Exception as e:
+            current_app.logger.warning(f"Failed to update material record from CIF: {str(e)}")
+            # 继续执行，不中断上传过程
         
         # 返回成功响应
         return jsonify({
@@ -196,16 +222,21 @@ def get_supercell(material_id):
         if cell_type not in ['primitive', 'conventional']:
             return jsonify({"error": "Invalid cell type. Must be 'primitive' or 'conventional'."}), 400
         
-        # 解析原始CIF文件
-        # 首先尝试使用material.structure_file（如果存在）
-        if hasattr(material, 'structure_file') and material.structure_file:
-            file_path = material.structure_file
-        else:
-            # 否则，使用材料ID或名称查找CIF文件
-            file_path = find_structure_file(material_id=material_id, material_name=material.name)
+        # 获取结构文件路径
+        file_relative_path = find_structure_file(material_id=material_id)
+        
+        if not file_relative_path:
+            # 如果在新目录结构中没有找到，尝试在旧目录中查找
+            file_relative_path = find_structure_file(material_name=material.name)
         
         # 检查是否找到文件
-        if not file_path:
+        if not file_relative_path:
+            return jsonify({"error": "Structure file not found"}), 404
+            
+        # 构建完整文件路径
+        file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
+        
+        if not os.path.exists(file_path):
             return jsonify({"error": "Structure file not found"}), 404
         
         # 生成超晶胞
@@ -266,10 +297,10 @@ def download_cif(material_id):
         if not file_relative_path:
             # 如果在新目录结构中没有找到，尝试在旧目录中查找
             file_relative_path = find_structure_file(material_name=material.name)
-            
+        
         if not file_relative_path:
             return jsonify({"error": "Structure file not found"}), 404
-        
+            
         # 构建完整文件路径
         file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
         
@@ -286,11 +317,11 @@ def download_cif(material_id):
             a_val = int(a)
             b_val = int(b)
             c_val = int(c)
-            
+                
             # 参数验证
             if a_val < 1 or b_val < 1 or c_val < 1 or a_val > 5 or b_val > 5 or c_val > 5:
-                return jsonify({"error": "Invalid supercell dimensions. Must be between 1 and 5."}), 400
-            
+                    return jsonify({"error": "Invalid supercell dimensions. Must be between 1 and 5."}), 400
+                
             # 处理晶胞类型
             if cell_type == 'conventional':
                 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -352,7 +383,7 @@ def get_primitive_cell(material_id):
         if not file_relative_path:
             # 如果在新目录结构中没有找到，尝试在旧目录中查找
             file_relative_path = find_structure_file(material_name=material.name)
-            
+        
         if not file_relative_path:
             return jsonify({"error": "Structure file not found"}), 404
         
@@ -375,4 +406,142 @@ def get_primitive_cell(material_id):
     
     except Exception as e:
         current_app.logger.error(f"Error converting to primitive cell: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@bp.route('/structure', methods=['GET'])
+def get_structure_by_params():
+    """
+    通过查询参数获取材料的晶体结构数据（支持使用ID或名称查询）
+    
+    查询参数:
+        material_id: 材料ID（可选）
+        material_name: 材料名称（可选，当未提供ID时使用）
+    
+    返回:
+        包含晶体结构数据的JSON响应，包括晶格参数、空间群信息、原子位置等
+    """
+    material_id = request.args.get('material_id')
+    material_name = request.args.get('material_name')
+    
+    # 验证参数
+    if not material_id and not material_name:
+        return jsonify({"error": "No material ID or name provided"}), 400
+    
+    try:
+        # 如果有材料ID，先尝试找到对应的cif文件
+        if material_id:
+            # 尝试查找材料对应的结构文件
+            structure_file = find_structure_file(material_id=material_id)
+            if not structure_file:
+                # 查询数据库获取材料名称
+                material = Material.query.get(material_id)
+                if material:
+                    material_name = material.name
+                    # 使用材料名称再次尝试查找
+                    structure_file = find_structure_file(material_name=material_name)
+        else:
+            # 直接使用材料名称查找
+            structure_file = find_structure_file(material_name=material_name)
+        
+        # 如果找不到结构文件，返回错误
+        if not structure_file:
+            return jsonify({"error": f"Structure file not found for material ID: {material_id} or name: {material_name}"}), 404
+        
+        # 解析CIF文件获取结构数据
+        structure_data = parse_cif_file(filename=structure_file)
+        
+        # 如果返回的是JSON字符串，转换为Python对象
+        if isinstance(structure_data, str):
+            structure_data = json.loads(structure_data)
+        
+        return jsonify(structure_data)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error processing structure data: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@bp.route('/structure/update-names', methods=['POST'])
+def update_material_names():
+    """
+    从现有的CIF文件更新材料名称
+    
+    可选参数:
+        material_id: 特定材料的ID（如果提供，只更新这个材料）
+    
+    返回:
+        更新结果的JSON响应
+    """
+    try:
+        # 检查是否提供了具体的材料ID
+        material_id = request.args.get('material_id')
+        
+        if material_id:
+            # 如果提供了ID，只更新这个特定材料
+            material = Material.query.get_or_404(int(material_id))
+            materials = [material]
+        else:
+            # 否则，获取所有材料
+            materials = Material.query.all()
+        
+        updated_count = 0
+        errors = []
+        
+        # 遍历每个材料
+        for material in materials:
+            try:
+                # 获取结构文件路径
+                file_relative_path = find_structure_file(material_id=material.id)
+                
+                if not file_relative_path:
+                    # 如果在新目录结构中没有找到，尝试在旧目录中查找
+                    file_relative_path = find_structure_file(material_name=material.name)
+                
+                if not file_relative_path:
+                    errors.append(f"No structure file found for material ID: {material.id}")
+                    continue
+                
+                # 构建完整文件路径
+                file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
+                
+                if not os.path.exists(file_path):
+                    errors.append(f"Structure file not found on disk: {file_path}")
+                    continue
+                
+                # 使用提取函数从CIF文件中读取化学式
+                chemical_name = extract_chemical_formula_from_cif(file_path)
+                
+                # 如果找到了化学式，更新材料名称
+                if chemical_name:
+                    old_name = material.name
+                    material.name = chemical_name
+                    current_app.logger.info(f"Updated material ID {material.id} name from '{old_name}' to '{chemical_name}'")
+                    updated_count += 1
+                else:
+                    # 如果没有找到化学式，尝试解析CIF获取计算的化学式
+                    structure_data_json = parse_cif_file(filename=file_relative_path)
+                    structure_data = json.loads(structure_data_json)
+                    
+                    if 'error' not in structure_data and 'formula' in structure_data:
+                        old_name = material.name
+                        material.name = structure_data['formula']
+                        current_app.logger.info(f"Updated material ID {material.id} name from '{old_name}' to '{structure_data['formula']}' using formula")
+                        updated_count += 1
+            
+            except Exception as e:
+                errors.append(f"Error processing material ID {material.id}: {str(e)}")
+        
+        # 提交所有更改
+        db.session.commit()
+        
+        # 返回更新结果
+        return jsonify({
+            "success": True,
+            "message": f"Updated {updated_count} material names",
+            "errors": errors
+        })
+    
+    except Exception as e:
+        # 回滚会话并返回错误
+        db.session.rollback()
+        current_app.logger.error(f"Error updating material names: {str(e)}")
         return jsonify({"error": str(e)}), 500

@@ -3,10 +3,10 @@ import click
 from flask import Blueprint
 from . import db
 from .models import User, Material
-import csv
 import os
 import json
 from sqlalchemy.exc import SQLAlchemyError
+from .material_importer import extract_chemical_formula_from_cif
 
 # 独立定义命令蓝图
 bp = Blueprint('commands', __name__)
@@ -24,74 +24,6 @@ def safe_int(value):
         return int(value) if value not in ('', None) else None
     except (ValueError, TypeError):
         return None
-
-# app/commands.py
-@bp.cli.command()
-@click.option('--file', default='materials.csv', help='CSV文件路径')
-def import_energy_data(file):
-    """批量导入材料数据"""
-    try:
-        # 使用更高效的读取方式
-        with open(file, 'r', encoding='utf-8-sig') as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)  # 一次性读取所有数据
-
-        # 预处理数据并批量验证
-        required_fields = ['name', 'status', 'total_energy', 'formation_energy', 'metal_type']
-        valid_data = []
-        error_log = []
-
-        for idx, row in enumerate(rows, start=2):  # 假设CSV有标题行，从第2行开始
-            try:
-                # 转换数值类型
-                converted = {
-                    'name': row['name'],
-                    'status': row['status'],
-                    'total_energy': float(row['total_energy']),
-                    'formation_energy': float(row['formation_energy']),
-                    'metal_type': row['metal_type'],
-                    'fermi_level': safe_float(row.get('fermi_level')),
-                    'vacuum_level': safe_float(row.get('vacuum_level')),
-                    'workfunction': safe_float(row.get('workfunction')),
-                    'gap': safe_float(row.get('gap')),
-                    'vbm_energy': safe_float(row.get('vbm_energy')),
-                    'cbm_energy': safe_float(row.get('cbm_energy')),
-                    'vbm_coordi': row.get('vbm_coordi'),
-                    'cbm_coordi': row.get('cbm_coordi'),
-                    'vbm_index': safe_int(row.get('vbm_index')),
-                    'cbm_index': safe_int(row.get('cbm_index'))
-                }
-
-                # 验证必填字段
-                missing = [field for field in required_fields if not converted.get(field)]
-                if missing:
-                    raise ValueError(f"缺少必填字段: {', '.join(missing)}")
-
-                valid_data.append(converted)
-
-            except (ValueError, KeyError) as e:
-                error_log.append(f"第{idx}行错误: {str(e)}")
-                continue
-
-        # 批量插入
-        if valid_data:
-            try:
-                # 使用更高效的批量插入方法
-                db.session.bulk_insert_mappings(Material, valid_data)
-                db.session.commit()
-                click.echo(f"成功导入 {len(valid_data)} 条材料数据")
-            except SQLAlchemyError as e:
-                db.session.rollback()
-                click.echo(f"数据库错误: {str(e)}")
-        
-        # 输出错误日志
-        if error_log:
-            click.echo("\n遇到以下错误:")
-            click.echo("\n".join(error_log))
-            click.echo(f"共计 {len(error_log)} 条错误记录")
-
-    except FileNotFoundError:
-        click.echo(f"错误：文件 {file} 不存在")
 
 @bp.cli.command()
 @click.option('--dir', default='app/static/materials', help='材料数据JSON文件所在目录')
@@ -144,6 +76,18 @@ def import_json_data(dir):
         material_path = os.path.join(materials_base_dir, material_folder)
         
         try:
+            # 首先检查是否有CIF文件并从中读取化学式
+            structure_dir = os.path.join(material_path, 'structure')
+            if os.path.exists(structure_dir):
+                cif_file_path = os.path.join(structure_dir, 'structure.cif')
+                chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
+                if chemical_formula:
+                    default_data['name'] = chemical_formula
+                else:
+                    default_data['name'] = f"Material {material_id}"
+            else:
+                default_data['name'] = f"Material {material_id}"
+            
             # 获取文件夹中的所有JSON文件
             json_files = [f for f in os.listdir(material_path) if f.endswith('.json')]
             
@@ -159,10 +103,8 @@ def import_json_data(dir):
                 with open(json_file_path, 'r', encoding='utf-8') as f:
                     material_data = json.load(f)
                 
-                # 设置材料名称为JSON文件名（不包括扩展名）
-                material_name = os.path.splitext(json_files[0])[0]
-                if 'name' not in material_data or not material_data['name']:
-                    material_data['name'] = material_name
+                # 设置材料名称为从CIF文件中提取的化学式
+                material_data['name'] = default_data['name']
                 
                 # 合并默认值和JSON数据
                 for key in default_data:
@@ -218,8 +160,8 @@ def import_json_data(dir):
                 
                 import_count += 1
                 
-            except json.JSONDecodeError:
-                click.echo(f"错误：材料 {material_id} 的JSON文件格式不正确")
+            except (json.JSONDecodeError, IOError) as e:
+                click.echo(f"错误：材料 {material_id} 的JSON文件读取失败: {str(e)}")
                 error_count += 1
                 continue
                 
@@ -230,7 +172,7 @@ def import_json_data(dir):
     
     try:
         db.session.commit()
-        click.echo(f"导入完成: 成功导入 {import_count} 个材料, 失败 {error_count} 个")
+        click.echo(f"数据导入完成: 成功导入 {import_count} 个材料, 失败 {error_count} 个")
     except SQLAlchemyError as e:
         db.session.rollback()
         click.echo(f"数据库提交错误: {str(e)}")
@@ -320,19 +262,20 @@ def initialize_database(drop, json_dir, test):
         for file_name in os.listdir(structures_dir):
             if file_name.endswith('.cif'):
                 try:
-                    # 从文件名提取材料名称
-                    material_name = file_name.replace('.cif', '')
-                    
                     # 生成一个ID
                     material_id = import_count + 1  # 简单递增
                     
-                    # 提取第一部分作为简化名称
-                    simple_name = material_name.split('-POSCAR-')[0] if '-POSCAR-' in material_name else material_name
+                    # 从CIF文件中读取化学式作为材料名称
+                    cif_file_path = os.path.join(structures_dir, file_name)
+                    chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
+                    
+                    # 如果无法从CIF获取，则使用测试材料名称
+                    material_name = chemical_formula if chemical_formula else f"Test Material {material_id}"
                     
                     # 创建材料记录
                     material = Material(
                         id=material_id,
-                        name=simple_name,
+                        name=material_name,
                         status="done",
                         structure_file=file_name,
                         total_energy=-20.0 - import_count,  # 示例值
@@ -354,11 +297,11 @@ def initialize_database(drop, json_dir, test):
                     db.session.add(material)
                     try:
                         db.session.commit()
-                        click.echo(f"添加测试材料: {material_id} - {simple_name}")
+                        click.echo(f"添加测试材料: {material_id} - {material_name}")
                         import_count += 1
                     except Exception as e:
                         db.session.rollback()
-                        click.echo(f"添加材料 {simple_name} 失败: {str(e)}")
+                        click.echo(f"添加材料 {material_name} 失败: {str(e)}")
                         error_count += 1
                     
                 except Exception as e:
@@ -394,6 +337,18 @@ def initialize_database(drop, json_dir, test):
         else:
             # 如果目录名不符合IMR-格式，跳过该目录
             continue
+        
+        # 检查是否有CIF文件并从中读取化学式
+        structure_dir = os.path.join(root, 'structure')
+        material_name = f"Material {dir_name}"
+        
+        if os.path.exists(structure_dir):
+            cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
+            if cif_files:
+                cif_file_path = os.path.join(structure_dir, cif_files[0])
+                chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
+                if chemical_formula:
+                    material_name = chemical_formula
             
         # 处理当前目录中的第一个JSON文件
         file_name = json_files[0]  # 只处理第一个JSON文件
@@ -403,10 +358,8 @@ def initialize_database(drop, json_dir, test):
             with open(file_path, 'r', encoding='utf-8') as file:
                 material_data = json.load(file)
             
-            # 提取完整的结构文件名作为材料名称（如有必要）
-            structure_file = material_data.get('structure_file')
-            if structure_file and not material_data.get('name'):
-                material_data['name'] = structure_file.replace('.cif', '')
+            # 设置材料名称为从CIF文件中读取的化学式
+            material_data['name'] = material_name
             
             # 检查该ID的材料是否已存在
             existing_material = Material.query.filter_by(id=material_id).first()

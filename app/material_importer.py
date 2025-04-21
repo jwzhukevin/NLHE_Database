@@ -1,8 +1,9 @@
 """
-材料数据导入模块：从JSON文件导入材料数据
+材料数据导入模块：从JSON文件导入材料数据，从CIF文件读取材料名称
 
 此模块负责从存储在app/static/materials文件夹下的JSON文件中读取材料数据。
-如果JSON文件不存在或数据缺失，则返回默认值。
+材料名称从对应的CIF文件中提取化学式。
+如果JSON文件或CIF文件不存在或数据缺失，则返回默认值。
 """
 
 import os
@@ -11,9 +12,50 @@ from flask import current_app
 from .models import Material
 from . import db
 
+def extract_chemical_formula_from_cif(cif_file_path):
+    """
+    从CIF文件中提取化学式作为材料名称
+    
+    参数:
+        cif_file_path: CIF文件的完整路径
+    
+    返回:
+        提取到的化学式字符串，若失败则返回None
+    """
+    try:
+        if not os.path.exists(cif_file_path):
+            return None
+            
+        # 尝试从CIF文件中读取化学式名称
+        chemical_name = None
+        with open(cif_file_path, 'r') as f:
+            cif_content = f.readlines()
+            for line in cif_content:
+                if '_chemical_formula_structural' in line:
+                    # 提取_chemical_formula_structural后的值
+                    parts = line.strip().split()
+                    if len(parts) > 1:
+                        chemical_name = parts[1].strip("'").strip('"')
+                        break
+                # 尝试读取其他化学式字段
+                elif '_chemical_formula_sum' in line:
+                    parts = line.strip().split()
+                    if len(parts) > 1:
+                        chemical_name = parts[1].strip("'").strip('"')
+                        break
+                elif '_chemical_name_systematic' in line:
+                    parts = line.strip().split()
+                    if len(parts) > 1:
+                        chemical_name = parts[1].strip("'").strip('"')
+                        break
+        return chemical_name
+    except Exception as e:
+        print(f"Error extracting chemical formula from CIF: {str(e)}")
+        return None
+
 def get_material_data_from_json(material_id):
     """
-    从对应材料ID的JSON文件中获取材料数据
+    从对应材料ID的JSON文件中获取材料数据，并从CIF文件中读取材料名称
     
     参数:
         material_id: 材料ID (格式如 'IMR-00000001')
@@ -23,7 +65,7 @@ def get_material_data_from_json(material_id):
     """
     # 设置默认值
     default_data = {
-        "name": "No Data",
+        "name": f"Material {material_id}",
         "status": "No Data",
         "structure_file": None,
         "total_energy": None,
@@ -48,6 +90,15 @@ def get_material_data_from_json(material_id):
     if not os.path.exists(materials_dir):
         return default_data
     
+    # 从CIF文件中获取材料名称
+    structure_dir = os.path.join(materials_dir, 'structure')
+    cif_file_path = os.path.join(structure_dir, 'structure.cif')
+    chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
+    
+    # 如果成功读取到化学式，更新默认名称
+    if chemical_formula:
+        default_data["name"] = chemical_formula
+    
     # 获取文件夹中的所有JSON文件
     json_files = [f for f in os.listdir(materials_dir) if f.endswith('.json')]
     
@@ -62,9 +113,9 @@ def get_material_data_from_json(material_id):
         # 尝试读取JSON文件
         with open(json_file_path, 'r') as f:
             material_data = json.load(f)
-            
-        # 设置材料名称为JSON文件名（不包括扩展名）
-        material_data['name'] = os.path.splitext(json_files[0])[0]
+        
+        # 设置材料名称为从CIF文件中读取的化学式
+        material_data['name'] = default_data['name']
         
         # 合并JSON数据和默认值，确保所有字段都有值
         for key in default_data:

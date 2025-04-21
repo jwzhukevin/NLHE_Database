@@ -104,7 +104,7 @@ class Material(db.Model):
     # 能带索引参数（用于能带数据分析和绘图）
     vbm_index = db.Column(db.Integer)         # 价带顶能带索引（在能带数据中的索引位置）
     cbm_index = db.Column(db.Integer)         # 导带底能带索引（在能带数据中的索引位置）
-    
+
     # 数据验证方法
     def validate(self):
         """

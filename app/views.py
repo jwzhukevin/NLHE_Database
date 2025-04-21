@@ -10,7 +10,7 @@ from .models import User, Material, BlockedIP  # 自定义数据模型
 from . import db  # 数据库实例
 import datetime  # 处理日期和时间
 import functools  # 用于装饰器
-from .material_importer import import_material_from_json, scan_and_import_all_materials  # 导入材料数据模块
+from .material_importer import import_material_from_json, scan_and_import_all_materials, extract_chemical_formula_from_cif  # 导入材料数据模块
 
 # 创建名为'views'的蓝图，用于模块化路由管理
 bp = Blueprint('views', __name__)
@@ -156,6 +156,9 @@ def add():
             os.makedirs(os.path.dirname(structure_path), exist_ok=True)  # 确保目录存在
             structure_file.save(structure_path)  # 保存上传的文件
             
+            # 从CIF文件中提取化学式
+            chemical_name = extract_chemical_formula_from_cif(structure_path)
+            
             # 如果有能带文件，保存到band目录
             if band_file and band_file.filename.endswith(('.json', '.dat')):
                 band_filename = secure_filename(band_file.filename)
@@ -165,7 +168,7 @@ def add():
             
             # 获取并转换表单数据（使用safe_float处理空值）
             material_data = {
-                'name': request.form.get('name'),  # 材料名称（必填）
+                'name': chemical_name if chemical_name else request.form.get('name'),  # 优先使用CIF提取的化学式
                 'status': request.form.get('status'),  # 状态
                 'structure_file': structure_filename if structure_file and structure_file.filename else None,  # 结构文件路径
                 'total_energy': safe_float(request.form.get('total_energy')),  # 总能量
@@ -187,6 +190,10 @@ def add():
             if not material_data['name']:
                 flash('Material name is required!', 'error')  # 显示错误消息
                 return redirect(url_for('views.add'))  # 重定向回添加页面
+            
+            # 如果使用了CIF提取的化学式，显示提示
+            if chemical_name:
+                flash(f'Material name set from CIF: {chemical_name}', 'info')
 
             # 创建Material对象并验证数据
             material = Material(**material_data)
@@ -270,6 +277,22 @@ def edit(material_id):
                 os.makedirs(os.path.dirname(structure_path), exist_ok=True)
                 structure_file.save(structure_path)
                 material.structure_file = structure_filename
+                
+                # 从CIF文件中提取化学式
+                chemical_name = extract_chemical_formula_from_cif(structure_path)
+                if chemical_name:
+                    # 如果成功提取到化学式，使用它作为材料名称
+                    material.name = chemical_name
+                    flash(f'Material name updated from CIF: {chemical_name}', 'info')
+            
+            # 如果没有上传文件或无法提取化学式，则使用表单提供的名称
+            if not structure_file or not structure_file.filename or not material.name:
+                material.name = request.form.get('name')
+            
+            # 验证名称不为空
+            if not material.name:
+                flash('Material name is required!', 'error')
+                return redirect(url_for('views.edit', material_id=material_id))
             
             # 处理能带文件更新
             band_file = request.files.get('band_file')
@@ -280,14 +303,7 @@ def edit(material_id):
                     os.makedirs(os.path.dirname(band_path), exist_ok=True)
                     band_file.save(band_path)
             
-            # 更新材料属性
-            material.name = request.form.get('name')
-            
-            # 验证名称不为空
-            if not material.name:
-                flash('Material name is required!', 'error')
-                return redirect(url_for('views.edit', material_id=material_id))
-                
+            # 更新其他材料属性
             material.status = request.form.get('status')
             material.total_energy = safe_float(request.form.get('total_energy'))
             material.formation_energy = safe_float(request.form.get('formation_energy'))

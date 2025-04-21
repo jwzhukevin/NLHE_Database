@@ -167,11 +167,40 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
             current_app.logger.error(error_msg)
             return json.dumps({"error": error_msg})
         
+        # 尝试从CIF文件中读取化学式名称
+        chemical_name = None
+        try:
+            with open(file_path, 'r') as f:
+                cif_content = f.readlines()
+                for line in cif_content:
+                    if '_chemical_formula_structural' in line:
+                        # 提取_chemical_formula_structural后的值
+                        parts = line.strip().split()
+                        if len(parts) > 1:
+                            chemical_name = parts[1].strip("'").strip('"')
+                            break
+            current_app.logger.info(f"Read chemical formula from CIF: {chemical_name}")
+        except Exception as e:
+            current_app.logger.warning(f"Could not read chemical formula from CIF file: {str(e)}")
+        
         # 使用pymatgen加载晶体结构
         structure = Structure.from_file(file_path)
         
-        # 提取晶格参数
-        lattice = structure.lattice
+        # 提取更多结构信息
+        from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+        analyzer = SpacegroupAnalyzer(structure)
+        
+        # 获取空间群信息
+        spacegroup_symbol = analyzer.get_space_group_symbol()
+        spacegroup_number = analyzer.get_space_group_number()
+        crystal_system = analyzer.get_crystal_system()
+        point_group = analyzer.get_point_group_symbol()
+        
+        # 获取常规胞结构以展示标准化的数据
+        conventional_structure = analyzer.get_conventional_standard_structure()
+        
+        # 提取晶格参数（使用常规胞）
+        lattice = conventional_structure.lattice
         lattice_data = {
             'a': lattice.a,  # a轴长度（埃）
             'b': lattice.b,  # b轴长度（埃）
@@ -179,30 +208,74 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
             'alpha': lattice.alpha,  # alpha角（度）
             'beta': lattice.beta,    # beta角（度）
             'gamma': lattice.gamma,  # gamma角（度）
+            'volume': lattice.volume,  # 晶胞体积（埃^3）
             'matrix': lattice.matrix.tolist()  # 晶格矩阵，转换为列表以便JSON序列化
         }
         
+        # 如果未能从CIF文件中读取化学式，则使用pymatgen计算的化学式
+        composition_name = conventional_structure.composition.reduced_formula
+        if not chemical_name:
+            chemical_name = composition_name  # 默认使用计算的化学式作为名称
+        
         # 提取原子信息
         atoms = []
-        for site in structure.sites:
+        wyckoff_sites = analyzer.get_symmetry_dataset()['wyckoffs']
+        equivalent_atoms = analyzer.get_symmetry_dataset()['equivalent_atoms']
+        
+        for i, site in enumerate(conventional_structure.sites):
+            # 获取Wyckoff位置
+            wyckoff = wyckoff_sites[equivalent_atoms[i]] if i < len(equivalent_atoms) else "?"
+            
+            # 获取元素符号
+            element_str = site.species_string
+            
             atom = {
-                'element': site.species_string,  # 元素符号
+                'element': element_str,  # 元素符号
                 'position': site.coords.tolist(),  # 笛卡尔坐标
                 'frac_coords': site.frac_coords.tolist(),  # 分数坐标
+                'wyckoff': wyckoff,  # Wyckoff位置
                 'properties': {
-                    'label': site.species_string,  # 原子标签（用于显示）
-                    'radius': get_atom_radius(site.species_string)  # 原子半径（用于3D渲染）
+                    'label': element_str,  # 原子标签（用于显示）
+                    'radius': get_atom_radius(element_str)  # 原子半径（用于3D渲染）
                 }
             }
             atoms.append(atom)
         
+        # 提取可能的氧化态
+        possible_oxidation_states = {}
+        for element in conventional_structure.composition.elements:
+            # 处理元素符号，确保移除可能的电荷标记
+            elem_symbol = str(element)
+            # 提取纯元素符号（去除任何+、-等电荷标记）
+            pure_elem_symbol = ''.join(c for c in elem_symbol if c.isalpha())
+            
+            try:
+                from pymatgen.core.periodic_table import Element
+                possible_oxidation_states[elem_symbol] = Element(pure_elem_symbol).oxidation_states
+            except Exception as e:
+                # 如果获取氧化态失败，记录错误但继续处理
+                current_app.logger.warning(f"Could not get oxidation states for element {elem_symbol}: {str(e)}")
+                possible_oxidation_states[elem_symbol] = []
+        
         # 构建完整的结构数据
         structure_data = {
-            'formula': structure.formula,  # 化学式
-            'lattice': lattice_data,        # 晶格参数
-            'atoms': atoms,                 # 原子列表
-            'num_atoms': len(atoms),        # 原子总数
-            'id': material_id               # 添加材料ID便于前端引用
+            'name': chemical_name,  # 使用从CIF读取的化学式名称
+            'formula': conventional_structure.formula,  # 完整化学式
+            'lattice': lattice_data,  # 晶格参数
+            'atoms': atoms,  # 原子列表
+            'num_atoms': len(atoms),  # 原子总数
+            'density': conventional_structure.density,  # 密度 (g/cm^3)
+            'symmetry': {
+                'crystal_system': crystal_system,  # 晶系
+                'space_group_symbol': spacegroup_symbol,  # 空间群符号
+                'space_group_number': spacegroup_number,  # 空间群编号
+                'point_group': point_group,  # 点群
+                # 'hall_number': analyzer.get_hall_number(),  # Hall编号
+            },
+            'dimensionality': '3D',  # 默认为3D
+            'possible_oxidation_states': possible_oxidation_states,  # 可能的氧化态
+            'id': material_id,  # 添加材料ID便于前端引用
+            'chemical_formula_structural': chemical_name  # 添加原始的结构化化学式
         }
         
         # 返回JSON字符串
@@ -220,11 +293,15 @@ def get_atom_radius(element):
     返回元素的原子半径（用于Three.js中的可视化）
     
     参数:
-        element: 元素符号（如H, O, Fe等）
+        element: 元素符号（如H, O, Fe等），可能包含电荷标记如Li+、O2-
     
     返回:
         原子半径（单位：埃），如果元素不在字典中，则返回默认值1.0
     """
+    # 处理可能带有电荷的元素符号，提取纯元素部分
+    # 例如：Li+ -> Li, O2- -> O, Fe3+ -> Fe
+    pure_element = ''.join(c for c in element if c.isalpha())
+    
     # 常见元素的原子半径（单位：埃）
     # 这些值用于Three.js中的可视化，不一定反映真实的原子半径
     radii = {
@@ -327,7 +404,7 @@ def get_atom_radius(element):
     }
     
     # 如果元素在字典中，返回对应的半径，否则返回默认值1.0
-    return radii.get(element, 1.0)
+    return radii.get(pure_element, 1.0)
 
 
 def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
@@ -417,13 +494,14 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
         # 提取原子信息
         atoms = []
         for site in supercell.sites:
+            element_str = site.species_string
             atom = {
-                'element': site.species_string,
+                'element': element_str,
                 'position': site.coords.tolist(),  # 笛卡尔坐标
                 'frac_coords': site.frac_coords.tolist(),  # 分数坐标
                 'properties': {
-                    'label': site.species_string,
-                    'radius': get_atom_radius(site.species_string)
+                    'label': element_str,
+                    'radius': get_atom_radius(element_str)  # 现在get_atom_radius可以处理带电荷的元素
                 }
             }
             atoms.append(atom)
@@ -549,19 +627,39 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
             'beta': lattice.beta,
             'gamma': lattice.gamma,
             'matrix': lattice.matrix.tolist(),
-            'volume': lattice.volume
+            'volume': lattice.volume  # 添加晶胞体积信息
+        }
+        
+        # 提取空间群信息
+        spacegroup_data = {
+            'symbol': analyzer.get_space_group_symbol(),
+            'number': analyzer.get_space_group_number(),
+            'crystal_system': analyzer.get_crystal_system(),
+            'point_group': analyzer.get_point_group_symbol()
         }
         
         # 提取原子信息
         atoms = []
         for site in converted_structure.sites:
+            # 确保使用纯元素符号
+            element_str = site.species_string
+            # 安全获取氧化态信息
+            oxidation_state = None
+            try:
+                if site.species.get_oxidation_states():
+                    oxidation_state = site.species.get_oxidation_states()[0]
+            except Exception:
+                # 如果获取氧化态失败，设为None
+                oxidation_state = None
+                
             atom = {
-                'element': site.species_string,
+                'element': element_str,
                 'position': site.coords.tolist(),
                 'frac_coords': site.frac_coords.tolist(),
                 'properties': {
-                    'label': site.species_string,
-                    'radius': get_atom_radius(site.species_string)
+                    'label': element_str,
+                    'radius': get_atom_radius(element_str.split('+')[0].split('-')[0]),  # 只使用元素符号部分获取半径
+                    'oxidation_state': oxidation_state
                 }
             }
             atoms.append(atom)
@@ -569,12 +667,14 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
         # 构建完整的结构数据
         structure_data = {
             'formula': converted_structure.formula,
+            'name': converted_structure.composition.reduced_formula,
             'lattice': lattice_data,
             'atoms': atoms,
             'num_atoms': len(atoms),
-            'spacegroup': spacegroup,
-            'cell_type': cell_type,
-            'is_primitive': is_primitive
+            'isPrimitive': is_primitive,
+            'spacegroup': spacegroup_data,
+            'density': converted_structure.density,
+            'cell_type': cell_type
         }
         
         return structure_data
@@ -583,60 +683,7 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
         error_msg = f"Error processing structure: {str(e)}"
         current_app.logger.error(error_msg)
         raise Exception(error_msg)
-    if converted_structure is None:
-        current_app.logger.warning(f"No {cell_type} cell found, using original structure")
-        converted_structure = structure
-    
-    # 提取晶格参数
-    lattice = converted_structure.lattice
-    lattice_data = {
-        'a': lattice.a,
-        'b': lattice.b,
-        'c': lattice.c,
-        'alpha': lattice.alpha,
-        'beta': lattice.beta,
-        'gamma': lattice.gamma,
-        'matrix': lattice.matrix.tolist(),
-        'volume': lattice.volume  # 添加晶胞体积信息
-    }
-    
-    # 提取空间群信息
-    spacegroup_data = {
-        'symbol': analyzer.get_space_group_symbol(),
-        'number': analyzer.get_space_group_number(),
-        'crystal_system': analyzer.get_crystal_system(),
-        'point_group': analyzer.get_point_group_symbol()
-    }
-    
-    # 提取原子信息
-    atoms = []
-    for site in converted_structure.sites:
-        atom = {
-            'element': site.species_string,
-            'position': site.coords.tolist(),
-            'frac_coords': site.frac_coords.tolist(),
-            'properties': {
-                'label': site.species_string,
-                'radius': get_atom_radius(site.species_string),
-                'oxidation_state': site.species.get_oxidation_states()[0] if site.species.get_oxidation_states() else None
-            }
-        }
-        atoms.append(atom)
-    
-    # 构建完整的结构数据
-    structure_data = {
-        'formula': converted_structure.formula,
-        'name': converted_structure.composition.reduced_formula,
-        'lattice': lattice_data,
-        'atoms': atoms,
-        'num_atoms': len(atoms),
-        'isPrimitive': is_primitive,
-        'spacegroup': spacegroup_data,
-        'density': converted_structure.density,
-        'cell_type': cell_type
-    }
-    
-    return structure_data
+
 
 def generate_primitive_cell(file_path):
     """
@@ -668,6 +715,7 @@ def generate_primitive_cell(file_path):
         error_msg = f"Error generating primitive cell: {str(e)}"
         current_app.logger.error(error_msg)
         return json.dumps({"error": error_msg})
+
 
 def generate_conventional_cell(file_path):
     """
