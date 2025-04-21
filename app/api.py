@@ -161,13 +161,12 @@ def upload_structure(material_id):
                 current_app.logger.info(f"Updated material name to '{material.name}' from CIF chemical formula")
             else:
                 # 如果无法直接提取化学式，尝试解析CIF获取计算的化学式
-            structure_data_json = parse_cif_file(filename=filename)
-            structure_data = json.loads(structure_data_json)
-            
-            if 'error' not in structure_data:
+                structure_data_json = parse_cif_file(filename=filename)
+                structure_data = json.loads(structure_data_json)
+                if 'error' not in structure_data:
                     if 'formula' in structure_data:
-                    material.name = structure_data.get('formula')
-                    current_app.logger.info(f"Updated material name to '{material.name}' from CIF formula")
+                        material.name = structure_data.get('formula')
+                        current_app.logger.info(f"Updated material name to '{material.name}' from CIF formula")
                 
                 # 更新金属类型等其他属性
                 # 在这里可以添加其他需要从CIF文件更新的属性
@@ -422,11 +421,11 @@ def get_structure_by_params():
     """
     try:
         # Get query parameters
-    material_id = request.args.get('material_id')
-    material_name = request.args.get('material_name')
+        material_id = request.args.get('material_id')
+        material_name = request.args.get('material_name')
     
         # At least one parameter must be provided
-    if not material_id and not material_name:
+        if not material_id and not material_name:
             return jsonify({"error": "Either material_id or material_name must be provided"}), 400
     
         # If material_id is provided, try to find the corresponding cif file
@@ -440,7 +439,7 @@ def get_structure_by_params():
                 result = json.loads(structure_data)
                 if 'error' in result:
                     # If no file found in new directory structure, try with material name
-                material = Material.query.get(material_id)
+                    material = Material.query.get(material_id)
                     if material and 'No structure file found' in result['error']:
                         structure_data = parse_cif_file(material_name=material.name)
             except ValueError:
