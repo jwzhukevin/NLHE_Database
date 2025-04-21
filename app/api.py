@@ -161,19 +161,19 @@ def upload_structure(material_id):
                 current_app.logger.info(f"Updated material name to '{material.name}' from CIF chemical formula")
             else:
                 # 如果无法直接提取化学式，尝试解析CIF获取计算的化学式
-                structure_data_json = parse_cif_file(filename=filename)
-                structure_data = json.loads(structure_data_json)
-                
-                if 'error' not in structure_data:
+            structure_data_json = parse_cif_file(filename=filename)
+            structure_data = json.loads(structure_data_json)
+            
+            if 'error' not in structure_data:
                     if 'formula' in structure_data:
-                        material.name = structure_data.get('formula')
-                        current_app.logger.info(f"Updated material name to '{material.name}' from CIF formula")
-            
-            # 更新金属类型等其他属性
-            # 在这里可以添加其他需要从CIF文件更新的属性
-            
-            db.session.commit()
-            current_app.logger.info(f"Updated material record for ID {material_id} from CIF file")
+                    material.name = structure_data.get('formula')
+                    current_app.logger.info(f"Updated material name to '{material.name}' from CIF formula")
+                
+                # 更新金属类型等其他属性
+                # 在这里可以添加其他需要从CIF文件更新的属性
+                
+                db.session.commit()
+                current_app.logger.info(f"Updated material record for ID {material_id} from CIF file")
         except Exception as e:
             current_app.logger.warning(f"Failed to update material record from CIF: {str(e)}")
             # 继续执行，不中断上传过程
@@ -411,53 +411,71 @@ def get_primitive_cell(material_id):
 @bp.route('/structure', methods=['GET'])
 def get_structure_by_params():
     """
-    通过查询参数获取材料的晶体结构数据（支持使用ID或名称查询）
+    Get structure data by material_id or material_name
     
-    查询参数:
-        material_id: 材料ID（可选）
-        material_name: 材料名称（可选，当未提供ID时使用）
+    Args:
+        material_id: Material ID parameter
+        material_name: Material name parameter
     
-    返回:
-        包含晶体结构数据的JSON响应，包括晶格参数、空间群信息、原子位置等
+    Returns:
+        JSON response with structure data including detailed atomic positions
     """
+    try:
+        # Get query parameters
     material_id = request.args.get('material_id')
     material_name = request.args.get('material_name')
     
-    # 验证参数
+        # At least one parameter must be provided
     if not material_id and not material_name:
-        return jsonify({"error": "No material ID or name provided"}), 400
+            return jsonify({"error": "Either material_id or material_name must be provided"}), 400
     
-    try:
-        # 如果有材料ID，先尝试找到对应的cif文件
+        # If material_id is provided, try to find the corresponding cif file
         if material_id:
-            # 尝试查找材料对应的结构文件
-            structure_file = find_structure_file(material_id=material_id)
-            if not structure_file:
-                # 查询数据库获取材料名称
+            try:
+                material_id = int(material_id)
+                # Get structure data using the id
+                structure_data = parse_cif_file(material_id=material_id)
+                
+                # Check for errors in the result
+                result = json.loads(structure_data)
+                if 'error' in result:
+                    # If no file found in new directory structure, try with material name
                 material = Material.query.get(material_id)
-                if material:
-                    material_name = material.name
-                    # 使用材料名称再次尝试查找
-                    structure_file = find_structure_file(material_name=material_name)
+                    if material and 'No structure file found' in result['error']:
+                        structure_data = parse_cif_file(material_name=material.name)
+            except ValueError:
+                return jsonify({"error": "Invalid material_id format"}), 400
         else:
-            # 直接使用材料名称查找
-            structure_file = find_structure_file(material_name=material_name)
+            # Use material_name to find structure file
+            structure_data = parse_cif_file(material_name=material_name)
         
-        # 如果找不到结构文件，返回错误
-        if not structure_file:
-            return jsonify({"error": f"Structure file not found for material ID: {material_id} or name: {material_name}"}), 404
+        # Process the result
+        result = json.loads(structure_data)
+        if 'error' in result:
+            return jsonify(result), 404
+            
+        # Ensure sites data is properly formatted for the frontend
+        if 'atoms' in result and isinstance(result['atoms'], list):
+            # Create a sites array with the needed format
+            sites = []
+            for atom in result['atoms']:
+                site = {
+                    'species': [{'element': atom['element']}],
+                    'xyz': atom['position'],
+                    'frac_coords': atom['frac_coords'],
+                    'wyckoff': atom.get('wyckoff', '')
+                }
+                sites.append(site)
         
-        # 解析CIF文件获取结构数据
-        structure_data = parse_cif_file(filename=structure_file)
-        
-        # 如果返回的是JSON字符串，转换为Python对象
-        if isinstance(structure_data, str):
-            structure_data = json.loads(structure_data)
-        
-        return jsonify(structure_data)
+            # Add sites to the result if not already present
+            if 'sites' not in result or not result['sites']:
+                result['sites'] = sites
+                
+        # Return JSON response
+        return jsonify(result)
     
     except Exception as e:
-        current_app.logger.error(f"Error processing structure data: {str(e)}")
+        current_app.logger.error(f"Error getting structure data: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @bp.route('/structure/update-names', methods=['POST'])

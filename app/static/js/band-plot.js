@@ -110,25 +110,25 @@ async function plotBandStructure(containerId, bandDataPath) {
             title: {
                 text: 'Band Structure',
                 font: {
-                    family: 'Times New Roman',
-                    size: 24
+                    family: 'system-ui, -apple-system, sans-serif',
+                    size: 20
                 },
-                y: 0.96, // 将标题上移，增加与图表内容的距离
+                y: 0.97, // 将标题上移，增加与图表内容的距离
                 x: 0.5,  // 确保水平居中
                 xanchor: 'center', // 锚点居中对齐
                 yanchor: 'top'     // 顶部对齐
             },
             // 设置图表尺寸
             autosize: true,  // 启用自动尺寸调整
-            height: 700,  // 增加高度以提供更多绘图空间
+            // 移除固定高度以实现完全自适应
             xaxis: {
                 title: {
                     text: 'High Symmetry Path',
                     font: {
-                        family: 'Times New Roman',
-                        size: 20,
+                        family: 'system-ui, -apple-system, sans-serif',
+                        size: 16,
                     },
-                    standoff: 10, // 增加标题与坐标轴的距离
+                    standoff: 5, // 增加标题与坐标轴的距离
                 },
                 showgrid: false,
                 zeroline: false,
@@ -144,16 +144,16 @@ async function plotBandStructure(containerId, bandDataPath) {
                 ticks: 'outside',
                 showticknumber: false,
                 tickfont: {
-                    family: 'Times New Roman',
-                    size: 16
+                    family: 'system-ui, -apple-system, sans-serif',
+                    size: 14
                 }
             },
             yaxis: {
                 title: {
                     text: 'Energy (eV)',
                     font: {
-                        family: 'Times New Roman',
-                        size: 20
+                        family: 'system-ui, -apple-system, sans-serif',
+                        size: 16
                     },
                     standoff: 0, // 增加标题与坐标轴的距离
                 },
@@ -167,18 +167,18 @@ async function plotBandStructure(containerId, bandDataPath) {
                 mirror: true,
                 ticks: 'outside',
                 tickfont: {
-                    family: 'Times New Roman',
-                    size: 16
+                    family: 'system-ui, -apple-system, sans-serif',
+                    size: 14
                 }
             },
             showlegend: false,
             hovermode: 'closest',
             plot_bgcolor: 'white',
             paper_bgcolor: 'white',
-            // 大幅增加边距，确保所有元素与边框保持舒适距离
-            margin: {l: 100, r: 50, t: 80, b: 80},
+            // 调整边距，确保在小尺寸下也能正常显示
+            margin: {l: 70, r: 30, t: 50, b: 70},
             font: {
-                family: 'Times New Roman'
+                family: 'system-ui, -apple-system, sans-serif'
             }
         };
         
@@ -190,8 +190,6 @@ async function plotBandStructure(containerId, bandDataPath) {
             toImageButtonOptions: {
                 format: 'png',  // 导出图像格式
                 filename: 'band_structure',
-                height: 700,
-                width: 900,
                 scale: 2       // 提高导出图像质量
             },
             modeBarButtonsToAdd: [
@@ -204,8 +202,40 @@ async function plotBandStructure(containerId, bandDataPath) {
         // 创建图表
         await Plotly.newPlot(containerId, traces, layout, config);
         
+        // 添加窗口大小调整监听器，以确保图表自适应容器大小
+        const resizeGraph = () => {
+            Plotly.relayout(containerId, {
+                autosize: true
+            });
+        };
+        
+        // 确保图表在窗口大小变化时保持自适应
+        window.addEventListener('resize', resizeGraph);
+        
+        // 清理函数，当组件卸载时移除事件监听器
+        const container = document.getElementById(containerId);
+        if (container) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.removedNodes.contains(container)) {
+                        window.removeEventListener('resize', resizeGraph);
+                        observer.disconnect();
+                    }
+                });
+            });
+            
+            observer.observe(container.parentNode, { childList: true });
+        }
+        
     } catch (error) {
         console.error('Error plotting band structure:', error);
-        throw error;
+        // 显示错误信息在容器中
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">
+                <p>Error loading band structure data.</p>
+                <p>${error.message || 'Unknown error'}</p>
+            </div>`;
+        }
     }
 }

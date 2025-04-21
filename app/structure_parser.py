@@ -263,6 +263,14 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
             'formula': conventional_structure.formula,  # 完整化学式
             'lattice': lattice_data,  # 晶格参数
             'atoms': atoms,  # 原子列表
+            'sites': [  # 单独添加sites数据以便前端使用
+                {
+                    'species': [{'element': atom['element']}],
+                    'xyz': atom['position'],
+                    'frac_coords': atom['frac_coords'],
+                    'wyckoff': atom.get('wyckoff', '')
+                } for atom in atoms
+            ],
             'num_atoms': len(atoms),  # 原子总数
             'density': conventional_structure.density,  # 密度 (g/cm^3)
             'symmetry': {

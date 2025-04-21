@@ -252,14 +252,14 @@ function initCrystalViewer(containerId) {
     scene.background = new THREE.Color(0xffffff); // 设置场景背景为白色
 
     // 创建透视相机
-    // 参数1: 视场角(FOV) - 70度,决定视野范围的大小
+    // 参数1: 视场角(FOV) - 45度,决定视野范围的大小
     // 参数2: 宽高比 - 根据容器尺寸计算,保持图像不变形
     // 参数3: 近裁剪面 - 0.1,小于此距离的物体不会被渲染
     // 参数4: 远裁剪面 - 1000,大于此距离的物体不会被渲染
-    camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
-    camera.position.x = 8; // 设置相机初始位置
-    camera.position.y = 8; // 设置相机初始位置
-    camera.position.z = 8; // 设置相机初始位置
+    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.x = 12; // 设置相机初始位置
+    camera.position.y = 12; // 设置相机初始位置
+    camera.position.z = 12; // 设置相机初始位置
 
     // 创建WebGL渲染器
     renderer = new THREE.WebGLRenderer({ 
@@ -448,9 +448,9 @@ function createToolbar(container) {
     
     // 定义可选的模型类型选项
     const modelOptions = [
-        { label: 'ball-and-stick', value: 'ball-and-stick' },
-        { label: 'ball', value: 'ball' },
-        { label: 'stick', value: 'stick' }
+        { label: 'Ball-And-Stick', value: 'ball-and-stick' },
+        { label: 'Ball', value: 'ball' },
+        { label: 'Stick', value: 'stick' }
     ];
     
     // 为每个模型类型创建DOM元素
@@ -1494,8 +1494,8 @@ function addBond(atom1, atom2, distance) {
 }
 
 /**
- * 重置相机位置以适应结构
- * 根据晶体结构的大小自动调整相机位置和视角
+ * 重置相机位置
+ * 计算晶体结构的边界框，并根据其大小自动调整相机位置以确保整个结构可见
  * @param {Object} structureData - 晶体结构数据
  */
 function resetCameraPosition(structureData) {
@@ -1509,9 +1509,9 @@ function resetCameraPosition(structureData) {
     const fov = camera.fov * (Math.PI / 180);
     let cameraDistance = (maxDim / 2) / Math.tan(fov / 2);
     
-    // 将相机定位到立体中心的正面位置
+    // 将相机定位到立体中心的正面位置，增加距离系数以确保更好的视野
     const direction = new THREE.Vector3(1, 1, 1).normalize();
-    camera.position.copy(center).add(direction.multiplyScalar(cameraDistance * 1.5));
+    camera.position.copy(center).add(direction.multiplyScalar(cameraDistance * 1.8));
     camera.lookAt(center);
     
     // 设置控制器的目标为晶体结构的中心，确保旋转围绕中心点进行

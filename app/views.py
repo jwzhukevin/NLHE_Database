@@ -245,7 +245,7 @@ def safe_int(value):
         return None
 
 # 材料编辑路由
-@bp.route('/material/edit/<int:material_id>', methods=['GET', 'POST'])
+@bp.route('/materials/edit/IMR-<string:material_id>', methods=['GET', 'POST'])
 @login_required  # 登录保护装饰器
 def edit(material_id):
     """
@@ -255,10 +255,16 @@ def edit(material_id):
     POST请求: 处理表单提交，更新数据库记录
     
     参数:
-        material_id: 要编辑的材料ID
+        material_id: 要编辑的材料ID（格式为数字部分，不含IMR-前缀）
     """
+    # 从字符串ID提取数字部分
+    try:
+        numeric_id = int(material_id)
+    except ValueError:
+        return render_template('404.html'), 404
+        
     # 查询要编辑的材料记录
-    material = Material.query.get_or_404(material_id)  # 获取材料或返回404
+    material = Material.query.get_or_404(numeric_id)  # 获取材料或返回404
     
     if request.method == 'POST':
         try:
@@ -378,19 +384,25 @@ def import_materials():
     return render_template('import_materials.html')
 
 # 材料详情页
-@bp.route('/material/<int:material_id>')
+@bp.route('/materials/IMR-<string:material_id>')
 def detail(material_id):
     """
     显示材料详细信息的页面
     
     参数:
-        material_id: 要显示的材料ID
+        material_id: 要显示的材料ID（格式为数字部分，不含IMR-前缀）
     
     返回:
         渲染的详情页模板，包含材料数据和结构文件路径
     """
+    # 从字符串ID提取数字部分
+    try:
+        numeric_id = int(material_id)
+    except ValueError:
+        return render_template('404.html'), 404
+    
     # 从数据库获取材料，不存在则返回404
-    material = Material.query.get_or_404(material_id)
+    material = Material.query.get_or_404(numeric_id)
     
     # 如果需要，这里可以添加从JSON文件更新材料数据的逻辑
     # 例如：如果材料状态为"需更新"，则自动从JSON刷新数据
@@ -404,19 +416,25 @@ def detail(material_id):
                           structure_file=structure_file)
 
 # 材料删除路由（仅POST请求）
-@bp.route('/material/delete/<int:material_id>', methods=['POST'])
+@bp.route('/materials/delete/IMR-<string:material_id>', methods=['POST'])
 @login_required  # 登录保护装饰器
 def delete(material_id):
     """
     删除材料记录
     
     参数:
-        material_id: 要删除的材料ID
+        material_id: 要删除的材料ID（格式为数字部分，不含IMR-前缀）
     
     注意:
         只接受POST请求，防止CSRF攻击
     """
-    material = Material.query.get_or_404(material_id)  # 获取材料或返回404错误
+    # 从字符串ID提取数字部分
+    try:
+        numeric_id = int(material_id)
+    except ValueError:
+        return render_template('404.html'), 404
+        
+    material = Material.query.get_or_404(numeric_id)  # 获取材料或返回404错误
     
     # 删除相关文件
     import os

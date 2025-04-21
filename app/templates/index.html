@@ -1732,12 +1732,17 @@
         background-color: var(--light-bg);
     }
 
-    /* 表格居中对齐 */
+    /* 表格左对齐 */
     .material-data-table th,
     .material-data-table td {
-        text-align: center;
+        text-align: left;
         vertical-align: middle;
         padding: 16px 12px;  /* 增加上下内边距以增大行距 */
+    }
+    
+    /* 只让操作按钮居中对齐 */
+    .material-data-table td:last-child {
+        text-align: center;
     }
 
     .material-data-table tbody tr:nth-child(even) {
@@ -1746,10 +1751,6 @@
 
     .material-data-table tbody tr:nth-child(odd) {
         background-color: #ffffff;  /* 奇数行使用白色背景 */
-    }
-
-    .material-data-table tbody tr:hover {
-        background-color: #edf2f7;  /* 鼠标悬停时的背景色 */
     }
 
     .material-link {
