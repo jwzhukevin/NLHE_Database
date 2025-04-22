@@ -8,6 +8,9 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/crystal-viewer.js') }}"></script>
 <!-- Band Structure Scripts: 用于显示材料的能带结构图 -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/band-plot.js') }}"></script>
+<!-- SC Structure Scripts: 用于显示材料的SC结构图 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/plotly.js@2.18.0/dist/plotly.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/sc-plot.js') }}"></script>
 
 <!-- ====================== 顶部导航栏 ====================== -->
 <div class="top-nav">
@@ -16,6 +19,7 @@
         <a href="#first-section" class="nav-link active">Structure</a>
         <a href="#second-section" class="nav-link">Crystal Data</a>
         <a href="#third-section" class="nav-link">Band Structure</a>
+        <a href="#sc-section" class="nav-link">SC</a>
         <a href="#fourth-section" class="nav-link">Properties</a>
         {% if current_user.is_authenticated %}
         <!-- 管理员操作按钮：编辑和删除 -->
@@ -408,7 +412,7 @@
     }
     
     /* 能带结构图样式 */
-    #bandStructure {
+    #bandStructure, #scStructure {
         width: 100%;
         flex-grow: 1; /* 让图表容器填充剩余空间 */
         min-height: 625px; /* 增加25%的高度 */
@@ -421,7 +425,7 @@
     }
 
     /* 共享交互效果 */
-    .crystal-viewer:hover, #bandStructure:hover {
+    .crystal-viewer:hover, #bandStructure:hover, #scStructure:hover {
         border-color: #0047AB;
         box-shadow: rgba(0, 71, 171, 0.15) 0px 0px 0px 4px;
     }
@@ -484,6 +488,79 @@
         
         .top-nav {
             top: 60px;
+        }
+    }
+
+    /* 卡片头部操作按钮样式 */
+    .card-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .download-btn {
+        color: #0047AB;
+        background-color: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 71, 171, 0.15);
+        position: relative;
+        overflow: hidden;
+        margin-left: 10px;
+        vertical-align: middle;
+    }
+
+    .download-btn i {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
+
+    .download-btn:hover {
+        color: white;
+        background-color: #0047AB;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 71, 171, 0.3);
+    }
+
+    .download-btn:hover i {
+        transform: scale(1.1);
+    }
+
+    .download-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 3px rgba(0, 71, 171, 0.2);
+    }
+
+    /* 8:2 布局专用样式 */
+    .sc-layout {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .column-80 {
+        flex: 8;
+    }
+
+    .column-20 {
+        flex: 2;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 1200px) {
+        .sc-layout {
+            flex-direction: column;
+        }
+        
+        .column-80, .column-20 {
+            flex: 1;
+            width: 100%;
         }
     }
     </style>
@@ -575,7 +652,11 @@
             <div class="column-60">
                 <div class="viewer-container">
                     <div class="card-header collapsed">
-        <h3>Band Structure</h3>
+        <h3>Band Structure
+            <a href="{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/band/band.dat') }}" download class="download-btn" title="Download band data">
+                <i class="fas fa-download"></i>
+            </a>
+        </h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="viewer-content card-content collapsed">
@@ -605,6 +686,45 @@
         </div>
     </div>
     
+    <!-- ====================== SC部分：SC结构图 ====================== -->
+    <div id="sc-section" class="content-section">
+        <div class="sc-layout">
+            <!-- 左侧：SC图 (80%) -->
+            <div class="column-80">
+                <div class="viewer-container">
+                    <div class="card-header collapsed">
+                        <h3>SC Structure
+                            <a href="{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/bcd/sc.dat') }}" download class="download-btn" title="Download SC data">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </h3>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="viewer-content card-content collapsed">
+                        <div id="scStructure"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：SC属性 (20%) -->
+            <div class="column-20">
+                <div class="detail-card" id="sc-properties">
+                    <div class="card-header collapsed">
+                        <h3>SC Properties</h3>
+                        <i class="fas fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="card-content collapsed">
+                        <ul>
+                            <li><span class="property-label">Omega Range:</span> <span class="property-value">{{ material.omega_range or 'Not available yet' }}</span></li>
+                            <li><span class="property-label">Max Chi Value:</span> <span class="property-value">{{ material.max_chi ~ ' uA/V^2' if material.max_chi is not none else 'Not available yet' }}</span></li>
+                            <li><span class="property-label">SC Status:</span> <span class="property-value">{{ material.sc_status or 'Not available yet' }}</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ====================== 第四栏：基本信息和表面属性 ====================== -->
     <div id="fourth-section" class="content-section">
         <div class="two-column-layout">
@@ -658,12 +778,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const bandDataPath = "{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/band/band.dat') }}";
     plotBandStructure('bandStructure', bandDataPath);
     
+    // 初始化SC结构图
+    const scDataPath = "{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/bcd/sc.dat') }}";
+    const fallbackScDataPath = "{{ url_for('static', filename='materials/example_sc.dat') }}";
+    fetch(scDataPath)
+        .then(response => {
+            if (!response.ok) {
+                console.log('使用示例SC数据文件');
+                return fetch(fallbackScDataPath);
+            }
+            return response;
+        })
+        .then(response => {
+            if (response.ok) {
+                plotSCStructure('scStructure', response.url);
+            } else {
+                console.error('无法加载SC数据文件');
+                document.getElementById('scStructure').innerHTML = '<div style="text-align:center;padding:50px;color:#e53e3e;">无法加载SC数据</div>';
+            }
+        })
+        .catch(error => {
+            console.error('SC数据加载失败:', error);
+            document.getElementById('scStructure').innerHTML = '<div style="text-align:center;padding:50px;color:#e53e3e;">SC数据加载失败</div>';
+        });
+    
     // 初始化卡片折叠功能
     initializeCollapsibleCards();
     
     // 获取所有导航链接
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('.content-section');
+    
+    // 阻止下载按钮点击事件传播
+    document.querySelectorAll('.download-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
     
     // 监听滚动事件，高亮当前所在的导航项
     window.addEventListener('scroll', function() {
