@@ -39,6 +39,47 @@ NLHE_Database/
 ├── admin.sh                # 管理员账户创建脚本
 ```
 
+## 技术栈与依赖关系
+
+本项目使用多种Python库和框架协同工作，以下是主要依赖及其功能:
+
+### 核心框架
+- **Flask (2.2.5)**: 轻量级Web应用框架，提供路由、模板渲染和请求处理
+- **Flask-SQLAlchemy (3.0.3)**: 集成SQLAlchemy的Flask扩展，提供ORM数据访问
+- **Flask-Login (0.6.3)**: 用户认证与会话管理扩展
+- **Flask-Migrate (4.1.0)**: 数据库迁移工具，基于Alembic
+
+### 数据处理与科学计算
+- **NumPy (2.2.4)**: 科学计算基础库，处理晶体和能带数据的数值运算
+- **Pandas (2.2.3)**: 用于材料数据的表格处理和批量导入导出
+- **SciPy (1.15.2)**: 提供科学计算和优化功能
+- **Pymatgen (2025.3.10)**: 材料基因组工具包，用于晶体结构分析和处理
+- **Spglib (2.6.0)**: 结晶学空间群计算库，与Pymatgen配合使用
+
+### 可视化工具
+- **Matplotlib (3.10.1)**: 静态图表生成库，用于能带结构绘制
+- **Plotly (6.0.1)**: 交互式图表库，增强数据可视化体验
+
+### 安全与认证
+- **Bcrypt (4.0.1)**: 密码哈希存储和验证
+- **Cryptography (38.0.4)**: 提供高级加密功能
+
+### 数据解析与格式化
+- **PyYAML (6.0.2)**: YAML格式解析，用于配置和数据交换
+- **JSONSchema (4.23.0)**: JSON数据验证
+- **Tabulate (0.9.0)**: 格式化表格输出
+
+### 工具与辅助库
+- **Werkzeug (2.2.3)**: WSGI工具库，Flask的依赖
+- **Python-dotenv (1.0.1)**: 环境变量管理
+- **Tqdm (4.67.1)**: 进度条显示，用于长时间运行的操作
+
+这些库之间的协作关系:
+- Flask框架作为核心，通过扩展集成数据库和用户认证
+- NumPy和SciPy提供科学计算能力，Pymatgen和Spglib专注于材料科学计算
+- 可视化层由Matplotlib和Plotly提供，前者生成静态图表，后者提供交互功能
+- 数据从CIF和DAT文件解析，通过ORM映射到SQLite数据库
+
 ## 安装指南
 
 ### 环境要求
@@ -102,6 +143,7 @@ NLHE_Database/
 
 - **结构文件**：CIF格式，存放在 `app/static/materials/IMR-xxxxxxxx/structure/structure.cif`
 - **能带文件**：DAT格式，存放在 `app/static/materials/IMR-xxxxxxxx/band/band.dat`
+- **SC文件**：DAT格式，存放在 `app/static/materials/IMR-xxxxxxxx/bcd/sc.dat`
 
 ## 文件结构规范
 
