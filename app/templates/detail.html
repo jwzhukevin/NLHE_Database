@@ -52,7 +52,7 @@
     /* 主容器布局样式 */
     .material-detail-container {
         max-width: 1600px;
-        margin: 140px auto 0; /* 增加顶部间距以避免与网站主导航栏冲突 */
+        margin: 120px auto 0; /* 增加顶部间距以避免与网站主导航栏冲突 */
         padding: 24px;
         background: #f8fafc;
     }
@@ -70,7 +70,7 @@
         align-items: flex-start; /* 改为flex-start实现左对齐 */
         justify-content: space-between;
         padding: 36px 24px 0;
-        z-index: 100; /* 减小z-index值，确保不会覆盖网站主导航栏 */
+        z-index: 80; /* 减小z-index值，确保不会覆盖网站主导航栏 */
     }
 
     .material-title {
@@ -186,7 +186,7 @@
         .card-header h3 {
             margin: 0;
             color: #1e293b;
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             font-weight: 600;
         }
     
@@ -211,7 +211,7 @@
         max-height: 0;
         padding: 0 20px;
         opacity: 0;
-        }
+    }
 
         .card-content ul {
             list-style: none;
@@ -234,21 +234,23 @@
         .property-label {
             color: #64748b;
             font-weight: 500;
+            font-size: 1.05rem;
         }
 
         .property-value {
             color: #0047AB;
             font-weight: 600;
-            padding: 4px 12px;
+            padding: 6px 14px;
             background: #F5F8FF;
             border-radius: 6px;
+            font-size: 1.05rem;
         }
 
     /* 原子坐标表格样式 */
     .atom-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.9rem;
+        font-size: 1.05rem;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
     
@@ -257,18 +259,18 @@
         color: #334155;
         font-weight: 600;
         text-align: center;
-        padding: 10px 8px;
+        padding: 12px 10px;
         border-bottom: 2px solid #e5e7eb;
         position: sticky;
         top: 0;
         z-index: 1;
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
     .atom-table td {
-        padding: 10px 8px;
+        padding: 12px 10px;
         text-align: center;
         border-bottom: 1px solid #e5e7eb;
         transition: background-color 0.2s ease;
@@ -309,9 +311,9 @@
     }
     
     .atom-info {
-        margin-bottom: 12px;
+        margin-bottom: 15px;
         color: #475569;
-        font-size: 0.9rem;
+        font-size: 1.05rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -325,6 +327,7 @@
     .coordinates-toggle {
         display: inline-block;
         margin-left: 15px;
+        margin-bottom: 15px;
     }
     
     .toggle-label {
@@ -347,22 +350,26 @@
     .atom-element {
         font-weight: 600;
         color: #0047AB;
+        font-size: 1.05rem;
     }
     
     .atom-coords {
         font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
         letter-spacing: 0.5px;
         color: #334155;
+        font-size: 1.05rem;
     }
     
     .atom-total-info {
         font-weight: 500;
         color: #1e293b;
+        font-size: 1.05rem;
     }
     
     .atom-composition {
         font-style: italic;
         color: #64748b;
+        font-size: 1rem;
     }
     
     /* 3D结构查看器样式 */
@@ -563,6 +570,321 @@
             width: 100%;
         }
     }
+
+    /* 确保全局比例缩放时界面元素也相应调整 */
+    @media (min-resolution: 120dpi) {
+        .top-nav, .material-title, .nav-links,
+        .card-header, .card-content, .property-label, .property-value {
+            transform-origin: left top;
+            transform: scale(0.95);
+        }
+    }
+    
+    /* ===================== SC结构图相关样式 ===================== */
+    /* 响应式控制面板 */
+    .sc-control-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 15px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        position: relative;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    /* 控制面板在小屏幕上的样式 */
+    @media (max-width: 768px) {
+        .sc-control-panel {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .sc-control-status {
+            width: 100%;
+            text-align: left;
+            margin-top: 5px;
+        }
+    }
+    
+    /* 提示文本响应式样式 */
+    .sc-control-tip {
+        font-size: 16px;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .control-tip-text {
+        font-weight: 500;
+        display: inline-block;
+        border-left: 3px solid #0047AB;
+        padding-left: 8px;
+        line-height: 1.4;
+    }
+    
+    .sc-control-tip i {
+        color: #0047AB;
+        font-size: 18px;
+    }
+    
+    /* 响应式重置按钮 */
+    .sc-control-item {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .sc-control-btn {
+        padding: 8px 16px;
+        background: #0047AB;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        white-space: nowrap;
+    }
+    
+    /* 按钮悬停和活动状态 */
+    .sc-control-btn:hover {
+        background: #00348F;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .sc-control-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    }
+    
+    .sc-control-btn.active {
+        background: #003366;
+    }
+    
+    /* 可见曲线计数样式 */
+    .sc-control-status {
+        font-size: 15px;
+        color: #4b5563;
+        font-weight: 500;
+        background: rgba(224, 231, 255, 0.6);
+        padding: 6px 12px;
+        border-radius: 4px;
+        border-left: 3px solid #0047AB;
+    }
+    
+    .visible-count-text {
+        white-space: nowrap;
+    }
+    
+    /* 图例交互样式增强 */
+    /* 整体图例容器样式 */
+    .js-plotly-plot .legend {
+        /* 设置圆角为8px，使图例更圆润 */
+        border-radius: 8px !important;
+        /* 添加微妙的阴影效果，提供层次感 */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    /* 图例中每个条目的开关按钮样式 */
+    .js-plotly-plot .legend .traces .legendtoggle {
+        /* 设置鼠标指针为手型，表示可点击 */
+        cursor: pointer;
+        /* 添加0.2秒的平滑过渡效果 */
+        transition: all 0.1s ease;
+        /* 设置圆角为4px，与整体风格统一 */
+        border-radius: 4px;
+    }
+    
+    /* 图例开关按钮悬停效果 */
+    .js-plotly-plot .legend .traces .legendtoggle:hover {
+        /* 悬停时添加浅蓝色背景，使用主题色0047AB，透明度0.15 */
+        background-color: rgba(0, 71, 171, 0.15) ;
+        /* 添加发光效果，增强视觉反馈 */
+        box-shadow: 0 0 8px rgba(0, 71, 171, 0.3);
+    }
+    
+    /* 显示状态的图例项样式 */
+    .js-plotly-plot .legend .traces .legendtext {
+        /* 添加0.2秒的平滑过渡效果，使状态变化更自然 */
+        transition: all 0.2s ease;
+        
+        /* 设置内边距，使文本周围有适当的空白空间 */
+        padding: 4px 8px;
+        
+        /* 添加圆角效果，使外观更现代化 */
+        border-radius: 5px;
+        
+        /* 设置字体大小为16像素，确保清晰可读 */
+        font-size: 16px ;
+        
+        /* 设置行高为1.4倍字体大小，优化文本间距 */
+        line-height: 1.4 ;
+        
+        /* 设置相对定位，为后续的悬停提示做准备 */
+        position: relative;
+    }
+    
+    .js-plotly-plot .legend .traces:not([style*="opacity: 0.5"]) .legendtext {
+        font-weight: 600;
+        color: #1f2937 !important;
+    }
+    
+    .js-plotly-plot .legend .traces:hover .legendtext {
+        background-color: rgba(0, 71, 171, 0.1);
+        transform: translateX(3px);
+    }
+    
+    /* 隐藏状态的图例项样式 */
+    .js-plotly-plot .legend .traces[style*="opacity: 0.5"] .legendtext {
+        text-decoration: line-through;
+        color: #a0aec0 !important;
+        background-color: rgba(226, 232, 240, 0.5);
+        font-size: 16px !important;
+    }
+    
+    .js-plotly-plot .legend .traces[style*="opacity: 0.5"]:hover .legendtext {
+        background-color: rgba(226, 232, 240, 0.8);
+        color: #718096 !important;
+    }
+    
+    /* 图例项激活样式 */
+    .js-plotly-plot .legend .traces.active .legendtext {
+        background-color: rgba(0, 71, 171, 0.2);
+        box-shadow: 0 0 8px rgba(0, 71, 171, 0.4);
+        transform: translateX(3px);
+    }
+    
+    /* 图例悬停提示 */
+    .js-plotly-plot .legend .traces .legendtext::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(17, 24, 39, 0.9);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 10;
+    }
+    
+    .js-plotly-plot .legend .traces .legendtext:hover::after {
+        opacity: 1;
+        visibility: visible;
+        bottom: calc(100% + 5px);
+    }
+    
+    /* 自定义滚动条样式 */
+    .js-plotly-plot .legend::-webkit-scrollbar {
+        width: 10px;
+    }
+    
+    .js-plotly-plot .legend::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 6px;
+    }
+    
+    .js-plotly-plot .legend::-webkit-scrollbar-thumb {
+        background-color: #0047AB;
+        border-radius: 6px;
+        border: 2px solid #f1f5f9;
+    }
+    
+    .js-plotly-plot .legend::-webkit-scrollbar-thumb:hover {
+        background-color: #003380;
+    }
+    
+    /* Firefox滚动条样式 */
+    .js-plotly-plot .legend {
+        scrollbar-width: thin;
+        scrollbar-color: #0047AB #f1f5f9;
+    }
+    
+    /* 弹出通知样式 */
+    .sc-notification {
+        position: absolute;
+        top: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #0047AB;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+        font-size: 16px;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .sc-notification i {
+        color: #ffff00;
+        font-size: 18px;
+    }
+    
+    /* 响应式字体大小调整 */
+    @media (max-width: 1200px) {
+        .sc-control-tip, .sc-control-status {
+            font-size: 14px;
+        }
+        .sc-control-btn {
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+        .js-plotly-plot .legend .traces .legendtext {
+            font-size: 14px !important;
+        }
+    }
+    
+    /* SC元素关系样式 */
+    @keyframes scrollPulse {
+        0% { opacity: 0.7; }
+        50% { opacity: 0.3; }
+        100% { opacity: 0.7; }
+    }
+    
+    .scrollable::after {
+        content: '';
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 30px;
+        height: 4px;
+        background-color: #0047AB;
+        border-radius: 2px;
+        opacity: 0.7;
+        animation: scrollPulse 1.5s infinite;
+    }
+
+    /* 图例项整体样式 */
+    .js-plotly-plot .legend .traces {
+        /* 为每个图例项添加底部外边距，确保图例项之间有适当间距 */
+        margin-bottom: 6px !important;
+        /* 为每个图例项添加底部内边距，使内容与边框保持一定距离 */
+        padding-bottom: 8px !important;
+        /* !important用于覆盖plotly.js的默认样式 */
+    }
     </style>
 
     <!-- ====================== 第一栏：3D结构和晶体结构 ====================== -->
@@ -633,10 +955,10 @@
                     </div>
                     <div class="card-content collapsed">
                         <div class="coordinates-toggle">
-                            <label class="toggle-label">
-                                <input type="checkbox" id="coords-type-toggle">
-                                <span class="toggle-text">Show Fractional</span>
-                            </label>
+                            <button class="coords-toggle-btn" id="coords-toggle-btn">
+                                <i class="fas fa-exchange-alt"></i>
+                                <span id="toggle-btn-text">Show Fractional</span>
+                            </button>
                         </div>
                         <div id="atom-list">Loading atomic coordinates...</div>
                     </div>
@@ -710,15 +1032,101 @@
             <div class="column-20">
                 <div class="detail-card" id="sc-properties">
                     <div class="card-header collapsed">
-                        <h3>SC Properties</h3>
+                        <h3>Element Relations</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
-                    <div class="card-content collapsed">
-                        <ul>
-                            <li><span class="property-label">Omega Range:</span> <span class="property-value">{{ material.omega_range or 'Not available yet' }}</span></li>
-                            <li><span class="property-label">Max Chi Value:</span> <span class="property-value">{{ material.max_chi ~ ' uA/V^2' if material.max_chi is not none else 'Not available yet' }}</span></li>
-                            <li><span class="property-label">SC Status:</span> <span class="property-value">{{ material.sc_status or 'Not available yet' }}</span></li>
-                        </ul>
+                    <div class="card-content collapsed" id="element-relations-content">
+                        <!-- 元素关系表格在此显示 -->
+                        <style>
+                            .relations-table {
+                                font-size: 14px;
+                            }
+                            .relations-table table {
+                                width: 100%;
+                                border-collapse: collapse;
+                            }
+                            .relations-table th,
+                            .relations-table td {
+                                padding: 8px;
+                                text-align: left;
+                                border-bottom: 1px solid #e5e7eb;
+                            }
+                            .relations-table th {
+                                background-color: #f1f5f9;
+                                font-weight: 600;
+                                color: #334155;
+                            }
+                            .relations-table tr:hover {
+                                background-color: #f8fafc;
+                            }
+                            .zero-group {
+                                color: #6B7280;
+                                font-style: italic;
+                            }
+                            .same-relation {
+                                color: #0047AB;
+                                font-weight: 500;
+                            }
+                            .opposite-relation {
+                                color: #B91C1C;
+                                font-weight: 500;
+                            }
+                            .mixed-relation {
+                                color: #7E22CE;
+                                font-weight: 500;
+                            }
+                            .single-curve {
+                                color: #4B5563;
+                            }
+                            .relations-header {
+                                margin-bottom: 15px;
+                                border-bottom: 1px solid #e5e7eb;
+                                padding-bottom: 10px;
+                            }
+                            .relations-legend {
+                                list-style: none;
+                                padding: 0;
+                                margin: 0;
+                                display: flex;
+                                gap: 15px;
+                                justify-content: center;
+                            }
+                            .relations-legend li {
+                                display: flex;
+                                align-items: center;
+                                font-size: 12px;
+                                color: #4B5563;
+                            }
+                            .zero-indicator {
+                                color: #6B7280;
+                                font-size: 16px;
+                                margin-right: 5px;
+                            }
+                            .same-indicator {
+                                color: #0047AB;
+                                font-size: 16px;
+                                margin-right: 5px;
+                            }
+                            .opposite-indicator {
+                                color: #B91C1C;
+                                font-size: 16px;
+                                margin-right: 5px;
+                            }
+                        </style>
+                        
+                        <div class="relations-header">
+                            <ul class="relations-legend">
+                                <li><span class="zero-indicator">●</span> Zero</li>
+                                <li><span class="same-indicator">●</span> Same</li>
+                                <li><span class="opposite-indicator">●</span> Opposite</li>
+                            </ul>
+                        </div>
+                        
+                        <div id="relations-table-container">
+                            <div class="loading-message">
+                                Loading element relations...
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1037,23 +1445,31 @@ function loadCrystalStructureData() {
                 atomListElement.innerHTML = tableHTML;
                 
                 // 添加坐标切换功能
-                const coordsToggle = document.getElementById('coords-type-toggle');
+                const coordsToggle = document.getElementById('coords-toggle-btn');
+                let showingFractional = false;
                 
-                coordsToggle.addEventListener('change', function() {
-                    const showFractional = this.checked;
+                coordsToggle.addEventListener('click', function() {
+                    showingFractional = !showingFractional;
                     const coordsLabel = document.getElementById('coords-type-label');
-                    const toggleText = document.querySelector('.toggle-text');
+                    const toggleText = document.getElementById('toggle-btn-text');
+                    
+                    // 更新按钮状态
+                    if (showingFractional) {
+                        this.classList.add('active');
+                    } else {
+                        this.classList.remove('active');
+                    }
                     
                     // 更新标签
-                    coordsLabel.textContent = showFractional ? 'Showing fractional coordinates' : 'Showing coordinates in Å';
-                    toggleText.textContent = showFractional ? 'Show Cartesian' : 'Show Fractional';
+                    coordsLabel.textContent = showingFractional ? 'Showing fractional coordinates' : 'Showing coordinates in Å';
+                    toggleText.textContent = showingFractional ? 'Show Cartesian' : 'Show Fractional';
                     
                     // 更新表格中的坐标值
                     const coordCells = document.querySelectorAll('.atom-coords');
                     coordCells.forEach(cell => {
                         const frac = cell.getAttribute('data-frac');
                         const cart = cell.getAttribute('data-cart');
-                        cell.textContent = showFractional ? frac : cart;
+                        cell.textContent = showingFractional ? frac : cart;
                     });
                 });
             } else {

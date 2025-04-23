@@ -13,7 +13,7 @@ REPO_NAME=$(basename "$SOURCE_REPO_DIR")
 TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
 
 # 提交到部署仓库
-git commit -m "添加sc绘图模块|Deploy: ${REPO_NAME}@${BRANCH_NAME}:${COMMIT_HASH} (${TIMESTAMP})"
+git commit -m "修改SC绘图细节|Deploy: ${REPO_NAME}@${BRANCH_NAME}:${COMMIT_HASH} (${TIMESTAMP})"
 
 # 推送
 git push origin master

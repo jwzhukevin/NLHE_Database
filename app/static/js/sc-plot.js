@@ -350,12 +350,15 @@ function parseAndPlotSCData(dataText, container) {
     
     // 创建每条曲线的trace，基础颜色设置更适合学术图表
     const colors = [
-        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
-        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-        '#8c564b', '#e377c2'
+        // 主要色彩（高饱和度）
+        '#FF3333', '#0066FF', '#33CC33', '#9900CC', '#FF9900', 
+        '#00CCCC', '#FF3399', '#3366FF', '#99CC00', '#FF6600',
+        // 次要色彩（中等饱和度）
+        '#8B0000', '#006400', '#00008B', '#8B008B', '#FF4500',
+        '#2F4F4F', '#696969', '#556B2F', '#800000', '#191970',
+        // 补充色彩（确保27种不同颜色）
+        '#20B2AA', '#9370DB', '#00CED1', '#FF1493', '#00FF7F',
+        '#4682B4', '#DAA520'
     ];
     
     traceNames.forEach((traceName, i) => {
@@ -369,7 +372,7 @@ function parseAndPlotSCData(dataText, container) {
                 type: 'scatter',
                 mode: 'lines',
                 name: traceName.name,
-                hovertemplate: `Ω: %{x} eV<br>χ: %{y} uA/V²<extra>${traceName.name}</extra>`,
+                hovertemplate: `Energy: %{x} eV<br>Sigma: %{y} uA/V²<extra>${traceName.name}</extra>`,
                 line: {
                     width: 1.5,
                     color: colors[i % colors.length]
@@ -382,13 +385,13 @@ function parseAndPlotSCData(dataText, container) {
     const controlPanelHtml = `
         <div class="sc-control-panel">
             <div class="sc-control-tip">
-                <i class="fas fa-info-circle"></i> <span>Double-click on legend items to isolate specific curves. Click "Reset" to show all curves.</span>
+                <i class="fas fa-info-circle"></i> <span class="control-tip-text">Double-click on legend items to isolate specific curves. Click "Reset" to show all curves.</span>
             </div>
             <div class="sc-control-item">
                 <button id="resetBtn" class="sc-control-btn">Reset Chart</button>
             </div>
             <div class="sc-control-status">
-                <span>Visible: <span id="visibleCount">${traces.length}</span>/${traces.length} curves</span>
+                <span class="visible-count-text">Visible: <span id="visibleCount">${traces.length}</span>/${traces.length} curves</span>
             </div>
         </div>
     `;
@@ -396,44 +399,47 @@ function parseAndPlotSCData(dataText, container) {
     // 清空容器并添加控制面板
     container.innerHTML = controlPanelHtml + '<div id="sc-plot" style="width:100%;height:700px;"></div>';
     
-    // 布局配置 - 学术风格
+    // 布局配置 - 学术风格的图表布局设置
     const layout = {
+        // 图表标题配置
         title: {
-            text: 'SC Structure',
+            text: 'SC Structure', // 标题文本
             font: {
-                size: 24,
-                family: 'Arial, sans-serif',
-                color: '#1f2937'
+                size: 24, // 标题字体大小
+                family: 'Arial, sans-serif', // 标题字体
+                color: '#1f2937' // 标题颜色
             }
         },
+        // X轴配置
         xaxis: {
             title: {
-                text: 'Ω (eV)',
+                text: 'Energy (eV)', // X轴标题文本
                 font: {
-                    size: 18,
-                    family: 'Arial, sans-serif',
-                    color: '#1f2937'
+                    size: 18, // X轴标题字体大小
+                    family: 'Arial, sans-serif', // X轴标题字体
+                    color: '#1f2937' // X轴标题颜色
                 }
             },
-            showgrid: true,
-            gridcolor: '#e5e7eb',
-            gridwidth: 1,
-            zeroline: true,
-            zerolinecolor: '#6b7280',
-            zerolinewidth: 1.5,
-            showline: true,
-            linecolor: '#374151',
-            linewidth: 2,
-            tickfont: {
+            showgrid: true, // 显示网格线
+            gridcolor: '#e5e7eb', // 网格线颜色
+            gridwidth: 1, // 网格线宽度
+            zeroline: true, // 显示零线
+            zerolinecolor: '#6b7280', // 零线颜色
+            zerolinewidth: 1.5, // 零线宽度
+            showline: true, // 显示轴线
+            linecolor: '#374151', // 轴线颜色
+            linewidth: 2, // 轴线宽度
+            tickfont: { // 刻度标签字体设置
                 size: 14,
                 family: 'Arial, sans-serif',
                 color: '#4b5563'
             },
-            mirror: true
+            mirror: true // 在对面也显示轴线
         },
+        // Y轴配置，与X轴类似
         yaxis: {
             title: {
-                text: 'χ (uA/V²)',
+                text: 'Sigma (uA/V²)', // Y轴标题文本
                 font: {
                     size: 18,
                     family: 'Arial, sans-serif',
@@ -454,50 +460,52 @@ function parseAndPlotSCData(dataText, container) {
                 family: 'Arial, sans-serif',
                 color: '#4b5563'
             },
-            mirror: 'ticks'
+            mirror: 'ticks' // 显示对称刻度线
         },
-        hovermode: 'closest',
+        hovermode: 'closest', // 悬停模式设为最近点
+        // 图例配置
         legend: {
-            orientation: 'v',
-            xanchor: 'left',
-            x: 1.05,
-            yanchor: 'top',
-            y: 1,
-            font: {
-                size: 20,
+            orientation: 'v', // 垂直方向排列
+            xanchor: 'left', // 左侧对齐
+            x: 1.05, // X位置（图表右侧）
+            yanchor: 'top', // 顶部对齐
+            y: 1, // Y位置
+            font: { // 图例字体设置
+                size: 18,
                 family: 'Arial, sans-serif'
             },
-            tracegroupgap: 8,
+            tracegroupgap: 16,
             bgcolor: '#f8fafc',
             bordercolor: '#e2e8f0',
             borderwidth: 2,
             itemsizing: 'constant',
             itemwidth: 45
         },
+        // 图表边距设置
         margin: {
-            t: 80,
-            r: 50,
-            b: 80,
-            l: 80
+            t: 80, // 顶部边距
+            r: 200, // 右侧边距（为图例留出空间）
+            b: 100, // 底部边距
+            l: 100 // 左侧边距
         },
-        autosize: true,
-        paper_bgcolor: '#ffffff',
-        plot_bgcolor: '#ffffff',
+        autosize: true, // 自动调整大小
+        paper_bgcolor: '#ffffff', // 画布背景色
+        plot_bgcolor: '#ffffff', // 绘图区背景色
+        // 添加形状（用于绘制边框）
         shapes: [
-            // 添加边框线
             {
-                type: 'rect',
-                xref: 'paper',
-                yref: 'paper',
-                x0: 0,
-                y0: 0,
-                x1: 1,
-                y1: 1,
+                type: 'rect', // 矩形形状
+                xref: 'paper', // 相对于画布的X参考
+                yref: 'paper', // 相对于画布的Y参考
+                x0: 0, // 起始X坐标
+                y0: 0, // 起始Y坐标
+                x1: 1, // 结束X坐标
+                y1: 1, // 结束Y坐标
                 line: {
-                    width: 2,
-                    color: '#374151'
+                    width: 2, // 边框线宽
+                    color: '#374151' // 边框颜色
                 },
-                fillcolor: 'rgba(0,0,0,0)'
+                fillcolor: 'rgba(0,0,0,0)' // 填充色（透明）
             }
         ]
     };
@@ -519,12 +527,12 @@ function parseAndPlotSCData(dataText, container) {
     
     // 修改曲线样式，增强显示效果
     traces.forEach(trace => {
-        trace.line.width = 3; // 增加线宽以匹配放大的图例
+        trace.line.width = 2.5; // 线宽适中，避免过粗
         trace.hoverlabel = {
             bgcolor: '#f8fafc',
             bordercolor: trace.line.color,
             font: {
-                size: 16, // 增大悬停标签字体
+                size: 14, // 适中的悬停标签字体
                 family: 'Arial, sans-serif'
             }
         };
@@ -538,8 +546,8 @@ function parseAndPlotSCData(dataText, container) {
     setTimeout(() => {
         const legendLines = document.querySelectorAll('.legendlines path');
         legendLines.forEach(line => {
-            line.setAttribute('stroke-width', '3'); // 减小图例中线条的粗细，从4px改为3px
-            line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '10.0')); // 稍微减小线条长度，从12px改为10px
+            line.setAttribute('stroke-width', '3'); 
+            line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '10.0')); 
         });
         
         // 增强图例滚动交互
@@ -587,210 +595,7 @@ function parseAndPlotSCData(dataText, container) {
     // 添加自定义样式
     const style = document.createElement('style');
     style.textContent = `
-        .sc-control-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            padding: 15px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            position: relative;
-        }
-        .sc-control-tip {
-            font-size: 16px;
-            color: #4b5563;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .sc-control-tip i {
-            color: #0047AB;
-            font-size: 18px;
-        }
-        .sc-control-item {
-            display: flex;
-            gap: 10px;
-        }
-        .sc-control-btn {
-            padding: 10px 20px;
-            background: #0047AB;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .sc-control-btn:hover {
-            background: #00348F;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .sc-control-btn:active {
-            transform: translateY(0);
-        }
-        .sc-control-btn.active {
-            background: #003366;
-        }
-        .sc-control-status {
-            font-size: 16px;
-            color: #4b5563;
-            font-weight: 500;
-        }
-        /* 增强图例交互反馈 */
-        .js-plotly-plot .legend .traces .legendtoggle {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .js-plotly-plot .legend .traces .legendtoggle:hover {
-            background-color: rgba(0, 71, 171, 0.2) !important;
-            box-shadow: 0 0 5px rgba(0, 71, 171, 0.4);
-        }
-        /* 显示状态的图例项样式 */
-        .js-plotly-plot .legend .traces .legendtext {
-            transition: all 0.2s ease;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 20px !important;
-            line-height: 1.3 !important;
-        }
-        .js-plotly-plot .legend .traces:not([style*="opacity: 0.5"]) .legendtext {
-            font-weight: 600;
-        }
-        .js-plotly-plot .legend .traces:hover .legendtext {
-            background-color: rgba(0, 71, 171, 0.1);
-        }
-        /* 隐藏状态的图例项样式 */
-        .js-plotly-plot .legend .traces[style*="opacity: 0.5"] .legendtext {
-            text-decoration: line-through;
-            color: #a0aec0 !important;
-            background-color: rgba(226, 232, 240, 0.7);
-            font-size: 20px !important;
-        }
-        .js-plotly-plot .legend .traces[style*="opacity: 0.5"]:hover .legendtext {
-            background-color: rgba(226, 232, 240, 1);
-            color: #718096 !important;
-        }
-        /* 图例项激活样式 */
-        .js-plotly-plot .legend .traces.active .legendtext {
-            background-color: rgba(0, 71, 171, 0.2);
-            box-shadow: 0 0 5px rgba(0, 71, 171, 0.4);
-        }
-        /* 自定义滚动条样式 */
-        .js-plotly-plot .legend::-webkit-scrollbar {
-            width: 12px;
-        }
-        .js-plotly-plot .legend::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 6px;
-        }
-        .js-plotly-plot .legend::-webkit-scrollbar-thumb {
-            background-color: #0047AB;
-            border-radius: 6px;
-            border: 2px solid #f1f5f9;
-        }
-        .js-plotly-plot .legend::-webkit-scrollbar-thumb:hover {
-            background-color: #003380;
-        }
-        /* Firefox滚动条样式 */
-        .js-plotly-plot .legend {
-            scrollbar-width: thick;
-            scrollbar-color: #0047AB #f1f5f9;
-        }
-        /* 弹出通知样式 */
-        .sc-notification {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #0047AB;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 6px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-            font-size: 16px;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .sc-notification i {
-            color: #ffff00;
-            font-size: 18px;
-        }
-        .relations-table {
-            font-size: 14px;
-        }
-        .relations-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .relations-table th,
-        .relations-table td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .relations-table th {
-            background-color: #f1f5f9;
-            font-weight: 600;
-            color: #334155;
-        }
-        .relations-table tr:hover {
-            background-color: #f8fafc;
-        }
-        .zero-group {
-            color: #6B7280;
-            font-style: italic;
-        }
-        .same-relation {
-            color: #0047AB;
-            font-weight: 500;
-        }
-        .opposite-relation {
-            color: #B91C1C;
-            font-weight: 500;
-        }
-        .mixed-relation {
-            color: #7E22CE;
-            font-weight: 500;
-        }
-        .single-curve {
-            color: #4B5563;
-        }
-        .relations-legend {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        .relations-legend li {
-            display: flex;
-            align-items: center;
-            font-size: 12px;
-            color: #4B5563;
-        }
-        .zero-indicator {
-            color: #6B7280;
-            font-size: 16px;
-            margin-right: 5px;
-        }
-        .same-indicator {
-            color: #0047AB;
-            font-size: 16px;
-            margin-right: 5px;
-        }
-        .opposite-indicator {
-            color: #B91C1C;
-            font-size: 16px;
-            margin-right: 5px;
-        }
+        /* 样式已移动到detail.html中定义 */
     `;
     document.head.appendChild(style);
     
@@ -858,7 +663,8 @@ function parseAndPlotSCData(dataText, container) {
     setTimeout(() => {
         const legendItems = document.querySelectorAll('.legendtext');
         legendItems.forEach(item => {
-            item.setAttribute('title', 'Click to hide/show, Double-click to isolate');
+            item.setAttribute('data-tooltip', 'Click to toggle visibility, Double-click to isolate');
+            item.setAttribute('title', 'Click to toggle visibility, Double-click to isolate');
         });
     }, 500);
     
@@ -866,102 +672,11 @@ function parseAndPlotSCData(dataText, container) {
     const relationships = analyzeCurveRelationships(data, traceNames);
     const relationsTableHtml = generateRelationsTable(relationships);
     
-    // 发送关系表到SC Properties卡片
+    // 发送关系表到Element Relations卡片
     setTimeout(() => {
-        const scPropertiesContent = document.querySelector('#sc-properties .card-content');
-        if (scPropertiesContent) {
-            scPropertiesContent.innerHTML = `
-                <style>
-                    .relations-table {
-                        font-size: 14px;
-                    }
-                    .relations-table table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-                    .relations-table th,
-                    .relations-table td {
-                        padding: 8px;
-                        text-align: left;
-                        border-bottom: 1px solid #e5e7eb;
-                    }
-                    .relations-table th {
-                        background-color: #f1f5f9;
-                        font-weight: 600;
-                        color: #334155;
-                    }
-                    .relations-table tr:hover {
-                        background-color: #f8fafc;
-                    }
-                    .zero-group {
-                        color: #6B7280;
-                        font-style: italic;
-                    }
-                    .same-relation {
-                        color: #0047AB;
-                        font-weight: 500;
-                    }
-                    .opposite-relation {
-                        color: #B91C1C;
-                        font-weight: 500;
-                    }
-                    .mixed-relation {
-                        color: #7E22CE;
-                        font-weight: 500;
-                    }
-                    .single-curve {
-                        color: #4B5563;
-                    }
-                    .relations-header {
-                        margin-bottom: 15px;
-                        border-bottom: 1px solid #e5e7eb;
-                        padding-bottom: 10px;
-                    }
-                    .relations-legend {
-                        list-style: none;
-                        padding: 0;
-                        margin: 0;
-                        display: flex;
-                        gap: 15px;
-                        justify-content: center;
-                    }
-                    .relations-legend li {
-                        display: flex;
-                        align-items: center;
-                        font-size: 12px;
-                        color: #4B5563;
-                    }
-                    .zero-indicator {
-                        color: #6B7280;
-                        font-size: 16px;
-                        margin-right: 5px;
-                    }
-                    .same-indicator {
-                        color: #0047AB;
-                        font-size: 16px;
-                        margin-right: 5px;
-                    }
-                    .opposite-indicator {
-                        color: #B91C1C;
-                        font-size: 16px;
-                        margin-right: 5px;
-                    }
-                </style>
-                <div class="relations-header">
-                    <ul class="relations-legend">
-                        <li><span class="zero-indicator">●</span> Zero</li>
-                        <li><span class="same-indicator">●</span> Same</li>
-                        <li><span class="opposite-indicator">●</span> Opposite</li>
-                    </ul>
-                </div>
-                ${relationsTableHtml}
-            `;
-            
-            // 修改卡片标题
-            const scPropertiesHeader = document.querySelector('#sc-properties .card-header h3');
-            if (scPropertiesHeader) {
-                scPropertiesHeader.textContent = 'Element Relations';
-            }
+        const relationsTableContainer = document.getElementById('relations-table-container');
+        if (relationsTableContainer) {
+            relationsTableContainer.innerHTML = relationsTableHtml;
         }
     }, 500);
 } 
