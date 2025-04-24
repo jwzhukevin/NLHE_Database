@@ -542,6 +542,9 @@ function parseAndPlotSCData(dataText, container) {
     const plotElement = document.getElementById('sc-plot');
     Plotly.newPlot(plotElement, traces, layout, config);
     
+    // 跟踪每条曲线的点击次数
+    const curveClickCounts = new Array(traces.length).fill(0);
+    
     // 增大图例中的线条显示
     setTimeout(() => {
         const legendLines = document.querySelectorAll('.legendlines path');
@@ -601,22 +604,27 @@ function parseAndPlotSCData(dataText, container) {
     
     // 更新可见曲线计数
     function updateVisibleCount() {
-        const graphData = plotElement.data;
+        // 使用点击次数判断曲线可见性
+        // 偶数次点击表示显示，奇数次点击表示隐藏
         let visible = 0;
-        
-        for (let i = 0; i < graphData.length; i++) {
-            if (graphData[i].visible !== 'legendonly') {
+        for (let i = 0; i < curveClickCounts.length; i++) {
+            // 如果点击次数为偶数(包括0)，曲线可见
+            if (curveClickCounts[i] % 2 === 0) {
                 visible++;
             }
         }
         
         document.getElementById('visibleCount').textContent = visible;
+        return visible;
     }
     
     // 重置图表按钮
     document.getElementById('resetBtn').addEventListener('click', function() {
         const update = {visible: true};
         Plotly.restyle(plotElement, update);
+        
+        // 重置所有曲线的点击计数
+        curveClickCounts.fill(0);
         updateVisibleCount();
         
         // 添加视觉反馈
@@ -626,24 +634,40 @@ function parseAndPlotSCData(dataText, container) {
     
     // 监听图例点击，更新可见曲线计数
     plotElement.on('plotly_legendclick', function(data) {
-        setTimeout(updateVisibleCount, 100);
-        
-        // 添加点击动画反馈
-        const legendItems = document.querySelectorAll('.traces');
-        if (legendItems && legendItems.length > 0 && data.curveNumber < legendItems.length) {
-            const item = legendItems[data.curveNumber];
-            item.classList.add('active');
-            setTimeout(() => item.classList.remove('active'), 300);
+        if (data && data.curveNumber !== undefined) {
+            // 更新点击次数
+            curveClickCounts[data.curveNumber]++;
+            
+            // 立即更新计数
+            updateVisibleCount();
+            
+            // 添加点击动画反馈
+            const legendItems = document.querySelectorAll('.traces');
+            if (legendItems && legendItems.length > 0 && data.curveNumber < legendItems.length) {
+                const item = legendItems[data.curveNumber];
+                item.classList.add('active');
+                setTimeout(() => item.classList.remove('active'), 300);
+            }
         }
     });
     
     // 监听双击图例，保持监视更新计数
     plotElement.on('plotly_legenddoubleclick', function(data) {
-        setTimeout(updateVisibleCount, 100);
-        
-        // 更新用户提示
-        const status = document.querySelector('.sc-control-status span');
         if (data && data.curveNumber !== undefined) {
+            // 双击时重置所有曲线的点击次数，除了当前曲线
+            for (let i = 0; i < curveClickCounts.length; i++) {
+                if (i !== data.curveNumber) {
+                    // 设为1表示隐藏
+                    curveClickCounts[i] = 1;
+                } else {
+                    // 当前曲线设为0表示显示
+                    curveClickCounts[i] = 0;
+                }
+            }
+            
+            // 立即更新计数
+            updateVisibleCount();
+            
             const traceName = traces[data.curveNumber].name;
             
             const notification = document.createElement('div');

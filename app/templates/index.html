@@ -1385,28 +1385,62 @@
         </style>
 
         <!-- 高级搜索 -->
-        <div class="advanced-search" id="advancedSearch">
-            <div class="filters">
-                <!-- 状态下拉框 -->
-                <div class="filter-group">
-                    <label for="status">Status</label>
-                    <select name="status" id="status">
-                        <option value="">All</option>
-                        <option value="active" {% if search_params.status == 'active' %}selected{% endif %}>Active</option>
-                        <option value="pending" {% if search_params.status == 'pending' %}selected{% endif %}>Pending</option>
-                        <option value="archived" {% if search_params.status == 'archived' %}selected{% endif %}>Archived</option>
-                    </select>
+        <div class="advanced-search" id="advancedSearch" style="display: none;">
+            <div class="search-group">
+                <!-- 第一行: 状态和金属类型选择 -->
+                <div class="search-row">
+                    <!-- 状态下拉框 -->
+                    <div class="filter-group">
+                        <label for="status">Status</label>
+                        <select name="status" id="status">
+                            <option value="">All</option>
+                            <option value="active" {% if search_params.status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="pending" {% if search_params.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="archived" {% if search_params.status == 'archived' %}selected{% endif %}>Archived</option>
+                        </select>
+                    </div>
+
+                    <!-- 金属类型下拉框 -->
+                    <div class="filter-group">
+                        <label for="metal_type">Metal Type</label>
+                        <select name="metal_type" id="metal_type">
+                            <option value="">All</option>
+                            <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
+                            <option value="nonmetal" {% if search_params.metal_type == 'nonmetal' %}selected{% endif %}>Non-metal</option>
+                            <option value="metalloid" {% if search_params.metal_type == 'metalloid' %}selected{% endif %}>Metalloid</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- 金属类型下拉框 -->
-                <div class="filter-group">
-                    <label for="metal_type">Metal Type</label>
-                    <select name="metal_type" id="metal_type">
-                        <option value="">All</option>
-                        <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
-                        <option value="nonmetal" {% if search_params.metal_type == 'nonmetal' %}selected{% endif %}>Non-metal</option>
-                        <option value="metalloid" {% if search_params.metal_type == 'metalloid' %}selected{% endif %}>Metalloid</option>
-                    </select>
+                <!-- 第二行: 形成能和费米能级范围选择 -->
+                <div class="search-row">
+                    <!-- 形成能范围 -->
+                    <div class="filter-group">
+                        <label for="formation_energy_min">Formation Energy (eV)</label>
+                        <div class="range-inputs">
+                            <input type="number" name="formation_energy_min" id="formation_energy_min" 
+                                   placeholder="Min" step="0.01" 
+                                   value="{{ search_params.formation_energy_min }}">
+                            <span>to</span>
+                            <input type="number" name="formation_energy_max" id="formation_energy_max" 
+                                   placeholder="Max" step="0.01" 
+                                   value="{{ search_params.formation_energy_max }}">
+                        </div>
+                    </div>
+
+                    <!-- 费米能级范围 -->
+                    <div class="filter-group">
+                        <label for="fermi_level_min">Fermi Level (eV)</label>
+                        <div class="range-inputs">
+                            <input type="number" name="fermi_level_min" id="fermi_level_min" 
+                                   placeholder="Min" step="0.01" 
+                                   value="{{ search_params.fermi_level_min }}">
+                            <span>to</span>
+                            <input type="number" name="fermi_level_max" id="fermi_level_max" 
+                                   placeholder="Max" step="0.01" 
+                                   value="{{ search_params.fermi_level_max }}">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
