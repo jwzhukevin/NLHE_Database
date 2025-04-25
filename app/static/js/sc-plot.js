@@ -30,8 +30,8 @@ function plotSCStructure(containerId, dataUrl) {
         })
         .catch(error => {
             console.error('SC数据加载失败:', error);
-            container.innerHTML = `<div style="text-align:center;padding:50px;color:#e53e3e;">
-                <i class="fas fa-exclamation-circle"></i> SC数据加载失败: ${error.message}
+            container.innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
+                <p>No data</p>
             </div>`;
         });
 }
@@ -45,13 +45,57 @@ function analyzeCurveRelationships(data, traceNames) {
         curveData[trace.name] = yValues;
     });
     
+    // 计算所有曲线的平均绝对值
+    const avgAbsValues = {};
+    Object.keys(curveData).forEach(name => {
+        const avgAbs = curveData[name].reduce((sum, val) => sum + Math.abs(val), 0) / curveData[name].length;
+        avgAbsValues[name] = avgAbs;
+    });
+    
+    // 找出最大平均绝对值，用于确定数量级
+    const maxAvgAbs = Math.max(...Object.values(avgAbsValues));
+    console.log(`最大曲线平均绝对值: ${maxAvgAbs}`);
+    
+    // 确定零曲线阈值 - 使用相对数量级判断
+    // 如果最大值很小(小于0.01)，使用更低的相对阈值
+    let zeroThreshold;
+    if (maxAvgAbs < 0.01) {
+        // 取最大值的1/1000作为阈值
+        zeroThreshold = maxAvgAbs / 1000;
+        console.log(`使用小曲线相对阈值: ${zeroThreshold}`);
+    } else if (maxAvgAbs < 0.1) {
+        // 取最大值的1/100作为阈值
+        zeroThreshold = maxAvgAbs / 100;
+        console.log(`使用中等曲线相对阈值: ${zeroThreshold}`);
+    } else {
+        // 取最大值的1/50或固定值0.02，取较大者
+        zeroThreshold = Math.max(maxAvgAbs / 50, 0.02);
+        console.log(`使用大曲线相对阈值: ${zeroThreshold}`);
+    }
+    
+    // 动态确定曲线相似性阈值 - 基于相同的数量级逻辑
+    let similarityThreshold;
+    if (maxAvgAbs < 0.01) {
+        // 对于整体很小的曲线，使用较小的相似性阈值
+        similarityThreshold = maxAvgAbs / 100; // 相对于最大值的1%
+        console.log(`使用小曲线相对相似性阈值: ${similarityThreshold}`);
+    } else if (maxAvgAbs < 0.1) {
+        // 中等数量级使用中等阈值
+        similarityThreshold = maxAvgAbs / 50; // 相对于最大值的2%
+        console.log(`使用中等曲线相对相似性阈值: ${similarityThreshold}`);
+    } else {
+        // 大数量级使用更宽松的阈值
+        similarityThreshold = maxAvgAbs / 20; // 相对于最大值的5%
+        console.log(`使用大曲线相对相似性阈值: ${similarityThreshold}`);
+    }
+    
     // 对所有曲线数据取绝对值用于分组
     const absData = {};
     const isZeroCurve = {};
     Object.keys(curveData).forEach(name => {
-        // 计算平均绝对值，用于判断是否为接近零的曲线
-        const avgAbs = curveData[name].reduce((sum, val) => sum + Math.abs(val), 0) / curveData[name].length;
-        isZeroCurve[name] = avgAbs < 0.1; // 扩大零值判定范围到0.1
+        // 基于动态阈值判断是否为零曲线
+        isZeroCurve[name] = avgAbsValues[name] < zeroThreshold;
+        console.log(`曲线 ${name}: 平均绝对值=${avgAbsValues[name]}, 是否为零曲线=${isZeroCurve[name]}`);
         
         absData[name] = curveData[name].map(val => Math.abs(val));
     });
@@ -72,7 +116,6 @@ function analyzeCurveRelationships(data, traceNames) {
     
     // 按绝对值相似性对非零曲线进行分组
     const similarityGroups = {};
-    const similarityThreshold = 0.01; // 增大相似性阈值，从0.001提高到0.01，更宽松地判断绝对值相似性
     
     // 第一步：找出具有相似绝对值的曲线组
     Object.keys(curveData).forEach(name1 => {
@@ -89,15 +132,29 @@ function analyzeCurveRelationships(data, traceNames) {
             const absValues1 = absData[name1];
             const absValues2 = absData[name2];
             
-            let diffSum = 0;
+            // 计算两曲线差值的标准差，以更好地评估整体相似性
+            let sumDiff = 0;
+            let sumSqDiff = 0;
+            let maxDiff = 0;
+            
             for (let i = 0; i < absValues1.length; i++) {
-                diffSum += Math.abs(absValues1[i] - absValues2[i]);
+                const diff = Math.abs(absValues1[i] - absValues2[i]);
+                sumDiff += diff;
+                sumSqDiff += diff * diff;
+                maxDiff = Math.max(maxDiff, diff); // 记录最大差异
             }
             
-            const avgDiff = diffSum / absValues1.length;
+            const avgDiff = sumDiff / absValues1.length;
+            // 计算标准差
+            const stdDev = Math.sqrt(sumSqDiff / absValues1.length - (avgDiff * avgDiff));
             
-            if (avgDiff < similarityThreshold) {
+            // 在控制台输出详细的比较结果
+            console.log(`比较曲线 ${name1} 和 ${name2}: 平均差异=${avgDiff.toExponential(3)}, 标准差=${stdDev.toExponential(3)}, 最大差异=${maxDiff.toExponential(3)}, 相似性阈值=${similarityThreshold.toExponential(3)}`);
+            
+            // 综合考虑平均差异和标准差，使判断更稳健
+            if (avgDiff < similarityThreshold && stdDev < similarityThreshold * 2) {
                 similarityGroups[name1].push(name2);
+                console.log(`=> 曲线 ${name1} 和 ${name2} 被判定为相似`);
             }
         });
     });
@@ -338,7 +395,9 @@ function parseAndPlotSCData(dataText, container) {
     
     // 如果没有数据，显示错误消息
     if (data.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:50px;color:#e53e3e;">没有找到有效的SC数据</div>';
+        container.innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
+            <p>No data</p>
+        </div>`;
         return;
     }
     
@@ -703,4 +762,4 @@ function parseAndPlotSCData(dataText, container) {
             relationsTableContainer.innerHTML = relationsTableHtml;
         }
     }, 500);
-} 
+}

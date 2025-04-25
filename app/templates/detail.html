@@ -1487,13 +1487,17 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 // 所有数据源均不可用，显示错误信息
                 console.error('无法加载SC数据文件');
-                document.getElementById('scStructure').innerHTML = '<div style="text-align:center;padding:50px;color:#e53e3e;">无法加载SC数据</div>';
+                document.getElementById('scStructure').innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
+                    <p>No data</p>
+                </div>`;
             }
         })
         .catch(error => {
             // 处理请求过程中的任何错误（网络问题等）
             console.error('SC数据加载失败:', error);
-            document.getElementById('scStructure').innerHTML = '<div style="text-align:center;padding:50px;color:#e53e3e;">SC数据加载失败</div>';
+            document.getElementById('scStructure').innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
+                <p>No data</p>
+            </div>`;
         });
     
     // 初始化卡片折叠功能

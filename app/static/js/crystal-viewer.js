@@ -1150,7 +1150,16 @@ function loadCrystalStructure(materialId) {
             // 处理错误情况
             console.error('加载晶体结构出错:', error);
             hideLoadingIndicator(); // 隐藏加载指示器
-            showErrorMessage('加载晶体结构数据失败'); // 显示错误信息
+            
+            // 显示"No data"而不是错误信息
+            const container = document.getElementById('crystalViewer');
+            if (container) {
+                container.innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
+                    <p>No data</p>
+                </div>`;
+            } else {
+                showErrorMessage('加载晶体结构数据失败'); // 如果找不到容器，则显示错误信息
+            }
         });
 }
 

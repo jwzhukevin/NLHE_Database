@@ -128,7 +128,11 @@ async function plotBandStructure(containerId, bandDataPath) {
                         family: 'system-ui, -apple-system, sans-serif',
                         size: 16,
                     },
-                    standoff: 5, // 增加标题与坐标轴的距离
+                    standoff: 15, // 增加标题与坐标轴的距离
+                    x: 0.5,      // 标题水平居中对齐
+                    xanchor: 'center', // 锚点居中对齐
+                    y: -0.15,    // 向下移动标题
+                    yanchor: 'middle', // 垂直居中对齐
                 },
                 showgrid: false,
                 zeroline: false,
@@ -141,7 +145,7 @@ async function plotBandStructure(containerId, bandDataPath) {
                 linecolor: 'black',
                 mirror: true,
                 tickformat: '',
-                ticks: 'outside',
+                ticks: 'inside',
                 showticknumber: false,
                 tickfont: {
                     family: 'system-ui, -apple-system, sans-serif',
@@ -165,7 +169,7 @@ async function plotBandStructure(containerId, bandDataPath) {
                 linewidth: 1.5,
                 linecolor: 'black',
                 mirror: true,
-                ticks: 'outside',
+                ticks: 'inside',
                 tickfont: {
                     family: 'system-ui, -apple-system, sans-serif',
                     size: 14
@@ -176,7 +180,7 @@ async function plotBandStructure(containerId, bandDataPath) {
             plot_bgcolor: 'white',
             paper_bgcolor: 'white',
             // 调整边距，确保在小尺寸下也能正常显示
-            margin: {l: 70, r: 30, t: 50, b: 70},
+            margin: {l: 70, r: 30, t: 50, b: 90},
             font: {
                 family: 'system-ui, -apple-system, sans-serif'
             }
@@ -232,9 +236,8 @@ async function plotBandStructure(containerId, bandDataPath) {
         // 显示错误信息在容器中
         const container = document.getElementById(containerId);
         if (container) {
-            container.innerHTML = `<div style="color: red; padding: 20px; text-align: center;">
-                <p>Error loading band structure data.</p>
-                <p>${error.message || 'Unknown error'}</p>
+            container.innerHTML = `<div style="color: #666; padding: 50px; text-align: center; font-size: 18px; background: #f9f9f9; border-radius: 8px; margin: 20px 0;">
+                <p>No data</p>
             </div>`;
         }
     }

@@ -463,7 +463,7 @@ def get_structure_by_params():
                     
             # 返回JSON响应
             return jsonify(result)
-            
+                
         except ValueError:
             return jsonify({"error": "Invalid material_id format"}), 400
     
