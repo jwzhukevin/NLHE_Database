@@ -640,13 +640,13 @@ function parseAndPlotSCData(dataText, container) {
             
             // 立即更新计数
             updateVisibleCount();
-            
-            // 添加点击动画反馈
-            const legendItems = document.querySelectorAll('.traces');
-            if (legendItems && legendItems.length > 0 && data.curveNumber < legendItems.length) {
-                const item = legendItems[data.curveNumber];
-                item.classList.add('active');
-                setTimeout(() => item.classList.remove('active'), 300);
+        
+        // 添加点击动画反馈
+        const legendItems = document.querySelectorAll('.traces');
+        if (legendItems && legendItems.length > 0 && data.curveNumber < legendItems.length) {
+            const item = legendItems[data.curveNumber];
+            item.classList.add('active');
+            setTimeout(() => item.classList.remove('active'), 300);
             }
         }
     });

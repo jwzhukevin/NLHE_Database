@@ -1,0 +1,18 @@
+{
+  "name": "AlAsO4",
+  "status": "done",
+  "structure_file": "fplo.cif",
+  "total_energy": null,
+  "formation_energy": null,
+  "fermi_level": null,
+  "vacuum_level": null,
+  "workfunction": null,
+  "metal_type": "metal",
+  "gap": null,
+  "vbm_energy": null,
+  "cbm_energy": null,
+  "vbm_coordi": "No Data",
+  "cbm_coordi": "No Data",
+  "vbm_index": null,
+  "cbm_index": null
+}

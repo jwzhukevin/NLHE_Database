@@ -43,13 +43,37 @@
                     {% if material.structure_file %}
                     <p class="file-info">Current file: {{ material.structure_file }}</p>
                     {% endif %}
+                    <small class="help-text">CIF structure file for crystal visualization</small>
                 </div>
                 <div class="form-group">
-                    <label>Band Structure File</label>
+                    <label>Band Structure File (DAT)</label>
                     <input type="file" name="band_file" accept=".json,.dat">
-                    <small class="help-text">Supports .json or .dat format band data files</small>
+                    <small class="help-text">For band structure visualization</small>
                     {% if material.id %}
                     <p class="file-info">Current file: {{ material.id }}.dat</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 新增文件上传区域 -->
+        <div class="form-section">
+            <h3>Additional Files</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Material Properties (JSON)</label>
+                    <input type="file" name="properties_json" accept=".json">
+                    <small class="help-text">JSON file with material properties</small>
+                    {% if material.properties_json %}
+                    <p class="file-info">Current file: {{ material.properties_json }}</p>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>SC Structure File (DAT)</label>
+                    <input type="file" name="sc_structure_file" accept=".dat">
+                    <small class="help-text">DAT file for SC structure visualization</small>
+                    {% if material.sc_structure_file %}
+                    <p class="file-info">Current file: {{ material.sc_structure_file }}</p>
                     {% endif %}
                 </div>
             </div>

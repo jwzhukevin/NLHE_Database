@@ -10,7 +10,8 @@ from .models import User, Material, BlockedIP  # 自定义数据模型
 from . import db  # 数据库实例
 import datetime  # 处理日期和时间
 import functools  # 用于装饰器
-from .material_importer import import_material_from_json, scan_and_import_all_materials, extract_chemical_formula_from_cif  # 导入材料数据模块
+from .material_importer import extract_chemical_formula_from_cif  # 导入材料数据模块
+import os
 
 # 创建名为'views'的蓝图，用于模块化路由管理
 bp = Blueprint('views', __name__)
@@ -139,78 +140,154 @@ def add():
             # 获取并处理上传的文件
             structure_file = request.files.get('structure_file')
             band_file = request.files.get('band_file')
+            properties_json = request.files.get('properties_json')
+            sc_structure_file = request.files.get('sc_structure_file')
             
             # 验证CIF文件是否有效
             if not structure_file or not structure_file.filename.endswith('.cif'):
-                flash('Please upload a valid CIF file!', 'error')  # 显示错误消息
-                return redirect(url_for('views.add'))  # 重定向回添加页面
+                flash('请上传有效的CIF文件！', 'error')
+                return redirect(url_for('views.add'))
             
             # 生成安全的文件名并保存结构文件
             from werkzeug.utils import secure_filename
             import os
             from flask import current_app
             
-            # 保存结构文件
-            structure_filename = secure_filename(structure_file.filename)  # 安全处理文件名，防止路径注入
-            structure_path = os.path.join(current_app.root_path, 'static/structures', structure_filename)
-            os.makedirs(os.path.dirname(structure_path), exist_ok=True)  # 确保目录存在
-            structure_file.save(structure_path)  # 保存上传的文件
+            # 先保存结构文件到临时位置用于提取化学式
+            structure_filename = secure_filename(structure_file.filename)
+            temp_structure_path = os.path.join(current_app.root_path, 'static/temp', structure_filename)
+            os.makedirs(os.path.dirname(temp_structure_path), exist_ok=True)
+            structure_file.save(temp_structure_path)
             
             # 从CIF文件中提取化学式
-            chemical_name = extract_chemical_formula_from_cif(structure_path)
+            chemical_name = extract_chemical_formula_from_cif(temp_structure_path)
             
-            # 如果有能带文件，保存到band目录
-            if band_file and band_file.filename.endswith(('.json', '.dat')):
-                band_filename = secure_filename(band_file.filename)
-                band_path = os.path.join(current_app.root_path, 'static/band', band_filename)
-                os.makedirs(os.path.dirname(band_path), exist_ok=True)
-                band_file.save(band_path)
+            # 验证是否成功提取到材料名称
+            if not chemical_name:
+                flash('无法从CIF文件中提取材料名称，请检查文件格式', 'error')
+                return redirect(url_for('views.add'))
             
-            # 获取并转换表单数据（使用safe_float处理空值）
+            # 验证材料名称是否已存在
+            if Material.query.filter_by(name=chemical_name).first():
+                flash(f'材料名称 "{chemical_name}" 已存在，请使用不同的CIF文件', 'error')
+                return redirect(url_for('views.add'))
+            
+            # 创建材料对象并添加到数据库，以获取ID
             material_data = {
-                'name': chemical_name if chemical_name else request.form.get('name'),  # 优先使用CIF提取的化学式
+                'name': chemical_name,  # 使用CIF提取的化学式
                 'status': request.form.get('status'),  # 状态
-                'structure_file': structure_filename if structure_file and structure_file.filename else None,  # 结构文件路径
-                'total_energy': safe_float(request.form.get('total_energy')),  # 总能量
-                'formation_energy': safe_float(request.form.get('formation_energy')),  # 形成能
-                'fermi_level': safe_float(request.form.get('efermi')),  # 费米能级
-                'vacuum_level': safe_float(request.form.get('vacuum_level')),  # 真空能级
-                'workfunction': safe_float(request.form.get('workfunction')),  # 功函数
-                'metal_type': request.form.get('metal_type'),  # 金属类型
-                'gap': safe_float(request.form.get('gap')),  # 带隙
-                'vbm_energy': safe_float(request.form.get('vbm_energy')),  # VBM能量
-                'cbm_energy': safe_float(request.form.get('cbm_energy')),  # CBM能量
-                'vbm_coordi': request.form.get('vbm_coordi'),  # VBM坐标
-                'cbm_coordi': request.form.get('cbm_coordi'),  # CBM坐标
-                'vbm_index': safe_int(request.form.get('vbm_index')),  # VBM索引
-                'cbm_index': safe_int(request.form.get('cbm_index'))  # CBM索引
+                'structure_file': structure_filename,  # 结构文件路径
+                'properties_json': properties_json.filename if properties_json and properties_json.filename else None,
+                'sc_structure_file': sc_structure_file.filename if sc_structure_file and sc_structure_file.filename else None,
+                'total_energy': safe_float(request.form.get('total_energy')),
+                'formation_energy': safe_float(request.form.get('formation_energy')),
+                'fermi_level': safe_float(request.form.get('efermi')),
+                'vacuum_level': safe_float(request.form.get('vacuum_level')),
+                'workfunction': safe_float(request.form.get('workfunction')),
+                'metal_type': request.form.get('metal_type'),
+                'gap': safe_float(request.form.get('gap')),
+                'vbm_energy': safe_float(request.form.get('vbm_energy')),
+                'cbm_energy': safe_float(request.form.get('cbm_energy')),
+                'vbm_coordi': request.form.get('vbm_coordi'),
+                'cbm_coordi': request.form.get('cbm_coordi'),
+                'vbm_index': safe_int(request.form.get('vbm_index')),
+                'cbm_index': safe_int(request.form.get('cbm_index'))
             }
-
-            # 必填字段验证
-            if not material_data['name']:
-                flash('Material name is required!', 'error')  # 显示错误消息
-                return redirect(url_for('views.add'))  # 重定向回添加页面
-            
-            # 如果使用了CIF提取的化学式，显示提示
-            if chemical_name:
-                flash(f'Material name set from CIF: {chemical_name}', 'info')
 
             # 创建Material对象并验证数据
             material = Material(**material_data)
             material.validate()  # 调用模型自定义验证方法，检查数据完整性
             
-            # 数据库操作
-            db.session.add(material)  # 添加到数据库会话
-            db.session.commit()  # 提交事务，写入数据库
-            flash('Material added successfully.', 'success')  # 显示成功消息
+            # 先添加到数据库以获取ID
+            db.session.add(material)
+            db.session.flush()  # 获取ID但不提交事务
+
+            # 格式化ID (IMR-00000XXX)
+            formatted_id = f"IMR-{material.id:08d}"
+            
+            # 创建材料专用文件夹结构
+            material_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id)
+            structure_dir = os.path.join(material_dir, 'structure')
+            band_dir = os.path.join(material_dir, 'band')
+            bcd_dir = os.path.join(material_dir, 'bcd')
+            
+            # 创建所有目录
+            os.makedirs(material_dir, exist_ok=True)
+            os.makedirs(structure_dir, exist_ok=True)
+            os.makedirs(band_dir, exist_ok=True)
+            os.makedirs(bcd_dir, exist_ok=True)
+            
+            # 保存CIF文件到structure文件夹
+            structure_path = os.path.join(structure_dir, structure_filename)
+            os.rename(temp_structure_path, structure_path)
+            
+            # 处理JSON属性文件
+            if properties_json and properties_json.filename:
+                properties_json_filename = secure_filename(properties_json.filename)
+                properties_json_path = os.path.join(material_dir, properties_json_filename)
+                properties_json.save(properties_json_path)
+                material.properties_json = properties_json_filename
+            else:
+                # 创建包含必要字段的JSON文件，而不是空的JSON对象
+                import json
+                json_data = {
+                  "name": chemical_name,
+                  "status": request.form.get('status') or "pending",
+                  "structure_file": structure_filename,
+                  "total_energy": material.total_energy,
+                  "formation_energy": material.formation_energy,
+                  "fermi_level": material.fermi_level,
+                  "vacuum_level": material.vacuum_level,
+                  "workfunction": material.workfunction,
+                  "metal_type": material.metal_type or "No Data",
+                  "gap": material.gap,
+                  "vbm_energy": material.vbm_energy,
+                  "cbm_energy": material.cbm_energy,
+                  "vbm_coordi": material.vbm_coordi or "No Data",
+                  "cbm_coordi": material.cbm_coordi or "No Data",
+                  "vbm_index": material.vbm_index,
+                  "cbm_index": material.cbm_index
+                }
+                json_file_path = os.path.join(material_dir, 'material.json')
+                with open(json_file_path, 'w', encoding='utf-8') as f:
+                    json.dump(json_data, f, ensure_ascii=False, indent=2)
+                material.properties_json = 'material.json'
+            
+            # 处理能带dat文件
+            if band_file and band_file.filename.endswith('.dat'):
+                band_filename = secure_filename(band_file.filename)
+                band_path = os.path.join(band_dir, band_filename)
+                band_file.save(band_path)
+            
+            # 处理SC结构dat文件
+            if sc_structure_file and sc_structure_file.filename.endswith('.dat'):
+                sc_filename = secure_filename(sc_structure_file.filename)
+                sc_path = os.path.join(bcd_dir, sc_filename)
+                sc_structure_file.save(sc_path)
+            
+            # 同时保存到常规文件夹以保持向后兼容
+            if band_file and band_file.filename:
+                band_path = os.path.join(current_app.root_path, 'static/band', secure_filename(band_file.filename))
+                os.makedirs(os.path.dirname(band_path), exist_ok=True)
+                # 创建副本而不是复制，防止二次存储消耗空间
+                try:
+                    os.symlink(os.path.join(band_dir, secure_filename(band_file.filename)), band_path)
+                except:
+                    import shutil
+                    shutil.copy2(os.path.join(band_dir, secure_filename(band_file.filename)), band_path)
+            
+            # 提交数据库事务
+            db.session.commit()
+            
+            flash(f'材料添加成功。数据已同步到 {formatted_id} 文件夹。', 'success')
             return redirect(url_for('views.index'))  # 重定向到首页
 
         except ValueError as e:  # 处理数据类型错误
-            flash(f'Invalid data: {str(e)}', 'error')  # 显示详细错误消息
+            flash(f'数据无效: {str(e)}', 'error')  # 显示详细错误消息
             return redirect(url_for('views.add'))
         except Exception as e:  # 处理其他数据库错误
             db.session.rollback()  # 回滚事务，放弃所有更改
-            flash('Database error occurred', 'error')  # 显示一般错误消息
+            flash(f'发生错误: {str(e)}', 'error')  # 显示一般错误消息
             return redirect(url_for('views.add'))
 
     return render_template('add.html')  # GET请求返回表单页
@@ -270,9 +347,14 @@ def edit(material_id):
         try:
             # 处理结构文件更新
             structure_file = request.files.get('structure_file')
+            band_file = request.files.get('band_file')
+            properties_json = request.files.get('properties_json')
+            sc_structure_file = request.files.get('sc_structure_file')
+            
+            # 如果上传了新的结构文件
             if structure_file and structure_file.filename:
                 if not structure_file.filename.endswith('.cif'):
-                    flash('Please upload a valid CIF file!', 'error')
+                    flash('请上传有效的CIF文件！', 'error')
                     return redirect(url_for('views.edit', material_id=material_id))
                 
                 # 保存新结构文件
@@ -287,21 +369,37 @@ def edit(material_id):
                 # 从CIF文件中提取化学式
                 chemical_name = extract_chemical_formula_from_cif(structure_path)
                 if chemical_name:
-                    # 如果成功提取到化学式，使用它作为材料名称
+                    # 检查新名称是否与其他材料重名（排除当前材料）
+                    existing_material = Material.query.filter(
+                        Material.name == chemical_name,
+                        Material.id != numeric_id
+                    ).first()
+                    
+                    if existing_material:
+                        flash(f'材料名称 "{chemical_name}" 已存在，请使用不同的CIF文件', 'error')
+                        return redirect(url_for('views.edit', material_id=material_id))
+                    
+                    # 更新材料名称
                     material.name = chemical_name
-                    flash(f'Material name updated from CIF: {chemical_name}', 'info')
+                    flash(f'材料名称已从CIF文件更新为: {chemical_name}', 'info')
             
-            # 如果没有上传文件或无法提取化学式，则使用表单提供的名称
-            if not structure_file or not structure_file.filename or not material.name:
-                material.name = request.form.get('name')
+            # 处理属性JSON文件
+            if properties_json and properties_json.filename:
+                properties_json_filename = secure_filename(properties_json.filename)
+                properties_json_path = os.path.join(current_app.root_path, 'static/properties', properties_json_filename)
+                os.makedirs(os.path.dirname(properties_json_path), exist_ok=True)
+                properties_json.save(properties_json_path)
+                material.properties_json = properties_json_filename
             
-            # 验证名称不为空
-            if not material.name:
-                flash('Material name is required!', 'error')
-                return redirect(url_for('views.edit', material_id=material_id))
+            # 处理SC结构文件
+            if sc_structure_file and sc_structure_file.filename:
+                sc_structure_filename = secure_filename(sc_structure_file.filename)
+                sc_structure_path = os.path.join(current_app.root_path, 'static/sc_structures', sc_structure_filename)
+                os.makedirs(os.path.dirname(sc_structure_path), exist_ok=True)
+                sc_structure_file.save(sc_structure_path)
+                material.sc_structure_file = sc_structure_filename
             
             # 处理能带文件更新
-            band_file = request.files.get('band_file')
             if band_file and band_file.filename:
                 if band_file.filename.endswith(('.json', '.dat')):
                     band_filename = secure_filename(band_file.filename)
@@ -309,11 +407,20 @@ def edit(material_id):
                     os.makedirs(os.path.dirname(band_path), exist_ok=True)
                     band_file.save(band_path)
             
+            # 更新其他材料属性（仅当没有上传新的CIF文件时才使用表单的名称）
+            if not structure_file or not structure_file.filename or not material.name:
+                material.name = request.form.get('name')
+            
+            # 验证名称不为空
+            if not material.name:
+                flash('材料名称不能为空！', 'error')
+                return redirect(url_for('views.edit', material_id=material_id))
+            
             # 更新其他材料属性
             material.status = request.form.get('status')
             material.total_energy = safe_float(request.form.get('total_energy'))
             material.formation_energy = safe_float(request.form.get('formation_energy'))
-            material.fermi_level = safe_float(request.form.get('efermi'))
+            material.fermi_level = safe_float(request.form.get('fermi_level'))
             material.vacuum_level = safe_float(request.form.get('vacuum_level'))
             material.workfunction = safe_float(request.form.get('workfunction'))
             material.metal_type = request.form.get('metal_type')
@@ -325,63 +432,21 @@ def edit(material_id):
             material.vbm_index = safe_int(request.form.get('vbm_index'))
             material.cbm_index = safe_int(request.form.get('cbm_index'))
             
-            # 验证数据有效性
-            material.validate()
-            
-            # 提交更改
+            # 保存更改
             db.session.commit()
-            flash('Material updated successfully.', 'success')
-            return redirect(url_for('views.detail', material_id=material.id))
+            flash('材料更新成功。', 'success')
+            return redirect(url_for('views.detail', material_id=material_id))
             
         except ValueError as e:
-            db.session.rollback()  # 错误时回滚事务
-            flash(f'Error: {str(e)}', 'error')
+            flash(f'数据无效: {str(e)}', 'error')
+            return redirect(url_for('views.edit', material_id=material_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'发生错误: {str(e)}', 'error')
+            return redirect(url_for('views.edit', material_id=material_id))
     
-    # GET请求：渲染编辑表单
+    # GET请求: 显示编辑表单
     return render_template('edit.html', material=material)
-
-# 材料导入路由（需要登录）
-@bp.route('/import_materials', methods=['GET', 'POST'])
-@login_required
-def import_materials():
-    """
-    从JSON文件导入材料数据
-    
-    GET请求: 显示导入页面
-    POST请求: 执行导入操作
-    """
-    if request.method == 'POST':
-        # 判断请求类型
-        import_type = request.form.get('import_type', 'all')
-        
-        if import_type == 'single':
-            # 导入单个材料
-            material_id = request.form.get('material_id', '').strip()
-            if not material_id or not material_id.startswith('IMR-'):
-                flash('Invalid material ID format. ID should start with "IMR-".', 'error')
-                return redirect(url_for('views.import_materials'))
-            
-            try:
-                material = import_material_from_json(material_id)
-                if material and material.name != "No Data":
-                    flash(f'Successfully imported material: {material.name}', 'success')
-                else:
-                    flash(f'Material {material_id} has no data or JSON file not found.', 'error')
-            except Exception as e:
-                flash(f'Error importing material: {str(e)}', 'error')
-                
-        elif import_type == 'all':
-            # 导入所有材料
-            try:
-                count = scan_and_import_all_materials()
-                flash(f'Successfully imported {count} materials.', 'success')
-            except Exception as e:
-                flash(f'Error importing materials: {str(e)}', 'error')
-        
-        return redirect(url_for('views.index'))
-    
-    # GET请求，显示导入页面
-    return render_template('import_materials.html')
 
 # 材料详情页
 @bp.route('/materials/IMR-<string:material_id>')
@@ -407,8 +472,20 @@ def detail(material_id):
     # 如果需要，这里可以添加从JSON文件更新材料数据的逻辑
     # 例如：如果材料状态为"需更新"，则自动从JSON刷新数据
     
-    # 构建结构文件路径
-    structure_file = f'structures/{material.structure_file}' if material.structure_file else None
+    # 构建结构文件路径 - 首先尝试新的目录结构
+    # 格式化ID (IMR-00000XXX)
+    formatted_id = f"IMR-{numeric_id:08d}"
+    structure_file = None
+    
+    # 检查新目录结构中是否存在结构文件
+    new_structure_path = f'materials/{formatted_id}/structure/structure.cif'
+    if os.path.exists(os.path.join(current_app.root_path, 'static', new_structure_path)):
+        structure_file = new_structure_path
+    # 如果新目录结构中没有找到，尝试旧的目录结构
+    elif material.structure_file:
+        old_structure_path = f'structures/{material.structure_file}'
+        if os.path.exists(os.path.join(current_app.root_path, 'static', old_structure_path)):
+            structure_file = old_structure_path
     
     # 渲染详情页模板
     return render_template('detail.html', 
@@ -438,8 +515,18 @@ def delete(material_id):
     
     # 删除相关文件
     import os
+    import shutil
     from flask import current_app
     
+    # 格式化ID (IMR-00000XXX)
+    formatted_id = f"IMR-{numeric_id:08d}"
+    
+    # 删除材料专用文件夹及其所有内容
+    material_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id)
+    if os.path.exists(material_dir):
+        shutil.rmtree(material_dir)
+    
+    # 保持原有的文件删除逻辑以保证向后兼容
     # 删除结构文件
     if material.structure_file:
         structure_path = os.path.join(current_app.root_path, 'static/structures', material.structure_file)
@@ -451,9 +538,21 @@ def delete(material_id):
     if os.path.exists(band_path):
         os.remove(band_path)
     
+    # 删除属性JSON文件
+    if material.properties_json:
+        json_path = os.path.join(current_app.root_path, 'static/properties', material.properties_json)
+        if os.path.exists(json_path):
+            os.remove(json_path)
+    
+    # 删除SC结构文件
+    if material.sc_structure_file:
+        sc_path = os.path.join(current_app.root_path, 'static/sc_structures', material.sc_structure_file)
+        if os.path.exists(sc_path):
+            os.remove(sc_path)
+    
     db.session.delete(material)  # 删除记录
     db.session.commit()  # 提交事务
-    flash('Material deleted.', 'success')  # 显示成功消息
+    flash(f'材料"{material.name}"及其所有相关文件已成功删除。', 'success')  # 显示成功消息
     return redirect(url_for('views.index'))  # 重定向到首页
 
 # 获取客户端IP的辅助函数

@@ -4,6 +4,7 @@
 
 import json
 import os
+import glob
 from flask import Blueprint, jsonify, request, current_app
 from .models import Material, db
 from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data, _process_structure, generate_primitive_cell
@@ -29,26 +30,30 @@ def get_structure(material_id):
         # 查询材料记录，如果不存在则返回404
         material = Material.query.get_or_404(material_id)
         
-        # 解析CIF文件并获取结构数据
-        # 现在直接使用material_id查找对应目录中的结构文件
+        # 记录请求信息
+        current_app.logger.info(f"Getting structure data for material_id: {material_id}, name: {material.name}")
+        
+        # 直接使用material_id查找结构文件
         structure_data = parse_cif_file(material_id=material_id)
         
-        # 检查是否有错误
+        # 解析返回的JSON数据
         result = json.loads(structure_data)
-        if 'error' in result:
-            # 如果新目录结构下没有找到文件，尝试使用材料名称在旧目录结构中查找
-            if 'No structure file found' in result['error']:
-                structure_data = parse_cif_file(material_name=material.name)
-        result = json.loads(structure_data)
-        if 'error' in result:
-            return jsonify(result), 404  # 返回错误信息和404状态码
         
-        # 返回JSON响应，设置正确的内容类型
+        # 检查是否存在错误
+        if 'error' in result:
+            error_response = {
+                "error": f"Could not find structure data for material ID: {material_id}",
+                "details": result['error']
+            }
+            current_app.logger.error(f"Failed to find structure for material_id: {material_id}. Error: {result['error']}")
+            return jsonify(error_response), 404
+        
+        # 返回结构数据
         return structure_data, 200, {'Content-Type': 'application/json'}
     
     except Exception as e:
         # 捕获所有异常并返回500错误
-        current_app.logger.error(f"Error getting structure data: {str(e)}")
+        current_app.logger.error(f"Unexpected error getting structure data: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -410,68 +415,57 @@ def get_primitive_cell(material_id):
 @bp.route('/structure', methods=['GET'])
 def get_structure_by_params():
     """
-    Get structure data by material_id or material_name
+    通过material_id参数获取结构数据
     
-    Args:
-        material_id: Material ID parameter
-        material_name: Material name parameter
+    参数:
+        material_id: 材料ID参数
     
-    Returns:
-        JSON response with structure data including detailed atomic positions
+    返回:
+        包含结构数据的JSON响应
     """
     try:
-        # Get query parameters
+        # 获取查询参数
         material_id = request.args.get('material_id')
-        material_name = request.args.get('material_name')
     
-        # At least one parameter must be provided
-        if not material_id and not material_name:
-            return jsonify({"error": "Either material_id or material_name must be provided"}), 400
+        # 必须提供material_id参数
+        if not material_id:
+            return jsonify({"error": "Material ID must be provided"}), 400
     
-        # If material_id is provided, try to find the corresponding cif file
-        if material_id:
-            try:
-                material_id = int(material_id)
-                # Get structure data using the id
-                structure_data = parse_cif_file(material_id=material_id)
-                
-                # Check for errors in the result
-                result = json.loads(structure_data)
-                if 'error' in result:
-                    # If no file found in new directory structure, try with material name
-                    material = Material.query.get(material_id)
-                    if material and 'No structure file found' in result['error']:
-                        structure_data = parse_cif_file(material_name=material.name)
-            except ValueError:
-                return jsonify({"error": "Invalid material_id format"}), 400
-        else:
-            # Use material_name to find structure file
-            structure_data = parse_cif_file(material_name=material_name)
-        
-        # Process the result
-        result = json.loads(structure_data)
-        if 'error' in result:
-            return jsonify(result), 404
+        # 使用material_id查找对应的cif文件
+        try:
+            material_id = int(material_id)
+            # 获取结构数据
+            structure_data = parse_cif_file(material_id=material_id)
             
-        # Ensure sites data is properly formatted for the frontend
-        if 'atoms' in result and isinstance(result['atoms'], list):
-            # Create a sites array with the needed format
-            sites = []
-            for atom in result['atoms']:
-                site = {
-                    'species': [{'element': atom['element']}],
-                    'xyz': atom['position'],
-                    'frac_coords': atom['frac_coords'],
-                    'wyckoff': atom.get('wyckoff', '')
-                }
-                sites.append(site)
-        
-            # Add sites to the result if not already present
-            if 'sites' not in result or not result['sites']:
-                result['sites'] = sites
+            # 解析JSON结果
+            result = json.loads(structure_data)
+            
+            # 检查结果中是否有错误
+            if 'error' in result:
+                return jsonify(result), 404
                 
-        # Return JSON response
-        return jsonify(result)
+            # 确保sites数据格式正确（用于前端显示）
+            if 'atoms' in result and isinstance(result['atoms'], list):
+                # 创建前端需要的sites数组格式
+                sites = []
+                for atom in result['atoms']:
+                    site = {
+                        'species': [{'element': atom['element']}],
+                        'xyz': atom['position'],
+                        'frac_coords': atom['frac_coords'],
+                        'wyckoff': atom.get('wyckoff', '')
+                    }
+                    sites.append(site)
+            
+                # 如果结果中没有sites字段，添加它
+                if 'sites' not in result or not result['sites']:
+                    result['sites'] = sites
+                    
+            # 返回JSON响应
+            return jsonify(result)
+            
+        except ValueError:
+            return jsonify({"error": "Invalid material_id format"}), 400
     
     except Exception as e:
         current_app.logger.error(f"Error getting structure data: {str(e)}")

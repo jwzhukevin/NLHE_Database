@@ -1389,26 +1389,26 @@
             <div class="search-group">
                 <!-- 第一行: 状态和金属类型选择 -->
                 <div class="search-row">
-                    <!-- 状态下拉框 -->
-                    <div class="filter-group">
-                        <label for="status">Status</label>
-                        <select name="status" id="status">
-                            <option value="">All</option>
-                            <option value="active" {% if search_params.status == 'active' %}selected{% endif %}>Active</option>
-                            <option value="pending" {% if search_params.status == 'pending' %}selected{% endif %}>Pending</option>
-                            <option value="archived" {% if search_params.status == 'archived' %}selected{% endif %}>Archived</option>
-                        </select>
-                    </div>
+                <!-- 状态下拉框 -->
+                <div class="filter-group">
+                    <label for="status">Status</label>
+                    <select name="status" id="status">
+                        <option value="">All</option>
+                        <option value="active" {% if search_params.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="pending" {% if search_params.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="archived" {% if search_params.status == 'archived' %}selected{% endif %}>Archived</option>
+                    </select>
+                </div>
 
-                    <!-- 金属类型下拉框 -->
-                    <div class="filter-group">
-                        <label for="metal_type">Metal Type</label>
-                        <select name="metal_type" id="metal_type">
-                            <option value="">All</option>
-                            <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
-                            <option value="nonmetal" {% if search_params.metal_type == 'nonmetal' %}selected{% endif %}>Non-metal</option>
-                            <option value="metalloid" {% if search_params.metal_type == 'metalloid' %}selected{% endif %}>Metalloid</option>
-                        </select>
+                <!-- 金属类型下拉框 -->
+                <div class="filter-group">
+                    <label for="metal_type">Metal Type</label>
+                    <select name="metal_type" id="metal_type">
+                        <option value="">All</option>
+                        <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
+                        <option value="nonmetal" {% if search_params.metal_type == 'nonmetal' %}selected{% endif %}>Non-metal</option>
+                        <option value="metalloid" {% if search_params.metal_type == 'metalloid' %}selected{% endif %}>Metalloid</option>
+                    </select>
                     </div>
                 </div>
 

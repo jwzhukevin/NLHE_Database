@@ -23,8 +23,9 @@
             <h3>Core Properties</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Material Name <span class="required">*</span></label>
-                    <input type="text" name="name" required>
+                    <label>Material Name (From CIF)</label>
+                    <input type="text" name="name" readonly placeholder="Will be extracted from CIF file">
+                    <small class="help-text">Name will be automatically extracted from the CIF file</small>
                 </div>
                 <div class="form-group">
                     <label>Status</label>
@@ -34,16 +35,35 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Structure File (CIF)</label>
-                    <input type="file" name="structure_file" accept=".cif">
+                    <label>Structure File (CIF) <span class="required">*</span></label>
+                    <input type="file" name="structure_file" accept=".cif" required>
+                    <small class="help-text">Required. CIF structure file for crystal visualization</small>
                 </div>
                 <div class="form-group">
-                    <label>Band Structure File</label>
+                    <label>Band Structure File (DAT)</label>
                     <input type="file" name="band_file" accept=".json,.dat">
-                    <small class="help-text">Supports .json or .dat band structure data files</small>
+                    <small class="help-text">Optional. For band structure visualization</small>
                 </div>
             </div>
         </div>
+        
+        <!-- 新增文件上传区域 -->
+        <div class="form-section">
+            <h3>Additional Files</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Material Properties (JSON)</label>
+                    <input type="file" name="properties_json" accept=".json">
+                    <small class="help-text">Optional. JSON file with material properties</small>
+                </div>
+                <div class="form-group">
+                    <label>SC Structure File (DAT)</label>
+                    <input type="file" name="sc_structure_file" accept=".dat">
+                    <small class="help-text">Optional. DAT file for SC structure visualization</small>
+                </div>
+            </div>
+        </div>
+
         <style>
         /* 表单区块 */
         .form-section {
@@ -214,6 +234,23 @@
                 <i class="fas fa-times"></i> Cancel
             </a>
         </div>
+        
+        <!-- 数据同步说明 -->
+        <div class="sync-info">
+            <h4><i class="fas fa-sync"></i> 数据同步功能</h4>
+            <p>提交材料后，系统将自动创建以下目录结构：</p>
+            <pre class="directory-structure">
+static/materials/IMR-XXXXXXXX/
+  ├── material.json      # 材料属性JSON文件(如有上传则使用上传文件)
+  ├── structure/         # 结构文件目录
+  │   └── structure.cif  # CIF结构文件(必需)
+  ├── band/              # 能带数据目录
+  │   └── band.dat       # 能带数据文件(可选)
+  └── bcd/               # SC结构目录
+      └── sc.dat         # SC结构文件(可选)
+            </pre>
+            <p>所有上传的文件将被自动组织到合适的位置，便于后续处理和分析。</p>
+        </div>
         <style>
         /* 操作按钮区 */
         .form-actions {
@@ -258,6 +295,35 @@
         .secondary-btn:hover {
             background-color: #e2e8f0;
             color: #1e293b;
+        }
+        
+        /* 数据同步说明样式 */
+        .sync-info {
+            margin-top: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: #f8fafc;
+            border-left: 4px solid #3498db;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .sync-info h4 {
+            color: #2c3e50;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .directory-structure {
+            font-family: monospace;
+            background-color: #f1f5f9;
+            padding: 1rem;
+            border-radius: 4px;
+            white-space: pre;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            color: #334155;
         }
         </style>
     </form>

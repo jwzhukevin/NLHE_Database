@@ -79,6 +79,8 @@ class Material(db.Model):
     name = db.Column(db.String(120), nullable=False)  # 材料名称（必填，允许重复）
     status = db.Column(db.String(20))  # 材料状态（如"实验"或"理论"，指示数据来源）
     structure_file = db.Column(db.String(255))  # 结构文件路径（存储CIF文件的相对路径）
+    properties_json = db.Column(db.String(255))  # 材料属性JSON文件路径
+    sc_structure_file = db.Column(db.String(255))  # SC结构DAT文件路径
     
     # 能量相关参数（单位：eV，电子伏特）
     total_energy = db.Column(db.Float)        # 总能量（材料的总能量计算值）

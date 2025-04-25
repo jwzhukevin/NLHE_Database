@@ -13,7 +13,7 @@ REPO_NAME=$(basename "$SOURCE_REPO_DIR")
 TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
 
 # 提交到部署仓库
-git commit -m "SC功能完善，高级搜索修复|Deploy: ${REPO_NAME}@${BRANCH_NAME}:${COMMIT_HASH} (${TIMESTAMP})"
+git commit -m "添加功能完善|Deploy: ${REPO_NAME}@${BRANCH_NAME}:${COMMIT_HASH} (${TIMESTAMP})"
 
 # 推送
 git push origin master

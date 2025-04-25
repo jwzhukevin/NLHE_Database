@@ -19,18 +19,18 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
         file_content: 文件内容（二进制数据）
         filename: 原始文件名
         material_id: 材料ID，用于标识文件目录
-        material_name: 材料名称（可选），用于命名文件
+        material_name: 材料名称（可选），不再用于命名文件
     
     返回:
         保存的文件相对路径，保存失败则返回None
     """
     try:
-        # 构建材料ID格式化字符串
-        formatted_id = f"IMR-{int(material_id):08d}" if material_id else None
-        
-        if not formatted_id and not material_name:
-            current_app.logger.error("Neither material_id nor material_name provided")
+        if not material_id:
+            current_app.logger.error("Material ID not provided")
             return None
+        
+        # 构建材料ID格式化字符串
+        formatted_id = f"IMR-{int(material_id):08d}"
         
         # 构建材料目录路径
         materials_dir = os.path.join(current_app.root_path, 'static/materials')
@@ -49,8 +49,11 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
         if not os.path.exists(structure_dir):
             os.makedirs(structure_dir)
         
-        # 设置保存的文件名（统一使用structure.cif）
-        save_filename = "structure.cif"
+        # 保留原始文件名，但确保使用.cif扩展名
+        if not filename.lower().endswith('.cif'):
+            save_filename = filename + ".cif"
+        else:
+            save_filename = filename
         
         # 构建完整的文件保存路径
         file_path = os.path.join(structure_dir, save_filename)
@@ -74,59 +77,45 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
 
 def find_structure_file(material_id=None, material_name=None):
     """
-    根据材料ID或名称查找对应的CIF文件
+    根据材料ID查找对应的CIF文件
     
     参数:
         material_id: 材料ID，用于构建目录路径
-        material_name: 材料名称，用于向后兼容旧版本的查找方式
+        material_name: 材料名称，参数保留但不再使用
     
     返回:
         CIF文件相对路径，未找到则返回None
     """
     try:
-        # 首先尝试使用材料ID查找文件
+        # 只通过材料ID查找文件
         if material_id is not None:
             # 构建材料ID格式化字符串
             formatted_id = f"IMR-{int(material_id):08d}"
             
-            # 构建结构文件路径
-            material_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id)
-            structure_dir = os.path.join(material_dir, 'structure')
-            structure_file = os.path.join(structure_dir, 'structure.cif')
+            # 构建结构目录路径
+            structure_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id, 'structure')
             
-            # 检查文件是否存在
-            if os.path.exists(structure_file):
-                # 返回相对于static目录的路径
-                relative_path = os.path.join('materials', formatted_id, 'structure', 'structure.cif')
-                return relative_path
-        
-        # 如果通过材料ID没有找到，或未提供材料ID，尝试使用材料名称查找
-        # 这部分用于向后兼容，查找旧版系统的结构文件
-        if material_name:
-            # 尝试在旧的结构目录中查找文件
-            old_structures_dir = os.path.join(current_app.root_path, 'static/structures')
+            # 检查目录是否存在
+            if not os.path.exists(structure_dir):
+                current_app.logger.warning(f"Structure directory not found for material ID: {material_id}")
+                return None
+                
+            # 查找目录中的所有CIF文件
+            cif_files = glob.glob(os.path.join(structure_dir, "*.cif"))
             
-            # 使用材料名称构建可能的文件名（精确匹配）
-            file_pattern = os.path.join(old_structures_dir, f"{material_name}.cif")
-            matching_files = glob.glob(file_pattern)
-            
-            if matching_files:
-                # 如果找到文件，返回相对于static的路径
-                file_path = matching_files[0]
+            # 如果找到了CIF文件，返回第一个
+            if cif_files:
+                # 获取相对于static目录的路径
+                file_path = cif_files[0]
                 relative_path = os.path.relpath(file_path, os.path.join(current_app.root_path, 'static'))
+                current_app.logger.info(f"Found structure file: {relative_path}")
                 return relative_path
-            
-            # 尝试模糊匹配
-            file_pattern = os.path.join(old_structures_dir, f"*{material_name}*.cif")
-            matching_files = glob.glob(file_pattern)
-            
-            if matching_files:
-                file_path = matching_files[0]
-                relative_path = os.path.relpath(file_path, os.path.join(current_app.root_path, 'static'))
-                return relative_path
+            else:
+                current_app.logger.warning(f"No CIF file found in directory: {structure_dir}")
+                return None
         
         # 记录未找到文件的信息
-        current_app.logger.error(f"No structure file found for material ID: {material_id} or name: {material_name}")
+        current_app.logger.error(f"No material ID provided to find structure file")
         return None
     
     except Exception as e:
@@ -141,29 +130,46 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
     
     参数:
         filename: CIF文件相对路径
-        material_id: 材料ID（如果未提供filename），用于查找文件
-        material_name: 材料名称（如果未提供filename和material_id），用于查找文件
+        material_id: 材料ID，用于查找文件
+        material_name: 材料名称，参数保留但不再使用
     
     返回:
         包含原子坐标、晶格参数等信息的JSON字符串，解析失败则返回错误JSON
     """
     try:
-        # 如果未提供文件名，则尝试通过材料ID或名称查找
-        if not filename and (material_id or material_name):
-            filename = find_structure_file(material_id, material_name)
+        # 记录调用信息
+        if filename:
+            current_app.logger.info(f"Parsing CIF file with filename: {filename}")
+        elif material_id:
+            current_app.logger.info(f"Parsing CIF file for material ID: {material_id}")
+        else:
+            error_msg = "Neither filename nor material_id provided"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+        
+        # 如果未提供文件名，则尝试通过材料ID查找
+        if not filename and material_id:
+            filename = find_structure_file(material_id=material_id)
             
-            # 如果仍然没有找到文件，则返回错误JSON
+            # 如果未找到文件，则返回错误JSON
             if not filename:
-                error_msg = f"No structure file found for material ID: {material_id} or name: {material_name}"
+                error_msg = f"No structure file found for material ID: {material_id}"
                 current_app.logger.error(error_msg)
                 return json.dumps({"error": error_msg})
         
-        # 构建完整的文件路径（filename现在是相对于static目录的路径）
+        # 构建完整的文件路径（filename是相对于static目录的路径）
         file_path = os.path.join(current_app.root_path, 'static', filename)
+        current_app.logger.info(f"Full file path: {file_path}")
         
         # 检查文件是否存在
         if not os.path.exists(file_path):
             error_msg = f"Structure file not found: {filename}"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg})
+        
+        # 检查文件是否为空
+        if os.path.getsize(file_path) == 0:
+            error_msg = f"Structure file is empty: {filename}"
             current_app.logger.error(error_msg)
             return json.dumps({"error": error_msg})
         
@@ -179,25 +185,51 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
                         if len(parts) > 1:
                             chemical_name = parts[1].strip("'").strip('"')
                             break
+                    # 尝试读取其他化学式字段
+                    elif '_chemical_formula_sum' in line:
+                        parts = line.strip().split()
+                        if len(parts) > 1:
+                            chemical_name = parts[1].strip("'").strip('"')
+                            # 继续查找，优先使用structural公式
+                    elif '_chemical_name_systematic' in line and not chemical_name:
+                        parts = line.strip().split()
+                        if len(parts) > 1:
+                            chemical_name = parts[1].strip("'").strip('"')
+                            # 继续查找，优先使用chemical_formula字段
             current_app.logger.info(f"Read chemical formula from CIF: {chemical_name}")
         except Exception as e:
             current_app.logger.warning(f"Could not read chemical formula from CIF file: {str(e)}")
         
-        # 使用pymatgen加载晶体结构
-        structure = Structure.from_file(file_path)
+        # 尝试使用pymatgen加载晶体结构
+        try:
+            structure = Structure.from_file(file_path)
+            current_app.logger.info(f"Successfully loaded structure from file: {file_path}")
+        except Exception as e:
+            error_msg = f"Error loading structure from file: {str(e)}"
+            current_app.logger.error(error_msg)
+            return json.dumps({"error": error_msg, "file_path": file_path})
         
         # 提取更多结构信息
-        from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-        analyzer = SpacegroupAnalyzer(structure)
-        
-        # 获取空间群信息
-        spacegroup_symbol = analyzer.get_space_group_symbol()
-        spacegroup_number = analyzer.get_space_group_number()
-        crystal_system = analyzer.get_crystal_system()
-        point_group = analyzer.get_point_group_symbol()
-        
-        # 获取常规胞结构以展示标准化的数据
-        conventional_structure = analyzer.get_conventional_standard_structure()
+        try:
+            from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+            analyzer = SpacegroupAnalyzer(structure)
+            
+            # 获取空间群信息
+            spacegroup_symbol = analyzer.get_space_group_symbol()
+            spacegroup_number = analyzer.get_space_group_number()
+            crystal_system = analyzer.get_crystal_system()
+            point_group = analyzer.get_point_group_symbol()
+            
+            # 获取常规胞结构以展示标准化的数据
+            conventional_structure = analyzer.get_conventional_standard_structure()
+            current_app.logger.info(f"Successfully analyzed structure symmetry: {spacegroup_symbol}")
+        except Exception as e:
+            current_app.logger.warning(f"Error analyzing structure symmetry: {str(e)}, using original structure")
+            conventional_structure = structure
+            spacegroup_symbol = "Unknown"
+            spacegroup_number = 0
+            crystal_system = "Unknown"
+            point_group = "Unknown"
         
         # 提取晶格参数（使用常规胞）
         lattice = conventional_structure.lattice
@@ -216,30 +248,49 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
         composition_name = conventional_structure.composition.reduced_formula
         if not chemical_name:
             chemical_name = composition_name  # 默认使用计算的化学式作为名称
+            current_app.logger.info(f"Using calculated formula: {chemical_name}")
         
         # 提取原子信息
         atoms = []
-        wyckoff_sites = analyzer.get_symmetry_dataset()['wyckoffs']
-        equivalent_atoms = analyzer.get_symmetry_dataset()['equivalent_atoms']
-        
-        for i, site in enumerate(conventional_structure.sites):
-            # 获取Wyckoff位置
-            wyckoff = wyckoff_sites[equivalent_atoms[i]] if i < len(equivalent_atoms) else "?"
+        try:
+            wyckoff_sites = analyzer.get_symmetry_dataset()['wyckoffs']
+            equivalent_atoms = analyzer.get_symmetry_dataset()['equivalent_atoms']
             
-            # 获取元素符号
-            element_str = site.species_string
-            
-            atom = {
-                'element': element_str,  # 元素符号
-                'position': site.coords.tolist(),  # 笛卡尔坐标
-                'frac_coords': site.frac_coords.tolist(),  # 分数坐标
-                'wyckoff': wyckoff,  # Wyckoff位置
-                'properties': {
-                    'label': element_str,  # 原子标签（用于显示）
-                    'radius': get_atom_radius(element_str)  # 原子半径（用于3D渲染）
+            for i, site in enumerate(conventional_structure.sites):
+                # 获取Wyckoff位置
+                wyckoff = wyckoff_sites[equivalent_atoms[i]] if i < len(equivalent_atoms) else "?"
+                
+                # 获取元素符号
+                element_str = site.species_string
+                
+                atom = {
+                    'element': element_str,  # 元素符号
+                    'position': site.coords.tolist(),  # 笛卡尔坐标
+                    'frac_coords': site.frac_coords.tolist(),  # 分数坐标
+                    'wyckoff': wyckoff,  # Wyckoff位置
+                    'properties': {
+                        'label': element_str,  # 原子标签（用于显示）
+                        'radius': get_atom_radius(element_str)  # 原子半径（用于3D渲染）
+                    }
                 }
-            }
-            atoms.append(atom)
+                atoms.append(atom)
+        except Exception as e:
+            current_app.logger.warning(f"Error getting Wyckoff positions: {str(e)}, proceeding without them")
+            # 如果无法获取Wyckoff位置，则简化处理
+            for site in conventional_structure.sites:
+                element_str = site.species_string
+                
+                atom = {
+                    'element': element_str,
+                    'position': site.coords.tolist(),
+                    'frac_coords': site.frac_coords.tolist(),
+                    'wyckoff': "?",
+                    'properties': {
+                        'label': element_str,
+                        'radius': get_atom_radius(element_str)
+                    }
+                }
+                atoms.append(atom)
         
         # 提取可能的氧化态
         possible_oxidation_states = {}
@@ -283,9 +334,18 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
             'dimensionality': '3D',  # 默认为3D
             'possible_oxidation_states': possible_oxidation_states,  # 可能的氧化态
             'id': material_id,  # 添加材料ID便于前端引用
-            'chemical_formula_structural': chemical_name  # 添加原始的结构化化学式
+            'chemical_formula_structural': chemical_name,  # 添加原始的结构化化学式
+            'structure_file_path': filename  # 添加结构文件路径，便于调试
         }
         
+        # 添加材料ID到结构数据中
+        if material_id:
+            structure_data['id'] = material_id
+            
+        # 添加结构文件路径，便于调试
+        structure_data['structure_file_path'] = filename
+        
+        current_app.logger.info(f"Successfully parsed CIF data for {chemical_name}")
         # 返回JSON字符串
         return json.dumps(structure_data)
     
@@ -293,7 +353,7 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
         # 记录错误并返回错误JSON
         error_msg = f"Error parsing CIF file {filename}: {str(e)}"
         current_app.logger.error(error_msg)
-        return json.dumps({"error": error_msg})
+        return json.dumps({"error": error_msg, "details": str(e)})
 
 
 def get_atom_radius(element):
