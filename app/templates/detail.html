@@ -43,7 +43,7 @@
             </a>
             
             <!-- 删除材料按钮：发送删除请求并要求确认 -->
-            <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
+        <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
                type="submit" onclick="return confirm('Delete permanently?')" class="nav-link">
                 <i class="fas fa-trash"></i> Del
             </a>                    
@@ -57,7 +57,7 @@
         
         <!-- 搜索返回：仅当从搜索结果页面进入时显示 -->
         {% if request.referrer and 'q=' in request.referrer %}
-            <a href="{{ request.referrer }}" class="nav-link back-link">
+        <a href="{{ request.referrer }}" class="nav-link back-link">
                 <i class="fas fa-search"></i> Back to Search
             </a>
         {% endif %}
@@ -172,13 +172,13 @@
         padding: 0 15px; /* 左右内边距保持15px */
         height: 40px; /* 减小高度为40px，与其他链接区分 */
         margin-left: 10px; /* 左侧外边距10px，与其他链接保持间距 */
-    }
+        }
     
     /* 返回链接悬停效果 */
     .nav-link.back-link:hover {
         background-color: #e2e8f0; /* 悬停时背景色变深，提供视觉反馈 */
     }
-
+    
     /* ===== 内容区域布局样式 ===== */
     
     /* 内容区块样式 - 每个主要内容部分（如结构、晶体数据等）的容器 */
@@ -201,12 +201,12 @@
     /* 窄列样式 - 用于辅助内容展示（占40%宽度） */
     .column-40 {
         flex: 4; /* 在弹性分配中占4份，实际效果约为40%宽度 */
-    }
+        }
 
     /* ===== 卡片组件样式 ===== */
     
     /* 详情卡片 - 包含标题和内容的基本信息展示组件 */
-    .detail-card {
+        .detail-card {
         background: #fff; /* 纯白色背景，提供干净的视觉效果 */
         border-radius: 12px; /* 圆角边框，增加现代感 */
         box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; /* 轻微阴影，增加层次感 */
@@ -214,15 +214,15 @@
         transition: all 0.3s ease; /* 所有属性变化添加平滑过渡 */
         border: 1px solid #e5e7eb; /* 浅灰色边框，增强边界感 */
         overflow: hidden; /* 隐藏超出边界的内容，保持整洁 */
-    }
+        }
 
     /* 卡片悬停效果 - 增强用户交互反馈 */
-    .detail-card:hover {
+        .detail-card:hover {
         box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 24px; /* 悬停时增强阴影效果，提高视觉突出度 */
-    }
+        }
 
     /* 卡片头部 - 包含标题和折叠控制按钮 */
-    .card-header {
+        .card-header {
         display: flex; /* 弹性布局，便于排列标题和控制按钮 */
         align-items: center; /* 子元素垂直居中 */
         justify-content: space-between; /* 标题靠左，按钮靠右 */
@@ -230,15 +230,15 @@
         border-bottom: 1px solid #e5e7eb; /* 底部边框，与卡片内容区域分隔 */
         padding: 16px 20px; /* 上下内边距16px，左右内边距20px，确保足够的空间 */
         cursor: pointer; /* 鼠标指针变为手型，提示可点击 */
-    }
+        }
 
     /* 卡片标题样式 */
-    .card-header h3 {
+        .card-header h3 {
         margin: 0; /* 移除默认外边距 */
         color: #1e293b; /* 深蓝灰色文本，提供良好对比度 */
         font-size: 1.3rem; /* 字体大小适中，突出重要性但不过分夸张 */
         font-weight: 600; /* 字体加粗，增强可读性 */
-    }
+        }
     
     /* 卡片折叠/展开图标 */
     .card-header .toggle-icon {
@@ -249,10 +249,10 @@
     /* 折叠状态下的图标旋转效果 */
     .card-header.collapsed .toggle-icon {
         transform: rotate(-90deg); /* 图标旋转-90度，提供视觉状态指示 */
-    }
+        }
 
     /* 卡片内容区域 */
-    .card-content {
+        .card-content {
         padding: 20px; /* 四周内边距20px，提供内容呼吸空间 */
         transition: max-height 0.3s ease, opacity 0.3s ease; /* 高度和透明度变化添加平滑过渡 */
         max-height: 2000px; /* 展开状态下的最大高度，足够容纳大多数内容 */
@@ -265,124 +265,124 @@
         max-height: 0; /* 高度为0，内容完全隐藏 */
         padding: 0 20px; /* 上下内边距为0，左右保持20px，防止内容突然变化 */
         opacity: 0; /* 完全透明，内容不可见 */
-    }
+        }
 
-    .card-content ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
+        .card-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
 
-    .card-content li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #e5e7eb;
-    }
+        .card-content li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-    .card-content li:last-child {
-        border-bottom: none;
-    }
+        .card-content li:last-child {
+            border-bottom: none;
+        }
 
-    .property-label {
-        color: #64748b;
-        font-weight: 500;
+        .property-label {
+            color: #64748b;
+            font-weight: 500;
         font-size: 1.05rem;
-    }
+        }
 
-    .property-value {
-        color: #0047AB;
-        font-weight: 600;
+        .property-value {
+            color: #0047AB;
+            font-weight: 600;
         padding: 6px 14px;
-        background: #F5F8FF;
-        border-radius: 6px;
+            background: #F5F8FF;
+            border-radius: 6px;
         font-size: 1.05rem;
-    }
+        }
 
-/* 原子坐标表格样式 */
-.atom-table {
-    width: 100%;
-    border-collapse: collapse;
+    /* 原子坐标表格样式 */
+    .atom-table {
+        width: 100%;
+        border-collapse: collapse;
     font-size: 1.05rem;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-}
-
-.atom-table th {
-    background-color: #f1f5f9;
-    color: #334155;
-    font-weight: 600;
-    text-align: center;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    .atom-table th {
+        background-color: #f1f5f9;
+        color: #334155;
+        font-weight: 600;
+        text-align: center;
     padding: 12px 10px;
-    border-bottom: 2px solid #e5e7eb;
-    position: sticky;
-    top: 0;
-    z-index: 1;
+        border-bottom: 2px solid #e5e7eb;
+        position: sticky;
+        top: 0;
+        z-index: 1;
     font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.atom-table td {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .atom-table td {
     padding: 12px 10px;
-    text-align: center;
-    border-bottom: 1px solid #e5e7eb;
-    transition: background-color 0.2s ease;
-}
-
-.atom-table tbody tr:nth-child(odd) {
-    background-color: #f8fafc;
-}
-
-.atom-table tbody tr:hover {
-    background-color: #EFF6FF;
-}
-
-.atom-coords-container {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    margin-top: 12px;
-    scrollbar-width: thin;
-    scrollbar-color: #94a3b8 #f1f5f9;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.atom-coords-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.atom-coords-container::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 6px;
-}
-
-.atom-coords-container::-webkit-scrollbar-thumb {
-    background-color: #94a3b8;
-    border-radius: 6px;
-    border: 2px solid #f1f5f9;
-}
+        text-align: center;
+        border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s ease;
+    }
+    
+    .atom-table tbody tr:nth-child(odd) {
+        background-color: #f8fafc;
+    }
+    
+    .atom-table tbody tr:hover {
+        background-color: #EFF6FF;
+    }
+    
+    .atom-coords-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        margin-top: 12px;
+        scrollbar-width: thin;
+        scrollbar-color: #94a3b8 #f1f5f9;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .atom-coords-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .atom-coords-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 6px;
+    }
+    
+    .atom-coords-container::-webkit-scrollbar-thumb {
+        background-color: #94a3b8;
+        border-radius: 6px;
+        border: 2px solid #f1f5f9;
+    }
 
 .atom-coords-container::-webkit-scrollbar-thumb:hover {
     background-color: #0047AB;
 }
-
-.atom-info {
+    
+    .atom-info {
     margin-bottom: 15px;
-    color: #475569;
+        color: #475569;
     font-size: 1.05rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.atom-info p {
-    margin: 0;
-    line-height: 1.5;
-}
-
-.coordinates-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .atom-info p {
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .coordinates-toggle {
     display: flex;
     margin-bottom: 20px;
     justify-content: flex-end;
@@ -447,161 +447,161 @@
 
 .coords-toggle-btn:hover::before {
     transform: translateX(100%);
-}
-
-.toggle-label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-size: 0.85rem;
-    color: #64748b;
-    transition: color 0.2s ease;
-}
-
-.toggle-label:hover {
-    color: #0047AB;
-}
-
-.toggle-label input {
-    margin-right: 6px;
-}
-
-.atom-element {
-    font-weight: 600;
-    color: #0047AB;
+    }
+    
+    .toggle-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 0.85rem;
+        color: #64748b;
+        transition: color 0.2s ease;
+    }
+    
+    .toggle-label:hover {
+        color: #0047AB;
+    }
+    
+    .toggle-label input {
+        margin-right: 6px;
+    }
+    
+    .atom-element {
+        font-weight: 600;
+        color: #0047AB;
     font-size: 1.05rem;
-}
-
-.atom-coords {
-    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    letter-spacing: 0.5px;
-    color: #334155;
+    }
+    
+    .atom-coords {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        letter-spacing: 0.5px;
+        color: #334155;
     font-size: 1.05rem;
-}
-
+    }
+    
 .atom-total {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #1e293b;
-}
-
-.atom-composition {
-    font-style: italic;
-    color: #64748b;
+        color: #1e293b;
+    }
+    
+    .atom-composition {
+        font-style: italic;
+        color: #64748b;
     font-size: 1rem;
-}
-
-/* 3D结构查看器样式 */
-.viewer-container {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: rgba(17, 12, 46, 0.1) 0px 8px 24px;
-    border: 1px solid #e5e7eb;
-    overflow: hidden;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-}
-
-.viewer-container:hover {
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 24px;
-}
-
-.viewer-content {
-    padding: 0 20px 20px;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-    max-height: 2000px;
-    opacity: 1;
-    overflow: hidden;
-}
-
-.viewer-content.collapsed {
-    max-height: 0;
-    padding: 0 20px;
-    opacity: 0;
-}
-
-.crystal-viewer {
-    width: 100%;
-    height: 625px; /* 增加25%的高度 */
-    border-radius: 8px;
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-/* 确保3D查看器控件不会覆盖导航栏 */
-.crystal-viewer canvas, 
-.crystal-viewer div {
-    z-index: 10 !important; /* 强制降低z-index */
-}
-
-/* 能带结构图样式 */
-#bandStructure, #scStructure {
-    width: 100%;
-    flex-grow: 1; /* 让图表容器填充剩余空间 */
-    min-height: 625px; /* 增加25%的高度 */
-    border-radius: 8px;
-    background: #f8fafc;
-    border: 2px solid #e2e8f0;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-/* 共享交互效果 */
-.crystal-viewer:hover, #bandStructure:hover, #scStructure:hover {
-    border-color: #0047AB;
-    box-shadow: rgba(0, 71, 171, 0.15) 0px 0px 0px 4px;
-}
-
-/* 响应式调整 */
-@media (max-width: 1200px) {
-    .two-column-layout {
-        flex-direction: column;
     }
     
-    .column-60, .column-40 {
-        flex: 1;
+    /* 3D结构查看器样式 */
+    .viewer-container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: rgba(17, 12, 46, 0.1) 0px 8px 24px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .viewer-container:hover {
+        box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 24px;
+    }
+
+    .viewer-content {
+        padding: 0 20px 20px;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+        max-height: 2000px;
+        opacity: 1;
+        overflow: hidden;
+    }
+    
+    .viewer-content.collapsed {
+        max-height: 0;
+        padding: 0 20px;
+        opacity: 0;
+    }
+
+    .crystal-viewer {
         width: 100%;
+        height: 625px; /* 增加25%的高度 */
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
     }
-    
-    .crystal-viewer, #bandStructure {
-        height: 500px; /* 同样增加25%的高度 */
-    }
-}
 
-@media (max-width: 768px) {
-    .material-detail-container {
-        padding: 16px;
+    /* 确保3D查看器控件不会覆盖导航栏 */
+    .crystal-viewer canvas, 
+    .crystal-viewer div {
+        z-index: 10 !important; /* 强制降低z-index */
+    }
+    
+    /* 能带结构图样式 */
+    #bandStructure, #scStructure {
+        width: 100%;
+        flex-grow: 1; /* 让图表容器填充剩余空间 */
+        min-height: 625px; /* 增加25%的高度 */
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    /* 共享交互效果 */
+    .crystal-viewer:hover, #bandStructure:hover, #scStructure:hover {
+        border-color: #0047AB;
+        box-shadow: rgba(0, 71, 171, 0.15) 0px 0px 0px 4px;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 1200px) {
+        .two-column-layout {
+            flex-direction: column;
+        }
+        
+        .column-60, .column-40 {
+            flex: 1;
+            width: 100%;
+        }
+        
+        .crystal-viewer, #bandStructure {
+            height: 500px; /* 同样增加25%的高度 */
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .material-detail-container {
+            padding: 16px;
         margin-top: 200px; /* 在小屏幕上增加更多的顶部间距以适应新导航栏 */
-    }
-    
-    .top-nav {
-        height: auto;
-        flex-direction: column;
+        }
+        
+        .top-nav {
+            height: auto;
+            flex-direction: column;
         padding: 15px;
-        top: 56px; /* 在小屏幕上，主导航栏通常更窄 */
-    }
-    
+            top: 56px; /* 在小屏幕上，主导航栏通常更窄 */
+        }
+        
     .material-title {
         font-size: 1.8em;
         margin: 0 0 15px 0;
         text-align: center;
         width: 100%;
-    }
-    
-    .nav-links {
-        flex-wrap: wrap;
-        justify-content: center;
+        }
+        
+        .nav-links {
+            flex-wrap: wrap;
+            justify-content: center;
         margin: 0;
         gap: 8px;
         width: 100%;
-    }
-    
-    .nav-link {
-        height: 40px;
+        }
+        
+        .nav-link {
+            height: 40px;
         padding: 0 12px;
         font-size: 1rem;
         border-radius: 6px;
@@ -618,96 +618,96 @@
         left: 10px;
         right: 10px;
         border-radius: 1.5px;
+        }
+
+        .crystal-viewer, #bandStructure {
+            height: 375px; /* 同样增加25%的高度 */
+        }
     }
 
-    .crystal-viewer, #bandStructure {
-        height: 375px; /* 同样增加25%的高度 */
+    /* 为iPad和其他平板设备添加特殊处理 */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .material-detail-container {
+            margin-top: 130px;
+        }
+        
+        .top-nav {
+            top: 60px;
+        }
     }
-}
 
-/* 为iPad和其他平板设备添加特殊处理 */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .material-detail-container {
-        margin-top: 130px;
+    /* 卡片头部操作按钮样式 */
+    .card-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
     }
-    
-    .top-nav {
-        top: 60px;
+
+    .download-btn {
+        color: #0047AB;
+        background-color: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 71, 171, 0.15);
+        position: relative;
+        overflow: hidden;
+        margin-left: 10px;
+        vertical-align: middle;
     }
-}
 
-/* 卡片头部操作按钮样式 */
-.card-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+    .download-btn i {
+        font-size: 1.2rem;
+        transition: transform 0.3s ease;
+    }
 
-.download-btn {
-    color: #0047AB;
-    background-color: #EFF6FF;
-    border: 1px solid #BFDBFE;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    box-shadow: 0 2px 5px rgba(0, 71, 171, 0.15);
-    position: relative;
-    overflow: hidden;
-    margin-left: 10px;
-    vertical-align: middle;
-}
+    .download-btn:hover {
+        color: white;
+        background-color: #0047AB;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 71, 171, 0.3);
+    }
 
-.download-btn i {
-    font-size: 1.2rem;
-    transition: transform 0.3s ease;
-}
+    .download-btn:hover i {
+        transform: scale(1.1);
+    }
 
-.download-btn:hover {
-    color: white;
-    background-color: #0047AB;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 71, 171, 0.3);
-}
+    .download-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 3px rgba(0, 71, 171, 0.2);
+    }
 
-.download-btn:hover i {
-    transform: scale(1.1);
-}
-
-.download-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 3px rgba(0, 71, 171, 0.2);
-}
-
-/* 8:2 布局专用样式 */
-.sc-layout {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 24px;
-}
-
-.column-80 {
-    flex: 8;
-}
-
-.column-20 {
-    flex: 2;
-}
-
-/* 响应式调整 */
-@media (max-width: 1200px) {
+    /* 8:2 布局专用样式 */
     .sc-layout {
-        flex-direction: column;
+        display: flex;
+        gap: 24px;
+        margin-bottom: 24px;
     }
-    
-    .column-80, .column-20 {
-        flex: 1;
-        width: 100%;
+
+    .column-80 {
+        flex: 8;
     }
-}
+
+    .column-20 {
+        flex: 2;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 1200px) {
+        .sc-layout {
+            flex-direction: column;
+        }
+        
+        .column-80, .column-20 {
+            flex: 1;
+            width: 100%;
+        }
+    }
 
 /* 确保全局比例缩放时界面元素也相应调整 */
 @media (min-resolution: 120dpi) {
@@ -1161,11 +1161,11 @@
             <div class="column-60">
                 <div class="viewer-container">
                     <div class="card-header">
-                <h3>3D Structure</h3>
+        <h3>3D Structure</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="viewer-content">
-                <div class="crystal-viewer" id="crystalViewer"></div>
+        <div class="crystal-viewer" id="crystalViewer"></div>
                     </div>
                 </div>
             </div>
@@ -1241,15 +1241,15 @@
             <div class="column-60">
                 <div class="viewer-container">
                     <div class="card-header collapsed">
-                <h3>Band Structure
-                    <a href="{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/band/band.dat') }}" download class="download-btn" title="Download band data">
-                        <i class="fas fa-download"></i>
-                    </a>
-                </h3>
+        <h3>Band Structure
+            <a href="{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/band/band.dat') }}" download class="download-btn" title="Download band data">
+                <i class="fas fa-download"></i>
+            </a>
+        </h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="viewer-content card-content collapsed">
-                <div id="bandStructure"></div>
+        <div id="bandStructure"></div>
                     </div>
                 </div>
             </div>
@@ -1386,7 +1386,7 @@
                                 <li><span class="zero-indicator">●</span> Zero</li>
                                 <li><span class="same-indicator">●</span> Same</li>
                                 <li><span class="opposite-indicator">●</span> Opposite</li>
-                            </ul>
+                        </ul>
                         </div>
                         
                         <div id="relations-table-container">
@@ -1451,7 +1451,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化3D晶体结构查看器
     // 'crystalViewer'是DOM容器ID，用于放置3D模型
-    CrystalViewer.init('crystalViewer'); 
+    CrystalViewer.init('crystalViewer');
     // 加载特定材料ID的晶体结构数据
     CrystalViewer.load("{{ material.id }}");
     

@@ -762,4 +762,4 @@ function parseAndPlotSCData(dataText, container) {
             relationsTableContainer.innerHTML = relationsTableHtml;
         }
     }, 500);
-}
+} 

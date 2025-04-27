@@ -439,7 +439,7 @@ def get_structure_by_params():
             
             # 解析JSON结果
             result = json.loads(structure_data)
-            
+        
             # 检查结果中是否有错误
             if 'error' in result:
                 return jsonify(result), 404
