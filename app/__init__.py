@@ -159,6 +159,10 @@ def create_app():
         # 注册API蓝图（用于提供JSON接口）
         from .api import bp as api_bp
         app.register_blueprint(api_bp)  # 注册API路由
+        
+        # 注册内容蓝图（用于文档和内容展示）
+        from .articles import articles as articles_bp
+        app.register_blueprint(articles_bp)  # 注册内容路由
 
         # 初始化格式化ID
         init_formatted_ids()

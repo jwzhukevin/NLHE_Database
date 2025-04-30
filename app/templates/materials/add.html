@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- ====================== Main Container ====================== -->
+<div class="full-form-container">
+    <style>
+    /* Main Container */
+    .full-form-container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 25px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: var(--card-shadow);
+    }
+    </style>
+
+    <span class="title2">Add New Material</span>
+    <form method="post" class="material-form" enctype="multipart/form-data">
+        <!-- Core Properties -->
+        <div class="form-section">
+            <h3>Core Properties</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Material Name (From CIF)</label>
+                    <input type="text" name="name" readonly placeholder="Will be extracted from CIF file">
+                    <small class="help-text">Name will be automatically extracted from the CIF file</small>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status">
+                        <option value="done">Done</option>
+                        <option value="unconverged">Unconverged</option>
+                        <option value="error">Error</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Structure File (CIF) <span class="required">*</span></label>
+                    <input type="file" name="structure_file" accept=".cif" required class="custom-file-input">
+                    <small class="help-text">Required. CIF structure file for crystal visualization</small>
+                    <span class="file-name">No file selected</span>
+                </div>
+                <div class="form-group">
+                    <label>Band Structure File (DAT)</label>
+                    <input type="file" name="band_file" accept=".json,.dat" class="custom-file-input">
+                    <small class="help-text">Optional. For band structure visualization</small>
+                    <span class="file-name">No file selected</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Files Upload Area -->
+        <div class="form-section">
+            <h3>Additional Files</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Material Properties (JSON)</label>
+                    <input type="file" name="properties_json" accept=".json" class="custom-file-input">
+                    <small class="help-text">Optional. JSON file with material properties</small>
+                    <span class="file-name">No file selected</span>
+                </div>
+                <div class="form-group">
+                    <label>SC Structure File (DAT)</label>
+                    <input type="file" name="sc_structure_file" accept=".dat" class="custom-file-input">
+                    <small class="help-text">Optional. DAT file for SC structure visualization</small>
+                    <span class="file-name">No file selected</span>
+                </div>
+            </div>
+        </div>
+        <style>
+        /* Form Section Dividers */
+        .form-section {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Section Title Style */
+        .form-section h3 {
+            color: #2c3e50;          /* Deep blue-gray title (contrast ratio 7.3:1) */
+            font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* Relative units for different devices */
+            margin-bottom: 20px;     /* Space between title and content */
+            padding-bottom: 8px;     /* Space for underline */
+            border-bottom: 2px solid #3498db; /* Brand blue underline for emphasis */
+        }
+
+        /* Responsive Grid Layout */
+        .form-grid {
+            display: grid;  /* Enable CSS Grid layout system */
+            /* Auto columns: min 80px per column, wrapping as needed (auto-fit+minmax combination) */
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 32px;               /* Grid gap (recommended ≥20px) */
+        }
+
+        /* Form Item Group */
+        .form-group {
+            margin-bottom: 10px;    /* Vertical spacing for breathing room */
+        }
+
+        /* Label Style */
+        .form-group label {
+            display: block;          /* Block element for vertical flow layout */
+            margin-bottom: 8px;      /* Space between label and input */
+            font-weight: 600;       /* Medium bold for label hierarchy */
+            color: #34495e;          /* Deep blue-gray (contrast ratio 7:1) */
+            font-size: clamp(0.6rem, 1.0vw, 2.0rem);      /* Slightly smaller than regular text */
+        }
+
+        /* Common Input Control Styles */
+        .form-group input,
+        .form-group select {
+            width: 100%;            /* Fill parent container width */
+            padding: 10px;          /* Comfortable click area (recommended 10-12px) */
+            border: 1px solid #bdc3c7; /* Neutral gray border (contrast 3.2:1) */
+            border-radius: 5px;     /* Match overall rounded style */
+            font-size: clamp(0.6rem, 1.0vw, 2.0rem);        /* Standard font size */
+            transition: border-color 0.3s; /* Border color transition animation */
+        }
+
+        /* Input Focus State */
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #3498db;  /* Brand blue to emphasize active state */
+            outline: none;           /* Remove default outline */
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2); /* Glow effect for visibility */
+        }
+
+        /* Number Input Optimization */
+        .form-group input[type="number"] {
+            -moz-appearance: textfield; /* Firefox: hide number spinner buttons */
+        }
+
+        /* Hide spinner buttons for number inputs in Webkit browsers */
+        .form-group input[type="number"]::-webkit-outer-spin-button,
+        .form-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Required Field Marker */
+        .required {
+            color: #e74c3c;         /* Warning red for required fields */
+            font-size: 0.8em;       /* Small size to avoid interfering with main text */
+            vertical-align: super;  /* Superscript alignment */
+        }
+
+        /* Placeholder Style */
+        input::placeholder {
+            color: #95a5a6;         /* Light gray to reduce placeholder prominence */
+            font-size: clamp(0.6rem, 0.8vw, 2.0rem);       /* Slightly smaller than regular text */
+        }
+        
+        /* Custom File Input Styling */
+        input[type="file"] {
+            position: relative;
+        }
+        
+        /* Change default file input language to English */
+        input[type="file"]::file-selector-button {
+            content: "Browse";
+            padding: 0.375rem 0.75rem;
+            margin-right: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #d1d5db;
+            background-color: #f3f4f6;
+            color: #374151;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+        
+        input[type="file"]::file-selector-button:hover {
+            background-color: #e5e7eb;
+        }
+        
+        /* For Firefox */
+        @-moz-document url-prefix() {
+            input[type="file"] {
+                padding-left: 100px;
+            }
+            
+            input[type="file"]::before {
+                content: "Browse";
+                background-color: #f3f4f6;
+                color: #374151;
+                padding: 0.375rem 0.75rem;
+                border-radius: 0.25rem;
+                border: 1px solid #d1d5db;
+                position: absolute;
+                left: 0;
+                pointer-events: none;
+            }
+        }
+        
+        /* File Name Display */
+        .file-name {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #64748b;
+            font-style: italic;
+        }
+        </style>
+
+        <!-- Energy Properties -->
+        <div class="form-section">
+            <h3>Energy Properties (eV)</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Total Energy</label>
+                    <input type="number" step="0.000001" name="total_energy">
+                </div>
+                <div class="form-group">
+                    <label>Formation Energy</label>
+                    <input type="number" step="0.000001" name="formation_energy">
+                </div>
+                <div class="form-group">
+                    <label>Fermi Level (efermi)</label>
+                    <input type="number" step="0.00000001" name="efermi">
+                </div>
+            </div>
+        </div>
+
+        <!-- Surface Properties -->
+        <div class="form-section">
+            <h3>Surface Properties</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Vacuum Level</label>
+                    <input type="number" step="0.0001" name="vacuum_level">
+                </div>
+                <div class="form-group">
+                    <label>Work Function</label>
+                    <input type="number" step="0.0001" name="workfunction">
+                </div>
+                <div class="form-group">
+                    <label>Metal Type</label>
+                    <select name="metal_type">
+                        <option value="">Select Type</option>
+                        <option value="metal">Metal</option>
+                        <option value="semiconductor">Semiconductor</option>
+                        <option value="insulator">Insulator</option>
+                        <option value="semimetallic">Semimetallic</option>
+                        <option value="Unknown">Unknown</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Band Properties -->
+        <div class="form-section">
+            <h3>Band Structure</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Band Gap (gap)</label>
+                    <input type="number" step="0.0001" name="gap">
+                </div>
+                <div class="form-group">
+                    <label>VBM Energy</label>
+                    <input type="number" step="0.0001" name="vbm_energy">
+                </div>
+                <div class="form-group">
+                    <label>CBM Energy</label>
+                    <input type="number" step="0.0001" name="cbm_energy">
+                </div>
+            </div>
+        </div>
+
+        <!-- Coordinate Properties -->
+        <div class="form-section">
+            <h3>Coordinates</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>VBM Coordinates</label>
+                    <input type="text" name="vbm_coordi" 
+                           placeholder="Format example: ['0.333','0.333','0.000']">
+                </div>
+                <div class="form-group">
+                    <label>CBM Coordinates</label>
+                    <input type="text" name="cbm_coordi"
+                           placeholder="Format example: ['0.000','0.000','0.000']">
+                </div>
+            </div>
+        </div>
+
+        <!-- Index Properties -->
+        <div class="form-section">
+            <h3>Band Indexes</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>VBM Index</label>
+                    <input type="number" name="vbm_index">
+                </div>
+                <div class="form-group">
+                    <label>CBM Index</label>
+                    <input type="number" name="cbm_index">
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Action Buttons -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save" 
+                    onclick="return confirm('Confirm Save?')">
+                <i class="fas fa-save"></i> Create Material
+            </button>
+            <a href="{{ url_for('views.index') }}" 
+               class="btn btn-cancel">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+        
+        <!-- Data Synchronization Information -->
+        <div class="sync-info">
+            <h4><i class="fas fa-sync"></i> Data Synchronization Feature</h4>
+            <p>After submitting the material, the system will automatically create the following directory structure:</p>
+            <pre class="directory-structure">
+static/materials/IMR-XXXXXXXX/
+  ├── material.json      # Material properties JSON file (if uploaded, the uploaded file will be used)
+  ├── structure/         # Structure files directory
+  │   └── structure.cif  # CIF structure file (required)
+  ├── band/              # Band data directory
+  │   └── band.dat       # Band data file (optional)
+  └── bcd/               # SC structure directory
+      └── sc.dat         # SC structure file (optional)
+            </pre>
+            <p>All uploaded files will be automatically organized into appropriate locations for further processing and analysis.</p>
+        </div>
+        <style>
+        /* Button Action Area */
+        .form-actions {
+            margin-top: 10px;       /* Space from last form item */
+            display: flex;          /* Flex layout for buttons */
+            gap: 15px;              /* Button spacing (recommended ≥8px) */
+            justify-content: flex-end; /* Right-align buttons */
+        }
+
+        /* Common Button Styles */
+        .btn-save,
+        .btn-cancel {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+        }
+
+        /* Save Button */
+        .btn-save {
+            background: #27ae60;    /* Brand green for confirmation actions */
+            color: white;           /* High contrast text */
+            padding: 12px 25px;     /* Comfortable click area (recommended min 44x44px hot zone) */
+            border: none;          /* Remove default border */
+            border-radius: 5px;    /* Match overall rounded style */
+            cursor: pointer;       /* Hand pointer to indicate clickable */
+            background-color: var(--primary-color);
+        }
+
+        .btn-save:hover {
+            background-color: var(--button-hover);
+            opacity: 0.9;          /* Unified hover transparency effect */
+        }
+
+        /* Cancel Button */
+        .btn-cancel {
+            background: #95a5a6;    /* Neutral gray for secondary actions */
+            color: white;          
+            padding: 12px 25px;    
+            border-radius: 5px;    
+            text-decoration: none; /* Remove hyperlink underline */
+            background-color: #e53e3e;
+            margin-left: 1rem;
+        }
+
+        .btn-cancel:hover {
+            background-color: #c53030;
+            opacity: 0.9;          /* Unified hover transparency effect */
+        }
+        
+        /* Data Synchronization Information Style */
+        .sync-info {
+            margin-top: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: #f8fafc;
+            border-left: 4px solid #3498db;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .sync-info h4 {
+            color: #2c3e50;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .directory-structure {
+            font-family: monospace;
+            background-color: #f1f5f9;
+            padding: 1rem;
+            border-radius: 4px;
+            white-space: pre;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            color: #334155;
+        }
+        </style>
+    </form>
+</div>
+
+<!-- File Input Event Handler -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all file inputs with the custom class
+        const fileInputs = document.querySelectorAll('.custom-file-input');
+        
+        // Add event listener to each file input
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function(e) {
+                // Get the file name display element (the span that follows this input)
+                const fileNameDisplay = this.nextElementSibling.nextElementSibling;
+                
+                // Update the text based on whether a file is selected
+                if (this.files.length > 0) {
+                    fileNameDisplay.textContent = this.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = 'No file selected';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

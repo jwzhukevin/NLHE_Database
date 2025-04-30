@@ -1,187 +1,187 @@
 # view.py:
-# 视图函数模块，处理所有用户界面相关的路由和请求
-# 包含首页、材料详情页、添加/编辑材料、用户认证等路由
+# View functions module, handling all user interface related routes and requests
+# Includes homepage, material details page, add/edit materials, user authentication, etc.
 
-# 导入所需模块
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app  # Flask 核心模块
-from flask_login import login_user, logout_user, login_required, current_user  # 用户认证模块
-from sqlalchemy import and_, or_  # 数据库查询条件构造器
-from .models import User, Material, BlockedIP  # 自定义数据模型
-from . import db  # 数据库实例
-import datetime  # 处理日期和时间
-import functools  # 用于装饰器
-from .material_importer import extract_chemical_formula_from_cif  # 导入材料数据模块
+# Import required modules
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app  # Flask core modules
+from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
+from sqlalchemy import and_, or_  # Database query condition builders
+from .models import User, Material, BlockedIP  # Custom data models
+from . import db  # Database instance
+import datetime  # Processing dates and times
+import functools  # For decorators
+from .material_importer import extract_chemical_formula_from_cif  # Material data import module
 import os
 
-# 创建名为'views'的蓝图，用于模块化路由管理
+# Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
 
-# 注册模板过滤器
+# Register template filters
 @bp.app_template_filter('any')
 def any_filter(d):
-    """检查字典是否存在至少一个非空值（用于前端条件判断）
+    """Check if a dictionary has at least one non-empty value (for frontend conditional judgment)
     
-    参数:
-        d: 待检查的字典
+    Parameters:
+        d: Dictionary to check
     
-    返回: 
-        布尔值，表示字典是否有有效数据，用于判断是否显示重置搜索按钮等
+    Returns: 
+        Boolean value indicating whether the dictionary has valid data, used to determine whether to display the reset search button, etc.
     """
     return any(v for v in d.values() if v)
 
 @bp.app_template_filter('remove_key')
 def remove_key_filter(d, exclude_key):
-    """生成排除指定键的新字典（用于清理搜索参数）
+    """Generate a new dictionary excluding the specified key (for cleaning search parameters)
     
-    参数:
-        d: 原始字典
-        exclude_key: 需要排除的键
+    Parameters:
+        d: Original dictionary
+        exclude_key: Key to exclude
     
-    返回: 
-        处理后的新字典，用于构建去除某个过滤条件的URL
+    Returns: 
+        Processed new dictionary, used to build URLs that remove a certain filter condition
     """
     return {k: v for k, v in d.items() if k != exclude_key}
 
-# 首页路由（支持复杂搜索和分页）
+# Landing page route
 @bp.route('/')
 def landing():
-    """网站介绍页面 - 展示网站特性和功能概览"""
-    return render_template('landing.html')
+    """Website introduction page - displays website features and functionality overview"""
+    return render_template('main/landing.html')
 
 @bp.route('/database')
 def index():
-    """材料数据库页面 - 显示材料列表，支持搜索、筛选和分页
+    """Material database page - displays material list, supports search, filtering and pagination
     
-    支持的GET参数:
-        q: 搜索关键词
-        status: 材料状态筛选
-        metal_type: 金属类型筛选
-        formation_energy_min/max: 形成能范围筛选
-        fermi_level_min/max: 费米能级范围筛选
-        page: 当前页码
+    Supported GET parameters:
+        q: Search keywords
+        status: Material status filter
+        metal_type: Metal type filter
+        formation_energy_min/max: Formation energy range filter
+        fermi_level_min/max: Fermi level range filter
+        page: Current page number
     """
-    # 基础查询（获取所有材料记录）
+    # Basic query (get all material records)
     query = Material.query
     
-    # 获取所有搜索参数（使用字典存储便于统一处理）
+    # Get all search parameters (stored in dictionary for unified processing)
     search_params = {
-        'q': request.args.get('q', '').strip(),  # 文本搜索关键词
-        'status': request.args.get('status', '').strip(),  # 材料状态
-        'metal_type': request.args.get('metal_type', '').strip(),  # 金属类型
-        'formation_energy_min': request.args.get('formation_energy_min', '').strip(),  # 形成能最小值
-        'formation_energy_max': request.args.get('formation_energy_max', '').strip(),  # 形成能最大值
-        'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # 费米能级最小值
-        'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # 费米能级最大值
+        'q': request.args.get('q', '').strip(),  # Text search keywords
+        'status': request.args.get('status', '').strip(),  # Material status
+        'metal_type': request.args.get('metal_type', '').strip(),  # Metal type
+        'formation_energy_min': request.args.get('formation_energy_min', '').strip(),  # Formation energy minimum
+        'formation_energy_max': request.args.get('formation_energy_max', '').strip(),  # Formation energy maximum
+        'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # Fermi level minimum
+        'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # Fermi level maximum
     }
     
-    # 构建复合过滤条件（使用SQLAlchemy的逻辑运算符）
+    # Build compound filter conditions (using SQLAlchemy logical operators)
     filters = []
     
-    # 文本搜索（支持名称、VBM/CBM坐标的模糊查询）
+    # Text search (supports fuzzy query of name, VBM/CBM coordinates)
     if search_params['q']:
         filters.append(or_(
-            Material.name.ilike(f'%{search_params["q"]}%'),  # 名称模糊匹配（不区分大小写）
-            Material.vbm_coordi.ilike(f'%{search_params["q"]}%'),  # VBM坐标匹配
-            Material.cbm_coordi.ilike(f'%{search_params["q"]}%')  # CBM坐标匹配
+            Material.name.ilike(f'%{search_params["q"]}%'),  # Name fuzzy matching (case insensitive)
+            Material.vbm_coordi.ilike(f'%{search_params["q"]}%'),  # VBM coordinate matching
+            Material.cbm_coordi.ilike(f'%{search_params["q"]}%')  # CBM coordinate matching
         ))
     
-    # 精确匹配条件
+    # Exact match conditions
     if search_params['status']:
-        filters.append(Material.status == search_params['status'])  # 状态精确匹配
+        filters.append(Material.status == search_params['status'])  # Status exact match
     if search_params['metal_type']:
-        filters.append(Material.metal_type == search_params['metal_type'])  # 金属类型精确匹配
+        filters.append(Material.metal_type == search_params['metal_type'])  # Metal type exact match
     
-    # 数值范围过滤（包含异常处理，确保输入的是有效数值）
+    # Numeric range filtering (including exception handling to ensure valid numerical input)
     for param in ['formation_energy', 'fermi_level']:
         min_val = search_params[f'{param}_min']
         max_val = search_params[f'{param}_max']
         if min_val:
             try:
-                filters.append(getattr(Material, param) >= float(min_val))  # 最小值过滤
-            except ValueError:  # 处理非法数值输入
+                filters.append(getattr(Material, param) >= float(min_val))  # Minimum value filter
+            except ValueError:  # Handle invalid numerical input
                 pass
         if max_val:
             try:
-                filters.append(getattr(Material, param) <= float(max_val))  # 最大值过滤
+                filters.append(getattr(Material, param) <= float(max_val))  # Maximum value filter
             except ValueError:
                 pass
     
-    # 应用所有过滤条件（使用AND逻辑组合，即所有条件都必须满足）
+    # Apply all filter conditions (using AND logic combination, i.e., all conditions must be met)
     if filters:
         query = query.filter(and_(*filters))
     
-    # 分页配置（每页10条记录）
-    page = request.args.get('page', 1, type=int)  # 获取当前页码，默认第1页
-    per_page = 10  # 每页条目数
-    pagination = query.order_by(Material.name.asc()).paginate(  # 按名称升序排序
+    # Pagination configuration (10 records per page)
+    page = request.args.get('page', 1, type=int)  # Get current page number, default is page 1
+    per_page = 10  # Items per page
+    pagination = query.order_by(Material.name.asc()).paginate(  # Sort by name in ascending order
         page=page, 
         per_page=per_page, 
-        error_out=False  # 禁用无效页码错误，超出范围会返回空列表
+        error_out=False  # Disable invalid page number errors, out of range will return empty list
     )
     
-    # 渲染模板并传递分页对象和搜索参数
-    return render_template('index.html',
-                         materials=pagination.items,  # 当前页数据
-                         pagination=pagination,  # 分页对象（包含页码信息）
-                         search_params=search_params)  # 搜索参数（用于表单回显）
+    # Render template and pass pagination object and search parameters
+    return render_template('main/index.html',
+                         materials=pagination.items,  # Current page data
+                         pagination=pagination,  # Pagination object (including page number information)
+                         search_params=search_params)  # Search parameters (for form display)
 
-# 材料添加路由（需登录）
+# Material add route (login required)
 @bp.route('/add', methods=['GET', 'POST'])
-@login_required  # 登录保护装饰器，确保只有登录用户可以添加材料
+@login_required  # Login protection decorator, ensuring only logged-in users can add materials
 def add():
     """
-    添加新材料记录的页面和处理逻辑
+    Page and processing logic for adding new material records
     
-    GET请求: 显示添加材料表单
-    POST请求: 处理表单提交，添加新材料到数据库
+    GET request: Display add material form
+    POST request: Process form submission, add new material to database
     """
     if request.method == 'POST':
         try:
-            # 获取并处理上传的文件
+            # Get and process uploaded files
             structure_file = request.files.get('structure_file')
             band_file = request.files.get('band_file')
             properties_json = request.files.get('properties_json')
             sc_structure_file = request.files.get('sc_structure_file')
             
-            # 验证CIF文件是否有效
+            # Validate if the CIF file is valid
             if not structure_file or not structure_file.filename.endswith('.cif'):
-                flash('请上传有效的CIF文件！', 'error')
+                flash('Please upload a valid CIF file!', 'error')
                 return redirect(url_for('views.add'))
             
-            # 生成安全的文件名并保存结构文件
+            # Generate safe filenames and save structure files
             from werkzeug.utils import secure_filename
             import os
             from flask import current_app
             
-            # 先保存结构文件到临时位置用于提取化学式
+            # First save the structure file to a temporary location for extracting the chemical formula
             structure_filename = secure_filename(structure_file.filename)
             temp_structure_path = os.path.join(current_app.root_path, 'static/temp', structure_filename)
             os.makedirs(os.path.dirname(temp_structure_path), exist_ok=True)
             structure_file.save(temp_structure_path)
             
-            # 从CIF文件中提取化学式
+            # Extract chemical formula from CIF file
             chemical_name = extract_chemical_formula_from_cif(temp_structure_path)
             
-            # 验证是否成功提取到材料名称
+            # Verify if the material name was successfully extracted
             if not chemical_name:
-                flash('无法从CIF文件中提取材料名称，请检查文件格式', 'error')
+                flash('Unable to extract material name from CIF file, please check the file format', 'error')
                 return redirect(url_for('views.add'))
             
-            # 验证材料名称是否已存在
+            # Verify if the material name already exists
             if Material.query.filter_by(name=chemical_name).first():
-                flash(f'材料名称 "{chemical_name}" 已存在，请使用不同的CIF文件', 'error')
+                flash(f'Material name "{chemical_name}" already exists, please use a different CIF file', 'error')
                 return redirect(url_for('views.add'))
             
-            # 创建材料对象并添加到数据库，以获取ID
+            # Create material object and add to database to get ID
             material_data = {
-                'name': chemical_name,  # 使用CIF提取的化学式
-                'status': request.form.get('status'),  # 状态
-                'structure_file': structure_filename,  # 结构文件路径
+                'name': chemical_name,  # Use chemical formula extracted from CIF
+                'status': request.form.get('status'),  # Status
+                'structure_file': structure_filename,  # Structure file path
                 'properties_json': properties_json.filename if properties_json and properties_json.filename else None,
                 'sc_structure_file': sc_structure_file.filename if sc_structure_file and sc_structure_file.filename else None,
                 'total_energy': safe_float(request.form.get('total_energy')),
                 'formation_energy': safe_float(request.form.get('formation_energy')),
-                'fermi_level': safe_float(request.form.get('efermi')),
+                'fermi_level': safe_float(request.form.get('efermi')),  # Match form field name 'efermi'
                 'vacuum_level': safe_float(request.form.get('vacuum_level')),
                 'workfunction': safe_float(request.form.get('workfunction')),
                 'metal_type': request.form.get('metal_type'),
@@ -194,41 +194,41 @@ def add():
                 'cbm_index': safe_int(request.form.get('cbm_index'))
             }
 
-            # 创建Material对象并验证数据
+            # Create Material object and validate data
             material = Material(**material_data)
-            material.validate()  # 调用模型自定义验证方法，检查数据完整性
+            material.validate()  # Call model custom validation method to check data integrity
             
-            # 先添加到数据库以获取ID
+            # First add to database to get ID
             db.session.add(material)
-            db.session.flush()  # 获取ID但不提交事务
+            db.session.flush()  # Get ID but don't commit transaction
 
-            # 格式化ID (IMR-00000XXX)
+            # Format ID (IMR-00000XXX)
             formatted_id = f"IMR-{material.id:08d}"
             
-            # 创建材料专用文件夹结构
+            # Create material-specific folder structure
             material_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id)
             structure_dir = os.path.join(material_dir, 'structure')
             band_dir = os.path.join(material_dir, 'band')
             bcd_dir = os.path.join(material_dir, 'bcd')
             
-            # 创建所有目录
+            # Create all directories
             os.makedirs(material_dir, exist_ok=True)
             os.makedirs(structure_dir, exist_ok=True)
             os.makedirs(band_dir, exist_ok=True)
             os.makedirs(bcd_dir, exist_ok=True)
             
-            # 保存CIF文件到structure文件夹
+            # Save CIF file to structure folder
             structure_path = os.path.join(structure_dir, structure_filename)
             os.rename(temp_structure_path, structure_path)
             
-            # 处理JSON属性文件
+            # Process JSON properties file
             if properties_json and properties_json.filename:
                 properties_json_filename = secure_filename(properties_json.filename)
                 properties_json_path = os.path.join(material_dir, properties_json_filename)
                 properties_json.save(properties_json_path)
                 material.properties_json = properties_json_filename
             else:
-                # 创建包含必要字段的JSON文件，而不是空的JSON对象
+                # Create JSON file with necessary fields, not an empty JSON object
                 import json
                 json_data = {
                   "name": chemical_name,
@@ -253,54 +253,54 @@ def add():
                     json.dump(json_data, f, ensure_ascii=False, indent=2)
                 material.properties_json = 'material.json'
             
-            # 处理能带dat文件
+            # Process band dat file
             if band_file and band_file.filename.endswith('.dat'):
                 band_filename = secure_filename(band_file.filename)
                 band_path = os.path.join(band_dir, band_filename)
                 band_file.save(band_path)
             
-            # 处理SC结构dat文件
+            # Process SC structure dat file
             if sc_structure_file and sc_structure_file.filename.endswith('.dat'):
                 sc_filename = secure_filename(sc_structure_file.filename)
                 sc_path = os.path.join(bcd_dir, sc_filename)
                 sc_structure_file.save(sc_path)
             
-            # 同时保存到常规文件夹以保持向后兼容
+            # Also save to regular folder to maintain backward compatibility
             if band_file and band_file.filename:
                 band_path = os.path.join(current_app.root_path, 'static/band', secure_filename(band_file.filename))
                 os.makedirs(os.path.dirname(band_path), exist_ok=True)
-                # 创建副本而不是复制，防止二次存储消耗空间
+                # Create symlink instead of copying to prevent duplicate storage
                 try:
                     os.symlink(os.path.join(band_dir, secure_filename(band_file.filename)), band_path)
                 except:
                     import shutil
                     shutil.copy2(os.path.join(band_dir, secure_filename(band_file.filename)), band_path)
             
-            # 提交数据库事务
+            # Commit database transaction
             db.session.commit()
             
-            flash(f'材料添加成功。数据已同步到 {formatted_id} 文件夹。', 'success')
-            return redirect(url_for('views.index'))  # 重定向到首页
+            flash(f'Material added successfully. Data has been synchronized to the {formatted_id} folder.', 'success')
+            return redirect(url_for('views.index'))  # Redirect to homepage
 
-        except ValueError as e:  # 处理数据类型错误
-            flash(f'数据无效: {str(e)}', 'error')  # 显示详细错误消息
+        except ValueError as e:  # Handle data type errors
+            flash(f'Invalid data: {str(e)}', 'error')  # Display detailed error message
             return redirect(url_for('views.add'))
-        except Exception as e:  # 处理其他数据库错误
-            db.session.rollback()  # 回滚事务，放弃所有更改
-            flash(f'发生错误: {str(e)}', 'error')  # 显示一般错误消息
+        except Exception as e:  # Handle other database errors
+            db.session.rollback()  # Rollback transaction, discard all changes
+            flash(f'An error occurred: {str(e)}', 'error')  # Display general error message
             return redirect(url_for('views.add'))
 
-    return render_template('add.html')  # GET请求返回表单页
+    return render_template('materials/add.html')  # GET request returns form page
 
-# 安全数值转换辅助函数
+# Safe numeric conversion helper functions
 def safe_float(value):
-    """将字符串安全转换为浮点数（允许空值）
+    """Safely convert string to float (allows empty values)
     
-    参数:
-        value: 输入字符串
+    Parameters:
+        value: Input string
     
-    返回: 
-        float或None，如果转换失败或输入为空则返回None
+    Returns: 
+        float or None, returns None if conversion fails or input is empty
     """
     try:
         return float(value) if value else None
@@ -308,56 +308,56 @@ def safe_float(value):
         return None
 
 def safe_int(value):
-    """将字符串安全转换为整数（允许空值）
+    """Safely convert string to integer (allows empty values)
     
-    参数:
-        value: 输入字符串
+    Parameters:
+        value: Input string
     
-    返回: 
-        int或None，如果转换失败或输入为空则返回None
+    Returns: 
+        int or None, returns None if conversion fails or input is empty
     """
     try:
         return int(value) if value else None
     except ValueError:
         return None
 
-# 材料编辑路由
+# Material edit route
 @bp.route('/materials/edit/IMR-<string:material_id>', methods=['GET', 'POST'])
-@login_required  # 登录保护装饰器
+@login_required  # Login protection decorator
 def edit(material_id):
     """
-    编辑现有材料记录
+    Edit existing material record
     
-    GET请求: 显示编辑表单，预填充当前数据
-    POST请求: 处理表单提交，更新数据库记录
+    GET request: Display edit form, pre-fill current data
+    POST request: Process form submission, update database record
     
-    参数:
-        material_id: 要编辑的材料ID（格式为数字部分，不含IMR-前缀）
+    Parameters:
+        material_id: ID of the material to edit (format is number part, no IMR-prefix)
     """
-    # 从字符串ID提取数字部分
+    # Extract numeric part from string ID
     try:
         numeric_id = int(material_id)
     except ValueError:
         return render_template('404.html'), 404
         
-    # 查询要编辑的材料记录
-    material = Material.query.get_or_404(numeric_id)  # 获取材料或返回404
+    # Query material record to edit
+    material = Material.query.get_or_404(numeric_id)  # Get material or return 404
     
     if request.method == 'POST':
         try:
-            # 处理结构文件更新
+            # Process structure file update
             structure_file = request.files.get('structure_file')
             band_file = request.files.get('band_file')
             properties_json = request.files.get('properties_json')
             sc_structure_file = request.files.get('sc_structure_file')
             
-            # 如果上传了新的结构文件
+            # If a new structure file is uploaded
             if structure_file and structure_file.filename:
                 if not structure_file.filename.endswith('.cif'):
-                    flash('请上传有效的CIF文件！', 'error')
+                    flash('Please upload a valid CIF file!', 'error')
                     return redirect(url_for('views.edit', material_id=material_id))
                 
-                # 保存新结构文件
+                # Save new structure file
                 from werkzeug.utils import secure_filename
                 import os
                 structure_filename = secure_filename(structure_file.filename)
@@ -366,24 +366,24 @@ def edit(material_id):
                 structure_file.save(structure_path)
                 material.structure_file = structure_filename
                 
-                # 从CIF文件中提取化学式
+                # Extract chemical formula from CIF file
                 chemical_name = extract_chemical_formula_from_cif(structure_path)
                 if chemical_name:
-                    # 检查新名称是否与其他材料重名（排除当前材料）
+                    # Check if new name conflicts with other materials (excluding current material)
                     existing_material = Material.query.filter(
                         Material.name == chemical_name,
                         Material.id != numeric_id
                     ).first()
                     
                     if existing_material:
-                        flash(f'材料名称 "{chemical_name}" 已存在，请使用不同的CIF文件', 'error')
+                        flash(f'Material name "{chemical_name}" already exists, please use a different CIF file', 'error')
                         return redirect(url_for('views.edit', material_id=material_id))
                     
-                    # 更新材料名称
+                    # Update material name
                     material.name = chemical_name
-                    flash(f'材料名称已从CIF文件更新为: {chemical_name}', 'info')
+                    flash(f'Material name has been updated from CIF file: {chemical_name}', 'info')
             
-            # 处理属性JSON文件
+            # Process attribute JSON file
             if properties_json and properties_json.filename:
                 properties_json_filename = secure_filename(properties_json.filename)
                 properties_json_path = os.path.join(current_app.root_path, 'static/properties', properties_json_filename)
@@ -391,7 +391,7 @@ def edit(material_id):
                 properties_json.save(properties_json_path)
                 material.properties_json = properties_json_filename
             
-            # 处理SC结构文件
+            # Process SC structure file
             if sc_structure_file and sc_structure_file.filename:
                 sc_structure_filename = secure_filename(sc_structure_file.filename)
                 sc_structure_path = os.path.join(current_app.root_path, 'static/sc_structures', sc_structure_filename)
@@ -399,7 +399,7 @@ def edit(material_id):
                 sc_structure_file.save(sc_structure_path)
                 material.sc_structure_file = sc_structure_filename
             
-            # 处理能带文件更新
+            # Process band file update
             if band_file and band_file.filename:
                 if band_file.filename.endswith(('.json', '.dat')):
                     band_filename = secure_filename(band_file.filename)
@@ -407,20 +407,20 @@ def edit(material_id):
                     os.makedirs(os.path.dirname(band_path), exist_ok=True)
                     band_file.save(band_path)
             
-            # 更新其他材料属性（仅当没有上传新的CIF文件时才使用表单的名称）
+            # Update other material attributes (only use form name if no new CIF file is uploaded)
             if not structure_file or not structure_file.filename or not material.name:
                 material.name = request.form.get('name')
             
-            # 验证名称不为空
+            # Verify name is not empty
             if not material.name:
-                flash('材料名称不能为空！', 'error')
+                flash('Material name cannot be empty!', 'error')
                 return redirect(url_for('views.edit', material_id=material_id))
             
-            # 更新其他材料属性
+            # Update other material attributes
             material.status = request.form.get('status')
             material.total_energy = safe_float(request.form.get('total_energy'))
             material.formation_energy = safe_float(request.form.get('formation_energy'))
-            material.fermi_level = safe_float(request.form.get('fermi_level'))
+            material.fermi_level = safe_float(request.form.get('efermi'))  # Changed to match form field name
             material.vacuum_level = safe_float(request.form.get('vacuum_level'))
             material.workfunction = safe_float(request.form.get('workfunction'))
             material.metal_type = request.form.get('metal_type')
@@ -432,135 +432,135 @@ def edit(material_id):
             material.vbm_index = safe_int(request.form.get('vbm_index'))
             material.cbm_index = safe_int(request.form.get('cbm_index'))
             
-            # 保存更改
+            # Save changes
             db.session.commit()
-            flash('材料更新成功。', 'success')
+            flash('Material updated successfully.', 'success')
             return redirect(url_for('views.detail', material_id=material_id))
             
         except ValueError as e:
-            flash(f'数据无效: {str(e)}', 'error')
+            flash(f'Invalid data: {str(e)}', 'error')
             return redirect(url_for('views.edit', material_id=material_id))
         except Exception as e:
             db.session.rollback()
-            flash(f'发生错误: {str(e)}', 'error')
+            flash(f'An error occurred: {str(e)}', 'error')
             return redirect(url_for('views.edit', material_id=material_id))
     
-    # GET请求: 显示编辑表单
-    return render_template('edit.html', material=material)
+    # GET request: Display edit form
+    return render_template('materials/edit.html', material=material)
 
-# 材料详情页
+# Material detail page
 @bp.route('/materials/IMR-<string:material_id>')
 def detail(material_id):
     """
-    显示材料详细信息的页面
+    Display page showing detailed information about a material
     
-    参数:
-        material_id: 要显示的材料ID（格式为数字部分，不含IMR-前缀）
+    Parameters:
+        material_id: ID of the material to display (format is number part, no IMR-prefix)
     
-    返回:
-        渲染的详情页模板，包含材料数据和结构文件路径
+    Returns:
+        Rendered detail page template, containing material data and structure file path
     """
-    # 从字符串ID提取数字部分
+    # Extract numeric part from string ID
     try:
         numeric_id = int(material_id)
     except ValueError:
         return render_template('404.html'), 404
     
-    # 从数据库获取材料，不存在则返回404
+    # Get material from database, return 404 if not found
     material = Material.query.get_or_404(numeric_id)
     
-    # 如果需要，这里可以添加从JSON文件更新材料数据的逻辑
-    # 例如：如果材料状态为"需更新"，则自动从JSON刷新数据
+    # If needed, here you can add logic to update material data from JSON file
+    # For example: If material status is "Need Update", automatically refresh data from JSON
     
-    # 构建结构文件路径 - 首先尝试新的目录结构
-    # 格式化ID (IMR-00000XXX)
+    # Build structure file path - first try new directory structure
+    # Format ID (IMR-00000XXX)
     formatted_id = f"IMR-{numeric_id:08d}"
     structure_file = None
     
-    # 检查新目录结构中是否存在结构文件
+    # Check if new directory structure contains structure file
     new_structure_path = f'materials/{formatted_id}/structure/structure.cif'
     if os.path.exists(os.path.join(current_app.root_path, 'static', new_structure_path)):
         structure_file = new_structure_path
-    # 如果新目录结构中没有找到，尝试旧的目录结构
+    # If new directory structure does not find, try old directory structure
     elif material.structure_file:
         old_structure_path = f'structures/{material.structure_file}'
         if os.path.exists(os.path.join(current_app.root_path, 'static', old_structure_path)):
             structure_file = old_structure_path
     
-    # 渲染详情页模板
-    return render_template('detail.html', 
+    # Render detail page template
+    return render_template('materials/detail.html', 
                           material=material,
                           structure_file=structure_file)
 
-# 材料删除路由（仅POST请求）
+# Material delete route (only POST request)
 @bp.route('/materials/delete/IMR-<string:material_id>', methods=['POST'])
-@login_required  # 登录保护装饰器
+@login_required  # Login protection decorator
 def delete(material_id):
     """
-    删除材料记录
+    Delete material record
     
-    参数:
-        material_id: 要删除的材料ID（格式为数字部分，不含IMR-前缀）
+    Parameters:
+        material_id: ID of the material to delete (format is number part, no IMR-prefix)
     
-    注意:
-        只接受POST请求，防止CSRF攻击
+    Note:
+        Only accepts POST requests, to prevent CSRF attacks
     """
-    # 从字符串ID提取数字部分
+    # Extract numeric part from string ID
     try:
         numeric_id = int(material_id)
     except ValueError:
         return render_template('404.html'), 404
         
-    material = Material.query.get_or_404(numeric_id)  # 获取材料或返回404错误
+    material = Material.query.get_or_404(numeric_id)  # Get material or return 404 error
     
-    # 删除相关文件
+    # Delete related files
     import os
     import shutil
     from flask import current_app
     
-    # 格式化ID (IMR-00000XXX)
+    # Format ID (IMR-00000XXX)
     formatted_id = f"IMR-{numeric_id:08d}"
     
-    # 删除材料专用文件夹及其所有内容
+    # Delete material-specific folder and all its contents
     material_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id)
     if os.path.exists(material_dir):
         shutil.rmtree(material_dir)
     
-    # 保持原有的文件删除逻辑以保证向后兼容
-    # 删除结构文件
+    # Keep original file deletion logic to ensure backward compatibility
+    # Delete structure file
     if material.structure_file:
         structure_path = os.path.join(current_app.root_path, 'static/structures', material.structure_file)
         if os.path.exists(structure_path):
             os.remove(structure_path)
     
-    # 删除能带文件
+    # Delete band file
     band_path = os.path.join(current_app.root_path, 'static/band', f'{material.id}.dat')
     if os.path.exists(band_path):
         os.remove(band_path)
     
-    # 删除属性JSON文件
+    # Delete attribute JSON file
     if material.properties_json:
         json_path = os.path.join(current_app.root_path, 'static/properties', material.properties_json)
         if os.path.exists(json_path):
             os.remove(json_path)
     
-    # 删除SC结构文件
+    # Delete SC structure file
     if material.sc_structure_file:
         sc_path = os.path.join(current_app.root_path, 'static/sc_structures', material.sc_structure_file)
         if os.path.exists(sc_path):
             os.remove(sc_path)
     
-    db.session.delete(material)  # 删除记录
-    db.session.commit()  # 提交事务
-    flash(f'材料"{material.name}"及其所有相关文件已成功删除。', 'success')  # 显示成功消息
-    return redirect(url_for('views.index'))  # 重定向到首页
+    db.session.delete(material)  # Delete record
+    db.session.commit()  # Commit transaction
+    flash(f'Material "{material.name}" and all related files have been successfully deleted.', 'success')  # Display success message
+    return redirect(url_for('views.index'))  # Redirect to homepage
 
-# 获取客户端IP的辅助函数
+# Helper function to get client IP
 def get_client_ip():
-    """获取当前请求的客户端IP地址
+    """Get client IP address of the current request
     
-    返回: 
-        字符串，表示客户端的IP地址
+    Returns: 
+        String representing client IP address
     """
     if request.environ.get('HTTP_X_FORWARDED_FOR'):
         return request.environ['HTTP_X_FORWARDED_FOR']
@@ -569,17 +569,17 @@ def get_client_ip():
     else:
         return request.remote_addr
 
-# IP封锁检查装饰器
+# IP block check decorator
 def check_ip_blocked(view_func):
-    """检查IP是否被封锁的装饰器
+    """Decorator to check if IP is blocked
     
-    如果IP被封锁，重定向到首页并显示警告信息
+    If IP is blocked, redirect to homepage and display warning message
     """
     @functools.wraps(view_func)
     def wrapped_view(*args, **kwargs):
         client_ip = get_client_ip()
         
-        # 检查IP是否在封锁列表中
+        # Check if IP is in blocked list
         blocked = BlockedIP.query.filter_by(ip_address=client_ip).first()
         if blocked:
             flash('Access denied. Your IP has been blocked due to multiple failed login attempts.', 'error')
@@ -589,44 +589,44 @@ def check_ip_blocked(view_func):
     
     return wrapped_view
 
-# 用户登录路由
+# User login route
 @bp.route('/login', methods=['GET', 'POST'])
-@check_ip_blocked  # 应用IP封锁检查装饰器
+@check_ip_blocked  # Apply IP block check decorator
 def login():
     """
-    用户登录页面和处理逻辑
+    User login page and processing logic
     
-    GET请求: 显示登录表单
-    POST请求: 验证凭据并执行登录，跟踪失败尝试次数
+    GET request: Display login form
+    POST request: Verify credentials and execute login, track failed login attempts
     """
     if request.method == 'POST':
-        username = request.form['username']  # 获取表单中的用户名
-        password = request.form['password']  # 获取表单中的密码
-        client_ip = get_client_ip()  # 获取客户端IP
+        username = request.form['username']  # Get username from form
+        password = request.form['password']  # Get password from form
+        client_ip = get_client_ip()  # Get client IP
         
-        # 使用会话存储登录尝试次数
+        # Use session to store login attempt count
         if 'login_attempts' not in session:
             session['login_attempts'] = 0
         
-        if not username or not password:  # 空值检查
-            flash('Invalid input.', 'error')  # 显示错误消息
-            return redirect(url_for('views.login'))  # 重定向回登录页
+        if not username or not password:  # Empty value check
+            flash('Invalid input.', 'error')  # Display error message
+            return redirect(url_for('views.login'))  # Redirect back to login page
         
-        user = User.query.filter_by(username=username).first()  # 根据用户名精确查询
-        if user and user.validate_password(password):  # 验证密码
-            # 登录成功，重置尝试次数
+        user = User.query.filter_by(username=username).first()  # Exact query by username
+        if user and user.validate_password(password):  # Verify password
+            # Login successful, reset attempt count
             session.pop('login_attempts', None)
-            login_user(user)  # Flask-Login登录方法，管理用户会话
-            flash('Login success.', 'success')  # 显示成功消息
-            return redirect(url_for('views.index'))  # 重定向到首页
+            login_user(user)  # Flask-Login login method, manage user session
+            flash('Login success.', 'success')  # Display success message
+            return redirect(url_for('views.index'))  # Redirect to homepage
         
-        # 登录失败，增加尝试次数
+        # Login failed, increase attempt count
         session['login_attempts'] += 1
         current_attempts = session['login_attempts']
         
-        # 检查是否达到最大尝试次数
+        # Check if maximum attempt count is reached
         if current_attempts >= 10:
-            # 创建新的IP封锁记录
+            # Create new IP block record
             blocked_ip = BlockedIP(
                 ip_address=client_ip,
                 blocked_at=datetime.datetime.now()
@@ -634,50 +634,50 @@ def login():
             db.session.add(blocked_ip)
             db.session.commit()
             
-            # 清除会话中的尝试计数
+            # Clear session attempt count
             session.pop('login_attempts', None)
             
             flash('Your IP has been blocked due to too many failed login attempts.', 'error')
             return redirect(url_for('views.landing'))
         
-        # 显示错误消息和剩余尝试次数
+        # Display error message and remaining attempt count
         remaining_attempts = 10 - current_attempts
         flash(f'Invalid username or password. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
         return redirect(url_for('views.login'))
         
-    return render_template('login.html')  # GET请求返回登录表单
+    return render_template('auth/login.html')  # GET request returns login form
 
-# 用户退出路由
+# User logout route
 @bp.route('/logout')
-@login_required  # 登录保护装饰器，确保只有登录用户可以退出
+@login_required  # Login protection decorator, ensuring only logged-in users can logout
 def logout():
     """
-    处理用户退出登录
+    Handle user logout
     
-    执行登出操作并重定向到首页
+    Perform logout operation and redirect to homepage
     """
-    logout_user()  # Flask-Login退出方法，清除用户会话
-    flash('Goodbye.', 'info')  # 显示信息消息
-    return redirect(url_for('views.index'))  # 重定向到首页
+    logout_user()  # Flask-Login logout method, clear user session
+    flash('Goodbye.', 'info')  # Display information message
+    return redirect(url_for('views.index'))  # Redirect to homepage
 
-# 用户设置路由
+# User settings route
 @bp.route('/settings', methods=['GET', 'POST'])
-@login_required  # 登录保护装饰器
+@login_required  # Login protection decorator
 def settings():
     """
-    用户设置页面和处理逻辑
+    User settings page and processing logic
     
-    GET请求: 显示设置表单
-    POST请求: 更新用户设置
+    GET request: Display settings form
+    POST request: Update user settings
     """
     if request.method == 'POST':
-        name = request.form['name']  # 获取表单中的名称
-        if not name or len(name) > 20:  # 输入验证：不能为空且长度限制
-            flash('Invalid input.', 'error')  # 显示错误消息
-            return redirect(url_for('views.settings'))  # 重定向回设置页
+        name = request.form['name']  # Get name from form
+        if not name or len(name) > 20:  # Input validation: Cannot be empty and length limit
+            flash('Invalid input.', 'error')  # Display error message
+            return redirect(url_for('views.settings'))  # Redirect back to settings page
         
-        current_user.name = name  # 更新当前用户信息（使用Flask-Login的current_user）
-        db.session.commit()  # 提交更改到数据库
-        flash('Settings updated.', 'success')  # 显示成功消息
-        return redirect(url_for('views.index'))  # 重定向到首页
-    return render_template('settings.html')  # GET请求返回设置表单
+        current_user.name = name  # Update current user information (using Flask-Login's current_user)
+        db.session.commit()  # Commit changes to database
+        flash('Settings updated.', 'success')  # Display success message
+        return redirect(url_for('views.index'))  # Redirect to homepage
+    return render_template('auth/settings.html', user=current_user)  # GET request returns settings form

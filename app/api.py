@@ -85,7 +85,7 @@ def get_conventional_cell(material_id):
             file_relative_path = find_structure_file(material_name=material.name)
             
         if not file_relative_path:
-                return jsonify({"error": "Structure file not found"}), 404
+            return jsonify({"error": "Structure file not found"}), 404
         
         # 构建完整文件路径
         file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
@@ -172,12 +172,12 @@ def upload_structure(material_id):
                     if 'formula' in structure_data:
                         material.name = structure_data.get('formula')
                         current_app.logger.info(f"Updated material name to '{material.name}' from CIF formula")
-                
-                # 更新金属类型等其他属性
-                # 在这里可以添加其他需要从CIF文件更新的属性
-                
-                db.session.commit()
-                current_app.logger.info(f"Updated material record for ID {material_id} from CIF file")
+            
+            # 更新金属类型等其他属性
+            # 在这里可以添加其他需要从CIF文件更新的属性
+            
+            db.session.commit()
+            current_app.logger.info(f"Updated material record for ID {material_id} from CIF file")
         except Exception as e:
             current_app.logger.warning(f"Failed to update material record from CIF: {str(e)}")
             # 继续执行，不中断上传过程
@@ -321,11 +321,11 @@ def download_cif(material_id):
             a_val = int(a)
             b_val = int(b)
             c_val = int(c)
-                
+            
             # 参数验证
             if a_val < 1 or b_val < 1 or c_val < 1 or a_val > 5 or b_val > 5 or c_val > 5:
-                    return jsonify({"error": "Invalid supercell dimensions. Must be between 1 and 5."}), 400
-                
+                return jsonify({"error": "Invalid supercell dimensions. Must be between 1 and 5."}), 400
+            
             # 处理晶胞类型
             if cell_type == 'conventional':
                 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -439,11 +439,11 @@ def get_structure_by_params():
             
             # 解析JSON结果
             result = json.loads(structure_data)
-        
+    
             # 检查结果中是否有错误
             if 'error' in result:
                 return jsonify(result), 404
-                
+            
             # 确保sites数据格式正确（用于前端显示）
             if 'atoms' in result and isinstance(result['atoms'], list):
                 # 创建前端需要的sites数组格式
@@ -460,10 +460,10 @@ def get_structure_by_params():
                 # 如果结果中没有sites字段，添加它
                 if 'sites' not in result or not result['sites']:
                     result['sites'] = sites
-                    
+            
             # 返回JSON响应
             return jsonify(result)
-                
+            
         except ValueError:
             return jsonify({"error": "Invalid material_id format"}), 400
     
