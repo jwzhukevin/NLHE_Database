@@ -1,9 +1,17 @@
+/* 
+* Main CSS File for NLHE Database
+* This file contains additional styles for specific components 
+* and complements the base styles defined in the base.html template
+*/
+
+/* ========== 搜索组件样式 ========== */
+
 /* 高级搜索样式 */
 .advanced-search {
-    // ... existing code ...
+    /* ... existing code ... */
 }
 
-/* 范围输入样式 */
+/* 范围输入样式 - 用于数值范围搜索 */
 .range-inputs {
     display: flex;
     align-items: center;
