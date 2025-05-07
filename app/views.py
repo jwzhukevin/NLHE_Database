@@ -751,14 +751,9 @@ def settings():
             flash('This username is already taken. Please choose another.', 'error')
             return redirect(url_for('views.settings'))
         
-        changes_made = False
-        
-        # Check if username or name changed
-        if username != current_user.username or name != current_user.name:
-            current_app.logger.info(f"Updating user {current_user.email} profile: username={username}, name={name}")
-            current_user.username = username
-            current_user.name = name
-            changes_made = True
+        # Update username and display name
+        current_user.username = username
+        current_user.name = name
         
         # Password change logic
         if new_password:
@@ -777,85 +772,39 @@ def settings():
                 return redirect(url_for('views.settings'))
             
             # Set new password
-            current_app.logger.info(f"Updating password for user {current_user.email}")
             current_user.set_password(new_password)
             
-            # 单独保存密码到文件系统中
-            save_user_password(current_user.email, new_password)
-            changes_made = True
-        
-        if not changes_made:
-            flash('No changes were made.', 'info')
-            return redirect(url_for('views.settings'))
+        # Commit database changes
+        db.session.commit()
             
+        # Update users.dat file with the latest user data
         try:
-            # Commit database changes
-            db.session.commit()
-            current_app.logger.info(f"Successfully updated user {current_user.email} in database")
-            
-            # Update users.dat file with the latest user data
             update_users_dat()
             flash('Settings updated successfully.', 'success')
         except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error updating user settings: {str(e)}")
-            flash(f'An error occurred while saving settings: {str(e)}', 'error')
+            flash(f'Settings saved to database but error updating user file: {str(e)}', 'warning')
+            current_app.logger.error(f"Error updating users.dat: {str(e)}")
             
         return redirect(url_for('views.index'))
     
     return render_template('auth/settings.html', user=current_user)
 
-# Helper function to save user password
-def save_user_password(user_email, new_password):
-    """
-    直接保存单个用户的密码，以避免users.dat文件处理的复杂性
-    
-    Parameters:
-        user_email: 用户邮箱（作为唯一标识）
-        new_password: 用户新密码（将被加密存储）
-    """
-    try:
-        users_dir = os.path.join(current_app.root_path, 'static/users')
-        os.makedirs(users_dir, exist_ok=True)
-        
-        # 替换特殊字符，生成安全的文件名
-        safe_email = user_email.replace('@', '_at_').replace('.', '_dot_')
-        password_file = os.path.join(users_dir, f"{safe_email}.pwd")
-        
-        # 记录用户密码变更操作
-        current_app.logger.info(f"Saving password for user {user_email}")
-        
-        # 写入密码到用户特定的文件
-        with open(password_file, 'w') as f:
-            f.write(new_password)
-            
-        current_app.logger.info(f"Password for {user_email} saved successfully")
-        return True
-    except Exception as e:
-        current_app.logger.error(f"Error saving password for {user_email}: {str(e)}")
-        return False
-
 # Helper function to update users.dat file
 def update_users_dat():
     """Update users.dat file with latest user information"""
     users_file = os.path.join(current_app.root_path, 'static/users/users.dat')
-    current_app.logger.info(f"Updating users file at: {users_file}")
     
     # Get all users from database
     users = User.query.all()
-    current_app.logger.info(f"Found {len(users)} users to update")
     
     # Create backup of original file
     backup_file = f"{users_file}.bak"
     if os.path.exists(users_file):
         import shutil
         shutil.copy2(users_file, backup_file)
-        current_app.logger.info(f"Created backup at: {backup_file}")
     
     # Create directory if it doesn't exist
-    users_dir = os.path.dirname(users_file)
-    os.makedirs(users_dir, exist_ok=True)
-    current_app.logger.info(f"Ensured directory exists: {users_dir}")
+    os.makedirs(os.path.dirname(users_file), exist_ok=True)
     
     # Read existing users.dat file to preserve passwords
     existing_passwords = {}
@@ -870,42 +819,20 @@ def update_users_dat():
                     if len(parts) >= 4:
                         email, username, password, role = parts[0], parts[1], parts[2], parts[3]
                         existing_passwords[email] = password
-                        current_app.logger.debug(f"Read existing password for {email}")
         except Exception as e:
             current_app.logger.error(f"Error reading users.dat: {str(e)}")
-    else:
-        current_app.logger.warning(f"users.dat file does not exist at {users_file}")
-    
-    # 尝试从单独的密码文件中读取密码
-    for user in users:
-        if user.email not in existing_passwords:
-            try:
-                safe_email = user.email.replace('@', '_at_').replace('.', '_dot_')
-                password_file = os.path.join(users_dir, f"{safe_email}.pwd")
-                if os.path.exists(password_file):
-                    with open(password_file, 'r') as f:
-                        existing_passwords[user.email] = f.read().strip()
-                        current_app.logger.debug(f"Read password from file for {user.email}")
-            except Exception as e:
-                current_app.logger.error(f"Error reading password file for {user.email}: {str(e)}")
     
     # Write updated user data to file
-    try:
-        with open(users_file, 'w') as f:
-            f.write("# Format: email:username:password:role\n")
-            f.write("# Available roles: admin, user\n")
-            f.write("# One user per line\n")
-            
-            for user in users:
-                # Get password from existing file or use default
-                password = existing_passwords.get(user.email, "password123")
-                
-                line = f"{user.email}:{user.username}:{password}:{user.role}\n"
-                f.write(line)
-                current_app.logger.debug(f"Wrote user data for {user.email}")
+    with open(users_file, 'w') as f:
+        f.write("# Format: email:username:password:role\n")
+        f.write("# Available roles: admin, user\n")
+        f.write("# One user per line\n")
         
-        current_app.logger.info(f"Successfully updated users.dat file with {len(users)} users")
-        return True
-    except Exception as e:
-        current_app.logger.error(f"Failed to write users.dat file: {str(e)}")
-        raise
+        for user in users:
+            # Get password from existing file or use default
+            password = existing_passwords.get(user.email, "password123")
+            
+            line = f"{user.email}:{user.username}:{password}:{user.role}\n"
+            f.write(line)
+    
+    return True

@@ -42,26 +42,6 @@ class User(db.Model, UserMixin):
             password.encode('utf-8'),       # 将字符串密码转为字节
             bcrypt.gensalt(rounds=12)       # 生成加密盐（12轮强度平衡安全与性能）
         ).decode('utf-8')                   # 将字节哈希转为字符串存储
-        
-        # 尝试保存原始密码到单独的文件中（仅用于users.dat兼容）
-        try:
-            import os
-            from flask import current_app
-            
-            if current_app:
-                users_dir = os.path.join(current_app.root_path, 'static/users')
-                os.makedirs(users_dir, exist_ok=True)
-                
-                # 替换特殊字符，生成安全的文件名
-                safe_email = self.email.replace('@', '_at_').replace('.', '_dot_')
-                password_file = os.path.join(users_dir, f"{safe_email}.pwd")
-                
-                # 写入密码到用户特定的文件
-                with open(password_file, 'w') as f:
-                    f.write(password)
-        except Exception as e:
-            # 如果保存失败，忽略错误但不影响密码哈希的正常设置
-            pass
 
     # 密码验证方法
     def validate_password(self, password):
