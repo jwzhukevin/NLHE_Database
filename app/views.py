@@ -736,6 +736,10 @@ def settings():
         new_password = request.form.get('new_password', '')
         confirm_password = request.form.get('confirm_password', '')
         
+        # Store original values for comparison
+        original_username = current_user.username
+        has_password_change = bool(new_password)
+        
         # Validate inputs
         if not username or not name:
             flash('Username and display name are required.', 'error')
@@ -746,17 +750,18 @@ def settings():
             return redirect(url_for('views.settings'))
         
         # Check if another user already has this username (except current user)
-        existing_user = User.query.filter(User.username == username, User.email != current_user.email).first()
-        if existing_user:
-            flash('This username is already taken. Please choose another.', 'error')
-            return redirect(url_for('views.settings'))
+        if username != original_username:
+            existing_user = User.query.filter(User.username == username, User.email != current_user.email).first()
+            if existing_user:
+                flash('This username is already taken. Please choose another.', 'error')
+                return redirect(url_for('views.settings'))
         
         # Update username and display name
         current_user.username = username
         current_user.name = name
         
         # Password change logic
-        if new_password:
+        if has_password_change:
             # Verify current password
             if not current_user.validate_password(current_password):
                 flash('Current password is incorrect.', 'error')
@@ -775,15 +780,23 @@ def settings():
             current_user.set_password(new_password)
             
         # Commit database changes
-        db.session.commit()
-            
-        # Update users.dat file with the latest user data
         try:
+            db.session.commit()
+            # Log the changes for debugging
+            current_app.logger.info(f"User {current_user.id} updated: username changed from {original_username} to {username}, password changed: {has_password_change}")
+            
+            # Update users.dat file with the latest user data
             update_users_dat()
-            flash('Settings updated successfully.', 'success')
+            
+            if has_password_change:
+                flash('Settings updated successfully. Your password has been changed.', 'success')
+            else:
+                flash('Settings updated successfully.', 'success')
+                
         except Exception as e:
-            flash(f'Settings saved to database but error updating user file: {str(e)}', 'warning')
-            current_app.logger.error(f"Error updating users.dat: {str(e)}")
+            db.session.rollback()
+            current_app.logger.error(f"Error updating user settings: {str(e)}")
+            flash(f'An error occurred while saving your settings: {str(e)}', 'error')
             
         return redirect(url_for('views.index'))
     
@@ -807,7 +820,7 @@ def update_users_dat():
     os.makedirs(os.path.dirname(users_file), exist_ok=True)
     
     # Read existing users.dat file to preserve passwords
-    existing_passwords = {}
+    existing_data = {}
     if os.path.exists(users_file):
         try:
             with open(users_file, 'r') as f:
@@ -818,21 +831,40 @@ def update_users_dat():
                     parts = line.split(':')
                     if len(parts) >= 4:
                         email, username, password, role = parts[0], parts[1], parts[2], parts[3]
-                        existing_passwords[email] = password
+                        # Store data by both email and username to handle changes in either
+                        existing_data[email] = {'username': username, 'password': password, 'role': role}
+                        existing_data[username] = {'email': email, 'password': password, 'role': role}
         except Exception as e:
             current_app.logger.error(f"Error reading users.dat: {str(e)}")
     
     # Write updated user data to file
-    with open(users_file, 'w') as f:
-        f.write("# Format: email:username:password:role\n")
-        f.write("# Available roles: admin, user\n")
-        f.write("# One user per line\n")
-        
-        for user in users:
-            # Get password from existing file or use default
-            password = existing_passwords.get(user.email, "password123")
+    try:
+        with open(users_file, 'w') as f:
+            f.write("# Format: email:username:password:role\n")
+            f.write("# Available roles: admin, user\n")
+            f.write("# One user per line\n")
             
-            line = f"{user.email}:{user.username}:{password}:{user.role}\n"
-            f.write(line)
-    
-    return True
+            for user in users:
+                # Get password from existing file or use default
+                # Try to match by email first, then by username
+                password = None
+                
+                if user.email in existing_data:
+                    password = existing_data[user.email]['password']
+                elif user.username in existing_data and existing_data[user.username].get('email') != user.email:
+                    # Only use username match if email doesn't conflict
+                    password = existing_data[user.username]['password']
+                    
+                # If password not found, use a placeholder
+                if not password:
+                    password = "password123"  # Default password
+                    current_app.logger.warning(f"No existing password found for {user.email}, using default")
+                
+                line = f"{user.email}:{user.username}:{password}:{user.role}\n"
+                f.write(line)
+        
+        current_app.logger.info(f"Updated users.dat file with {len(users)} users")
+        return True
+    except Exception as e:
+        current_app.logger.error(f"Failed to update users.dat: {str(e)}")
+        raise

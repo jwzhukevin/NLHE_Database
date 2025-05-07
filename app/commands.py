@@ -113,13 +113,17 @@ def register_commands(app):
                         click.echo(f'Warning: Invalid role "{role}" for user {username}. Setting to "user".')
                         role = 'user'
                     
+                    # Check if user exists
                     user = User.query.filter_by(email=email).first()
                     if user:
+                        # User exists, update their information
                         user.username = username
                         user.set_password(password)
                         user.role = role
+                        user.name = user.name or username  # Keep name if exists, otherwise use username
                         click.echo(f'Updated user: {username} ({email}) with role: {role}')
                     else:
+                        # Create new user
                         user = User(username=username, name=username, email=email, role=role)
                         user.set_password(password)
                         db.session.add(user)
