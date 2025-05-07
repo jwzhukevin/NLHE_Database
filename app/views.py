@@ -125,9 +125,27 @@ def index():
                          pagination=pagination,  # Pagination object (including page number information)
                          search_params=search_params)  # Search parameters (for form display)
 
-# Material add route (login required)
+# Define an admin check decorator
+def admin_required(view_func):
+    """
+    Decorator to restrict route access to admin users only
+    
+    If user is not authenticated or not an admin, redirect to login page
+    """
+    @functools.wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin():
+            flash('Access denied. This feature requires administrator privileges.', 'error')
+            return redirect(url_for('views.login'))
+        
+        return view_func(*args, **kwargs)
+    
+    return wrapped_view
+
+# Material add route (admin required)
 @bp.route('/add', methods=['GET', 'POST'])
-@login_required  # Login protection decorator, ensuring only logged-in users can add materials
+@login_required
+@admin_required
 def add():
     """
     Page and processing logic for adding new material records
@@ -321,9 +339,10 @@ def safe_int(value):
     except ValueError:
         return None
 
-# Material edit route
+# Material edit route (admin required)
 @bp.route('/materials/edit/IMR-<string:material_id>', methods=['GET', 'POST'])
-@login_required  # Login protection decorator
+@login_required  
+@admin_required
 def edit(material_id):
     """
     Edit existing material record
@@ -492,9 +511,10 @@ def detail(material_id):
                           material=material,
                           structure_file=structure_file)
 
-# Material delete route (only POST request)
+# Material delete route (admin required)
 @bp.route('/materials/delete/IMR-<string:material_id>', methods=['POST'])
-@login_required  # Login protection decorator
+@login_required  
+@admin_required
 def delete(material_id):
     """
     Delete material record
@@ -602,6 +622,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']  # Get username from form
         password = request.form['password']  # Get password from form
+        login_type = request.form.get('login_type', 'user')  # Get login type (user or admin)
         client_ip = get_client_ip()  # Get client IP
         
         # Use session to store login attempt count
@@ -613,11 +634,39 @@ def login():
             return redirect(url_for('views.login'))  # Redirect back to login page
         
         user = User.query.filter_by(username=username).first()  # Exact query by username
-        if user and user.validate_password(password):  # Verify password
+        
+        # Check if login_type is admin but user role is not admin
+        if login_type == 'admin' and (not user or user.role != 'admin'):
+            session['login_attempts'] += 1
+            current_attempts = session['login_attempts']
+            
+            if current_attempts >= 3:  # Lower threshold for admin login attempts
+                blocked_ip = BlockedIP(
+                    ip_address=client_ip,
+                    blocked_at=datetime.datetime.now(),
+                    reason="Unauthorized admin login attempts"
+                )
+                db.session.add(blocked_ip)
+                db.session.commit()
+                session.pop('login_attempts', None)
+                flash('Your IP has been blocked due to unauthorized admin login attempts.', 'error')
+                return redirect(url_for('views.landing'))
+            
+            remaining_attempts = 3 - current_attempts
+            flash(f'Invalid administrator credentials. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
+            return redirect(url_for('views.login'))
+        
+        # For regular user login, verify password
+        if user and user.validate_password(password):
+            # For admin login, verify the role
+            if login_type == 'admin' and user.role != 'admin':
+                flash('Access denied. Your account does not have administrator privileges.', 'error')
+                return redirect(url_for('views.login'))
+            
             # Login successful, reset attempt count
             session.pop('login_attempts', None)
             login_user(user)  # Flask-Login login method, manage user session
-            flash('Login success.', 'success')  # Display success message
+            flash(f'Login successful as {"Administrator" if user.role == "admin" else "User"}.', 'success')  # Display success message
             return redirect(url_for('views.index'))  # Redirect to homepage
         
         # Login failed, increase attempt count

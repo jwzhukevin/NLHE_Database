@@ -1,0 +1,8 @@
+# Format: username:password:role
+# Available roles: admin, user
+# One user per line
+user1:password123:user
+user2:password456:user
+user3:password789:user
+researcher1:research123:user
+researcher2:research456:user 

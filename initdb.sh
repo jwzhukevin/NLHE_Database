@@ -81,11 +81,29 @@ fi
 
 # 初始化数据库并导入数据
 echo "Running database initialization..."
-flask commands initialize-database $DROP_OPTION --json-dir="$JSON_DIR" $TEST_OPTION
+flask initdb $DROP_OPTION
 
-# 验证数据库是否正确创建
+# 数据库创建后导入数据
 if [ $? -eq 0 ]; then
-    echo "Database initialization completed successfully."
+    echo "Database schema created successfully."
+    
+    # 导入材料数据
+    if [ -n "$TEST_OPTION" ]; then
+        echo "Importing test data..."
+        flask import-json --dir="$JSON_DIR" $TEST_OPTION
+    else
+        echo "Importing material data..."
+        flask import-json --dir="$JSON_DIR"
+    fi
+    
+    # 验证数据导入是否成功
+    if [ $? -eq 0 ]; then
+        echo "Data import completed successfully."
+    else
+        echo "WARNING: Data import finished with errors."
+    fi
+    
+    echo "Database initialization completed."
 else
     echo "ERROR: Database initialization failed!"
     exit 1

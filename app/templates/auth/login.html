@@ -4,8 +4,8 @@
 <!-- ========== 登录英雄区域 ========== -->
 <section class="login-hero">
     <div class="container">
-        <h1>Admin Login</h1>
-        <p>Secure access to NLHE Database management features</p>
+        <h1>User Login</h1>
+        <p>Access to NLHE Database features</p>
     </div>
 </section>
 
@@ -46,13 +46,45 @@
         /* 设置90%不透明度,使文字略微柔和 */
         opacity: 0.9;
     }
+    
+    /* 新增：选项卡样式 */
+    .login-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+    
+    .login-tab {
+        padding: 0.75rem 1.5rem;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .login-tab.active {
+        background-color: white;
+        color: #003c85;
+        font-weight: 600;
+    }
+    
+    .login-tab:hover:not(.active) {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
 </style>
 
 <!-- ========== 登录表单区域 ========== -->
 <section class="login-form-section">
     <div class="container">
         <div class="login-container">
-            <div class="login-warning">
+            <div class="login-tabs">
+                <div class="login-tab" id="tab-user">User Login</div>
+                <div class="login-tab" id="tab-admin">Admin Login</div>
+            </div>
+            
+            <div class="login-warning" id="admin-warning" style="display: none;">
                 <i class="fas fa-exclamation-triangle warning-icon"></i>
                 <div class="warning-text">
                     <h3>Restricted Access</h3>
@@ -60,9 +92,18 @@
                 </div>
             </div>
             
+            <div class="login-warning" id="user-info" style="background-color: #e6f7ff; border-left-color: #1890ff;">
+                <i class="fas fa-info-circle warning-icon" style="color: #1890ff;"></i>
+                <div class="warning-text">
+                    <h3>User Access</h3>
+                    <p>Login to access additional features including downloading band and SC structure data. If you don't have an account, you can still browse the database as a visitor.</p>
+                </div>
+            </div>
+            
             <div class="login-form-container">
-                <h2>Authentication Required</h2>
+                <h2 id="login-form-title">User Authentication</h2>
                 <form method="post" class="login-form">
+                    <input type="hidden" id="login-type" name="login_type" value="user">
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" required>
@@ -74,7 +115,7 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="login-btn">Login</button>
+                        <button type="submit" class="login-btn" id="login-button">Login</button>
                         <a href="{{ url_for('views.index') }}" class="cancel-btn">Return to Database</a>
                     </div>
                 </form>
@@ -82,6 +123,40 @@
         </div>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userTab = document.getElementById('tab-user');
+        const adminTab = document.getElementById('tab-admin');
+        const userInfo = document.getElementById('user-info');
+        const adminWarning = document.getElementById('admin-warning');
+        const loginFormTitle = document.getElementById('login-form-title');
+        const loginTypeInput = document.getElementById('login-type');
+        const loginButton = document.getElementById('login-button');
+        
+        userTab.classList.add('active');
+        
+        userTab.addEventListener('click', function() {
+            userTab.classList.add('active');
+            adminTab.classList.remove('active');
+            userInfo.style.display = 'flex';
+            adminWarning.style.display = 'none';
+            loginFormTitle.textContent = 'User Authentication';
+            loginTypeInput.value = 'user';
+            loginButton.textContent = 'Login';
+        });
+        
+        adminTab.addEventListener('click', function() {
+            adminTab.classList.add('active');
+            userTab.classList.remove('active');
+            userInfo.style.display = 'none';
+            adminWarning.style.display = 'flex';
+            loginFormTitle.textContent = 'Administrator Login';
+            loginTypeInput.value = 'admin';
+            loginButton.textContent = 'Login as Administrator';
+        });
+    });
+</script>
 
 <style>
     /* ========== 登录表单区域样式 ========== */
@@ -248,26 +323,6 @@
     .cancel-btn:hover {
         background-color: #f5f5f5;
         transform: translateY(-2px);
-    }
-
-    /* 响应式调整 */
-    @media (max-width: 768px) {
-        .login-container {
-            padding: 0 1rem;
-        }
-        
-        .login-form-container {
-            padding: 1.5rem;
-        }
-        
-        .form-actions {
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .login-btn, .cancel-btn {
-            margin: 0;
-        }
     }
 </style>
 {% endblock %}

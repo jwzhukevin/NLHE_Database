@@ -149,7 +149,7 @@ def create_app():
         # 导入各个功能模块的蓝图
         from .views import bp as views_bp  # 导入主视图蓝图
         from .errors import bp as errors_bp  # 导入错误处理蓝图
-        from .commands import bp as commands_bp  # 导入 CLI 命令蓝图
+        from .commands import bp as commands_bp, register_commands  # 导入 CLI 命令蓝图和注册函数
 
         # 注册蓝图到应用实例
         app.register_blueprint(views_bp)  # 注册主视图路由
@@ -163,6 +163,9 @@ def create_app():
         # 注册内容蓝图（用于文档和内容展示）
         from .articles import articles as articles_bp
         app.register_blueprint(articles_bp)  # 注册内容路由
+
+        # 注册命令行命令
+        register_commands(app)
 
         # 初始化格式化ID
         init_formatted_ids()

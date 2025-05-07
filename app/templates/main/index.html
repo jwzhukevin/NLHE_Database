@@ -1853,7 +1853,7 @@
                            title="View in MP">
                            MP
                         </a>
-                        {% if current_user.is_authenticated %}
+                        {% if current_user.is_authenticated and current_user.is_admin() %}
                         <a class="btn" 
                            href="{{ url_for('views.edit', material_id=material.id) }}">
                            Edit

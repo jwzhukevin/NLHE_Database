@@ -23,6 +23,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(20))               # 用户显示名称（最长20字符）
     username = db.Column(db.String(20), unique=True)  # 唯一登录用户名（防重复注册）
     password_hash = db.Column(db.String(128))      # 存储加密后的密码哈希值（不直接存储明文密码）
+    role = db.Column(db.String(10), default='user')  # 用户角色：admin, user, guest
 
     # 密码加密方法
     def set_password(self, password):
@@ -63,6 +64,16 @@ class User(db.Model, UserMixin):
             )
         except Exception:  # 捕获编码错误或空值异常
             return False   # 验证失败时返回False
+    
+    # 管理员检查方法
+    def is_admin(self):
+        """检查用户是否为管理员"""
+        return self.role == 'admin'
+    
+    # 注册用户检查方法
+    def is_registered_user(self):
+        """检查用户是否为注册用户（非游客）"""
+        return self.role in ['admin', 'user']
 
 
 # 材料数据模型类

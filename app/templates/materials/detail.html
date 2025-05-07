@@ -38,8 +38,8 @@
         <a href="#sc-section" class="nav-link">SC</a>
         <a href="#fourth-section" class="nav-link">Properties</a>
         
-        <!-- 管理员专用功能：仅在用户已登录时显示 -->
-        {% if current_user.is_authenticated %}
+        <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
+        {% if current_user.is_authenticated and current_user.is_admin() %}
             <!-- 编辑材料按钮：跳转到编辑页面 -->
             <a href="{{ url_for('views.edit', material_id=material.id) }}" class="nav-link">
                 <i class="fas fa-edit"></i> Edit
@@ -1317,9 +1317,11 @@
                 <div class="viewer-container">
                     <div class="card-header collapsed">
         <h3>Band Structure
+            {% if current_user.is_authenticated %}
             <a href="{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/band/band.dat') }}" download class="download-btn" title="Download band data">
                 <i class="fas fa-download"></i>
             </a>
+            {% endif %}
         </h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
@@ -1358,9 +1360,11 @@
                 <div class="viewer-container">
                     <div class="card-header collapsed">
                         <h3>SC Structure
+                            {% if current_user.is_authenticated %}
                             <a href="{{ url_for('static', filename='materials/' + (material.formatted_id or 'IMR-' + '%08d'|format(material.id)) + '/bcd/sc.dat') }}" download class="download-btn" title="Download SC data">
                                 <i class="fas fa-download"></i>
                             </a>
+                            {% endif %}
                         </h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>

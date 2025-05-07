@@ -4,14 +4,18 @@
 * and complements the base styles defined in the base.html template
 */
 
-/* ========== 搜索组件样式 ========== */
+/* ========== Search Component Styles ========== */
 
-/* 高级搜索样式 */
+/* Advanced Search Styles */
 .advanced-search {
-    /* ... existing code ... */
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    margin-bottom: 20px;
 }
 
-/* 范围输入样式 - 用于数值范围搜索 */
+/* Range Input Styles - For Numerical Range Searches */
 .range-inputs {
     display: flex;
     align-items: center;
