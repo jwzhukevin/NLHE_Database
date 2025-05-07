@@ -32,6 +32,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# 运行email字段迁移
+echo "Checking and running email field migration if needed..."
+flask migrate-users-email
+if [ $? -ne 0 ]; then
+    echo "Warning: Email migration may have encountered issues."
+    echo "You might need to recreate the database with 'flask initdb --drop' if problems persist."
+fi
+
 # 初始化用户
 echo "Initializing users..."
 SUCCESS_COUNT=0
@@ -55,19 +63,19 @@ else
 fi
 
 # 方法2: 逐行读取用户数据文件并添加用户
-while IFS=: read -r username password role || [ -n "$username" ]; do
+while IFS=: read -r email username password role || [ -n "$email" ]; do
     # 跳过注释行和空行
-    [[ "$username" =~ ^#.*$ || -z "$username" ]] && continue
+    [[ "$email" =~ ^#.*$ || -z "$email" ]] && continue
     
-    echo "Adding user: $username with role: $role"
+    echo "Adding user: $username ($email) with role: $role"
     # 使用Flask命令行添加用户
-    flask user-add "$username" "$password" "$role"
+    flask user-add "$email" "$username" "$password" "$role"
     
     if [ $? -eq 0 ]; then
-        echo "✓ Successfully added user: $username"
+        echo "✓ Successfully added user: $username ($email)"
         ((SUCCESS_COUNT++))
     else
-        echo "✗ Failed to add user: $username"
+        echo "✗ Failed to add user: $username ($email)"
         ((FAILURE_COUNT++))
     fi
 done < "$USERS_FILE"

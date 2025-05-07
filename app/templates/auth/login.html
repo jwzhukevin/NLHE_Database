@@ -1,122 +1,92 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- ========== 登录英雄区域 ========== -->
-<section class="login-hero">
+<!-- 登录页面头部 -->
+<section class="login-header">
     <div class="container">
-        <h1>User Login</h1>
-        <p>Access to NLHE Database features</p>
+        <h1>NLHE Database Login</h1>
+        <p>Access the advanced features of the materials database</p>
     </div>
 </section>
 
-<style>
-    /* ========== 登录英雄区域样式 ========== */
-    .login-hero {
-        /* 设置上下内边距创造良好的视觉空间 */
-        padding: 4rem 0 2rem;
-        /* 文本居中对齐,使标题和描述文字居中显示 */
-        text-align: center;
-        /* 使用渐变背景色创建深蓝色到深靛蓝的过渡效果 */
-        /* 135deg - 从左上角到右下角的对角线渐变 */
-        /* #003c85 - 起始颜色：深蓝色 */
-        /* #0d274b - 结束颜色：深靛蓝色 */
-        background: linear-gradient(135deg, #003c85, #0d274b);
-        /* 文字颜色设为白色,在深色背景上形成鲜明对比 */
-        color: white;
-    }
-
-    .login-hero h1 {
-        /* 使用clamp()函数设置响应式字体大小 */
-        /* 最小2rem,最大3rem,中间值为5vw(视窗宽度的5%) */
-        font-size: clamp(2rem, 5vw, 3rem);
-        /* 标题底部外边距1rem,与描述文字保持间距 */
-        margin-bottom: 1rem;
-        /* 行高1.2,提高标题文字的可读性 */
-        line-height: 1.2;
-    }
-
-    .login-hero p {
-        /* 使用clamp()函数设置响应式字体大小 */
-        /* 最小1rem,最大1.25rem,中间值为2vw */
-        font-size: clamp(1rem, 2vw, 1.25rem);
-        /* 最大宽度600px,防止文字行过长影响阅读 */
-        max-width: 600px;
-        /* 水平居中对齐 */
-        margin: 0 auto;
-        /* 设置90%不透明度,使文字略微柔和 */
-        opacity: 0.9;
-    }
-    
-    /* 新增：选项卡样式 */
-    .login-tabs {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-        gap: 1rem;
-    }
-    
-    .login-tab {
-        padding: 0.75rem 1.5rem;
-        background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .login-tab.active {
-        background-color: white;
-        color: #003c85;
-        font-weight: 600;
-    }
-    
-    .login-tab:hover:not(.active) {
-        background-color: rgba(255, 255, 255, 0.3);
-    }
-</style>
-
-<!-- ========== 登录表单区域 ========== -->
-<section class="login-form-section">
+<!-- 登录主体内容 -->
+<section class="login-content">
     <div class="container">
-        <div class="login-container">
-            <div class="login-tabs">
-                <div class="login-tab" id="tab-user">User Login</div>
-                <div class="login-tab" id="tab-admin">Admin Login</div>
+        <div class="login-card">
+            <!-- 登录类型选择器 -->
+            <div class="login-type-selector">
+                <button class="type-btn active" id="user-btn">
+                    <i class="fas fa-user"></i>
+                    <span>User</span>
+                </button>
+                <button class="type-btn" id="admin-btn">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Administrator</span>
+                </button>
             </div>
             
-            <div class="login-warning" id="admin-warning" style="display: none;">
-                <i class="fas fa-exclamation-triangle warning-icon"></i>
-                <div class="warning-text">
-                    <h3>Restricted Access</h3>
-                    <p>WARNING: This login area is strictly for administrators only. Unauthorized login attempts are monitored. Three failed login attempts will result in your IP being blocked from accessing this website.</p>
+            <!-- 登录信息区域 -->
+            <div class="login-info">
+                <div class="info-box user-info active" id="user-info-box">
+                    <div class="info-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="info-text">
+                        <h3>User Access</h3>
+                        <p>Login to access additional features such as downloading band structure data and SC structure files.</p>
+                    </div>
+                </div>
+                
+                <div class="info-box admin-info" id="admin-info-box">
+                    <div class="info-icon warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="info-text">
+                        <h3>Restricted Area</h3>
+                        <p>This login area is restricted to administrators only. Unauthorized access attempts are monitored.</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="login-warning" id="user-info" style="background-color: #e6f7ff; border-left-color: #1890ff;">
-                <i class="fas fa-info-circle warning-icon" style="color: #1890ff;"></i>
-                <div class="warning-text">
-                    <h3>User Access</h3>
-                    <p>Login to access additional features including downloading band and SC structure data. If you don't have an account, you can still browse the database as a visitor.</p>
-                </div>
-            </div>
-            
-            <div class="login-form-container">
-                <h2 id="login-form-title">User Authentication</h2>
+            <!-- 登录表单 -->
+            <div class="login-form-wrapper">
+                <h2 id="form-title">User Login</h2>
+                
                 <form method="post" class="login-form">
                     <input type="hidden" id="login-type" name="login_type" value="user">
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
+                    
+                    <div class="form-field">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email</span>
+                        </label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email address" required>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
+                    <div class="form-field">
+                        <label for="username">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Username</span>
+                        </label>
+                        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="password">
+                            <i class="fas fa-lock"></i>
+                            <span>Password</span>
+                        </label>
+                        <div class="password-input-container">
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                            <button type="button" class="password-toggle" id="password-toggle">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="login-btn" id="login-button">Login</button>
-                        <a href="{{ url_for('views.index') }}" class="cancel-btn">Return to Database</a>
+                        <button type="submit" class="primary-btn" id="login-button">Log In</button>
+                        <a href="{{ url_for('views.index') }}" class="secondary-btn">Return to Database</a>
                     </div>
                 </form>
             </div>
@@ -126,203 +96,324 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const userTab = document.getElementById('tab-user');
-        const adminTab = document.getElementById('tab-admin');
-        const userInfo = document.getElementById('user-info');
-        const adminWarning = document.getElementById('admin-warning');
-        const loginFormTitle = document.getElementById('login-form-title');
+        // Get DOM elements
+        const userBtn = document.getElementById('user-btn');
+        const adminBtn = document.getElementById('admin-btn');
+        const userInfoBox = document.getElementById('user-info-box');
+        const adminInfoBox = document.getElementById('admin-info-box');
+        const formTitle = document.getElementById('form-title');
         const loginTypeInput = document.getElementById('login-type');
         const loginButton = document.getElementById('login-button');
         
-        userTab.classList.add('active');
+        // Password visibility toggle
+        const passwordField = document.getElementById('password');
+        const passwordToggle = document.getElementById('password-toggle');
         
-        userTab.addEventListener('click', function() {
-            userTab.classList.add('active');
-            adminTab.classList.remove('active');
-            userInfo.style.display = 'flex';
-            adminWarning.style.display = 'none';
-            loginFormTitle.textContent = 'User Authentication';
-            loginTypeInput.value = 'user';
-            loginButton.textContent = 'Login';
+        passwordToggle.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            
+            // Toggle icon between eye and eye-slash
+            const toggleIcon = passwordToggle.querySelector('i');
+            toggleIcon.classList.toggle('fa-eye');
+            toggleIcon.classList.toggle('fa-eye-slash');
         });
         
-        adminTab.addEventListener('click', function() {
-            adminTab.classList.add('active');
-            userTab.classList.remove('active');
-            userInfo.style.display = 'none';
-            adminWarning.style.display = 'flex';
-            loginFormTitle.textContent = 'Administrator Login';
+        // User button click event
+        userBtn.addEventListener('click', function() {
+            userBtn.classList.add('active');
+            adminBtn.classList.remove('active');
+            userInfoBox.classList.add('active');
+            adminInfoBox.classList.remove('active');
+            formTitle.textContent = 'User Login';
+            loginTypeInput.value = 'user';
+            loginButton.textContent = 'Log In';
+        });
+        
+        // Admin button click event
+        adminBtn.addEventListener('click', function() {
+            adminBtn.classList.add('active');
+            userBtn.classList.remove('active');
+            adminInfoBox.classList.add('active');
+            userInfoBox.classList.remove('active');
+            formTitle.textContent = 'Administrator Login';
             loginTypeInput.value = 'admin';
-            loginButton.textContent = 'Login as Administrator';
+            loginButton.textContent = 'Log In as Administrator';
         });
     });
 </script>
 
 <style>
-    /* ========== 登录表单区域样式 ========== */
-    .login-form-section {
-        /* 设置上下内边距2rem和4rem,左右内边距0 */
-        padding: 2rem 0 4rem;
-        /* 设置浅灰色背景 */
-        background-color: #f8fafc;
-    }
-
-    .login-container {
-        /* 设置最大宽度800px */
-        max-width: 800px;
-        /* 水平居中 */
-        margin: 0 auto; /* 设置上下外边距为0,左右外边距自动,实现容器水平居中 */
-        /* 使用flex布局,垂直排列 */
-        display: flex;
-        flex-direction: column;
-        /* 设置元素间距为2rem */
-        gap: 2rem;
-    }
-
-    /* 警告提示样式 */
-    .login-warning {
-        /* 使用flex布局,水平排列 */
-        display: flex;
-        /* 顶部对齐 */
-        align-items: flex-start;
-        /* 设置元素间距为1.5rem */
-        gap: 1.5rem;
-        /* 设置浅黄色警告背景 */
-        background-color: #fff3cd;
-        /* 左边框加粗显示警告色 */
-        border-left: 5px solid #ffc107;
-        /* 设置内边距1.5rem */
-        padding: 1.5rem;
-        /* 圆角8px */
-        border-radius: 8px;
-        /* 添加浅阴影效果 */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    }
-
-    .warning-icon {
-        /* 设置图标大小2rem */
-        font-size: 2rem;
-        /* 设置橙色警告图标 */
-        color: #ff9800;
-        /* 微调图标顶部间距 */
-        margin-top: 0.2rem;
-    }
-
-    .warning-text h3 {
-        /* 设置深褐色标题 */
-        color: #654500;
-        /* 设置底部间距0.5rem */
-        margin-bottom: 0.5rem;
-        /* 设置标题字号1.2rem */
-        font-size: 1.2rem;
-    }
-
-    .warning-text p {
-        /* 设置深褐色文字 */
-        color: #654500;
-        /* 设置文字大小0.95rem */
-        font-size: 0.95rem;
-        /* 设置行高1.5倍 */
-        line-height: 1.5;
-    }
-
-    /* 登录表单容器样式 */
-    .login-form-container {
-        background-color: white;
-        padding: 2.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .login-form-container h2 {
-        color: #0047AB;
-        margin-bottom: 1.5rem;
-        font-size: 1.5rem;
+    /* ===== 登录页面样式 ===== */
+    
+    /* 头部样式 */
+    .login-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 3rem 0;
         text-align: center;
     }
-
-    /* 登录表单样式 */
+    
+    .login-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .login-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    /* 主体内容样式 */
+    .login-content {
+        background-color: var(--light-bg);
+        padding: 3rem 0;
+        min-height: 70vh;
+    }
+    
+    /* 登录卡片样式 */
+    .login-card {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        max-width: 550px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+    
+    /* 登录类型选择器 */
+    .login-type-selector {
+        display: flex;
+        background-color: #f5f7fa;
+        padding: 1rem;
+        border-bottom: 1px solid #eaedf1;
+    }
+    
+    .type-btn {
+        flex: 1;
+        background: none;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 6px;
+        color: #495057;
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .type-btn i {
+        font-size: 1.1rem;
+    }
+    
+    .type-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .type-btn:not(.active):hover {
+        background-color: rgba(0, 71, 171, 0.1);
+        color: var(--primary-color);
+    }
+    
+    /* 信息框样式 */
+    .login-info {
+        padding: 1.5rem;
+        border-bottom: 1px solid #eaedf1;
+    }
+    
+    .info-box {
+        display: none;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        background-color: #e6f4ff;
+        border-left: 4px solid var(--accent-color);
+    }
+    
+    .info-box.active {
+        display: flex;
+    }
+    
+    .admin-info {
+        background-color: #fef6e6;
+        border-left-color: #f6ad55;
+    }
+    
+    .info-icon {
+        color: var(--accent-color);
+        font-size: 1.5rem;
+    }
+    
+    .info-icon.warning {
+        color: #f6ad55;
+    }
+    
+    .info-text h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #2c3e50;
+    }
+    
+    .info-text p {
+        font-size: 0.95rem;
+        color: #4a5568;
+        line-height: 1.5;
+    }
+    
+    /* 表单样式 */
+    .login-form-wrapper {
+        padding: 2rem;
+    }
+    
+    .login-form-wrapper h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
     .login-form {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 1.25rem;
     }
-
-    .form-group {
+    
+    .form-field {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
     }
-
-    .form-group label {
+    
+    .form-field label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         font-weight: 600;
-        color: #333;
-        font-size: 0.95rem;
+        color: #2c3e50;
     }
-
-    .form-group input {
+    
+    .form-field label i {
+        color: var(--primary-color);
+    }
+    
+    .form-field input {
         height: 3rem;
         padding: 0 1rem;
-        border: 1px solid #E5E7EB;
+        border: 1px solid #e2e8f0;
         border-radius: 6px;
         font-size: 1rem;
         transition: all 0.2s;
     }
-
-    .form-group input:focus {
-        border-color: #0047AB;
+    
+    .form-field input:focus {
+        border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
         outline: none;
     }
-
-    /* 表单操作按钮样式 */
+    
+    .form-field input::placeholder {
+        color: #a0aec0;
+    }
+    
+    /* 按钮样式 */
     .form-actions {
         display: flex;
-        justify-content: space-between;
-        margin-top: 1rem;
+        flex-direction: row;
+        gap: 1rem;
+        margin-top: 0.5rem;
     }
-
-    .login-btn, .cancel-btn {
-        padding: 0.75rem 1.5rem;
-        /* clamp(最小值, 首选值, 最大值)
-           - 最小值: 按钮文字最小不小于
-           - 首选值: 按钮文字随视窗宽度变化,为视窗宽度的0.8%
-           - 最大值: 按钮文字最大不超过 */
-        font-size: clamp(1.0rem, 0.8vw, 1.5rem);
+    
+    .primary-btn {
+        flex: 1;
+        background-color: var(--primary-color);
+        color: white;
+        height: 3rem;
+        border: none;
         border-radius: 6px;
         font-weight: 600;
+        font-size: 1rem;
         cursor: pointer;
         transition: all 0.2s;
-        text-align: center;
     }
-
-    .login-btn {
-        background-color: #0047AB;
-        color: white;
-        border: none;
+    
+    .primary-btn:hover {
+        background-color: var(--button-hover);
+    }
+    
+    .secondary-btn {
         flex: 1;
-        margin-right: 1rem;
-    }
-
-    .login-btn:hover {
-        background-color: #003A8C;
-        transform: translateY(-2px);
-    }
-
-    .cancel-btn {
         background-color: white;
-        color: #555;
-        border: 1px solid #E5E7EB;
-        text-decoration: none;
-        flex: 1;
+        color: #4a5568;
+        height: 3rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s;
     }
-
-    .cancel-btn:hover {
-        background-color: #f5f5f5;
-        transform: translateY(-2px);
+    
+    .secondary-btn:hover {
+        background-color: #f7fafc;
+        border-color: #cbd5e0;
+    }
+    
+    /* 响应式调整 */
+    @media (max-width: 640px) {
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .login-header h1 {
+            font-size: 1.75rem;
+        }
+        
+        .login-header p {
+            font-size: 1rem;
+        }
+    }
+    
+    /* Password input with toggle button */
+    .password-input-container {
+        position: relative;
+        width: 100%;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #718096;
+        cursor: pointer;
+        font-size: 1.1rem;
+        padding: 0.5rem;
+        transition: color 0.2s;
+    }
+    
+    .password-toggle:hover {
+        color: var(--primary-color);
+    }
+    
+    .password-toggle:focus {
+        outline: none;
     }
 </style>
 {% endblock %}

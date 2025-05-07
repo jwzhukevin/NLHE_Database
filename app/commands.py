@@ -31,10 +31,11 @@ def register_commands(app):
     """Register Flask CLI commands."""
     
     @app.cli.command('user-add')
+    @click.argument('email')
     @click.argument('username')
     @click.argument('password')
     @click.argument('role', default='user')
-    def user_add(username, password, role):
+    def user_add(email, username, password, role):
         """Add a new user."""
         db.create_all()
         
@@ -42,20 +43,33 @@ def register_commands(app):
             click.echo(f'Invalid role: {role}. Must be either "admin" or "user".')
             return 1
         
-        user = User.query.filter_by(username=username).first()
-        if user:
-            click.echo(f'User {username} already exists. Updating password and role...')
-            user.set_password(password)
-            user.role = role
-        else:
-            click.echo(f'Creating new {role} account for {username}...')
-            user = User(username=username, name=username, role=role)
-            user.set_password(password)
-            db.session.add(user)
+        # Email validation
+        email = email.strip().lower()
+        if '@' not in email:
+            click.echo(f'Invalid email format: {email}')
+            return 1
+        
+        # Check if email already exists
+        existing_email = User.query.filter_by(email=email).first()
+        if existing_email:
+            click.echo(f'User with email {email} already exists.')
+            return 1
+        
+        # Check username availability
+        existing_username = User.query.filter_by(username=username).first()
+        if existing_username:
+            click.echo(f'Username {username} is already taken. Please choose another.')
+            return 1
+        
+        # Create new user
+        click.echo(f'Creating new {role} account for {username} ({email})...')
+        user = User(username=username, name=username, email=email, role=role)
+        user.set_password(password)
+        db.session.add(user)
         
         try:
             db.session.commit()
-            click.echo(f'User {username} with role {role} has been created/updated successfully.')
+            click.echo(f'User {username} with role {role} has been created successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
             click.echo(f'Error creating user: {str(e)}')
@@ -83,26 +97,33 @@ def register_commands(app):
                 
                 try:
                     parts = line.split(':')
-                    if len(parts) < 3:
+                    if len(parts) < 4:
                         click.echo(f'Error: Invalid format in line: {line}')
                         continue
                     
-                    username, password, role = parts[0], parts[1], parts[2]
+                    email, username, password, role = parts[0], parts[1], parts[2], parts[3]
+                    
+                    # Email validation
+                    email = email.strip().lower()
+                    if '@' not in email:
+                        click.echo(f'Warning: Invalid email format for "{email}". Skipping.')
+                        continue
                     
                     if role not in ['admin', 'user']:
                         click.echo(f'Warning: Invalid role "{role}" for user {username}. Setting to "user".')
                         role = 'user'
                     
-                    user = User.query.filter_by(username=username).first()
+                    user = User.query.filter_by(email=email).first()
                     if user:
+                        user.username = username
                         user.set_password(password)
                         user.role = role
-                        click.echo(f'Updated user: {username} with role: {role}')
+                        click.echo(f'Updated user: {username} ({email}) with role: {role}')
                     else:
-                        user = User(username=username, name=username, role=role)
+                        user = User(username=username, name=username, email=email, role=role)
                         user.set_password(password)
                         db.session.add(user)
-                        click.echo(f'Added user: {username} with role: {role}')
+                        click.echo(f'Added user: {username} ({email}) with role: {role}')
                     
                     count += 1
                 except Exception as e:
@@ -282,25 +303,56 @@ def register_commands(app):
 
     @app.cli.command()
     @click.option('--username', prompt=True)
+    @click.option('--email', prompt=True)
     @click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True)
-    def admin(username, password):
+    def admin(username, email, password):
         """Create admin user."""
         db.create_all()
-        user = User.query.filter_by(username=username).first()
-        if user:
+        
+        # Email validation
+        email = email.strip().lower()
+        if '@' not in email:
+            click.echo(f'Invalid email format: {email}')
+            return 1
+        
+        # Check if user exists by email or username
+        user_by_email = User.query.filter_by(email=email).first()
+        user_by_username = User.query.filter_by(username=username).first()
+        
+        if user_by_email:
             click.echo('Updating existing user...')
+            user = user_by_email
+            user.username = username
             user.set_password(password)
+            
+            # Ensure user has admin role
+            if user.role != 'admin':
+                user.role = 'admin'
+                click.echo('User role updated to admin.')
+        elif user_by_username:
+            click.echo('Updating existing user and adding email...')
+            user = user_by_username
+            user.email = email
+            user.set_password(password)
+            
             # Ensure user has admin role
             if user.role != 'admin':
                 user.role = 'admin'
                 click.echo('User role updated to admin.')
         else:
             click.echo('Creating new admin user...')
-            user = User(username=username, name='NLHE Database', role='admin')
+            user = User(username=username, name='NLHE Database', email=email, role='admin')
             user.set_password(password)
             db.session.add(user)
-        db.session.commit()
-        click.echo('Admin account updated successfully.')
+        
+        try:
+            db.session.commit()
+            click.echo('Admin account updated successfully.')
+            return 0
+        except Exception as e:
+            db.session.rollback()
+            click.echo(f'Error creating/updating admin: {str(e)}')
+            return 1
 
     @app.cli.command()
     def update_nullable_columns():
@@ -511,3 +563,21 @@ def register_commands(app):
             click.echo(f"数据库提交错误: {str(e)}")
             
         click.echo('Database initialization and data import completed successfully.')
+
+    @app.cli.command('migrate-users-email')
+    def migrate_users_email():
+        """Migrate users to include email field."""
+        try:
+            # Import the migration script
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(app.root_path), 'migrations'))
+            
+            from add_email_field import migrate_database
+            migrate_database()
+            
+            click.echo("User migration completed successfully.")
+            return 0
+        except Exception as e:
+            click.echo(f"Error during migration: {str(e)}")
+            return 1

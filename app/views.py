@@ -3,7 +3,7 @@
 # Includes homepage, material details page, add/edit materials, user authentication, etc.
 
 # Import required modules
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app  # Flask core modules
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify  # Flask core modules
 from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
 from sqlalchemy import and_, or_  # Database query condition builders
 from .models import User, Material, BlockedIP  # Custom data models
@@ -620,27 +620,49 @@ def login():
     POST request: Verify credentials and execute login, track failed login attempts
     """
     if request.method == 'POST':
-        username = request.form['username']  # Get username from form
-        password = request.form['password']  # Get password from form
-        login_type = request.form.get('login_type', 'user')  # Get login type (user or admin)
-        client_ip = get_client_ip()  # Get client IP
+        email = request.form['email'].strip().lower()
+        username = request.form['username'].strip()
+        password = request.form['password']
+        login_type = request.form.get('login_type', 'user')
+        client_ip = get_client_ip()
         
         # Use session to store login attempt count
         if 'login_attempts' not in session:
             session['login_attempts'] = 0
         
-        if not username or not password:  # Empty value check
-            flash('Invalid input.', 'error')  # Display error message
-            return redirect(url_for('views.login'))  # Redirect back to login page
+        if not email or not username or not password:
+            flash('All fields are required.', 'error')
+            return redirect(url_for('views.login'))
         
-        user = User.query.filter_by(username=username).first()  # Exact query by username
+        user = User.query.filter_by(email=email).first()
         
-        # Check if login_type is admin but user role is not admin
-        if login_type == 'admin' and (not user or user.role != 'admin'):
+        # Check if user exists
+        if not user:
             session['login_attempts'] += 1
             current_attempts = session['login_attempts']
             
-            if current_attempts >= 3:  # Lower threshold for admin login attempts
+            if current_attempts >= 5:
+                blocked_ip = BlockedIP(
+                    ip_address=client_ip,
+                    blocked_at=datetime.datetime.now(),
+                    reason="Multiple failed login attempts"
+                )
+                db.session.add(blocked_ip)
+                db.session.commit()
+                session.pop('login_attempts', None)
+                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                return redirect(url_for('views.landing'))
+            
+            remaining_attempts = 5 - current_attempts
+            flash(f'Invalid credentials. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
+            return redirect(url_for('views.login'))
+        
+        # Check if login_type is admin but user role is not admin
+        if login_type == 'admin' and user.role != 'admin':
+            session['login_attempts'] += 1
+            current_attempts = session['login_attempts']
+            
+            if current_attempts >= 3:
                 blocked_ip = BlockedIP(
                     ip_address=client_ip,
                     blocked_at=datetime.datetime.now(),
@@ -656,45 +678,33 @@ def login():
             flash(f'Invalid administrator credentials. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
             return redirect(url_for('views.login'))
         
-        # For regular user login, verify password
-        if user and user.validate_password(password):
-            # For admin login, verify the role
-            if login_type == 'admin' and user.role != 'admin':
-                flash('Access denied. Your account does not have administrator privileges.', 'error')
-                return redirect(url_for('views.login'))
+        # For regular user login, verify username, password
+        if user.username != username or not user.validate_password(password):
+            session['login_attempts'] += 1
+            current_attempts = session['login_attempts']
             
-            # Login successful, reset attempt count
-            session.pop('login_attempts', None)
-            login_user(user)  # Flask-Login login method, manage user session
-            flash(f'Login successful as {"Administrator" if user.role == "admin" else "User"}.', 'success')  # Display success message
-            return redirect(url_for('views.index'))  # Redirect to homepage
-        
-        # Login failed, increase attempt count
-        session['login_attempts'] += 1
-        current_attempts = session['login_attempts']
-        
-        # Check if maximum attempt count is reached
-        if current_attempts >= 10:
-            # Create new IP block record
-            blocked_ip = BlockedIP(
-                ip_address=client_ip,
-                blocked_at=datetime.datetime.now()
-            )
-            db.session.add(blocked_ip)
-            db.session.commit()
+            if current_attempts >= 5:
+                blocked_ip = BlockedIP(
+                    ip_address=client_ip,
+                    blocked_at=datetime.datetime.now()
+                )
+                db.session.add(blocked_ip)
+                db.session.commit()
+                session.pop('login_attempts', None)
+                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                return redirect(url_for('views.landing'))
             
-            # Clear session attempt count
-            session.pop('login_attempts', None)
-            
-            flash('Your IP has been blocked due to too many failed login attempts.', 'error')
-            return redirect(url_for('views.landing'))
+            remaining_attempts = 5 - current_attempts
+            flash(f'Invalid credentials. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
+            return redirect(url_for('views.login'))
         
-        # Display error message and remaining attempt count
-        remaining_attempts = 10 - current_attempts
-        flash(f'Invalid username or password. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
-        return redirect(url_for('views.login'))
+        # Login successful, reset attempt count
+        session.pop('login_attempts', None)
+        login_user(user)
+        flash(f'Login successful as {"Administrator" if user.role == "admin" else "User"}.', 'success')
+        return redirect(url_for('views.index'))
         
-    return render_template('auth/login.html')  # GET request returns login form
+    return render_template('auth/login.html')
 
 # User logout route
 @bp.route('/logout')
@@ -720,13 +730,182 @@ def settings():
     POST request: Update user settings
     """
     if request.method == 'POST':
-        name = request.form['name']  # Get name from form
-        if not name or len(name) > 20:  # Input validation: Cannot be empty and length limit
-            flash('Invalid input.', 'error')  # Display error message
-            return redirect(url_for('views.settings'))  # Redirect back to settings page
+        username = request.form['username'].strip()
+        name = request.form['name'].strip()
+        current_password = request.form.get('current_password', '')
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
         
-        current_user.name = name  # Update current user information (using Flask-Login's current_user)
-        db.session.commit()  # Commit changes to database
-        flash('Settings updated.', 'success')  # Display success message
-        return redirect(url_for('views.index'))  # Redirect to homepage
-    return render_template('auth/settings.html', user=current_user)  # GET request returns settings form
+        # Validate inputs
+        if not username or not name:
+            flash('Username and display name are required.', 'error')
+            return redirect(url_for('views.settings'))
+        
+        if len(username) > 20 or len(name) > 20:
+            flash('Username and display name must be 20 characters or less.', 'error')
+            return redirect(url_for('views.settings'))
+        
+        # Check if another user already has this username (except current user)
+        existing_user = User.query.filter(User.username == username, User.email != current_user.email).first()
+        if existing_user:
+            flash('This username is already taken. Please choose another.', 'error')
+            return redirect(url_for('views.settings'))
+        
+        changes_made = False
+        
+        # Check if username or name changed
+        if username != current_user.username or name != current_user.name:
+            current_app.logger.info(f"Updating user {current_user.email} profile: username={username}, name={name}")
+            current_user.username = username
+            current_user.name = name
+            changes_made = True
+        
+        # Password change logic
+        if new_password:
+            # Verify current password
+            if not current_user.validate_password(current_password):
+                flash('Current password is incorrect.', 'error')
+                return redirect(url_for('views.settings'))
+            
+            # Validate new password
+            if len(new_password) < 8:
+                flash('New password must be at least 8 characters long.', 'error')
+                return redirect(url_for('views.settings'))
+            
+            if new_password != confirm_password:
+                flash('New passwords do not match.', 'error')
+                return redirect(url_for('views.settings'))
+            
+            # Set new password
+            current_app.logger.info(f"Updating password for user {current_user.email}")
+            current_user.set_password(new_password)
+            
+            # 单独保存密码到文件系统中
+            save_user_password(current_user.email, new_password)
+            changes_made = True
+        
+        if not changes_made:
+            flash('No changes were made.', 'info')
+            return redirect(url_for('views.settings'))
+            
+        try:
+            # Commit database changes
+            db.session.commit()
+            current_app.logger.info(f"Successfully updated user {current_user.email} in database")
+            
+            # Update users.dat file with the latest user data
+            update_users_dat()
+            flash('Settings updated successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error updating user settings: {str(e)}")
+            flash(f'An error occurred while saving settings: {str(e)}', 'error')
+            
+        return redirect(url_for('views.index'))
+    
+    return render_template('auth/settings.html', user=current_user)
+
+# Helper function to save user password
+def save_user_password(user_email, new_password):
+    """
+    直接保存单个用户的密码，以避免users.dat文件处理的复杂性
+    
+    Parameters:
+        user_email: 用户邮箱（作为唯一标识）
+        new_password: 用户新密码（将被加密存储）
+    """
+    try:
+        users_dir = os.path.join(current_app.root_path, 'static/users')
+        os.makedirs(users_dir, exist_ok=True)
+        
+        # 替换特殊字符，生成安全的文件名
+        safe_email = user_email.replace('@', '_at_').replace('.', '_dot_')
+        password_file = os.path.join(users_dir, f"{safe_email}.pwd")
+        
+        # 记录用户密码变更操作
+        current_app.logger.info(f"Saving password for user {user_email}")
+        
+        # 写入密码到用户特定的文件
+        with open(password_file, 'w') as f:
+            f.write(new_password)
+            
+        current_app.logger.info(f"Password for {user_email} saved successfully")
+        return True
+    except Exception as e:
+        current_app.logger.error(f"Error saving password for {user_email}: {str(e)}")
+        return False
+
+# Helper function to update users.dat file
+def update_users_dat():
+    """Update users.dat file with latest user information"""
+    users_file = os.path.join(current_app.root_path, 'static/users/users.dat')
+    current_app.logger.info(f"Updating users file at: {users_file}")
+    
+    # Get all users from database
+    users = User.query.all()
+    current_app.logger.info(f"Found {len(users)} users to update")
+    
+    # Create backup of original file
+    backup_file = f"{users_file}.bak"
+    if os.path.exists(users_file):
+        import shutil
+        shutil.copy2(users_file, backup_file)
+        current_app.logger.info(f"Created backup at: {backup_file}")
+    
+    # Create directory if it doesn't exist
+    users_dir = os.path.dirname(users_file)
+    os.makedirs(users_dir, exist_ok=True)
+    current_app.logger.info(f"Ensured directory exists: {users_dir}")
+    
+    # Read existing users.dat file to preserve passwords
+    existing_passwords = {}
+    if os.path.exists(users_file):
+        try:
+            with open(users_file, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    parts = line.split(':')
+                    if len(parts) >= 4:
+                        email, username, password, role = parts[0], parts[1], parts[2], parts[3]
+                        existing_passwords[email] = password
+                        current_app.logger.debug(f"Read existing password for {email}")
+        except Exception as e:
+            current_app.logger.error(f"Error reading users.dat: {str(e)}")
+    else:
+        current_app.logger.warning(f"users.dat file does not exist at {users_file}")
+    
+    # 尝试从单独的密码文件中读取密码
+    for user in users:
+        if user.email not in existing_passwords:
+            try:
+                safe_email = user.email.replace('@', '_at_').replace('.', '_dot_')
+                password_file = os.path.join(users_dir, f"{safe_email}.pwd")
+                if os.path.exists(password_file):
+                    with open(password_file, 'r') as f:
+                        existing_passwords[user.email] = f.read().strip()
+                        current_app.logger.debug(f"Read password from file for {user.email}")
+            except Exception as e:
+                current_app.logger.error(f"Error reading password file for {user.email}: {str(e)}")
+    
+    # Write updated user data to file
+    try:
+        with open(users_file, 'w') as f:
+            f.write("# Format: email:username:password:role\n")
+            f.write("# Available roles: admin, user\n")
+            f.write("# One user per line\n")
+            
+            for user in users:
+                # Get password from existing file or use default
+                password = existing_passwords.get(user.email, "password123")
+                
+                line = f"{user.email}:{user.username}:{password}:{user.role}\n"
+                f.write(line)
+                current_app.logger.debug(f"Wrote user data for {user.email}")
+        
+        current_app.logger.info(f"Successfully updated users.dat file with {len(users)} users")
+        return True
+    except Exception as e:
+        current_app.logger.error(f"Failed to write users.dat file: {str(e)}")
+        raise

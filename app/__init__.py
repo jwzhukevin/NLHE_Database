@@ -56,7 +56,7 @@ def create_app():
     db.init_app(app)  # 延迟绑定 SQLAlchemy 到应用（工厂模式核心）
     migrate = Migrate(app, db)  # 初始化数据库迁移工具（生成迁移脚本）
     login_manager.init_app(app)  # 绑定登录管理到应用
-
+    
     # --- 用户加载器（必须实现） ---
     # Flask-Login要求实现的回调函数，用于从会话cookie恢复用户
     @login_manager.user_loader

@@ -21,6 +21,7 @@ executing==2.2.0
 fastjsonschema==2.21.1
 Flask==2.2.5
 Flask-Login==0.6.3
+Flask-Mail==0.10.0
 Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.0.3
 fonttools==4.56.0
