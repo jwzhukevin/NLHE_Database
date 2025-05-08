@@ -42,11 +42,10 @@ def create_app():
     # SECRET_KEY用于会话安全和CSRF保护
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
     
-    # 动态构建数据库路径（基于应用根目录）
-    # SQLite数据库文件存放在项目根目录下
+    # 使用Flask实例目录中的app.db文件作为默认数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(
-        os.path.dirname(app.root_path),  # 获取应用根目录的父目录（项目根目录）
-        os.getenv('DATABASE_FILE', 'data.db')  # 从环境变量读取数据库文件名，默认 'data.db'
+        app.instance_path,  # 使用Flask应用实例目录
+        os.getenv('DATABASE_FILE', 'app.db')  # 从环境变量读取数据库文件名，默认为'app.db'
     )
     # 禁用SQLAlchemy的事件通知系统以提高性能
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 禁用 SQLAlchemy 事件系统以提升性能

@@ -29,48 +29,27 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
             current_app.logger.error("Material ID not provided")
             return None
         
-        # 构建材料ID格式化字符串
+        # 构建路径和目录
         formatted_id = f"IMR-{int(material_id):08d}"
-        
-        # 构建材料目录路径
         materials_dir = os.path.join(current_app.root_path, 'static/materials')
-        
-        # 确保基础目录存在
-        if not os.path.exists(materials_dir):
-            os.makedirs(materials_dir)
-        
-        # 构建特定材料目录
         material_dir = os.path.join(materials_dir, formatted_id)
-        if not os.path.exists(material_dir):
-            os.makedirs(material_dir)
-        
-        # 构建结构文件目录
         structure_dir = os.path.join(material_dir, 'structure')
-        if not os.path.exists(structure_dir):
-            os.makedirs(structure_dir)
         
-        # 保留原始文件名，但确保使用.cif扩展名
-        if not filename.lower().endswith('.cif'):
-            save_filename = filename + ".cif"
-        else:
-            save_filename = filename
+        # 创建所有必要目录（一次性创建）
+        os.makedirs(structure_dir, exist_ok=True)
         
-        # 构建完整的文件保存路径
+        # 处理文件名和保存文件
+        save_filename = filename if filename.lower().endswith('.cif') else filename + ".cif"
         file_path = os.path.join(structure_dir, save_filename)
         
-        # 以二进制模式写入文件内容
         with open(file_path, 'wb') as f:
             f.write(file_content)
         
-        # 记录日志
-        current_app.logger.info(f"Saved structure file for material {formatted_id}: {file_path}")
-        
-        # 返回相对于static的路径
+        # 返回相对路径
         relative_path = os.path.join('materials', formatted_id, 'structure', save_filename)
         return relative_path
     
     except Exception as e:
-        # 记录错误并返回None
         current_app.logger.error(f"Error saving structure file: {str(e)}")
         return None
 
@@ -88,38 +67,28 @@ def find_structure_file(material_id=None, material_name=None):
     """
     try:
         # 只通过材料ID查找文件
-        if material_id is not None:
-            # 构建材料ID格式化字符串
-            formatted_id = f"IMR-{int(material_id):08d}"
+        if material_id is None:
+            return None
             
-            # 构建结构目录路径
-            structure_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id, 'structure')
-            
-            # 检查目录是否存在
-            if not os.path.exists(structure_dir):
-                current_app.logger.warning(f"Structure directory not found for material ID: {material_id}")
-                return None
-                
-            # 查找目录中的所有CIF文件
-            cif_files = glob.glob(os.path.join(structure_dir, "*.cif"))
-            
-            # 如果找到了CIF文件，返回第一个
-            if cif_files:
-                # 获取相对于static目录的路径
-                file_path = cif_files[0]
-                relative_path = os.path.relpath(file_path, os.path.join(current_app.root_path, 'static'))
-                current_app.logger.info(f"Found structure file: {relative_path}")
-                return relative_path
-            else:
-                current_app.logger.warning(f"No CIF file found in directory: {structure_dir}")
-                return None
+        # 构建材料目录路径
+        formatted_id = f"IMR-{int(material_id):08d}"
+        structure_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id, 'structure')
         
-        # 记录未找到文件的信息
-        current_app.logger.error(f"No material ID provided to find structure file")
+        # 检查目录是否存在
+        if not os.path.exists(structure_dir):
+            return None
+                
+        # 查找目录中的CIF文件
+        cif_files = glob.glob(os.path.join(structure_dir, "*.cif"))
+        
+        # 返回找到的第一个CIF文件的相对路径
+        if cif_files:
+            relative_path = os.path.relpath(cif_files[0], os.path.join(current_app.root_path, 'static'))
+            return relative_path
+        
         return None
     
     except Exception as e:
-        # 记录错误并返回None
         current_app.logger.error(f"Error finding structure file: {str(e)}")
         return None
 
@@ -137,41 +106,22 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
         包含原子坐标、晶格参数等信息的JSON字符串，解析失败则返回错误JSON
     """
     try:
-        # 记录调用信息
-        if filename:
-            current_app.logger.info(f"Parsing CIF file with filename: {filename}")
-        elif material_id:
-            current_app.logger.info(f"Parsing CIF file for material ID: {material_id}")
-        else:
-            error_msg = "Neither filename nor material_id provided"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+        # 参数验证和文件查找
+        if not filename and not material_id:
+            return json.dumps({"error": "No filename or material_id provided"})
         
-        # 如果未提供文件名，则尝试通过材料ID查找
         if not filename and material_id:
             filename = find_structure_file(material_id=material_id)
-            
-            # 如果未找到文件，则返回错误JSON
             if not filename:
-                error_msg = f"No structure file found for material ID: {material_id}"
-                current_app.logger.error(error_msg)
-                return json.dumps({"error": error_msg})
+                return json.dumps({"error": f"No structure file found for material ID: {material_id}"})
         
-        # 构建完整的文件路径（filename是相对于static目录的路径）
+        # 构建文件路径并检查文件
         file_path = os.path.join(current_app.root_path, 'static', filename)
-        current_app.logger.info(f"Full file path: {file_path}")
-        
-        # 检查文件是否存在
         if not os.path.exists(file_path):
-            error_msg = f"Structure file not found: {filename}"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+            return json.dumps({"error": f"Structure file not found: {filename}"})
         
-        # 检查文件是否为空
         if os.path.getsize(file_path) == 0:
-            error_msg = f"Structure file is empty: {filename}"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+            return json.dumps({"error": f"Structure file is empty: {filename}"})
         
         # 尝试从CIF文件中读取化学式名称
         chemical_name = None
@@ -180,12 +130,10 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
                 cif_content = f.readlines()
                 for line in cif_content:
                     if '_chemical_formula_structural' in line:
-                        # 提取_chemical_formula_structural后的值
                         parts = line.strip().split()
                         if len(parts) > 1:
                             chemical_name = parts[1].strip("'").strip('"')
                             break
-                    # 尝试读取其他化学式字段
                     elif '_chemical_formula_sum' in line:
                         parts = line.strip().split()
                         if len(parts) > 1:
@@ -195,36 +143,25 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
                         parts = line.strip().split()
                         if len(parts) > 1:
                             chemical_name = parts[1].strip("'").strip('"')
-                            # 继续查找，优先使用chemical_formula字段
-            current_app.logger.info(f"Read chemical formula from CIF: {chemical_name}")
-        except Exception as e:
-            current_app.logger.warning(f"Could not read chemical formula from CIF file: {str(e)}")
+        except Exception:
+            pass  # 如果无法读取化学式，继续处理
         
-        # 尝试使用pymatgen加载晶体结构
+        # 加载晶体结构
         try:
             structure = Structure.from_file(file_path)
-            current_app.logger.info(f"Successfully loaded structure from file: {file_path}")
         except Exception as e:
-            error_msg = f"Error loading structure from file: {str(e)}"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg, "file_path": file_path})
+            return json.dumps({"error": f"Error loading structure from file: {str(e)}"})
         
-        # 提取更多结构信息
+        # 提取结构信息
         try:
             from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
             analyzer = SpacegroupAnalyzer(structure)
-            
-            # 获取空间群信息
             spacegroup_symbol = analyzer.get_space_group_symbol()
             spacegroup_number = analyzer.get_space_group_number()
             crystal_system = analyzer.get_crystal_system()
             point_group = analyzer.get_point_group_symbol()
-            
-            # 获取常规胞结构以展示标准化的数据
             conventional_structure = analyzer.get_conventional_standard_structure()
-            current_app.logger.info(f"Successfully analyzed structure symmetry: {spacegroup_symbol}")
-        except Exception as e:
-            current_app.logger.warning(f"Error analyzing structure symmetry: {str(e)}, using original structure")
+        except Exception:
             conventional_structure = structure
             spacegroup_symbol = "Unknown"
             spacegroup_number = 0
@@ -234,126 +171,67 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
         # 提取晶格参数（使用常规胞）
         lattice = conventional_structure.lattice
         lattice_data = {
-            'a': lattice.a,  # a轴长度（埃）
-            'b': lattice.b,  # b轴长度（埃）
-            'c': lattice.c,  # c轴长度（埃）
-            'alpha': lattice.alpha,  # alpha角（度）
-            'beta': lattice.beta,    # beta角（度）
-            'gamma': lattice.gamma,  # gamma角（度）
-            'volume': lattice.volume,  # 晶胞体积（埃^3）
-            'matrix': lattice.matrix.tolist()  # 晶格矩阵，转换为列表以便JSON序列化
+            'a': lattice.a,
+            'b': lattice.b,
+            'c': lattice.c,
+            'alpha': lattice.alpha,
+            'beta': lattice.beta,
+            'gamma': lattice.gamma,
+            'volume': lattice.volume,
+            'matrix': lattice.matrix.tolist()
         }
         
         # 如果未能从CIF文件中读取化学式，则使用pymatgen计算的化学式
         composition_name = conventional_structure.composition.reduced_formula
         if not chemical_name:
-            chemical_name = composition_name  # 默认使用计算的化学式作为名称
-            current_app.logger.info(f"Using calculated formula: {chemical_name}")
+            chemical_name = composition_name
         
         # 提取原子信息
         atoms = []
         try:
             wyckoff_sites = analyzer.get_symmetry_dataset()['wyckoffs']
             equivalent_atoms = analyzer.get_symmetry_dataset()['equivalent_atoms']
-            
-            for i, site in enumerate(conventional_structure.sites):
-                # 获取Wyckoff位置
-                wyckoff = wyckoff_sites[equivalent_atoms[i]] if i < len(equivalent_atoms) else "?"
-                
-                # 获取元素符号
-                element_str = site.species_string
-                
-                atom = {
-                    'element': element_str,  # 元素符号
-                    'position': site.coords.tolist(),  # 笛卡尔坐标
-                    'frac_coords': site.frac_coords.tolist(),  # 分数坐标
-                    'wyckoff': wyckoff,  # Wyckoff位置
-                    'properties': {
-                        'label': element_str,  # 原子标签（用于显示）
-                        'radius': get_atom_radius(element_str)  # 原子半径（用于3D渲染）
-                    }
-                }
-                atoms.append(atom)
-        except Exception as e:
-            current_app.logger.warning(f"Error getting Wyckoff positions: {str(e)}, proceeding without them")
-            # 如果无法获取Wyckoff位置，则简化处理
-            for site in conventional_structure.sites:
-                element_str = site.species_string
-                
-                atom = {
-                    'element': element_str,
-                    'position': site.coords.tolist(),
-                    'frac_coords': site.frac_coords.tolist(),
-                    'wyckoff': "?",
-                    'properties': {
-                        'label': element_str,
-                        'radius': get_atom_radius(element_str)
-                    }
-                }
-                atoms.append(atom)
+        except Exception:
+            wyckoff_sites = None
+            equivalent_atoms = None
         
-        # 提取可能的氧化态
-        possible_oxidation_states = {}
-        for element in conventional_structure.composition.elements:
-            # 处理元素符号，确保移除可能的电荷标记
-            elem_symbol = str(element)
-            # 提取纯元素符号（去除任何+、-等电荷标记）
-            pure_elem_symbol = ''.join(c for c in elem_symbol if c.isalpha())
+        for i, site in enumerate(conventional_structure.sites):
+            element_str = site.species_string
+            wyckoff = wyckoff_sites[i] if wyckoff_sites is not None else None
             
-            try:
-                from pymatgen.core.periodic_table import Element
-                possible_oxidation_states[elem_symbol] = Element(pure_elem_symbol).oxidation_states
-            except Exception as e:
-                # 如果获取氧化态失败，记录错误但继续处理
-                current_app.logger.warning(f"Could not get oxidation states for element {elem_symbol}: {str(e)}")
-                possible_oxidation_states[elem_symbol] = []
+            atom = {
+                'element': element_str,
+                'position': site.coords.tolist(),
+                'frac_coords': site.frac_coords.tolist(),
+                'properties': {
+                    'label': element_str,
+                    'radius': get_atom_radius(element_str),
+                    'wyckoff': wyckoff
+                }
+            }
+            atoms.append(atom)
         
-        # 构建完整的结构数据
+        # 构建完整的结构数据，包含晶胞和对称性信息
         structure_data = {
-            'name': chemical_name,  # 使用从CIF读取的化学式名称
-            'formula': conventional_structure.formula,  # 完整化学式
-            'lattice': lattice_data,  # 晶格参数
-            'atoms': atoms,  # 原子列表
-            'sites': [  # 单独添加sites数据以便前端使用
-                {
-                    'species': [{'element': atom['element']}],
-                    'xyz': atom['position'],
-                    'frac_coords': atom['frac_coords'],
-                    'wyckoff': atom.get('wyckoff', '')
-                } for atom in atoms
-            ],
-            'num_atoms': len(atoms),  # 原子总数
-            'density': conventional_structure.density,  # 密度 (g/cm^3)
+            'id': material_id,
+            'formula': chemical_name,
+            'composition': composition_name,
+            'lattice': lattice_data,
+            'atoms': atoms,
+            'num_atoms': len(atoms),
             'symmetry': {
-                'crystal_system': crystal_system,  # 晶系
-                'space_group_symbol': spacegroup_symbol,  # 空间群符号
-                'space_group_number': spacegroup_number,  # 空间群编号
-                'point_group': point_group,  # 点群
-                # 'hall_number': analyzer.get_hall_number(),  # Hall编号
-            },
-            'dimensionality': '3D',  # 默认为3D
-            'possible_oxidation_states': possible_oxidation_states,  # 可能的氧化态
-            'id': material_id,  # 添加材料ID便于前端引用
-            'chemical_formula_structural': chemical_name,  # 添加原始的结构化化学式
-            'structure_file_path': filename  # 添加结构文件路径，便于调试
+                'symbol': spacegroup_symbol,
+                'number': spacegroup_number,
+                'crystal_system': crystal_system,
+                'point_group': point_group
+            }
         }
         
-        # 添加材料ID到结构数据中
-        if material_id:
-            structure_data['id'] = material_id
-            
-        # 添加结构文件路径，便于调试
-        structure_data['structure_file_path'] = filename
-        
-        current_app.logger.info(f"Successfully parsed CIF data for {chemical_name}")
         # 返回JSON字符串
         return json.dumps(structure_data)
     
     except Exception as e:
-        # 记录错误并返回错误JSON
-        error_msg = f"Error parsing CIF file {filename}: {str(e)}"
-        current_app.logger.error(error_msg)
-        return json.dumps({"error": error_msg, "details": str(e)})
+        return json.dumps({"error": str(e)})
 
 
 def get_atom_radius(element):
@@ -488,64 +366,37 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
         包含超晶胞结构的JSON字符串，出错则返回错误JSON
     """
     try:
-        # 验证输入参数
-        if not isinstance(a, (int, float)) or not isinstance(b, (int, float)) or not isinstance(c, (int, float)):
-            error_msg = "Supercell parameters (a, b, c) must be numbers"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
-        
-        if a <= 0 or b <= 0 or c <= 0:
-            error_msg = "Supercell parameters (a, b, c) must be positive"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+        # 参数验证
+        if not all(isinstance(x, (int, float)) and x > 0 for x in [a, b, c]):
+            return json.dumps({"error": "Supercell parameters must be positive numbers"})
         
         if cell_type not in ['primitive', 'conventional']:
-            error_msg = "Cell type must be either 'primitive' or 'conventional'"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+            return json.dumps({"error": "Cell type must be either 'primitive' or 'conventional'"})
         
-        # 规范化文件路径
-        if not os.path.isabs(file_path):
-            file_path = os.path.join(current_app.root_path, 'static/structures', file_path)
-        file_path = os.path.normpath(file_path)
-        
-        # 检查文件是否存在
+        # 检查文件
         if not os.path.exists(file_path):
-            error_msg = f"Structure file not found: {file_path}"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+            return json.dumps({"error": f"Structure file not found: {file_path}"})
         
+        # 加载结构
         try:
-            # 使用pymatgen加载晶体结构
             structure = Structure.from_file(file_path)
         except Exception as e:
-            error_msg = f"Error loading structure file: {str(e)}"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+            return json.dumps({"error": f"Error loading structure file: {str(e)}"})
         
-        # 根据需要转换为常规胞（如果选择了conventional类型）
+        # 应用晶胞转换
         if cell_type == 'conventional':
             try:
                 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
                 analyzer = SpacegroupAnalyzer(structure, symprec=0.1, angle_tolerance=5)
                 conventional_structure = analyzer.get_conventional_standard_structure()
-                if conventional_structure is not None:
+                if conventional_structure:
                     structure = conventional_structure
-                else:
-                    current_app.logger.warning("Could not determine conventional cell, using original structure")
-            except Exception as e:
-                error_msg = f"Error converting to conventional cell: {str(e)}"
-                current_app.logger.error(error_msg)
-                return json.dumps({"error": error_msg})
+            except Exception:
+                pass  # 如果转换失败，使用原始结构
         
-        try:
-            # 创建超晶胞（通过复制原胞）
-            supercell = structure.copy()
-            supercell.make_supercell([float(a), float(b), float(c)])  # 确保使用浮点数
-        except Exception as e:
-            error_msg = f"Error creating supercell: {str(e)}"
-            current_app.logger.error(error_msg)
-            return json.dumps({"error": error_msg})
+        # 创建超晶胞
+        supercell = structure.copy()
+        supercell.make_supercell([float(a), float(b), float(c)])
             
         # 提取晶格参数
         lattice = supercell.lattice
@@ -556,7 +407,7 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
             'alpha': lattice.alpha,
             'beta': lattice.beta,
             'gamma': lattice.gamma,
-            'matrix': lattice.matrix.tolist()  # 转换为列表以便JSON序列化
+            'matrix': lattice.matrix.tolist()
         }
         
         # 提取原子信息
@@ -565,37 +416,33 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
             element_str = site.species_string
             atom = {
                 'element': element_str,
-                'position': site.coords.tolist(),  # 笛卡尔坐标
-                'frac_coords': site.frac_coords.tolist(),  # 分数坐标
+                'position': site.coords.tolist(),
+                'frac_coords': site.frac_coords.tolist(),
                 'properties': {
                     'label': element_str,
-                    'radius': get_atom_radius(element_str)  # 现在get_atom_radius可以处理带电荷的元素
+                    'radius': get_atom_radius(element_str)
                 }
             }
             atoms.append(atom)
         
-        # 构建完整的结构数据，包含超晶胞信息
+        # 构建完整的结构数据
         structure_data = {
             'formula': supercell.formula,
             'lattice': lattice_data,
             'atoms': atoms,
             'num_atoms': len(atoms),
             'supercell': {
-                'a': a,  # a方向扩展倍数
-                'b': b,  # b方向扩展倍数
-                'c': c,  # c方向扩展倍数
-                'type': cell_type  # 晶胞类型
+                'a': a,
+                'b': b,
+                'c': c,
+                'type': cell_type
             }
         }
         
-        # 返回JSON字符串
         return json.dumps(structure_data)
     
     except Exception as e:
-        # 记录错误并返回错误JSON
-        error_msg = f"Error generating supercell: {str(e)}"
-        current_app.logger.error(error_msg)
-        return json.dumps({"error": error_msg})
+        return json.dumps({"error": str(e)})
 
 
 def get_cif_data(file_path, a=1, b=1, c=1, cell_type='primitive'):
@@ -674,14 +521,12 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
         # 根据cell_type选择合适的转换方法
         if cell_type == 'primitive':
             converted_structure = analyzer.find_primitive()
-            if converted_structure is None:
-                current_app.logger.warning(f"Could not find primitive cell, using original structure")
+            if not converted_structure:
                 converted_structure = structure
             is_primitive = True
         else:  # conventional
             converted_structure = analyzer.get_conventional_standard_structure()
-            if converted_structure is None:
-                current_app.logger.warning(f"Could not determine conventional cell, using original structure")
+            if not converted_structure:
                 converted_structure = structure
             is_primitive = False
         
@@ -695,62 +540,88 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
             'beta': lattice.beta,
             'gamma': lattice.gamma,
             'matrix': lattice.matrix.tolist(),
-            'volume': lattice.volume  # 添加晶胞体积信息
-        }
-        
-        # 提取空间群信息
-        spacegroup_data = {
-            'symbol': analyzer.get_space_group_symbol(),
-            'number': analyzer.get_space_group_number(),
-            'crystal_system': analyzer.get_crystal_system(),
-            'point_group': analyzer.get_point_group_symbol()
+            'volume': lattice.volume
         }
         
         # 提取原子信息
         atoms = []
-        for site in converted_structure.sites:
-            # 确保使用纯元素符号
+        try:
+            wyckoff_sites = analyzer.get_symmetry_dataset()['wyckoffs']
+            equivalent_atoms = analyzer.get_symmetry_dataset()['equivalent_atoms']
+        except Exception:
+            wyckoff_sites = None
+            equivalent_atoms = None
+            
+        for i, site in enumerate(converted_structure.sites):
             element_str = site.species_string
-            # 安全获取氧化态信息
-            oxidation_state = None
-            try:
-                if site.species.get_oxidation_states():
-                    oxidation_state = site.species.get_oxidation_states()[0]
-            except Exception:
-                # 如果获取氧化态失败，设为None
-                oxidation_state = None
-                
+            wyckoff = wyckoff_sites[i] if wyckoff_sites is not None else None
+            
             atom = {
                 'element': element_str,
                 'position': site.coords.tolist(),
                 'frac_coords': site.frac_coords.tolist(),
                 'properties': {
                     'label': element_str,
-                    'radius': get_atom_radius(element_str.split('+')[0].split('-')[0]),  # 只使用元素符号部分获取半径
-                    'oxidation_state': oxidation_state
+                    'radius': get_atom_radius(element_str),
+                    'wyckoff': wyckoff
                 }
             }
             atoms.append(atom)
         
-        # 构建完整的结构数据
+        # 构建结构数据
         structure_data = {
             'formula': converted_structure.formula,
-            'name': converted_structure.composition.reduced_formula,
+            'composition': converted_structure.composition.reduced_formula,
             'lattice': lattice_data,
             'atoms': atoms,
             'num_atoms': len(atoms),
-            'isPrimitive': is_primitive,
-            'spacegroup': spacegroup_data,
-            'density': converted_structure.density,
-            'cell_type': cell_type
+            'is_primitive': is_primitive,
+            'symmetry': {
+                'symbol': analyzer.get_space_group_symbol(),
+                'number': analyzer.get_space_group_number(),
+                'crystal_system': analyzer.get_crystal_system(),
+                'point_group': analyzer.get_point_group_symbol()
+            }
         }
         
         return structure_data
-        
+    
     except Exception as e:
-        error_msg = f"Error processing structure: {str(e)}"
-        current_app.logger.error(error_msg)
-        raise Exception(error_msg)
+        # 如果处理失败，返回简化的数据
+        lattice = structure.lattice
+        return {
+            'formula': structure.formula,
+            'composition': structure.composition.reduced_formula,
+            'lattice': {
+                'a': lattice.a,
+                'b': lattice.b,
+                'c': lattice.c,
+                'alpha': lattice.alpha,
+                'beta': lattice.beta,
+                'gamma': lattice.gamma,
+                'matrix': lattice.matrix.tolist(),
+                'volume': lattice.volume
+            },
+            'atoms': [
+                {
+                    'element': site.species_string,
+                    'position': site.coords.tolist(),
+                    'frac_coords': site.frac_coords.tolist(),
+                    'properties': {
+                        'label': site.species_string,
+                        'radius': get_atom_radius(site.species_string)
+                    }
+                } for site in structure.sites
+            ],
+            'num_atoms': len(structure),
+            'is_primitive': cell_type == 'primitive',
+            'symmetry': {
+                'symbol': 'Unknown',
+                'number': 0,
+                'crystal_system': 'Unknown',
+                'point_group': 'Unknown'
+            }
+        }
 
 
 def generate_primitive_cell(file_path):

@@ -148,58 +148,54 @@ def admin_required(view_func):
 @admin_required
 def add():
     """
-    Page and processing logic for adding new material records
+    页面和处理逻辑，用于添加新的材料记录
     
-    GET request: Display add material form
-    POST request: Process form submission, add new material to database
+    GET请求：显示添加材料表单
+    POST请求：处理表单提交，向数据库添加新材料
     """
     if request.method == 'POST':
         try:
-            # Get and process uploaded files
+            # 获取上传的文件
             structure_file = request.files.get('structure_file')
             band_file = request.files.get('band_file')
             properties_json = request.files.get('properties_json')
             sc_structure_file = request.files.get('sc_structure_file')
             
-            # Validate if the CIF file is valid
+            # 验证CIF文件
             if not structure_file or not structure_file.filename.endswith('.cif'):
-                flash('Please upload a valid CIF file!', 'error')
+                flash('请上传有效的CIF文件！', 'error')
                 return redirect(url_for('views.add'))
             
-            # Generate safe filenames and save structure files
+            # 保存结构文件并提取化学式
             from werkzeug.utils import secure_filename
             import os
-            from flask import current_app
             
-            # First save the structure file to a temporary location for extracting the chemical formula
             structure_filename = secure_filename(structure_file.filename)
             temp_structure_path = os.path.join(current_app.root_path, 'static/temp', structure_filename)
             os.makedirs(os.path.dirname(temp_structure_path), exist_ok=True)
             structure_file.save(temp_structure_path)
             
-            # Extract chemical formula from CIF file
+            # 提取化学式
             chemical_name = extract_chemical_formula_from_cif(temp_structure_path)
-            
-            # Verify if the material name was successfully extracted
             if not chemical_name:
-                flash('Unable to extract material name from CIF file, please check the file format', 'error')
+                flash('无法从CIF文件提取材料名称，请检查文件格式', 'error')
                 return redirect(url_for('views.add'))
             
-            # Verify if the material name already exists
+            # 检查材料名是否已存在
             if Material.query.filter_by(name=chemical_name).first():
-                flash(f'Material name "{chemical_name}" already exists, please use a different CIF file', 'error')
+                flash(f'材料名称"{chemical_name}"已存在，请使用不同的CIF文件', 'error')
                 return redirect(url_for('views.add'))
             
-            # Create material object and add to database to get ID
+            # 创建材料对象
             material_data = {
-                'name': chemical_name,  # Use chemical formula extracted from CIF
-                'status': request.form.get('status'),  # Status
-                'structure_file': structure_filename,  # Structure file path
+                'name': chemical_name,
+                'status': request.form.get('status'),
+                'structure_file': structure_filename,
                 'properties_json': properties_json.filename if properties_json and properties_json.filename else None,
                 'sc_structure_file': sc_structure_file.filename if sc_structure_file and sc_structure_file.filename else None,
                 'total_energy': safe_float(request.form.get('total_energy')),
                 'formation_energy': safe_float(request.form.get('formation_energy')),
-                'fermi_level': safe_float(request.form.get('efermi')),  # Match form field name 'efermi'
+                'fermi_level': safe_float(request.form.get('efermi')),
                 'vacuum_level': safe_float(request.form.get('vacuum_level')),
                 'workfunction': safe_float(request.form.get('workfunction')),
                 'metal_type': request.form.get('metal_type'),
@@ -212,103 +208,62 @@ def add():
                 'cbm_index': safe_int(request.form.get('cbm_index'))
             }
 
-            # Create Material object and validate data
+            # 创建并验证材料对象
             material = Material(**material_data)
-            material.validate()  # Call model custom validation method to check data integrity
+            material.validate()
             
-            # First add to database to get ID
+            # 添加到数据库以获取ID
             db.session.add(material)
-            db.session.flush()  # Get ID but don't commit transaction
-
-            # Format ID (IMR-00000XXX)
+            db.session.flush()
+            
             formatted_id = f"IMR-{material.id:08d}"
             
-            # Create material-specific folder structure
+            # 创建材料目录结构
             material_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id)
             structure_dir = os.path.join(material_dir, 'structure')
             band_dir = os.path.join(material_dir, 'band')
             bcd_dir = os.path.join(material_dir, 'bcd')
             
-            # Create all directories
-            os.makedirs(material_dir, exist_ok=True)
             os.makedirs(structure_dir, exist_ok=True)
             os.makedirs(band_dir, exist_ok=True)
             os.makedirs(bcd_dir, exist_ok=True)
             
-            # Save CIF file to structure folder
+            # 保存CIF文件
             structure_path = os.path.join(structure_dir, structure_filename)
             os.rename(temp_structure_path, structure_path)
             
-            # Process JSON properties file
+            # 处理其他文件
             if properties_json and properties_json.filename:
                 properties_json_filename = secure_filename(properties_json.filename)
                 properties_json_path = os.path.join(material_dir, properties_json_filename)
                 properties_json.save(properties_json_path)
                 material.properties_json = properties_json_filename
-            else:
-                # Create JSON file with necessary fields, not an empty JSON object
-                import json
-                json_data = {
-                  "name": chemical_name,
-                  "status": request.form.get('status') or "pending",
-                  "structure_file": structure_filename,
-                  "total_energy": material.total_energy,
-                  "formation_energy": material.formation_energy,
-                  "fermi_level": material.fermi_level,
-                  "vacuum_level": material.vacuum_level,
-                  "workfunction": material.workfunction,
-                  "metal_type": material.metal_type or "No Data",
-                  "gap": material.gap,
-                  "vbm_energy": material.vbm_energy,
-                  "cbm_energy": material.cbm_energy,
-                  "vbm_coordi": material.vbm_coordi or "No Data",
-                  "cbm_coordi": material.cbm_coordi or "No Data",
-                  "vbm_index": material.vbm_index,
-                  "cbm_index": material.cbm_index
-                }
-                json_file_path = os.path.join(material_dir, 'material.json')
-                with open(json_file_path, 'w', encoding='utf-8') as f:
-                    json.dump(json_data, f, ensure_ascii=False, indent=2)
-                material.properties_json = 'material.json'
             
-            # Process band dat file
-            if band_file and band_file.filename.endswith('.dat'):
+            if band_file and band_file.filename:
                 band_filename = secure_filename(band_file.filename)
                 band_path = os.path.join(band_dir, band_filename)
                 band_file.save(band_path)
             
-            # Process SC structure dat file
-            if sc_structure_file and sc_structure_file.filename.endswith('.dat'):
+            if sc_structure_file and sc_structure_file.filename:
                 sc_filename = secure_filename(sc_structure_file.filename)
                 sc_path = os.path.join(bcd_dir, sc_filename)
                 sc_structure_file.save(sc_path)
+                material.sc_structure_file = sc_filename
             
-            # Also save to regular folder to maintain backward compatibility
-            if band_file and band_file.filename:
-                band_path = os.path.join(current_app.root_path, 'static/band', secure_filename(band_file.filename))
-                os.makedirs(os.path.dirname(band_path), exist_ok=True)
-                # Create symlink instead of copying to prevent duplicate storage
-                try:
-                    os.symlink(os.path.join(band_dir, secure_filename(band_file.filename)), band_path)
-                except:
-                    import shutil
-                    shutil.copy2(os.path.join(band_dir, secure_filename(band_file.filename)), band_path)
-            
-            # Commit database transaction
+            # 提交到数据库
             db.session.commit()
+            flash(f'材料 {chemical_name} 添加成功！', 'success')
+            return redirect(url_for('views.detail', material_id=material.id))
             
-            flash(f'Material added successfully. Data has been synchronized to the {formatted_id} folder.', 'success')
-            return redirect(url_for('views.index'))  # Redirect to homepage
-
-        except ValueError as e:  # Handle data type errors
-            flash(f'Invalid data: {str(e)}', 'error')  # Display detailed error message
+        except ValueError as e:
+            flash(f'数据无效: {str(e)}', 'error')
             return redirect(url_for('views.add'))
-        except Exception as e:  # Handle other database errors
-            db.session.rollback()  # Rollback transaction, discard all changes
-            flash(f'An error occurred: {str(e)}', 'error')  # Display general error message
+        
+        except Exception as e:
+            flash(f'发生错误: {str(e)}', 'error')
             return redirect(url_for('views.add'))
-
-    return render_template('materials/add.html')  # GET request returns form page
+    
+    return render_template('materials/add.html')
 
 # Safe numeric conversion helper functions
 def safe_float(value):
@@ -611,99 +566,83 @@ def check_ip_blocked(view_func):
 
 # User login route
 @bp.route('/login', methods=['GET', 'POST'])
-@check_ip_blocked  # Apply IP block check decorator
+@check_ip_blocked  # 应用IP封锁检查装饰器
 def login():
     """
-    User login page and processing logic
+    用户登录页面和处理逻辑
     
-    GET request: Display login form
-    POST request: Verify credentials and execute login, track failed login attempts
+    GET请求：显示登录表单
+    POST请求：验证用户凭据并处理登录
     """
-    if request.method == 'POST':
-        email = request.form['email'].strip().lower()
-        username = request.form['username'].strip()
-        password = request.form['password']
-        login_type = request.form.get('login_type', 'user')
-        client_ip = get_client_ip()
-        
-        # Use session to store login attempt count
-        if 'login_attempts' not in session:
-            session['login_attempts'] = 0
-        
-        if not email or not username or not password:
-            flash('All fields are required.', 'error')
-            return redirect(url_for('views.login'))
-        
-        user = User.query.filter_by(email=email).first()
-        
-        # Check if user exists
-        if not user:
-            session['login_attempts'] += 1
-            current_attempts = session['login_attempts']
-            
-            if current_attempts >= 5:
-                blocked_ip = BlockedIP(
-                    ip_address=client_ip,
-                    blocked_at=datetime.datetime.now(),
-                    reason="Multiple failed login attempts"
-                )
-                db.session.add(blocked_ip)
-                db.session.commit()
-                session.pop('login_attempts', None)
-                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
-                return redirect(url_for('views.landing'))
-            
-            remaining_attempts = 5 - current_attempts
-            flash(f'Invalid credentials. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
-            return redirect(url_for('views.login'))
-        
-        # Check if login_type is admin but user role is not admin
-        if login_type == 'admin' and user.role != 'admin':
-            session['login_attempts'] += 1
-            current_attempts = session['login_attempts']
-            
-            if current_attempts >= 3:
-                blocked_ip = BlockedIP(
-                    ip_address=client_ip,
-                    blocked_at=datetime.datetime.now(),
-                    reason="Unauthorized admin login attempts"
-                )
-                db.session.add(blocked_ip)
-                db.session.commit()
-                session.pop('login_attempts', None)
-                flash('Your IP has been blocked due to unauthorized admin login attempts.', 'error')
-                return redirect(url_for('views.landing'))
-            
-            remaining_attempts = 3 - current_attempts
-            flash(f'Invalid administrator credentials. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
-            return redirect(url_for('views.login'))
-        
-        # For regular user login, verify username, password
-        if user.username != username or not user.validate_password(password):
-            session['login_attempts'] += 1
-            current_attempts = session['login_attempts']
-            
-            if current_attempts >= 5:
-                blocked_ip = BlockedIP(
-                    ip_address=client_ip,
-                    blocked_at=datetime.datetime.now()
-                )
-                db.session.add(blocked_ip)
-                db.session.commit()
-                session.pop('login_attempts', None)
-                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
-                return redirect(url_for('views.landing'))
-            
-            remaining_attempts = 5 - current_attempts
-            flash(f'Invalid credentials. You have {remaining_attempts} attempts remaining before being blocked.', 'error')
-            return redirect(url_for('views.login'))
-        
-        # Login successful, reset attempt count
-        session.pop('login_attempts', None)
-        login_user(user)
-        flash(f'Login successful as {"Administrator" if user.role == "admin" else "User"}.', 'success')
+    # 如果用户已登录，重定向到首页
+    if current_user.is_authenticated:
         return redirect(url_for('views.index'))
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        remember = 'remember' in request.form
+        admin_login = request.form.get('admin_login') == 'true'
         
+        # 表单验证
+        if not username or not password:
+            flash('所有字段都是必填的。', 'error')
+            return render_template('auth/login.html')
+        
+        # 检查登录失败次数
+        ip = get_client_ip()
+        failed_key = f"login_failed:{ip}"
+        failed_attempts = session.get(failed_key, 0)
+        max_attempts = 5  # 最大尝试次数
+        
+        # 区分管理员登录和普通登录
+        if admin_login:
+            user = User.query.filter_by(username=username, role='admin').first()
+            if not user or not user.validate_password(password):
+                # 更新失败计数
+                failed_attempts += 1
+                session[failed_key] = failed_attempts
+                remaining_attempts = max_attempts - failed_attempts
+                
+                # 如果失败次数达到限制，封锁IP
+                if failed_attempts >= max_attempts:
+                    block_ip = BlockedIP(ip_address=ip, reason="Multiple failed admin login attempts")
+                    db.session.add(block_ip)
+                    db.session.commit()
+                    session.pop(failed_key, None)
+                    flash('您的IP已被封锁，因为未经授权的管理员登录尝试次数过多。', 'error')
+                    return redirect(url_for('views.login'))
+                
+                flash(f'管理员凭据无效。您还有{remaining_attempts}次尝试机会。', 'error')
+                return render_template('auth/login.html')
+        else:
+            user = User.query.filter_by(username=username).first()
+            if not user or not user.validate_password(password):
+                # 更新失败计数
+                failed_attempts += 1
+                session[failed_key] = failed_attempts
+                remaining_attempts = max_attempts - failed_attempts
+                
+                # 如果失败次数达到限制，封锁IP
+                if failed_attempts >= max_attempts:
+                    block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
+                    db.session.add(block_ip)
+                    db.session.commit()
+                    session.pop(failed_key, None)
+                    flash('您的IP已被封锁，因为登录尝试失败次数过多。', 'error')
+                    return redirect(url_for('views.login'))
+                
+                flash(f'凭据无效。您还有{remaining_attempts}次尝试机会。', 'error')
+                return render_template('auth/login.html')
+        
+        # 登录成功，清除失败计数
+        session.pop(failed_key, None)
+        login_user(user, remember=remember)
+        next_page = request.args.get('next')
+        if next_page:
+            return redirect(next_page)
+        return redirect(url_for('views.index'))
+    
     return render_template('auth/login.html')
 
 # User logout route

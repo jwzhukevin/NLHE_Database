@@ -2,102 +2,81 @@
 
 ## 项目概述
 
-NLHE_Database是一个专为材料科学设计的数据库管理系统，用于存储、管理和可视化材料数据，包括晶体结构、能带结构及各种物理化学属性。系统基于Flask框架开发，提供了直观的Web界面，支持材料数据的添加、编辑、导入、导出和可视化功能。
+NLHE_Database是一个专为材料科学研究设计的综合数据库管理系统，用于高效存储、管理和可视化材料数据。系统基于Flask框架开发，提供直观的Web界面，支持晶体结构的3D可视化、能带结构分析以及批量数据处理功能。
 
-## 主要功能
+## 核心功能
 
-- **材料数据管理**：支持添加、编辑、删除材料记录
-- **晶体结构可视化**：基于Three.js的交互式3D晶体结构查看器
-- **能带结构绘制**：能带数据的可视化显示
-- **批量导入导出**：支持CSV和JSON格式的数据批量导入导出
-- **用户认证系统**：管理员用户登录及权限控制
-- **IP封锁保护**：防止暴力登录尝试的安全措施
+- **材料数据管理**：完整的CRUD操作，支持材料记录的增删改查
+- **高级搜索与过滤**：多维度过滤系统，支持按名称/化学式/状态/属性等条件筛选
+- **晶体结构可视化**：基于Three.js的交互式3D晶体结构查看器，支持旋转、缩放和超胞生成
+- **能带结构分析**：能带数据的可视化显示和分析工具
+- **文章内容管理**：支持相关研究文章的编辑和发布
+- **批量数据处理**：支持CSV和JSON格式的数据批量导入导出
+- **用户认证与权限**：多级权限控制系统，支持管理员账户和普通用户区分
+- **安全防护措施**：IP封锁保护机制，防止暴力登录尝试
 
-## 目录结构
+## 技术架构
+
+### 后端框架
+- **Flask**：轻量级Web应用框架，采用工厂模式组织代码
+- **SQLAlchemy ORM**：提供数据库抽象层，简化数据操作
+- **Flask-Login**：管理用户会话和认证
+- **Flask-Migrate**：处理数据库模式迁移
+
+### 前端技术
+- **Bootstrap**：响应式UI组件库
+- **Three.js**：WebGL 3D渲染引擎，用于晶体结构可视化
+- **ECharts/Plotly**：交互式图表生成，用于能带数据可视化
+
+### 科学计算
+- **Pymatgen**：材料基因组工具包，处理晶体结构和分析
+- **NumPy/SciPy**：科学计算库，提供数值计算支持
+- **Spglib**：空间群计算，用于晶体对称性分析
+
+## 项目结构
 
 ```
 NLHE_Database/
-├── app/                    # 主应用代码
-│   ├── static/             # 静态资源（CSS, JS, 结构文件等）
-│   │   ├── materials/      # 材料数据目录
-│   │   │   ├── IMR-xxxxxxxx/  # 按ID组织的材料文件夹
-│   │   │   │   ├── structure/ # 结构文件目录
-│   │   │   │   └── band/      # 能带数据目录
-│   ├── templates/          # HTML模板
-│   ├── api.py              # API接口
-│   ├── commands.py         # 命令行工具
-│   ├── models.py           # 数据模型定义
+├── app/                   # 应用主目录
+│   ├── __init__.py        # 应用初始化（工厂模式）
+│   ├── models.py          # 数据模型定义
+│   ├── views.py           # 视图函数和路由
+│   ├── api.py             # RESTful API接口
+│   ├── articles.py        # 文章管理模块
 │   ├── structure_parser.py # 结构文件解析工具
-│   └── views.py            # 视图函数
-├── NLHE/                   # 虚拟环境
-├── migrations/             # 数据库迁移文件
-├── instance/               # 实例配置
-├── data.db                 # SQLite数据库文件
-├── requirements.txt        # 依赖包列表
-├── initdb.sh               # 数据库初始化脚本
-├── web.sh                  # Web服务启动脚本
-├── admin.sh                # 管理员账户创建脚本
+│   ├── commands.py        # CLI命令工具
+│   ├── static/            # 静态资源
+│   │   ├── css/           # 样式表
+│   │   ├── js/            # JavaScript文件
+│   │   ├── images/        # 图片资源
+│   │   └── materials/     # 材料数据文件（按IMR-ID组织）
+│   └── templates/         # HTML模板
+├── instance/              # Flask实例文件夹
+│   └── app.db             # SQLite数据库文件
+├── migrations/            # 数据库迁移脚本
+├── NLHE/                  # Python虚拟环境
+├── requirements.txt       # 依赖包清单
+├── wsgi.py                # WSGI应用入口
+├── config.py              # 配置文件
+├── initdb.sh              # 数据库初始化脚本
+└── web.sh                 # Web服务启动脚本
 ```
 
-## 技术栈与依赖关系
-
-本项目使用多种Python库和框架协同工作，以下是主要依赖及其功能:
-
-### 核心框架
-- **Flask (2.2.5)**: 轻量级Web应用框架，提供路由、模板渲染和请求处理
-- **Flask-SQLAlchemy (3.0.3)**: 集成SQLAlchemy的Flask扩展，提供ORM数据访问
-- **Flask-Login (0.6.3)**: 用户认证与会话管理扩展
-- **Flask-Migrate (4.1.0)**: 数据库迁移工具，基于Alembic
-
-### 数据处理与科学计算
-- **NumPy (2.2.4)**: 科学计算基础库，处理晶体和能带数据的数值运算
-- **Pandas (2.2.3)**: 用于材料数据的表格处理和批量导入导出
-- **SciPy (1.15.2)**: 提供科学计算和优化功能
-- **Pymatgen (2025.3.10)**: 材料基因组工具包，用于晶体结构分析和处理
-- **Spglib (2.6.0)**: 结晶学空间群计算库，与Pymatgen配合使用
-
-### 可视化工具
-- **Matplotlib (3.10.1)**: 静态图表生成库，用于能带结构绘制
-- **Plotly (6.0.1)**: 交互式图表库，增强数据可视化体验
-
-### 安全与认证
-- **Bcrypt (4.0.1)**: 密码哈希存储和验证
-- **Cryptography (38.0.4)**: 提供高级加密功能
-
-### 数据解析与格式化
-- **PyYAML (6.0.2)**: YAML格式解析，用于配置和数据交换
-- **JSONSchema (4.23.0)**: JSON数据验证
-- **Tabulate (0.9.0)**: 格式化表格输出
-
-### 工具与辅助库
-- **Werkzeug (2.2.3)**: WSGI工具库，Flask的依赖
-- **Python-dotenv (1.0.1)**: 环境变量管理
-- **Tqdm (4.67.1)**: 进度条显示，用于长时间运行的操作
-
-这些库之间的协作关系:
-- Flask框架作为核心，通过扩展集成数据库和用户认证
-- NumPy和SciPy提供科学计算能力，Pymatgen和Spglib专注于材料科学计算
-- 可视化层由Matplotlib和Plotly提供，前者生成静态图表，后者提供交互功能
-- 数据从CIF和DAT文件解析，通过ORM映射到SQLite数据库
-
-## 安装指南
+## 安装与部署
 
 ### 环境要求
-
 - Python 3.8+
-- Flask 2.0+
 - SQLite 3
-- Web浏览器（推荐Chrome或Firefox）
+- 现代浏览器（推荐Chrome、Firefox或Edge）
 
-### 安装步骤
-
-1. 克隆仓库：
+### 快速启动
+1. **克隆仓库**
    ```bash
-   git clone https://github.com/yourusername/NLHE_Database.git
+   git clone https://github.com/your-username/NLHE_Database.git
    cd NLHE_Database
    ```
 
-2. 创建并激活虚拟环境：
+2. **创建虚拟环境**
    ```bash
    python -m venv NLHE
    source NLHE/bin/activate  # Linux/Mac
@@ -105,90 +84,76 @@ NLHE_Database/
    NLHE\Scripts\activate     # Windows
    ```
 
-3. 安装依赖：
+3. **安装依赖**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. 初始化数据库：
+4. **初始化数据库**
    ```bash
    ./initdb.sh
+   ```
+
+5. **创建管理员账户**
+   ```bash
    ./admin.sh
    ```
-   按照提示输入管理员用户名和密码。
 
-## 使用方法
+6. **启动应用**
+   ```bash
+   ./web.sh
+   ```
+   访问 http://localhost:5000 开始使用
 
-### 启动Web服务
+## 数据组织
 
-```bash
-./web.sh
-```
+系统采用结构化的方式组织材料数据：
 
-服务器默认在 http://127.0.0.1:5000 启动。
+- 每个材料分配唯一的IMR格式ID（例如：IMR-00000001）
+- 材料结构文件（CIF格式）存储在对应的结构目录中
+- 能带数据（DAT格式）存储在对应的能带目录中
+- 元数据以JSON格式存储，包含材料的基本属性和计算结果
 
-### 材料管理操作
+## 使用指南
 
-1. **浏览材料**：访问首页查看所有材料列表
-2. **添加材料**：登录后点击"添加材料"
-3. **编辑材料**：在材料详情页点击"编辑"
-4. **删除材料**：在材料详情页点击"删除"
+### 材料管理
+- **浏览材料**：首页提供分页材料列表，支持排序和过滤
+- **材料详情**：点击材料名称查看详细信息、结构和能带数据
+- **添加/编辑**：管理员可添加新材料或编辑现有材料信息
+- **批量操作**：支持数据的批量导入和导出
 
-### 数据可视化
+### 结构可视化
+- 3D交互式查看器支持旋转、缩放和平移操作
+- 支持生成不同尺寸的超胞结构
+- 可选择原胞或常规胞显示模式
+- 支持导出为图片格式
 
-- **晶体结构**：在材料详情页点击"晶体结构"选项卡
-- **能带结构**：在材料详情页点击"能带结构"选项卡
+### 文章管理
+- 发布与材料相关的研究文章和报告
+- 支持富文本编辑，可插入图片和引用
 
-### 文件要求
+## 维护与备份
 
-- **结构文件**：CIF格式，存放在 `app/static/materials/IMR-xxxxxxxx/structure/structure.cif`
-- **能带文件**：DAT格式，存放在 `app/static/materials/IMR-xxxxxxxx/band/band.dat`
-- **SC文件**：DAT格式，存放在 `app/static/materials/IMR-xxxxxxxx/bcd/sc.dat`
+- 定期备份`instance/app.db`数据库文件
+- 系统日志记录在应用实例目录中
+- 建议按计划对材料数据进行增量备份
 
-## 文件结构规范
+## 开发者说明
 
-### 目录结构
+- 项目采用工厂模式组织Flask应用结构
+- 使用蓝图(Blueprint)分离不同功能模块
+- 数据库迁移通过Flask-Migrate管理
+- 结构解析模块使用Pymatgen库处理CIF文件
 
-每个材料都有一个唯一的IMR格式ID（如IMR-00000001），对应目录结构：
-```
-app/static/materials/IMR-xxxxxxxx/
-├── 材料元数据.json      # 材料的元数据文件
-├── structure/          # 结构文件目录
-│   └── structure.cif   # CIF格式的结构文件
-└── band/               # 能带数据目录
-    └── band.dat        # 能带数据文件
-```
+## 技术亮点
 
-### 材料元数据文件格式
-JSON格式，包含材料的基本属性，例如：
-```json
-{
-  "name": "材料名称",
-  "status": "数据状态",
-  "structure_file": "structure.cif",
-  "total_energy": -56.28475,
-  "formation_energy": -0.89216,
-  "metal_type": "semiconductor",
-  "gap": 1.8945
-}
-```
+- **高效数据处理**：优化的数据库查询和缓存机制
+- **交互式可视化**：前端使用WebGL技术实现高性能3D渲染
+- **材料ID系统**：采用标准化的材料编码系统（IMR-XXXXXXXX）
+- **多层次安全**：包括数据验证、用户认证和防暴力攻击机制
 
-## 脚本说明
+## 许可与贡献
 
-- **web.sh**：启动Web应用服务器
-- **initdb.sh**：初始化或重置数据库
-- **admin.sh**：创建或更新管理员账户
-
-## 注意事项
-
-- 初始化数据库后，请妥善保管管理员账户信息
-- 保持结构文件和能带文件的命名规范一致
-- 定期备份数据库文件`data.db`
-
-## 贡献指南
-
-1. Fork本仓库
-2. 创建功能分支: `git checkout -b feature/your-feature`
-3. 提交更改: `git commit -am '添加新功能'`
-4. 推送分支: `git push origin feature/your-feature`
-5. 提交Pull Request 
+- 项目采用MIT许可证
+- 欢迎通过Issue和Pull Request参与贡献
+- 开发前请先阅读贡献指南 

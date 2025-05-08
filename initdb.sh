@@ -62,18 +62,21 @@ export FLASK_APP="wsgi.py"
 
 # 如果强制重建或选择了drop选项，则先删除数据库文件
 if [ "$FORCE_REBUILD" == true ] || [ "$DROP_OPTION" == "--drop" ]; then
-    # 获取数据库文件名
-    DB_FILE=$(grep -oP "DATABASE_FILE.*?['\"]\\K[^'\"]*" app/__init__.py || echo "data.db")
+    # 查找配置中的数据库文件名
+    DB_FILE=$(grep -oP "DATABASE_FILE.*?['\"]\\K[^'\"]*" app/__init__.py || echo "app.db")
     
     # 如果找不到，使用默认值
     if [ -z "$DB_FILE" ]; then
-        DB_FILE="data.db"
+        DB_FILE="app.db"
     fi
     
+    # 构建完整数据库路径（在instance目录下）
+    DB_PATH="instance/$DB_FILE"
+    
     # 如果数据库文件存在，则删除它
-    if [ -f "$DB_FILE" ]; then
-        echo "Removing existing database file: $DB_FILE"
-        rm "$DB_FILE"
+    if [ -f "$DB_PATH" ]; then
+        echo "Removing existing database file: $DB_PATH"
+        rm "$DB_PATH"
     fi
     
     echo "Database file removed. Will be recreated with new schema."
