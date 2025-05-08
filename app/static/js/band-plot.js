@@ -1,3 +1,8 @@
+/**
+ * band-plot.js
+ * 能带图绘制函数 - 用于绘制能带图
+ * 使用plotly.js实现学术风格图表
+ */
 // 加载plotly.js库
 function loadPlotly() {
     return new Promise((resolve, reject) => {
