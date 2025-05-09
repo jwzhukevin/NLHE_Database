@@ -457,7 +457,7 @@ function parseAndPlotSCData(dataText, container) {
     `;
     
     // 清空容器并添加控制面板
-    container.innerHTML = controlPanelHtml + '<div id="sc-plot" style="width:100%;height:700px;"></div>';
+    container.innerHTML = controlPanelHtml + '<div id="sc-plot" style="width:100%;height:100%;"></div>';
     
     // 布局配置 - 学术风格的图表布局设置
     const layout = {
@@ -465,7 +465,7 @@ function parseAndPlotSCData(dataText, container) {
         title: {
             text: 'SC Structure', // 标题文本
             font: {
-                size: 24, // 标题字体大小
+                size: 20, // 减小标题字体大小
                 family: 'Arial, sans-serif', // 标题字体
                 color: '#1f2937' // 标题颜色
             }
@@ -475,7 +475,7 @@ function parseAndPlotSCData(dataText, container) {
             title: {
                 text: 'Energy (eV)', // X轴标题文本
                 font: {
-                    size: 18, // X轴标题字体大小
+                    size: 16, // 减小X轴标题字体大小
                     family: 'Arial, sans-serif', // X轴标题字体
                     color: '#1f2937' // X轴标题颜色
                 }
@@ -490,7 +490,7 @@ function parseAndPlotSCData(dataText, container) {
             linecolor: '#374151', // 轴线颜色
             linewidth: 2, // 轴线宽度
             tickfont: { // 刻度标签字体设置
-                size: 14,
+                size: 12, // 减小刻度字体大小
                 family: 'Arial, sans-serif',
                 color: '#4b5563'
             },
@@ -501,7 +501,7 @@ function parseAndPlotSCData(dataText, container) {
             title: {
                 text: 'Sigma (uA/V²)', // Y轴标题文本
                 font: {
-                    size: 18,
+                    size: 16, // 减小Y轴标题字体大小
                     family: 'Arial, sans-serif',
                     color: '#1f2937'
                 }
@@ -516,7 +516,7 @@ function parseAndPlotSCData(dataText, container) {
             linecolor: '#374151',
             linewidth: 2,
             tickfont: {
-                size: 14,
+                size: 12, // 减小刻度字体大小
                 family: 'Arial, sans-serif',
                 color: '#4b5563'
             },
@@ -525,28 +525,28 @@ function parseAndPlotSCData(dataText, container) {
         hovermode: 'closest', // 悬停模式设为最近点
         // 图例配置
         legend: {
-            orientation: 'v', // 垂直方向排列
-            xanchor: 'left', // 左侧对齐
-            x: 1.05, // X位置（图表右侧）
+            orientation: 'h', // 水平方向排列
+            xanchor: 'center', // 中心对齐
+            x: 0.5, // 居中放置
             yanchor: 'top', // 顶部对齐
-            y: 1, // Y位置
+            y: -0.25, // 放在图表下方，增加与x轴的距离
             font: { // 图例字体设置
-                size: 18,
+                size: 14, // 增大图例字体大小
                 family: 'Arial, sans-serif'
             },
-            tracegroupgap: 16,
-            bgcolor: '#f8fafc',
+            tracegroupgap: 8, // 减小图例组间距
+            bgcolor: '#ffffff', // 白色背景
             bordercolor: '#e2e8f0',
-            borderwidth: 2,
+            borderwidth: 1,
             itemsizing: 'constant',
-            itemwidth: 45
+            itemwidth: 40 // 图例项宽度
         },
         // 图表边距设置
         margin: {
-            t: 80, // 顶部边距
-            r: 200, // 右侧边距（为图例留出空间）
-            b: 100, // 底部边距
-            l: 100 // 左侧边距
+            t: 50, // 顶部边距
+            r: 30, // 右侧边距
+            b: 120, // 显著增加底部边距，为图例留出更多空间
+            l: 80 // 左侧边距
         },
         autosize: true, // 自动调整大小
         paper_bgcolor: '#ffffff', // 画布背景色
@@ -609,8 +609,8 @@ function parseAndPlotSCData(dataText, container) {
     setTimeout(() => {
         const legendLines = document.querySelectorAll('.legendlines path');
         legendLines.forEach(line => {
-            line.setAttribute('stroke-width', '3'); 
-            line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '10.0')); 
+            line.setAttribute('stroke-width', '4'); // 增加线宽
+            line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '15.0')); // 增加线长
         });
         
         // 增强图例滚动交互
@@ -658,7 +658,21 @@ function parseAndPlotSCData(dataText, container) {
     // 添加自定义样式
     const style = document.createElement('style');
     style.textContent = `
-        /* 样式已移动到detail.html中定义 */
+        /* 增强图例项样式 */
+        .js-plotly-plot .legend .traces .legendtext {
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            padding: 4px 8px !important;
+        }
+        
+        .js-plotly-plot .legend .traces .legendtoggle {
+            transform: scale(1.2);
+        }
+        
+        /* 确保图例在底部有足够空间 */
+        .js-plotly-plot .svg-container {
+            margin-bottom: 10px;
+        }
     `;
     document.head.appendChild(style);
     
@@ -763,4 +777,53 @@ function parseAndPlotSCData(dataText, container) {
             relationsTableContainer.innerHTML = relationsTableHtml;
         }
     }, 500);
+    
+    // 添加窗口大小变化时的重绘逻辑
+    function handleResize() {
+        // 获取容器尺寸
+        const container = document.getElementById('scStructure');
+        if (!container) return;
+        
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        
+        // 调整图表大小，考虑到图例在外部
+        Plotly.relayout('sc-plot', {
+            autosize: true,
+            height: containerHeight * 0.8, // 为底部图例留出更多空间
+            'xaxis.automargin': true,
+            'yaxis.automargin': true,
+            'margin.b': 120 // 确保底部边距足够
+        });
+    }
+    
+    // 监听窗口大小变化事件
+    window.addEventListener('resize', handleResize);
+    
+    // 监听卡片展开/折叠事件，以便在卡片展开时重绘图表
+    const cardHeader = container.closest('.viewer-container').querySelector('.card-header');
+    if (cardHeader) {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const isCollapsed = cardHeader.classList.contains('collapsed');
+                    if (!isCollapsed) {
+                        // 卡片展开时，延迟一点重绘图表以确保容器已完全展开
+                        setTimeout(handleResize, 300);
+                    }
+                }
+            });
+        });
+        
+        observer.observe(cardHeader, { attributes: true });
+    }
+    
+    // 获取重置按钮并添加点击事件
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            Plotly.restyle('sc-plot', 'visible', true);
+            updateVisibleCount();
+        });
+    }
 } 

@@ -133,7 +133,7 @@ def upload_structure(material_id):
             
             if chemical_name:
                 material.name = chemical_name
-                db.session.commit()
+            db.session.commit()
         except Exception:
             pass  # 不中断上传过程
         
@@ -193,7 +193,7 @@ def get_supercell(material_id):
         # 检查错误
         if 'error' in result_data:
             return jsonify({"error": result_data['error']}), 400
-            
+        
         return result, 200, {'Content-Type': 'application/json'}
     
     except Exception as e:
@@ -383,17 +383,23 @@ def get_structure_by_params():
                 # 创建前端需要的sites数组格式
                 sites = []
                 for atom in result['atoms']:
+                    # 从properties中获取wyckoff位置
+                    wyckoff = atom.get('properties', {}).get('wyckoff', '-')
                     site = {
                         'species': [{'element': atom['element']}],
                         'xyz': atom['position'],
                         'frac_coords': atom['frac_coords'],
-                        'wyckoff': atom.get('wyckoff', '')
+                        'wyckoff': wyckoff
                     }
                     sites.append(site)
             
                 # 如果结果中没有sites字段，添加它
                 if 'sites' not in result or not result['sites']:
                     result['sites'] = sites
+            
+            # 确保symmetry对象包含space_group_symbol字段
+            if 'symmetry' in result:
+                result['symmetry']['space_group_symbol'] = result['symmetry'].get('symbol', 'Unknown')
             
             # 返回JSON响应
             return jsonify(result)

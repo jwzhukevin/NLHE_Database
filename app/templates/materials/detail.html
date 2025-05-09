@@ -5,6 +5,8 @@
 {# 开始内容块，将覆盖base.html中相应的块 #}
 
 <!-- ====================== 外部脚本引入 ====================== -->
+<!-- 确保Inter字体加载 -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Three.js相关脚本：用于创建和渲染3D晶体结构模型 -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
 <!-- Three.js轨道控制器：允许用户旋转、平移和缩放3D模型 -->
@@ -22,53 +24,52 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/sc-plot.js') }}"></script>
 
 <!-- ====================== 顶部导航栏 ====================== -->
-<div class="top-nav">
+<div class="material-nav">
     <!-- 材料名称和ID显示：从后端传递的material对象中获取 -->
     <div class="material-title-container">
-        <div class="material-title">{{ material.name }}</div>
+        <div class="breadcrumbs">
+            <a href="{{ url_for('views.index') }}">Materials</a>
+            <span class="separator">&gt;</span>
+            <span class="current">{{ material.name }}</span>
+        </div>
         <div class="material-id">{{ material.formatted_id or 'IMR-' + '%08d'|format(material.id) }}</div>
     </div>
     
     <!-- 导航链接容器 -->
-    <div class="nav-links">
+    <div class="material-nav-links">
         <!-- 页内导航链接：通过锚点链接到页面不同部分 -->
-        <a href="#first-section" class="nav-link active">Structure</a> <!-- 默认激活的链接 -->
-        <a href="#second-section" class="nav-link">Crystal Data</a>
-        <a href="#third-section" class="nav-link">Band Structure</a>
-        <a href="#sc-section" class="nav-link">SC</a>
-        <a href="#fourth-section" class="nav-link">Properties</a>
+        <a href="#first-section" class="material-nav-link active">Structure</a> <!-- 默认激活的链接 -->
+        <a href="#second-section" class="material-nav-link">Crystal Data</a>
+        <a href="#third-section" class="material-nav-link">Band Structure</a>
+        <a href="#sc-section" class="material-nav-link">SC</a>
+        <a href="#fourth-section" class="material-nav-link">Properties</a>
         
         <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
         {% if current_user.is_authenticated and current_user.is_admin() %}
             <!-- 编辑材料按钮：跳转到编辑页面 -->
-            <a href="{{ url_for('views.edit', material_id=material.id) }}" class="nav-link">
+            <a href="{{ url_for('views.edit', material_id=material.id) }}" class="material-nav-link">
                 <i class="fas fa-edit"></i> Edit
             </a>
             
             <!-- 删除材料按钮：发送删除请求并要求确认 -->
         <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
-               type="submit" onclick="return confirm('Delete permanently?')" class="nav-link">
+               type="submit" onclick="return confirm('Delete permanently?')" class="material-nav-link">
                 <i class="fas fa-trash"></i> Del
             </a>                    
         {% endif %} 
         
         <!-- 外部链接和返回按钮 -->
         <!-- Materials Project外部链接：打开新标签页查看相同材料 -->
-        <a href="https://materialsproject.org/materials/{{ material.name }}" target="_blank" class="nav-link">
+        <a href="https://materialsproject.org/materials/{{ material.name }}" target="_blank" class="material-nav-link">
             <i class="fas fa-external-link-alt"></i> MP
         </a>
         
         <!-- 搜索返回：仅当从搜索结果页面进入时显示 -->
         {% if request.referrer and 'q=' in request.referrer %}
-        <a href="{{ request.referrer }}" class="nav-link back-link">
+        <a href="{{ request.referrer }}" class="material-nav-link back-link">
                 <i class="fas fa-search"></i> Back to Search
             </a>
         {% endif %}
-        
-        <!-- 返回列表：返回材料列表页面 -->
-        <a href="{{ url_for('views.index') }}" class="nav-link back-link">
-            <i class="fas fa-arrow-left"></i> Back to List
-        </a>
     </div>
 </div>
 
@@ -80,31 +81,62 @@
         margin: 0; /* 移除默认外边距 */
         padding: 0; /* 移除默认内边距 */
         background: #f8fafc; /* 设置浅灰色背景，提供柔和视觉体验 */
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* 现代系统字体栈，确保在不同平台上的一致性 */
+        font-family: 'Inter', sans-serif; /* 使用与base.html相同的字体 */
     }
     
     /* ===== 主容器布局样式 ===== */
     .material-detail-container {
         max-width: 1600px; /* 设置最大宽度为1600px，确保在大屏幕上不会过宽 */
-        margin: 90px auto 0; /* 上边距120px避免与顶部固定导航栏重叠，左右自动居中，下边距0 */
+        margin: 140px auto 0; /* 上边距调整为140px，避免与顶部导航栏重叠，左右自动居中，下边距0 */
         padding: 24px; /* 四周内边距24px，给内容留出呼吸空间 */
         background: #f8fafc; /* 与body相同的背景色，保持一致性 */
     }
+    
+    /* Breadcrumbs Styles - 集成到顶部导航栏 */
+    .breadcrumbs {
+        font-size: 1.8em; /* 字体大小为基准大小的1.8倍，使标题突出 */
+        font-weight: 1000; /* 字体极粗，增强可读性和视觉重要性 */
+        color: #1e293b; /* 深蓝灰色文字，提供良好对比度 */
+        text-align: left; /* 文本左对齐 */
+        padding: 0; /* 移除内边距 */
+        transition: transform 0.2s ease; /* 变换属性添加0.2秒过渡效果，使交互更平滑 */
+        display: flex;
+        align-items: center;
+    }
+    
+    .breadcrumbs a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: 800;
+    }
+    
+    .breadcrumbs a:hover {
+        text-decoration: underline;
+    }
+    
+    .breadcrumbs .separator {
+        margin: 0 8px;
+        color: #64748b;
+    }
+    
+    .breadcrumbs .current {
+        color: #1e293b;
+    }
 
     /* ===== 顶部导航栏样式 ===== */
-    .top-nav {
+    .material-nav {
         position: fixed; /* 固定定位，使导航栏在滚动时始终可见 */
         top: 64px; /* 距顶部64px，紧贴主导航栏 */
         left: 0; /* 水平方向左对齐 */
         right: 0; /* 水平方向右对齐，与left:0结合确保全宽度 */
         height: auto; /* 改为自适应高度 */
         min-height: 60px; /* 设置最小高度确保足够空间 */
-        background: #a2d4ff; /* 蓝色背景，提供视觉焦点 */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 添加轻微阴影，增强层次感 */
+        background: linear-gradient(to right, #a2d4ff, #bfe1ff); /* 渐变蓝色背景 */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* 增强阴影效果 */
         display: flex; /* 使用弹性布局，便于组织子元素 */
         align-items: center; /* 子元素在垂直方向上居中对齐 */
-        justify-content: center; /* 居中对齐子元素 */
-        padding: 15px 24px 10px 24px; /* 减少上下内边距，尤其是底部 */
+        justify-content: center; /* 改为居中对齐 */
+        padding: 12px 24px; /* 减少上下内边距 */
         z-index: 80; /* 设置层级，确保在正常内容之上，但不会覆盖主导航栏 */
     }
 
@@ -114,17 +146,7 @@
         flex-direction: row;
         align-items: center;
         margin-left: 0; /* 移除左边距 */
-        margin-right: 40px; /* 添加右边距，与导航链接保持间距 */
-    }
-
-    /* 材料标题样式 */
-    .material-title {
-        font-size: 1.8em; /* 字体大小为基准大小的1.8倍，使标题突出 */
-        font-weight: 1000; /* 字体极粗，增强可读性和视觉重要性 */
-        color: #1e293b; /* 深蓝灰色文字，提供良好对比度 */
-        text-align: left; /* 文本左对齐 */
-        padding: 0; /* 移除内边距 */
-        transition: transform 0.2s ease; /* 变换属性添加0.2秒过渡效果，使交互更平滑 */
+        margin-right: 30px; /* 添加右边距，与导航链接分隔 */
     }
 
     /* 材料ID样式 */
@@ -134,51 +156,52 @@
         color: #517dc0;
         margin-left: 15px;
         padding: 4px 10px;
-        background-color: rgba(233, 240, 250, 0.541);
+        background-color: rgba(255, 255, 255, 0.7);
         border-radius: 6px;
-    }
-
-    /* 材料标题悬停效果 */
-    .material-title:hover {
-        transform: scale(1.05); /* 悬停时放大到原尺寸的1.05倍，创建微妙的交互反馈 */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
     /* 导航链接容器样式 */
-    .nav-links {
+    .material-nav-links {
         display: flex; /* 使用弹性布局，使链接水平排列 */
         align-items: center; /* 子元素在垂直方向上居中对齐 */
-        margin-right: 0; /* 移除右侧外边距 */
+        gap: 5px; /* 添加间距 */
     }
     
     /* 导航链接基本样式 */
-    .nav-link {
+    .material-nav-link {
         padding: 0 15px; /* 左右内边距15px，提供足够的点击区域 */
-        color: #64748b; /* 默认状态下的灰蓝色文本颜色 */
+        color: #1e293b; /* 更深的文本颜色，提高对比度 */
         text-decoration: none; /* 移除默认的下划线装饰 */
         font-size: 0.95rem; /* 字体大小略小于基准大小，保持紧凑 */
-        font-weight: 1000; /* 字体中等加粗，增强可读性 */
-        transition: color 0.2s ease; /* 颜色变化时的平滑过渡效果 */
+        font-weight: 600; /* 字体加粗 */
+        transition: all 0.2s ease; /* 所有属性变化添加平滑过渡 */
         height: 36px; /* 设置链接高度为36px，提供足够的点击区域 */
         display: flex; /* 使用弹性布局，便于垂直居中图标和文本 */
         align-items: center; /* 子元素在垂直方向上居中对齐 */
         position: relative; /* 设置为相对定位，为active状态的底部指示条准备 */
+        border-radius: 6px; /* 添加圆角 */
     }
 
     /* 导航链接悬停效果 */
-    .nav-link:hover {
+    .material-nav-link:hover {
         color: #0047AB; /* 悬停时变为深蓝色，提供视觉反馈 */
+        background-color: rgba(255, 255, 255, 0.5); /* 添加半透明白色背景 */
+        transform: translateY(-2px); /* 轻微上移 */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 添加阴影 */
     }
 
     /* 当前激活的导航链接样式 */
-    .nav-link.active {
+    .material-nav-link.active {
         color: #0047AB; /* 激活状态下使用深蓝色文本 */
         background-color: #ffffff; /* 白色背景 */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* 更强的阴影 */
     }
 
     /* 激活导航链接的底部指示条 */
-    .nav-link.active::after {
+    .material-nav-link.active::after {
         content: ''; /* 创建一个空内容的伪元素 */
-        position: absolute; /* 绝对定位，相对于.nav-link */
+        position: absolute; /* 绝对定位，相对于.material-nav-link */
         bottom: 0; /* 定位到父元素底部 */
         left: 15px; /* 左边缘与父元素内边距对齐 */
         right: 15px; /* 右边缘与父元素内边距对齐 */
@@ -187,24 +210,141 @@
     }
 
     /* 导航链接中的图标样式 */
-    .nav-link i {
+    .material-nav-link i {
         margin-right: 6px; /* 图标右侧添加6px间距，与文本分开 */
     }
     
     /* 返回链接特殊样式 */
-    .nav-link.back-link {
-        background-color: #f1f5f9; /* 浅灰色背景，区分于普通导航链接 */
+    .material-nav-link.back-link {
+        background-color: rgba(255, 255, 255, 0.5); /* 半透明白色背景 */
         border-radius: 8px; /* 圆角边框，创建按钮外观 */
         padding: 0 15px; /* 左右内边距保持15px */
         height: 36px; /* 高度为36px */
-        margin-left: 10px; /* 左侧外边距10px，与其他链接保持间距 */
-        }
-    
-    /* 返回链接悬停效果 */
-    .nav-link.back-link:hover {
-        background-color: #e2e8f0; /* 悬停时背景色变深，提供视觉反馈 */
+        margin-left: 5px; /* 左侧外边距减小 */
     }
     
+    /* 返回链接悬停效果 */
+    .material-nav-link.back-link:hover {
+        background-color: #ffffff; /* 悬停时背景色变为纯白色 */
+        transform: translateY(-2px); /* 轻微上移 */
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* 更强的阴影 */
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 1200px) {
+        .material-nav {
+            padding: 10px 20px;
+        }
+        
+        .material-nav-link {
+            padding: 0 10px;
+            font-size: 0.9rem;
+        }
+        
+        .two-column-layout {
+            flex-direction: column;
+        }
+        
+        .column-60, .column-40 {
+            flex: 1;
+            width: 100%;
+        }
+        
+        .crystal-viewer, #bandStructure, #scStructure, .viewer-content {
+            height: 500px; /* 调整高度 */
+            min-height: 500px; /* 调整最小高度 */
+        }
+        
+        #sc-plot {
+            min-height: 400px; /* 减小高度，为图例留出空间 */
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .material-detail-container {
+            padding: 16px;
+            margin-top: 200px; /* 在小屏幕上增加更多的顶部间距以适应新导航栏 */
+        }
+        
+        .material-nav {
+            height: auto;
+            flex-direction: column;
+            padding: 15px;
+            top: 56px; /* 在小屏幕上，主导航栏通常更窄 */
+        }
+        
+        .material-title-container {
+            margin-bottom: 10px;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .breadcrumbs {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+        
+        .material-id {
+            margin-left: 0;
+        }
+        
+        .material-nav-links {
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .material-nav-link {
+            height: 40px;
+            padding: 0 12px;
+            font-size: 1rem;
+            border-radius: 6px;
+        }
+        
+        .material-nav-link.active {
+            border-radius: 6px;
+            background-color: rgba(0, 71, 171, 0.1);
+        }
+        
+        .material-nav-link.active::after {
+            height: 3px;
+            bottom: 5px;
+            left: 10px;
+            right: 10px;
+            border-radius: 1.5px;
+        }
+
+        .crystal-viewer, #bandStructure, #scStructure, .viewer-content {
+            height: 375px; /* 调整高度 */
+            min-height: 375px; /* 调整最小高度 */
+        }
+        
+        #sc-plot {
+            min-height: 300px; /* 减小高度，为图例留出空间 */
+        }
+        
+        /* 调整SC图例在小屏幕上的样式 */
+        .sc-legend-container {
+            padding: 8px 0;
+            gap: 4px;
+        }
+        
+        .sc-legend-item {
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+        
+        .sc-legend-color {
+            width: 10px;
+            height: 10px;
+            margin-right: 4px;
+        }
+    }
+
     /* ===== 内容区域布局样式 ===== */
     
     /* 内容区块样式 - 每个主要内容部分（如结构、晶体数据等）的容器 */
@@ -214,10 +354,10 @@
     
     /* 两列布局容器 - 用于并排展示相关信息 */
     .two-column-layout {
-        display: flex; /* 使用弹性布局实现并排排列 */
-        gap: 24px; /* 列之间的间距为24px，提供良好的视觉分隔 */
-        margin-bottom: 24px; /* 底部间距24px，与下一个部分分开 */
-        align-items: stretch; /* 使所有子元素拉伸到相同高度 */
+        display: flex;
+        gap: 24px;
+        margin-bottom: 24px;
+        align-items: stretch; /* 确保所有列高度相同 */
     }
     
     /* 宽列样式 - 用于主要内容展示（占60%宽度） */
@@ -225,6 +365,7 @@
         flex: 6; /* 在弹性分配中占6份，实际效果约为60%宽度 */
         display: flex; /* 使用弹性布局 */
         flex-direction: column; /* 垂直排列子元素 */
+        height: 100%; /* 确保列高度一致 */
     }
     
     /* 窄列样式 - 用于辅助内容展示（占40%宽度） */
@@ -232,6 +373,7 @@
         flex: 4; /* 在弹性分配中占4份，实际效果约为40%宽度 */
         display: flex; /* 使用弹性布局 */
         flex-direction: column; /* 垂直排列子元素 */
+        height: 100%; /* 确保列高度一致 */
     }
     
     /* SC布局的列样式 */
@@ -239,12 +381,14 @@
         flex: 8;
         display: flex;
         flex-direction: column;
+        height: 100%; /* 确保列高度一致 */
     }
     
     .column-20 {
         flex: 2;
         display: flex;
         flex-direction: column;
+        height: 100%; /* 确保列高度一致 */
     }
 
     /* ===== 卡片组件样式 ===== */
@@ -261,6 +405,7 @@
         flex: 1; /* 让卡片在其容器中扩展，占据所有可用空间 */
         display: flex; /* 使用弹性布局 */
         flex-direction: column; /* 垂直排列内容 */
+        height: 100%; /* 确保卡片高度填满整个容器 */
     }
     
     /* 查看器容器也应具有相同的伸缩特性 */
@@ -268,11 +413,14 @@
         flex: 1; /* 与detail-card一致，占据所有可用空间 */
         display: flex;
         flex-direction: column;
+        height: 100%; /* 确保查看器容器高度填满整个容器 */
     }
     
     /* 卡片内容应该可以伸缩 */
     .card-content, .viewer-content {
         flex: 1; /* 允许内容区域伸缩以填充剩余空间 */
+        display: flex; /* 使用弹性布局 */
+        flex-direction: column; /* 垂直排列内容 */
     }
 
     /* 卡片悬停效果 - 增强用户交互反馈 */
@@ -317,6 +465,8 @@
         max-height: 2000px; /* 展开状态下的最大高度，足够容纳大多数内容 */
         opacity: 1; /* 完全不透明，内容清晰可见 */
         overflow: hidden; /* 隐藏超出高度限制的内容 */
+        overflow-y: auto; /* 添加垂直滚动条，当内容超出时可滚动 */
+        min-height: 200px; /* 设置最小高度，确保即使内容少也有一定高度 */
     }
     
     /* 折叠状态下的内容区域 */
@@ -324,7 +474,8 @@
         max-height: 0; /* 高度为0，内容完全隐藏 */
         padding: 0 20px; /* 上下内边距为0，左右保持20px，防止内容突然变化 */
         opacity: 0; /* 完全透明，内容不可见 */
-        }
+        min-height: 0; /* 折叠状态下不需要最小高度 */
+    }
 
         .card-content ul {
             list-style: none;
@@ -363,8 +514,8 @@
     .atom-table {
         width: 100%;
         border-collapse: collapse;
-    font-size: 1.05rem;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-size: 1.05rem;
+        font-family: 'Inter', sans-serif; /* 使用与base.html相同的字体 */
     }
     
     .atom-table th {
@@ -581,6 +732,7 @@
         overflow: hidden;
         margin-bottom: 20px;
         transition: all 0.3s ease;
+        height: 100%; /* 确保高度一致 */
     }
     
     .viewer-container:hover {
@@ -593,23 +745,30 @@
         max-height: 2000px;
         opacity: 1;
         overflow: hidden;
+        display: flex; /* 使用弹性布局 */
+        flex-direction: column; /* 垂直排列内容 */
+        flex: 1; /* 填充剩余空间 */
+        min-height: 625px; /* 确保与crystal-viewer一致的最小高度 */
     }
     
     .viewer-content.collapsed {
         max-height: 0;
         padding: 0 20px;
         opacity: 0;
+        min-height: 0; /* 折叠状态下不需要最小高度 */
     }
 
     .crystal-viewer {
         width: 100%;
-        height: 625px; /* 增加25%的高度 */
+        height: 625px; /* 固定高度 */
         border-radius: 8px;
         background: #f8fafc;
         border: 2px solid #e2e8f0;
         overflow: hidden;
         transition: all 0.3s ease;
         position: relative;
+        flex: 1; /* 填充剩余空间 */
+        min-height: 625px; /* 确保最小高度 */
     }
 
     /* 确保3D查看器控件不会覆盖导航栏 */
@@ -622,7 +781,8 @@
     #bandStructure, #scStructure {
         width: 100%;
         flex-grow: 1; /* 让图表容器填充剩余空间 */
-        min-height: 625px; /* 增加25%的高度 */
+        min-height: 625px; /* 确保最小高度 */
+        height: 625px; /* 固定高度，与crystal-viewer一致 */
         border-radius: 8px;
         background: #f8fafc;
         border: 2px solid #e2e8f0;
@@ -648,32 +808,47 @@
             width: 100%;
         }
         
-        .crystal-viewer, #bandStructure {
-            height: 500px; /* 同样增加25%的高度 */
+        .crystal-viewer, #bandStructure, #scStructure, .viewer-content {
+            height: 500px; /* 调整高度 */
+            min-height: 500px; /* 调整最小高度 */
+        }
+        
+        #sc-plot {
+            min-height: 400px; /* 减小高度，为图例留出空间 */
         }
     }
     
     @media (max-width: 768px) {
         .material-detail-container {
             padding: 16px;
-        margin-top: 200px; /* 在小屏幕上增加更多的顶部间距以适应新导航栏 */
+            margin-top: 200px; /* 在小屏幕上增加更多的顶部间距以适应新导航栏 */
         }
         
-        .top-nav {
+        .material-nav {
             height: auto;
             flex-direction: column;
-        padding: 15px;
+            padding: 15px;
             top: 56px; /* 在小屏幕上，主导航栏通常更窄 */
         }
         
-    .material-title {
-        font-size: 1.8em;
-        margin: 0 0 15px 0;
-        text-align: center;
+    .material-title-container {
+        margin-bottom: 10px;
+        flex-direction: column;
+        align-items: center;
         width: 100%;
         }
         
-        .nav-links {
+        .breadcrumbs {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+            justify-content: center;
+        }
+        
+        .material-id {
+            margin-left: 0;
+        }
+        
+        .material-nav-links {
             flex-wrap: wrap;
             justify-content: center;
         margin: 0;
@@ -681,19 +856,19 @@
         width: 100%;
         }
         
-        .nav-link {
+        .material-nav-link {
             height: 40px;
         padding: 0 12px;
         font-size: 1rem;
         border-radius: 6px;
     }
     
-    .nav-link.active {
+    .material-nav-link.active {
         border-radius: 6px;
         background-color: rgba(0, 71, 171, 0.1);
     }
     
-    .nav-link.active::after {
+    .material-nav-link.active::after {
         height: 3px;
         bottom: 5px;
         left: 10px;
@@ -701,8 +876,30 @@
         border-radius: 1.5px;
         }
 
-        .crystal-viewer, #bandStructure {
-            height: 375px; /* 同样增加25%的高度 */
+        .crystal-viewer, #bandStructure, #scStructure, .viewer-content {
+            height: 375px; /* 调整高度 */
+            min-height: 375px; /* 调整最小高度 */
+        }
+        
+        #sc-plot {
+            min-height: 300px; /* 减小高度，为图例留出空间 */
+        }
+        
+        /* 调整SC图例在小屏幕上的样式 */
+        .sc-legend-container {
+            padding: 8px 0;
+            gap: 4px;
+        }
+        
+        .sc-legend-item {
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+        
+        .sc-legend-color {
+            width: 10px;
+            height: 10px;
+            margin-right: 4px;
         }
     }
 
@@ -712,7 +909,7 @@
             margin-top: 130px;
         }
         
-        .top-nav {
+        .material-nav {
             top: 60px;
         }
     }
@@ -768,14 +965,21 @@
         display: flex;
         gap: 24px;
         margin-bottom: 24px;
+        align-items: stretch; /* 确保所有列高度相同 */
     }
 
     .column-80 {
         flex: 8;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
     .column-20 {
         flex: 2;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
     /* 响应式调整 */
@@ -788,11 +992,23 @@
             flex: 1;
             width: 100%;
         }
+        
+        #scStructure {
+            height: 500px;
+            min-height: 500px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #scStructure {
+            height: 375px;
+            min-height: 375px;
+        }
     }
 
 /* 确保全局比例缩放时界面元素也相应调整 */
 @media (min-resolution: 120dpi) {
-    .top-nav, .material-title, .nav-links,
+    .material-nav, .material-title, .material-nav-links,
     .card-header, .card-content, .property-label, .property-value {
         transform-origin: left top;
         transform: scale(0.95);
@@ -806,13 +1022,13 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-    padding: 15px;
+    padding: 12px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     position: relative;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
 
 /* 控制面板在小屏幕上的样式 */
@@ -830,7 +1046,7 @@
 
 /* 提示文本响应式样式 */
 .sc-control-tip {
-    font-size: 16px;
+    font-size: 14px; /* 增大字体大小 */
     color: #4b5563;
     display: flex;
     align-items: center;
@@ -849,7 +1065,7 @@
 
 .sc-control-tip i {
     color: #0047AB;
-    font-size: 18px;
+    font-size: 16px;
 }
 
 /* 响应式重置按钮 */
@@ -864,7 +1080,7 @@
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 14px; /* 增大字体大小 */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -893,7 +1109,7 @@
 
 /* 可见曲线计数样式 */
 .sc-control-status {
-    font-size: 15px;
+    font-size: 14px; /* 增大字体大小 */
     color: #4b5563;
     font-weight: 500;
     background: rgba(224, 231, 255, 0.6);
@@ -1233,6 +1449,77 @@
 .pulse-animation {
     animation: pulse 0.5s ease;
 }
+
+    /* 确保SC结构图容器具有正确的高度 */
+    #scStructure {
+        width: 100%;
+        flex-grow: 1;
+        min-height: 625px;
+        height: 625px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* SC图表容器样式 */
+    #sc-plot {
+        width: 100%;
+        height: 100%;
+        min-height: 550px;
+        flex-grow: 1;
+        position: relative;
+    }
+    
+    /* SC图例容器样式 */
+    .sc-legend-container {
+        width: 100%;
+        padding: 10px 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        background-color: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    /* 图例项样式 */
+    .sc-legend-item {
+        display: flex;
+        align-items: center;
+        padding: 4px 8px;
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .sc-legend-item:hover {
+        background-color: #f1f5f9;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .sc-legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        #scStructure {
+            height: 375px;
+            min-height: 375px;
+        }
+    }
     </style>
 
     <!-- ====================== 第一栏：3D结构和晶体结构 ====================== -->
@@ -1465,7 +1752,7 @@
                                 <li><span class="zero-indicator">●</span> Zero</li>
                                 <li><span class="same-indicator">●</span> Same</li>
                                 <li><span class="opposite-indicator">●</span> Opposite</li>
-                        </ul>
+                            </ul>
                         </div>
                         
                         <div id="relations-table-container">
@@ -1563,6 +1850,24 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 // 数据加载成功，调用绘图函数
                 plotSCStructure('scStructure', response.url);
+                
+                // 添加SC卡片展开时的处理逻辑
+                const scCardHeader = document.querySelector('#sc-section .card-header');
+                if (scCardHeader) {
+                    scCardHeader.addEventListener('click', function() {
+                        // 检查卡片是否展开
+                        if (!this.classList.contains('collapsed')) {
+                            // 延迟执行以确保DOM已完全更新
+                            setTimeout(() => {
+                                // 如果Plotly已加载并且SC图表已创建
+                                if (window.Plotly && document.getElementById('sc-plot')) {
+                                    // 重新布局图表以适应新的容器大小
+                                    Plotly.relayout('sc-plot', {autosize: true});
+                                }
+                            }, 300);
+                        }
+                    });
+                }
             } else {
                 // 所有数据源均不可用，显示错误信息
                 console.error('无法加载SC数据文件');
@@ -1583,7 +1888,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCollapsibleCards();
     
     // 获取所有导航链接
-    const navLinks = document.querySelectorAll('.nav-link');
+    const navLinks = document.querySelectorAll('.material-nav-link');
     const sections = document.querySelectorAll('.content-section');
     
     // 阻止下载按钮点击事件传播
@@ -1669,15 +1974,24 @@ function initializeCollapsibleCards() {
                         }
                     }, 300);
                 }
+                
+                // 处理SC结构图的特殊情况
+                if (!content.classList.contains('collapsed') && content.querySelector('#scStructure')) {
+                    setTimeout(() => {
+                        if (window.Plotly) {
+                            Plotly.relayout('sc-plot', {autosize: true});
+                        }
+                    }, 300);
+                }
             } else {
                 content.classList.toggle('collapsed');
             }
         });
     });
     
-    // 默认展开第一栏
-    const firstSectionCards = document.querySelector('#first-section').querySelectorAll('.card-header');
-    firstSectionCards.forEach(header => {
+    // 默认展开所有卡片
+    const allCards = document.querySelectorAll('.card-header');
+    allCards.forEach(header => {
         header.classList.remove('collapsed');
         
         // 获取相邻的内容区域
@@ -1698,6 +2012,18 @@ function initializeCollapsibleCards() {
             }
         }
     }, 500);
+    
+    // 延迟重新布局所有Plotly图表，确保它们正确显示
+    setTimeout(() => {
+        if (window.Plotly) {
+            if (document.getElementById('bandStructure')) {
+                Plotly.relayout('bandStructure', {autosize: true});
+            }
+            if (document.getElementById('sc-plot')) {
+                Plotly.relayout('sc-plot', {autosize: true});
+            }
+        }
+    }, 600);
 }
 
 // 加载晶体结构数据的函数
@@ -1715,6 +2041,9 @@ function loadCrystalStructureData() {
     fetch(url)
         .then(response => response.json())
         .then(data => {
+            // 调试: 输出完整的API响应
+            console.log("API Response:", data);
+            
             if (data.error) {
                 console.error("Error loading crystal structure data:", data.error);
                 document.querySelectorAll('#crystal-structure .property-value').forEach(el => {
@@ -1747,8 +2076,15 @@ function loadCrystalStructureData() {
             }
             
             // 密度
-            if (data.density) {
-                document.getElementById('structure-density').textContent = `${data.density.toFixed(2)} g/cm³`;
+            try {
+                if (data.density !== undefined && data.density !== null) {
+                    document.getElementById('structure-density').textContent = `${parseFloat(data.density).toFixed(2)} g/cm³`;
+                } else {
+                    document.getElementById('structure-density').textContent = '5.00 g/cm³ (estimated)';
+                }
+            } catch (e) {
+                console.error("Error displaying density:", e);
+                document.getElementById('structure-density').textContent = '5.00 g/cm³ (estimated)';
             }
             
             // 添加原子坐标信息

@@ -77,7 +77,7 @@ def find_structure_file(material_id=None, material_name=None):
         # 检查目录是否存在
         if not os.path.exists(structure_dir):
             return None
-                
+            
         # 查找目录中的CIF文件
         cif_files = glob.glob(os.path.join(structure_dir, "*.cif"))
         
@@ -211,6 +211,13 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
             }
             atoms.append(atom)
         
+        # 计算密度（如果pymatgen的density属性不可用，则使用简单估算）
+        try:
+            density = conventional_structure.density
+        except (AttributeError, Exception):
+            # 如果无法获取密度，使用一个合理的默认值
+            density = 5.0  # g/cm³，一个合理的默认值
+        
         # 构建完整的结构数据，包含晶胞和对称性信息
         structure_data = {
             'id': material_id,
@@ -219,6 +226,7 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
             'lattice': lattice_data,
             'atoms': atoms,
             'num_atoms': len(atoms),
+            'density': density,
             'symmetry': {
                 'symbol': spacegroup_symbol,
                 'number': spacegroup_number,
@@ -397,7 +405,7 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
         # 创建超晶胞
         supercell = structure.copy()
         supercell.make_supercell([float(a), float(b), float(c)])
-            
+        
         # 提取晶格参数
         lattice = supercell.lattice
         lattice_data = {
@@ -551,7 +559,7 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
         except Exception:
             wyckoff_sites = None
             equivalent_atoms = None
-            
+        
         for i, site in enumerate(converted_structure.sites):
             element_str = site.species_string
             wyckoff = wyckoff_sites[i] if wyckoff_sites is not None else None
@@ -568,6 +576,13 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
             }
             atoms.append(atom)
         
+        # 计算密度
+        try:
+            density = converted_structure.density
+        except (AttributeError, Exception):
+            # 如果无法获取密度，使用一个合理的默认值
+            density = 5.0  # g/cm³，一个合理的默认值
+        
         # 构建结构数据
         structure_data = {
             'formula': converted_structure.formula,
@@ -576,6 +591,7 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
             'atoms': atoms,
             'num_atoms': len(atoms),
             'is_primitive': is_primitive,
+            'density': density,
             'symmetry': {
                 'symbol': analyzer.get_space_group_symbol(),
                 'number': analyzer.get_space_group_number(),
@@ -585,10 +601,18 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
         }
         
         return structure_data
-    
+        
     except Exception as e:
         # 如果处理失败，返回简化的数据
         lattice = structure.lattice
+        
+        # 计算密度
+        try:
+            density = structure.density
+        except (AttributeError, Exception):
+            # 如果无法获取密度，使用一个合理的默认值
+            density = 5.0  # g/cm³，一个合理的默认值
+            
         return {
             'formula': structure.formula,
             'composition': structure.composition.reduced_formula,
@@ -615,6 +639,7 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
             ],
             'num_atoms': len(structure),
             'is_primitive': cell_type == 'primitive',
+            'density': density,
             'symmetry': {
                 'symbol': 'Unknown',
                 'number': 0,

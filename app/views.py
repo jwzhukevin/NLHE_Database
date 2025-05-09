@@ -215,7 +215,7 @@ def add():
             # 添加到数据库以获取ID
             db.session.add(material)
             db.session.flush()
-            
+
             formatted_id = f"IMR-{material.id:08d}"
             
             # 创建材料目录结构
@@ -254,7 +254,7 @@ def add():
             db.session.commit()
             flash(f'材料 {chemical_name} 添加成功！', 'success')
             return redirect(url_for('views.detail', material_id=material.id))
-            
+
         except ValueError as e:
             flash(f'数据无效: {str(e)}', 'error')
             return redirect(url_for('views.add'))
@@ -262,7 +262,7 @@ def add():
         except Exception as e:
             flash(f'发生错误: {str(e)}', 'error')
             return redirect(url_for('views.add'))
-    
+
     return render_template('materials/add.html')
 
 # Safe numeric conversion helper functions
@@ -566,7 +566,7 @@ def check_ip_blocked(view_func):
 
 # User login route
 @bp.route('/login', methods=['GET', 'POST'])
-@check_ip_blocked  # 应用IP封锁检查装饰器
+@check_ip_blocked
 def login():
     """
     用户登录页面和处理逻辑
@@ -642,7 +642,7 @@ def login():
         if next_page:
             return redirect(next_page)
         return redirect(url_for('views.index'))
-    
+        
     return render_template('auth/login.html')
 
 # User logout route
