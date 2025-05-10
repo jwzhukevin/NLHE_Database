@@ -103,11 +103,86 @@
         .main-content {
             padding-top: 64px; /* 与导航栏高度匹配 */
             min-height: calc(100vh - 350px); /* 基于页脚高度调整 */
+            margin-top: 0; /* 确保没有顶部边距 */
+            background-color: var(--light-bg); /* 保持与body背景色一致 */
         }
 
         /* 详情页专用调整 */
         .main-content .material-detail-container {
             padding-top: 0;
+        }
+
+        /* ========== Flash Messages ========== */
+        .flash-messages {
+            padding: 0; /* 移除顶部内边距 */
+            background-color: var(--light-bg); /* 保持与body背景色一致 */
+        }
+
+        .flash-messages .container {
+            padding-top: 1rem; /* 添加顶部内边距 */
+        }
+
+        .flash-message {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 6px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .flash-message.success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        .flash-message.error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .flash-message.info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        .flash-message .message-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .flash-message i {
+            font-size: 1.25rem;
+        }
+
+        .close-flash {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .close-flash:hover {
+            opacity: 1;
         }
     </style>
 </head>
@@ -176,6 +251,7 @@
             width: 100%;                          /* 宽度100% */
             top: 0;                               /* 固定在顶部 */
             z-index: 1000;                        /* 确保导航栏在最上层 */
+            margin-bottom: 0;                     /* 移除底部边距 */
         }
 
         /* 导航栏内容布局 */
@@ -289,6 +365,25 @@
 
     <!-- ========== 主内容区域 ========== -->
     <div class="main-content">
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            <div class="container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                <div class="message-content">
+                                    <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                                <button class="close-flash">&times;</button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
         {% block content %}{% endblock %}
     </div>
 
@@ -388,6 +483,37 @@
                     toolsMenu.classList.remove('show');
                 }
             });
+
+            // Flash message close buttons
+            document.querySelectorAll('.close-flash').forEach(button => {
+                button.addEventListener('click', function() {
+                    const flashMessage = this.parentElement;
+                    flashMessage.style.opacity = '0';
+                    flashMessage.style.transform = 'translateY(-20px)';
+                    flashMessage.style.transition = 'opacity 0.3s, transform 0.3s';
+                    
+                    setTimeout(() => {
+                        flashMessage.remove();
+                    }, 300);
+                });
+            });
+
+            // Auto-dismiss flash messages after 5 seconds
+            setTimeout(() => {
+                document.querySelectorAll('.flash-message').forEach(message => {
+                    if (message) {
+                        message.style.opacity = '0';
+                        message.style.transform = 'translateY(-20px)';
+                        message.style.transition = 'opacity 0.3s, transform 0.3s';
+                        
+                        setTimeout(() => {
+                            if (message.parentElement) {
+                                message.remove();
+                            }
+                        }, 300);
+                    }
+                });
+            }, 5000);
         });
     </script>
 </body>

@@ -4,7 +4,7 @@
 <section class="settings-hero">
     <div class="container">
         <h1>User Settings</h1>
-        <p>Customize your experience with the NLHE Database</p>
+        <p>Manage your account information</p>
     </div>
 </section>
 
@@ -12,67 +12,47 @@
     <div class="container">
         <div class="settings-card">
             <div class="card-header">
-                <h3>Account Settings</h3>
+                <h3>Account Information</h3>
             </div>
             <div class="card-content">
-                <form method="post" class="settings-form">
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <div class="read-only-field">
+                <form id="settings-form" method="post" class="settings-form">
+                    <!-- Username Field -->
+                    <div class="setting-item">
+                        <div class="setting-label">Username</div>
+                        <div class="setting-value">
+                            <span id="username-display">{{ current_user.username }}</span>
+                            <button type="button" class="edit-btn" onclick="showEditModal('username')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" id="username" name="username" value="{{ current_user.username }}">
+                    </div>
+                    
+                    <!-- Email Field (Read-only) -->
+                    <div class="setting-item">
+                        <div class="setting-label">Email</div>
+                        <div class="setting-value">
                             <span>{{ current_user.email }}</span>
                             <i class="fas fa-lock" title="Email cannot be changed"></i>
                         </div>
-                        <p class="field-hint">Your email address is your unique identifier and cannot be changed.</p>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" autocomplete="off" required value="{{ current_user.username }}">
-                        <p class="field-hint">This is your login username.</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="name">Display Name</label>
-                        <input type="text" id="name" name="name" autocomplete="off" required value="{{ current_user.name }}">
-                        <p class="field-hint">This name will be displayed throughout the website interface.</p>
-                    </div>
-                    
-                    <div class="form-divider"></div>
-                    
-                    <div class="form-group">
-                        <label for="current_password">Current Password</label>
-                        <div class="password-input-container">
-                            <input type="password" id="current_password" name="current_password" placeholder="Enter your current password">
-                            <button type="button" class="password-toggle">
-                                <i class="fas fa-eye"></i>
+                    <!-- Password Field -->
+                    <div class="setting-item">
+                        <div class="setting-label">Password</div>
+                        <div class="setting-value">
+                            <span>••••••••</span>
+                            <button type="button" class="edit-btn" onclick="showPasswordModal()">
+                                <i class="fas fa-pencil-alt"></i>
                             </button>
                         </div>
-                        <p class="field-hint">Required only if you want to change your password.</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="new_password">New Password</label>
-                        <div class="password-input-container">
-                            <input type="password" id="new_password" name="new_password" placeholder="Enter new password">
-                            <button type="button" class="password-toggle">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <p class="field-hint">Leave blank if you don't want to change your password.</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="confirm_password">Confirm New Password</label>
-                        <div class="password-input-container">
-                            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm new password">
-                            <button type="button" class="password-toggle">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
+                        <input type="hidden" id="current_password" name="current_password" value="">
+                        <input type="hidden" id="new_password" name="new_password" value="">
+                        <input type="hidden" id="confirm_password" name="confirm_password" value="">
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" name="submit" class="btn primary-btn">
+                        <button type="submit" id="save-btn" class="btn primary-btn" disabled>
                             <i class="fas fa-save"></i> Save Changes
                         </button>
                         <a href="{{ url_for('views.index') }}" class="btn secondary-btn">
@@ -85,10 +65,76 @@
     </div>
 </section>
 
+<!-- Username Edit Modal -->
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Edit Username</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="edit-input">New Value</label>
+                <input type="text" id="edit-input" class="form-control">
+                <p id="edit-error" class="error-message"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="modal-save" class="btn primary-btn">Save</button>
+            <button type="button" class="btn secondary-btn close-modal">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Password Edit Modal -->
+<div id="password-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Change Password</h3>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="current-password-input">Current Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="current-password-input" class="form-control">
+                    <button type="button" class="password-toggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="new-password-input">New Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="new-password-input" class="form-control">
+                    <button type="button" class="password-toggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <p class="field-hint">Must be at least 8 characters long</p>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password-input">Confirm New Password</label>
+                <div class="password-input-container">
+                    <input type="password" id="confirm-password-input" class="form-control">
+                    <button type="button" class="password-toggle">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <p id="password-error" class="error-message"></p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="password-save" class="btn primary-btn">Save</button>
+            <button type="button" class="btn secondary-btn close-modal">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <style>
     /* Hero section */
     .settings-hero {
-        padding: 4rem 0 2rem;
+        padding: 1.5rem 0 1.5rem;
         text-align: center;
         background: linear-gradient(135deg, #0047AB, #1E5CB3);
         color: white;
@@ -96,21 +142,19 @@
     }
 
     .settings-hero h1 {
-        font-size: clamp(2rem, 5vw, 3rem);
-        margin-bottom: 1rem;
+        font-size: clamp(1.8rem, 4vw, 2.5rem);
+        margin-bottom: 0.5rem;
         line-height: 1.2;
     }
 
     .settings-hero p {
-        font-size: clamp(1rem, 2vw, 1.25rem);
-        max-width: 800px;
-        margin: 0 auto;
+        font-size: clamp(0.9rem, 1.8vw, 1.1rem);
         opacity: 0.9;
     }
 
     /* Settings container */
     .settings-container {
-        max-width: 800px;
+        max-width: 700px;
         margin: 0 auto 3rem;
         padding: 0 1rem;
     }
@@ -118,22 +162,22 @@
     /* Card styling */
     .settings-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: var(--card-shadow);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         overflow: hidden;
         border: 1px solid #e5e7eb;
     }
 
     .card-header {
-        background: #f1f5f9;
-        padding: 1.25rem 1.5rem;
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
         border-bottom: 1px solid #e5e7eb;
     }
 
     .card-header h3 {
         margin: 0;
         color: #1e293b;
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         font-weight: 600;
     }
 
@@ -141,119 +185,86 @@
         padding: 1.5rem;
     }
 
-    /* Form styling */
-    .settings-form {
+    /* Setting item styling */
+    .setting-item {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
     }
 
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
+    .setting-item:last-child {
+        border-bottom: none;
+        margin-bottom: 1rem;
+        padding-bottom: 0;
     }
 
-    .form-group label {
+    .setting-label {
         font-weight: 600;
-        color: #333;
-        font-size: 1rem;
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
     }
 
-    .form-group input {
-        height: 2.5rem;
-        padding: 0 1rem;
-        border: 1px solid #D9E2F0;
-        border-radius: 4px;
-        font-size: 1rem;
-        transition: all 0.2s ease;
-    }
-
-    .form-group input:focus {
-        border-color: #0047AB;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
-    }
-
-    .read-only-field {
+    .setting-value {
         display: flex;
         align-items: center;
-        height: 2.5rem;
-        padding: 0 1rem;
+        justify-content: space-between;
+        background-color: #f9fafb;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
         border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        background-color: #f5f7fa;
+    }
+
+    .setting-value span {
         font-size: 1rem;
-        color: #4b5563;
+        color: #111827;
     }
 
-    .read-only-field span {
-        flex: 1;
-    }
-
-    .read-only-field i {
+    .setting-value i.fa-lock {
         color: #9ca3af;
         margin-left: 0.5rem;
     }
 
-    .form-divider {
-        height: 1px;
-        background-color: #e5e7eb;
-        margin: 0.5rem 0;
-    }
-
-    .field-hint {
-        color: #6b7280;
-        font-size: 0.875rem;
-        margin: 0.25rem 0 0 0;
-    }
-
-    /* Password input styling */
-    .password-input-container {
-        position: relative;
-        width: 100%;
-    }
-
-    .password-toggle {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
+    .edit-btn {
         background: none;
         border: none;
-        color: #718096;
+        color: #6b7280;
         cursor: pointer;
-        font-size: 1.1rem;
-        padding: 0.5rem;
-        transition: color 0.2s;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        transition: all 0.2s;
     }
 
-    .password-toggle:hover {
+    .edit-btn:hover {
         color: #0047AB;
+        background-color: #e5e7eb;
     }
 
-    .password-toggle:focus {
-        outline: none;
-    }
-
-    /* Button styling */
+    /* Form actions */
     .form-actions {
         display: flex;
         gap: 1rem;
-        margin-top: 1rem;
+        margin-top: 1.5rem;
     }
 
     .btn {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
+        padding: 0.6rem 1.2rem;
         border-radius: 6px;
-        font-weight: 600;
-        font-size: 1rem;
+        font-weight: 500;
+        font-size: 0.95rem;
         cursor: pointer;
         transition: all 0.2s ease;
         border: none;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     .primary-btn {
@@ -261,9 +272,8 @@
         color: white;
     }
 
-    .primary-btn:hover {
+    .primary-btn:hover:not(:disabled) {
         background-color: #003A8C;
-        transform: translateY(-1px);
     }
 
     .secondary-btn {
@@ -278,24 +288,183 @@
         color: #1e293b;
     }
 
+    /* Modal styling */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+        animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        max-width: 500px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #111827;
+    }
+
+    .close-modal {
+        color: #9ca3af;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close-modal:hover {
+        color: #111827;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    /* Form controls */
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #4b5563;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #0047AB;
+        box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+    }
+
+    .field-hint {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .error-message {
+        color: #dc2626;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+        display: none;
+    }
+
+    /* Password input styling */
+    .password-input-container {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0.25rem;
+    }
+
+    .password-toggle:hover {
+        color: #0047AB;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 640px) {
         .form-actions {
             flex-direction: column;
         }
 
-        .card-content {
-            padding: 1.25rem;
+        .modal-content {
+            margin: 20% auto;
+            width: 90%;
         }
     }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Password toggle functionality
-        const toggleButtons = document.querySelectorAll('.password-toggle');
+        // Variables to track changes
+        let hasChanges = false;
+        const saveBtn = document.getElementById('save-btn');
+        const editModal = document.getElementById('edit-modal');
+        const passwordModal = document.getElementById('password-modal');
+        let currentField = null;
         
-        toggleButtons.forEach(button => {
+        // Close modal buttons
+        document.querySelectorAll('.close-modal').forEach(button => {
+            button.addEventListener('click', function() {
+                editModal.style.display = 'none';
+                passwordModal.style.display = 'none';
+            });
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === editModal) {
+                editModal.style.display = 'none';
+            }
+            if (event.target === passwordModal) {
+                passwordModal.style.display = 'none';
+            }
+        });
+        
+        // Password toggle functionality
+        document.querySelectorAll('.password-toggle').forEach(button => {
             button.addEventListener('click', function() {
                 const input = this.parentElement.querySelector('input');
                 const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -306,6 +475,124 @@
                 icon.classList.toggle('fa-eye-slash');
             });
         });
+        
+        // Edit modal save button
+        document.getElementById('modal-save').addEventListener('click', function() {
+            const input = document.getElementById('edit-input');
+            const value = input.value.trim();
+            const errorMsg = document.getElementById('edit-error');
+            
+            // Validate input
+            if (!value) {
+                errorMsg.textContent = 'This field cannot be empty';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (value.length > 20) {
+                errorMsg.textContent = 'Maximum 20 characters allowed';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            // Update the field
+            document.getElementById(`${currentField}-display`).textContent = value;
+            document.getElementById(currentField).value = value;
+            
+            // Mark as changed and enable save button
+            hasChanges = true;
+            saveBtn.disabled = false;
+            
+            // Close the modal
+            editModal.style.display = 'none';
+        });
+        
+        // Password modal save button
+        document.getElementById('password-save').addEventListener('click', function() {
+            const currentPassword = document.getElementById('current-password-input').value;
+            const newPassword = document.getElementById('new-password-input').value;
+            const confirmPassword = document.getElementById('confirm-password-input').value;
+            const errorMsg = document.getElementById('password-error');
+            
+            // Validate inputs
+            if (!currentPassword) {
+                errorMsg.textContent = 'Current password is required';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (!newPassword) {
+                errorMsg.textContent = 'New password is required';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                errorMsg.textContent = 'New password must be at least 8 characters long';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                errorMsg.textContent = 'New passwords do not match';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            // Update hidden fields
+            document.getElementById('current_password').value = currentPassword;
+            document.getElementById('new_password').value = newPassword;
+            document.getElementById('confirm_password').value = confirmPassword;
+            
+            // Mark as changed and enable save button
+            hasChanges = true;
+            saveBtn.disabled = false;
+            
+            // Close the modal
+            passwordModal.style.display = 'none';
+        });
+        
+        // Form submission
+        document.getElementById('settings-form').addEventListener('submit', function(event) {
+            if (!hasChanges) {
+                event.preventDefault();
+                alert('No changes to save');
+            }
+        });
     });
+    
+    // Show edit modal for username
+    function showEditModal(field) {
+        const modal = document.getElementById('edit-modal');
+        const input = document.getElementById('edit-input');
+        const errorMsg = document.getElementById('edit-error');
+        
+        // Reset error message
+        errorMsg.style.display = 'none';
+        
+        // Set current field and values
+        currentField = field;
+        input.value = document.getElementById(`${field}-display`).textContent;
+        
+        // Show modal
+        modal.style.display = 'block';
+        input.focus();
+    }
+    
+    // Show password change modal
+    function showPasswordModal() {
+        const modal = document.getElementById('password-modal');
+        const errorMsg = document.getElementById('password-error');
+        
+        // Reset fields and error message
+        document.getElementById('current-password-input').value = '';
+        document.getElementById('new-password-input').value = '';
+        document.getElementById('confirm-password-input').value = '';
+        errorMsg.style.display = 'none';
+        
+        // Show modal
+        modal.style.display = 'block';
+        document.getElementById('current-password-input').focus();
+    }
 </script>
 {% endblock %}

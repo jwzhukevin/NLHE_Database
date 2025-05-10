@@ -1,8 +1,0 @@
-# Format: email:username:password:role
-# Available roles: admin, user
-# One user per line
-user1@example.com:user1:password123:user
-user2@example.com:user2:password456:user
-user3@example.com:user3:password789:user
-researcher1@example.com:researcher1:research123:user
-researcher2@example.com:researcher2:research456:user

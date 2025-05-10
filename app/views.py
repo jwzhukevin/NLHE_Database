@@ -569,75 +569,118 @@ def check_ip_blocked(view_func):
 @check_ip_blocked
 def login():
     """
-    用户登录页面和处理逻辑
+    User login page and processing logic
     
-    GET请求：显示登录表单
-    POST请求：验证用户凭据并处理登录
+    GET request: Display login form
+    POST request: Validate user credentials and process login
     """
-    # 如果用户已登录，重定向到首页
+    # If user is already logged in, redirect to homepage
     if current_user.is_authenticated:
         return redirect(url_for('views.index'))
     
     if request.method == 'POST':
+        email = request.form.get('email')
         username = request.form.get('username')
         password = request.form.get('password')
         remember = 'remember' in request.form
-        admin_login = request.form.get('admin_login') == 'true'
+        login_type = request.form.get('login_type')
+        admin_login = login_type == 'admin'
         
-        # 表单验证
-        if not username or not password:
-            flash('所有字段都是必填的。', 'error')
+        # Form validation
+        if not email or not username or not password:
+            flash('All fields are required.', 'error')
             return render_template('auth/login.html')
         
-        # 检查登录失败次数
+        # Check login failure count
         ip = get_client_ip()
         failed_key = f"login_failed:{ip}"
         failed_attempts = session.get(failed_key, 0)
-        max_attempts = 5  # 最大尝试次数
+        max_attempts = 5  # Maximum attempts
         
-        # 区分管理员登录和普通登录
-        if admin_login:
-            user = User.query.filter_by(username=username, role='admin').first()
-            if not user or not user.validate_password(password):
-                # 更新失败计数
-                failed_attempts += 1
-                session[failed_key] = failed_attempts
-                remaining_attempts = max_attempts - failed_attempts
-                
-                # 如果失败次数达到限制，封锁IP
-                if failed_attempts >= max_attempts:
-                    block_ip = BlockedIP(ip_address=ip, reason="Multiple failed admin login attempts")
-                    db.session.add(block_ip)
-                    db.session.commit()
-                    session.pop(failed_key, None)
-                    flash('您的IP已被封锁，因为未经授权的管理员登录尝试次数过多。', 'error')
-                    return redirect(url_for('views.login'))
-                
-                flash(f'管理员凭据无效。您还有{remaining_attempts}次尝试机会。', 'error')
-                return render_template('auth/login.html')
-        else:
-            user = User.query.filter_by(username=username).first()
-            if not user or not user.validate_password(password):
-                # 更新失败计数
-                failed_attempts += 1
-                session[failed_key] = failed_attempts
-                remaining_attempts = max_attempts - failed_attempts
-                
-                # 如果失败次数达到限制，封锁IP
-                if failed_attempts >= max_attempts:
-                    block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
-                    db.session.add(block_ip)
-                    db.session.commit()
-                    session.pop(failed_key, None)
-                    flash('您的IP已被封锁，因为登录尝试失败次数过多。', 'error')
-                    return redirect(url_for('views.login'))
-                
-                flash(f'凭据无效。您还有{remaining_attempts}次尝试机会。', 'error')
-                return render_template('auth/login.html')
+        # Check if email exists
+        user_by_email = User.query.filter_by(email=email).first()
+        if not user_by_email:
+            # Update failure count
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            remaining_attempts = max_attempts - failed_attempts
+            
+            # If failure count reaches limit, block IP
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                return redirect(url_for('views.login'))
+            
+            flash(f'Email not found. Please check your email address. You have {remaining_attempts} attempts remaining.', 'error')
+            return render_template('auth/login.html')
         
-        # 登录成功，清除失败计数
+        # Check if username matches the email
+        if user_by_email.username != username:
+            # Update failure count
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            remaining_attempts = max_attempts - failed_attempts
+            
+            # If failure count reaches limit, block IP
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                return redirect(url_for('views.login'))
+            
+            flash(f'Username does not match this email address. You have {remaining_attempts} attempts remaining.', 'error')
+            return render_template('auth/login.html')
+        
+        # Distinguish between admin login and regular login
+        if admin_login and user_by_email.role != 'admin':
+            # Update failure count
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            remaining_attempts = max_attempts - failed_attempts
+            
+            # If failure count reaches limit, block IP
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed admin login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                flash('Your IP has been blocked due to too many unauthorized admin login attempts.', 'error')
+                return redirect(url_for('views.login'))
+            
+            flash(f'This account does not have administrator privileges. You have {remaining_attempts} attempts remaining.', 'error')
+            return render_template('auth/login.html')
+        
+        # Check password
+        if not user_by_email.validate_password(password):
+            # Update failure count
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            remaining_attempts = max_attempts - failed_attempts
+            
+            # If failure count reaches limit, block IP
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                return redirect(url_for('views.login'))
+            
+            flash(f'Incorrect password. You have {remaining_attempts} attempts remaining.', 'error')
+            return render_template('auth/login.html')
+        
+        # Login successful, clear failure count
         session.pop(failed_key, None)
-        login_user(user, remember=remember)
+        login_user(user_by_email, remember=remember)
+        
+        # Show welcome message with username
+        flash(f'Welcome back, {user_by_email.username}!', 'success')
+        
         next_page = request.args.get('next')
         if next_page:
             return redirect(next_page)
@@ -670,7 +713,6 @@ def settings():
     """
     if request.method == 'POST':
         username = request.form['username'].strip()
-        name = request.form['name'].strip()
         current_password = request.form.get('current_password', '')
         new_password = request.form.get('new_password', '')
         confirm_password = request.form.get('confirm_password', '')
@@ -680,12 +722,12 @@ def settings():
         has_password_change = bool(new_password)
         
         # Validate inputs
-        if not username or not name:
-            flash('Username and display name are required.', 'error')
+        if not username:
+            flash('Username is required.', 'error')
             return redirect(url_for('views.settings'))
         
-        if len(username) > 20 or len(name) > 20:
-            flash('Username and display name must be 20 characters or less.', 'error')
+        if len(username) > 20:
+            flash('Username must be 20 characters or less.', 'error')
             return redirect(url_for('views.settings'))
         
         # Check if another user already has this username (except current user)
@@ -694,10 +736,6 @@ def settings():
             if existing_user:
                 flash('This username is already taken. Please choose another.', 'error')
                 return redirect(url_for('views.settings'))
-        
-        # Update username and display name
-        current_user.username = username
-        current_user.name = name
         
         # Password change logic
         if has_password_change:
@@ -714,18 +752,100 @@ def settings():
             if new_password != confirm_password:
                 flash('New passwords do not match.', 'error')
                 return redirect(url_for('views.settings'))
-            
-            # Set new password
-            current_user.set_password(new_password)
-            
-        # Commit database changes
+        
         try:
-            db.session.commit()
-            # Log the changes for debugging
-            current_app.logger.info(f"User {current_user.id} updated: username changed from {original_username} to {username}, password changed: {has_password_change}")
+            # Start a transaction
+            # First update the database
+            current_user.username = username
             
-            # Update users.dat file with the latest user data
-            update_users_dat()
+            # Set new password if provided
+            if has_password_change:
+                current_user.set_password(new_password)
+                
+            # Now directly update the users.dat file
+            users_file = os.path.join(current_app.root_path, 'static/users/users.dat')
+            
+            # Create backup of original file
+            backup_file = f"{users_file}.bak"
+            if os.path.exists(users_file):
+                import shutil
+                try:
+                    shutil.copy2(users_file, backup_file)
+                except Exception as e:
+                    current_app.logger.warning(f"Could not create backup of users.dat: {str(e)}")
+            
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(users_file), exist_ok=True)
+            
+            # Read all lines from users.dat
+            lines = []
+            if os.path.exists(users_file):
+                try:
+                    with open(users_file, 'r') as f:
+                        lines = f.readlines()
+                except Exception as e:
+                    current_app.logger.error(f"Error reading users.dat: {str(e)}")
+                    lines = []
+            
+            # Find and update the current user's line
+            updated = False
+            new_lines = []
+            
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    new_lines.append(line)
+                    continue
+                
+                parts = line.split(':')
+                if len(parts) >= 4:
+                    email, old_username, password, role = parts[0], parts[1], parts[2], parts[3]
+                    
+                    # If this is the current user's line
+                    if email == current_user.email:
+                        # Update username
+                        old_username = username
+                        
+                        # Update password if changed
+                        if has_password_change:
+                            # We need to extract the raw password from bcrypt hash
+                            # Since we can't do that, we'll use the new_password directly
+                            password = new_password
+                        
+                        updated = True
+                        new_line = f"{email}:{old_username}:{password}:{role}"
+                        new_lines.append(new_line)
+                    else:
+                        new_lines.append(line)
+                else:
+                    new_lines.append(line)
+            
+            # If user wasn't found in the file, add them
+            if not updated:
+                role = current_user.role
+                password = new_password if has_password_change else "password123"  # Default password
+                new_line = f"{current_user.email}:{username}:{password}:{role}"
+                new_lines.append(new_line)
+            
+            # Write updated content back to users.dat
+            try:
+                with open(users_file, 'w') as f:
+                    for i, line in enumerate(new_lines):
+                        # Add newline except for the last line
+                        if i < len(new_lines) - 1 or not line.strip():
+                            f.write(line + '\n')
+                        else:
+                            f.write(line)
+                
+                current_app.logger.info(f"Updated user {current_user.email} in users.dat file")
+            except Exception as e:
+                current_app.logger.error(f"Failed to update users.dat: {str(e)}")
+                db.session.rollback()
+                flash(f'An error occurred while saving your settings: {str(e)}', 'error')
+                return redirect(url_for('views.settings'))
+            
+            # Commit database changes after successful file update
+            db.session.commit()
             
             if has_password_change:
                 flash('Settings updated successfully. Your password has been changed.', 'success')
@@ -741,7 +861,7 @@ def settings():
     
     return render_template('auth/settings.html', user=current_user)
 
-# Helper function to update users.dat file
+# Helper function to update users.dat file (kept for backward compatibility)
 def update_users_dat():
     """Update users.dat file with latest user information"""
     users_file = os.path.join(current_app.root_path, 'static/users/users.dat')
@@ -753,7 +873,10 @@ def update_users_dat():
     backup_file = f"{users_file}.bak"
     if os.path.exists(users_file):
         import shutil
-        shutil.copy2(users_file, backup_file)
+        try:
+            shutil.copy2(users_file, backup_file)
+        except Exception as e:
+            current_app.logger.warning(f"Could not create backup of users.dat: {str(e)}")
     
     # Create directory if it doesn't exist
     os.makedirs(os.path.dirname(users_file), exist_ok=True)
@@ -770,9 +893,8 @@ def update_users_dat():
                     parts = line.split(':')
                     if len(parts) >= 4:
                         email, username, password, role = parts[0], parts[1], parts[2], parts[3]
-                        # Store data by both email and username to handle changes in either
+                        # Store data by email
                         existing_data[email] = {'username': username, 'password': password, 'role': role}
-                        existing_data[username] = {'email': email, 'password': password, 'role': role}
         except Exception as e:
             current_app.logger.error(f"Error reading users.dat: {str(e)}")
     
@@ -785,14 +907,10 @@ def update_users_dat():
             
             for user in users:
                 # Get password from existing file or use default
-                # Try to match by email first, then by username
                 password = None
                 
                 if user.email in existing_data:
                     password = existing_data[user.email]['password']
-                elif user.username in existing_data and existing_data[user.username].get('email') != user.email:
-                    # Only use username match if email doesn't conflict
-                    password = existing_data[user.username]['password']
                     
                 # If password not found, use a placeholder
                 if not password:
