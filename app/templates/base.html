@@ -101,7 +101,7 @@
         
         /* 主内容区域样式 */
         .main-content {
-            padding-top: 72px; /* 与导航栏高度匹配 */
+            padding-top: 64px; /* 与导航栏高度匹配 */
             min-height: calc(100vh - 350px); /* 基于页脚高度调整 */
             margin-top: 0; /* 确保没有顶部边距 */
             background-color: var(--light-bg); /* 保持与body背景色一致 */
@@ -114,12 +114,12 @@
 
         /* ========== Flash Messages ========== */
         .flash-messages {
-            padding: 0px; /* 移除顶部内边距 */
+            padding: 0; /* 移除顶部内边距 */
             background-color: var(--light-bg); /* 保持与body背景色一致 */
         }
 
         .flash-messages .container {
-            padding-top: 0rem; /* 添加顶部内边距 */
+            padding-top: 1rem; /* 添加顶部内边距 */
         }
 
         .flash-message {
@@ -143,53 +143,46 @@
             }
         }
 
-        /* 成功消息样式 */
         .flash-message.success {
-            background-color: #d4edda; /* 浅绿色背景 */
-            border-left: 4px solid #28a745; /* 绿色左边框 */
-            color: #155724; /* 深绿色文字 */
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
         }
 
-        /* 错误消息样式 */
         .flash-message.error {
-            background-color: #f8d7da; /* 浅红色背景 */
-            border-left: 4px solid #dc3545; /* 红色左边框 */
-            color: #721c24; /* 深红色文字 */
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
         }
 
-        /* 信息消息样式 */
         .flash-message.info {
-            background-color: #d1ecf1; /* 浅蓝色背景 */
-            border-left: 4px solid #17a2b8; /* 蓝色左边框 */
-            color: #0c5460; /* 深蓝色文字 */
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
         }
 
-        /* 消息内容容器样式 */
         .flash-message .message-content {
-            display: flex; /* 弹性布局 */
-            align-items: center; /* 垂直居中对齐 */
-            gap: 0.5rem; /* 元素间距 */
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        /* 消息图标样式 */
         .flash-message i {
-            font-size: 1.25rem; /* 图标大小 */
+            font-size: 1.25rem;
         }
 
-        /* 关闭按钮样式 */
         .close-flash {
-            background: none; /* 无背景 */
-            border: none; /* 无边框 */
-            font-size: 1.25rem; /* 按钮大小 */
-            cursor: pointer; /* 鼠标指针样式 */
-            color: inherit; /* 继承父元素颜色 */
-            opacity: 0.7; /* 默认透明度 */
-            transition: opacity 0.1s; /* 透明度过渡动画 */
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+            transition: opacity 0.2s;
         }
 
-        /* 关闭按钮悬停效果 */
         .close-flash:hover {
-            opacity: 1; /* 悬停时完全不透明 */
+            opacity: 1;
         }
     </style>
 </head>
@@ -271,7 +264,7 @@
         /* Logo样式 */
         .logo {
             font-size: var(--font-size-xl);      /* 大字体尺寸 */
-            font-weight: 800;                     /* 加粗字体 */
+            font-weight: 700;                     /* 加粗字体 */
             color: var(--primary-color);          /* 主题色 */
             text-decoration: none;                /* 移除下划线 */
         }
