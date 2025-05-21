@@ -12,40 +12,45 @@
 
     <style>
         /* ========== 英雄区域样式 ========== */
+        /* 英雄区域的主要容器样式 */
         .hero {
-            padding: 5rem 0 4rem;
-            text-align: left;
-            background: linear-gradient(135deg, #003c85, #0d274b);
-            color: white;
+            padding: 5rem 0 4rem; /* 上下内边距设置,营造空间感 */
+            text-align: left; /* 文本左对齐 */
+            background: linear-gradient(135deg, #003c85, #0d274b); /* 深蓝色渐变背景,增加视觉层次感 */
+            color: white; /* 文字颜色设为白色,与深色背景形成对比 */
         }
 
+        /* 英雄区域标题样式 */
         .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            margin-bottom: 1rem;
-            line-height: 1.2;
+            font-size: clamp(2rem, 5vw, 3.5rem); /* 响应式字体大小,最小2rem,最大3.5rem */
+            margin-bottom: 1rem; /* 底部外边距,与下方段落保持间距 */
+            line-height: 1.2; /* 行高设置,提高可读性 */
         }
 
+        /* 英雄区域描述文本样式 */
         .hero p {
-            font-size: clamp(1rem, 2vw, 1.25rem);
-            max-width: 800px;
-            margin: 0 0 2rem; /* top: 0, left/right: 0, bottom: 2rem */
-            opacity: 0.9;
+            font-size: clamp(1rem, 2vw, 1.25rem); /* 响应式字体大小,最小1rem,最大1.25rem */
+            max-width: 800px; /* 限制最大宽度,保持良好的阅读体验 */
+            margin: 0 0 2rem; /* 上边距0,左右边距0,下边距2rem */
+            opacity: 0.9; /* 轻微透明度,使文字柔和 */
         }
 
+        /* 号召性按钮样式 */
         .cta-button {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background-color: white;
-            color: #0047AB;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-block; /* 行内块级显示 */
+            padding: 1rem 2rem; /* 内边距设置,让按钮更突出 */
+            background-color: white; /* 白色背景 */
+            color: #0047AB; /* 深蓝色文字 */
+            text-decoration: none; /* 移除下划线 */
+            border-radius: 8px; /* 圆角边框 */
+            font-weight: 600; /* 字体加粗 */
+            transition: transform 0.3s, box-shadow 0.3s; /* 添加过渡动画效果 */
         }
 
+        /* 按钮悬停效果 */
         .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px); /* 向上浮动2像素 */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 添加阴影效果 */
         }
     </style>
 

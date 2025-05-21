@@ -465,47 +465,59 @@
         }
     </style>
     
-    <!-- ========== 下拉菜单脚本 ========== -->
+    <!-- ========== 下拉菜单和消息提示脚本 ========== -->
     <script>
+        // 当DOM内容加载完成后执行脚本
         document.addEventListener('DOMContentLoaded', function() {
-            const toolsDropdown = document.getElementById('tools-dropdown');
-            const toolsMenu = document.getElementById('tools-menu');
+            // 获取工具下拉菜单相关元素
+            const toolsDropdown = document.getElementById('tools-dropdown'); // 下拉按钮
+            const toolsMenu = document.getElementById('tools-menu'); // 下拉菜单内容
             
-            // 点击Tools下拉按钮时切换菜单显示
+            // 为下拉按钮添加点击事件监听器
+            // 点击时切换菜单的显示状态
             toolsDropdown.addEventListener('click', function(e) {
-                e.preventDefault();
-                toolsMenu.classList.toggle('show');
+                e.preventDefault(); // 阻止默认行为
+                toolsMenu.classList.toggle('show'); // 切换show类来显示/隐藏菜单
             });
             
-            // 点击页面其他位置时关闭下拉菜单
+            // 点击页面其他区域时关闭下拉菜单
+            // 这是一个常见的交互模式,提升用户体验
             document.addEventListener('click', function(e) {
+                // 检查点击是否发生在下拉菜单区域外
                 if (!toolsDropdown.contains(e.target) && !toolsMenu.contains(e.target)) {
-                    toolsMenu.classList.remove('show');
+                    toolsMenu.classList.remove('show'); // 隐藏菜单
                 }
             });
 
-            // Flash message close buttons
+            // 处理Flash消息关闭按钮的点击事件
+            // 获取所有关闭按钮并为其添加事件监听器
             document.querySelectorAll('.close-flash').forEach(button => {
                 button.addEventListener('click', function() {
-                    const flashMessage = this.parentElement;
+                    const flashMessage = this.parentElement; // 获取消息元素
+                    // 设置消息淡出和上移动画效果
                     flashMessage.style.opacity = '0';
                     flashMessage.style.transform = 'translateY(-20px)';
                     flashMessage.style.transition = 'opacity 0.3s, transform 0.3s';
                     
+                    // 300毫秒后移除消息元素
                     setTimeout(() => {
                         flashMessage.remove();
                     }, 300);
                 });
             });
 
-            // Auto-dismiss flash messages after 5 seconds
+            // 自动关闭Flash消息
+            // 5秒后自动淡出所有Flash消息
             setTimeout(() => {
                 document.querySelectorAll('.flash-message').forEach(message => {
                     if (message) {
+                        // 设置消息淡出和上移动画效果
                         message.style.opacity = '0';
                         message.style.transform = 'translateY(-20px)';
                         message.style.transition = 'opacity 0.3s, transform 0.3s';
                         
+                        // 300毫秒后移除消息元素
+                        // 检查父元素是否存在以避免可能的错误
                         setTimeout(() => {
                             if (message.parentElement) {
                                 message.remove();
@@ -513,7 +525,7 @@
                         }, 300);
                     }
                 });
-            }, 5000);
+            }, 5000); // 5秒延迟
         });
     </script>
 </body>
