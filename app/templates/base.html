@@ -60,129 +60,151 @@
         }
         
         /* ========== 公共组件样式 ========== */
-        /* 按钮基础样式 */
+        /* 按钮基础样式 
+         * 定义了网站通用的按钮样式
+         * 使用CSS变量确保样式的一致性和可维护性
+         * 包含了悬停效果和过渡动画
+         */
         .btn {
-            background-color: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            padding: var(--button-padding);
-            border-radius: var(--button-radius);
-            transition: background-color 0.3s;
-            cursor: pointer;
-            border: none;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            font-size: var(--font-size-base);
+            background-color: var(--primary-color); /* 使用主题色作为背景 */
+            color: white; /* 按钮文字为白色 */
+            text-decoration: none; /* 移除文字下划线 */
+            padding: var(--button-padding); /* 使用预定义的内边距 */
+            border-radius: var(--button-radius); /* 圆角边框 */
+            transition: background-color 0.3s; /* 背景色变化动画 */
+            cursor: pointer; /* 鼠标悬停时显示手型光标 */
+            border: none; /* 移除边框 */
+            font-weight: 500; /* 字体加粗程度 */
+            display: inline-flex; /* 使用inline-flex布局便于对齐 */
+            align-items: center; /* 垂直居中对齐 */
+            gap: var(--spacing-sm); /* 元素之间的间距 */
+            font-size: var(--font-size-base); /* 使用基础字体大小 */
         }
 
+        /* 按钮悬停效果 */
         .btn:hover {
-            background-color: var(--button-hover);
+            background-color: var(--button-hover); /* 悬停时变暗 */
         }
 
-        /* 输入框样式 */
+        /* 输入框通用样式 
+         * 适用于文本输入框、下拉选择框和文本区域
+         * 包含了焦点状态的样式变化
+         */
         input, select, textarea {
-            width: 100%;
-            padding: var(--spacing-sm);
-            border: 1px solid var(--input-border);
-            border-radius: var(--button-radius);
-            font-size: var(--font-size-base);
-            transition: border-color 0.3s;
+            width: 100%; /* 宽度占满容器 */
+            padding: var(--spacing-sm); /* 内边距 */
+            border: 1px solid var(--input-border); /* 边框样式 */
+            border-radius: var(--button-radius); /* 圆角边框 */
+            font-size: var(--font-size-base); /* 字体大小 */
+            transition: border-color 0.3s; /* 边框颜色变化动画 */
         }
 
+        /* 输入框获得焦点时的样式 */
         input:focus,
         select:focus,
         textarea:focus {
-            outline: none;
-            border-color: var(--input-focus);
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            outline: none; /* 移除默认的焦点轮廓 */
+            border-color: var(--input-focus); /* 边框变为主题色 */
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); /* 添加柔和的阴影效果 */
         }
         
-        /* 主内容区域样式 */
+        /* 主内容区域样式 
+         * 定义了页面主要内容的布局和间距
+         */
         .main-content {
-            padding-top: 64px; /* 与导航栏高度匹配 */
-            min-height: calc(100vh - 350px); /* 基于页脚高度调整 */
-            margin-top: 0; /* 确保没有顶部边距 */
-            background-color: var(--light-bg); /* 保持与body背景色一致 */
+            padding-top: 64px; /* 顶部内边距与导航栏高度匹配 */
+            min-height: calc(100vh - 350px); /* 最小高度确保页面填充 */
+            margin-top: 0; /* 移除顶部外边距 */
+            background-color: var(--light-bg); /* 使用浅色背景 */
         }
 
-        /* 详情页专用调整 */
+        /* 材料详情页面的特殊调整 */
         .main-content .material-detail-container {
-            padding-top: 0;
+            padding-top: 0; /* 移除顶部内边距 */
         }
 
-        /* ========== Flash Messages ========== */
+        /* ========== Flash消息样式 ========== */
+        /* Flash消息容器样式 */
         .flash-messages {
-            padding: 0; /* 移除顶部内边距 */
-            background-color: var(--light-bg); /* 保持与body背景色一致 */
+            padding: 0; /* 移除内边距 */
+            background-color: var(--light-bg); /* 使用浅色背景 */
         }
 
+        /* Flash消息内容容器样式 */
         .flash-messages .container {
-            padding-top: 1rem; /* 添加顶部内边距 */
+            padding-top: 1rem; /* 顶部内边距 */
         }
 
+        /* 单个Flash消息样式 */
         .flash-message {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 6px;
-            animation: slideDown 0.3s ease-out;
+            display: flex; /* 弹性布局 */
+            justify-content: space-between; /* 两端对齐 */
+            align-items: center; /* 垂直居中 */
+            padding: 0.75rem 1rem; /* 内边距 */
+            margin-bottom: 0.75rem; /* 底部外边距 */
+            border-radius: 6px; /* 圆角 */
+            animation: slideDown 0.3s ease-out; /* 滑入动画 */
         }
 
+        /* Flash消息滑入动画定义 */
         @keyframes slideDown {
             from {
-                transform: translateY(-20px);
-                opacity: 0;
+                transform: translateY(-20px); /* 初始位置 */
+                opacity: 0; /* 初始透明 */
             }
             to {
-                transform: translateY(0);
-                opacity: 1;
+                transform: translateY(0); /* 最终位置 */
+                opacity: 1; /* 完全不透明 */
             }
         }
 
+        /* 成功消息样式 */
         .flash-message.success {
-            background-color: #d4edda;
-            border-left: 4px solid #28a745;
-            color: #155724;
+            background-color: #d4edda; /* 浅绿色背景 */
+            border-left: 4px solid #28a745; /* 绿色左边框 */
+            color: #155724; /* 深绿色文字 */
         }
 
+        /* 错误消息样式 */
         .flash-message.error {
-            background-color: #f8d7da;
-            border-left: 4px solid #dc3545;
-            color: #721c24;
+            background-color: #f8d7da; /* 浅红色背景 */
+            border-left: 4px solid #dc3545; /* 红色左边框 */
+            color: #721c24; /* 深红色文字 */
         }
 
+        /* 信息消息样式 */
         .flash-message.info {
-            background-color: #d1ecf1;
-            border-left: 4px solid #17a2b8;
-            color: #0c5460;
+            background-color: #d1ecf1; /* 浅蓝色背景 */
+            border-left: 4px solid #17a2b8; /* 蓝色左边框 */
+            color: #0c5460; /* 深蓝色文字 */
         }
 
+        /* 消息内容样式 */
         .flash-message .message-content {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            gap: 0.5rem; /* 元素间距 */
         }
 
+        /* 消息图标样式 */
         .flash-message i {
-            font-size: 1.25rem;
+            font-size: 1.25rem; /* 图标大小 */
         }
 
+        /* 关闭按钮样式 */
         .close-flash {
-            background: none;
-            border: none;
-            font-size: 1.25rem;
-            cursor: pointer;
-            color: inherit;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+            background: none; /* 无背景 */
+            border: none; /* 无边框 */
+            font-size: 1.25rem; /* 字体大小 */
+            cursor: pointer; /* 鼠标指针样式 */
+            color: inherit; /* 继承颜色 */
+            opacity: 0.7; /* 初始透明度 */
+            transition: opacity 0.2s; /* 透明度变化动画 */
         }
 
+        /* 关闭按钮悬停效果 */
         .close-flash:hover {
-            opacity: 1;
+            opacity: 1; /* 完全不透明 */
         }
     </style>
 </head>
@@ -263,7 +285,7 @@
 
         /* Logo样式 */
         .logo {
-            font-size: var(--font-size-xl);      /* 大字体尺寸 */
+            font-size: var(--font-size-xl);       /* 大字体尺寸 */
             font-weight: 700;                     /* 加粗字体 */
             color: var(--primary-color);          /* 主题色 */
             text-decoration: none;                /* 移除下划线 */
@@ -272,7 +294,7 @@
         /* 导航链接容器 */
         .nav-links {
             display: flex;                        /* 弹性布局 */
-            gap: var(--spacing-xl);              /* 链接间距 */
+            gap: var(--spacing-xl);               /* 链接间距 */
             position: relative;                   /* 相对定位 */
         }
 
