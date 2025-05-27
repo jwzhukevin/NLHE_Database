@@ -592,7 +592,7 @@ def register_commands(app):
             import os
             sys.path.append(os.path.join(os.path.dirname(app.root_path), 'migrations'))
             
-            from add_email_field import migrate_database
+            from migrations.add_email_field import migrate_database
             migrate_database()
             
             click.echo("用户迁移成功完成。")
