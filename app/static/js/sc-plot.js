@@ -4,36 +4,77 @@
  * 使用plotly.js实现学术风格图表
  */
 
+/**
+ * 绘制SC结构图表的主函数
+ * @param {string} containerId - 用于放置图表的HTML容器元素ID
+ * @param {string} dataUrl - SC数据文件的URL地址
+ * 
+ * 函数功能:
+ * 1. 检查并获取容器元素
+ * 2. 显示加载提示
+ * 3. 尝试加载主数据文件
+ * 4. 如果主文件加载失败,则加载示例数据
+ * 5. 解析数据并绘制图表
+ * 6. 处理错误情况并显示相应提示
+ */
 function plotSCStructure(containerId, dataUrl) {
-    // 获取容器元素
+    // 获取并验证容器元素
     const container = document.getElementById(containerId);
     
-    // 检查是否存在容器
+    // 如果找不到容器元素,输出错误并退出
     if (!container) {
         console.error(`容器元素 ${containerId} 不存在`);
         return;
     }
     
-    // 设置加载提示
+    // 显示数据加载中的提示信息
     container.innerHTML = '<div style="text-align:center;padding:50px;">正在加载SC数据...</div>';
     
-    // 获取数据文件
+    // 首先尝试加载用户指定的数据文件
     fetch(dataUrl)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('数据文件获取失败');
-            }
+            // 检查响应状态
+            if (!response.ok) throw new Error('not found');
             return response.text();
         })
         .then(data => {
-            // 解析数据
+            // 成功获取数据后,解析并绘制图表
             parseAndPlotSCData(data, container);
         })
-        .catch(error => {
-            console.error('SC数据加载失败:', error);
-            container.innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
-                <p>No data</p>
-            </div>`;
+        .catch(() => {
+            // 主数据文件加载失败,尝试加载示例数据文件
+            fetch('/static/materials/example_sc.dat')
+                .then(response => {
+                    if (!response.ok) throw new Error('not found');
+                    return response.text();
+                })
+                .then(data => {
+                    // 使用示例数据绘制图表
+                    parseAndPlotSCData(data, container);
+                    
+                    // 添加示例数据提示信息
+                    // 首先检查容器元素存在且提示信息尚未添加
+                    if (container && !container.parentNode.querySelector('.sc-example-tip')) {
+                        // 创建新的div元素作为提示容器
+                        let tip = document.createElement('div');
+                        // 设置提示元素的类名,用于后续查找和样式设置
+                        tip.className = 'sc-example-tip';
+                        // 设置提示样式:
+                        // - 红色文字(#b91c1c)
+                        // - 16px字体大小
+                        // - 文字居中对齐
+                        // - 底部外边距8px
+                        tip.style = 'color:#b91c1c;font-size:16px;text-align:center;margin-bottom:8px;';
+                        // 设置提示文本内容,告知用户当前显示的是示例数据
+                        tip.innerText = 'Example SC plot is shown. Original data file not found.';
+                        // 将提示元素插入到容器元素之前
+                        container.parentNode.insertBefore(tip, container);
+                    }
+                })
+                .catch(() => {
+                    // 示例数据也加载失败时,显示错误提示
+                    container.innerHTML = `<div style='color: #666; padding: 50px; text-align: center; font-size: 18px; background: #f9f9f9; border-radius: 8px; margin: 20px 0;'><p>No data</p></div>`;
+                });
         });
 }
 
@@ -457,373 +498,388 @@ function parseAndPlotSCData(dataText, container) {
     `;
     
     // 清空容器并添加控制面板
-    container.innerHTML = controlPanelHtml + '<div id="sc-plot" style="width:100%;height:100%;"></div>';
+    container.innerHTML = controlPanelHtml + '<div id="sc-plot" style="width:100%;"></div>';
     
-    // 布局配置 - 学术风格的图表布局设置
-    const layout = {
-        // 图表标题配置
-        title: {
-            text: 'SC Structure', // 标题文本
-            font: {
-                size: 20, // 减小标题字体大小
-                family: 'Arial, sans-serif', // 标题字体
-                color: '#1f2937' // 标题颜色
-            }
-        },
-        // X轴配置
-        xaxis: {
+    // ====== 动态计算Plotly绘图区域的高度和宽度 ======
+    function getPlotSize() {
+        // 获取父容器（#scStructure）
+        const parent = container;
+        // 获取控制面板和示例提示
+        const controlPanel = parent.querySelector('.sc-control-panel');
+        const tip = parent.querySelector('.sc-example-tip');
+        // 容器总高度
+        let availableHeight = parent.getBoundingClientRect().height;
+        // 减去控制面板高度
+        if (controlPanel) availableHeight -= controlPanel.getBoundingClientRect().height;
+        // 减去示例提示高度
+        if (tip) availableHeight -= tip.getBoundingClientRect().height;
+        // 兜底最小高度
+        if (availableHeight < 300) availableHeight = 300;
+        // 宽度直接取父容器宽度
+        let availableWidth = parent.getBoundingClientRect().width;
+        if (availableWidth < 300) availableWidth = 300;
+        return {height: availableHeight, width: availableWidth};
+    }
+
+    // 获取动态尺寸
+    const plotElement = document.getElementById('sc-plot');
+
+    // === 关键：等DOM渲染完毕后再绘图，确保高度准确 ===
+    setTimeout(() => {
+        const plotSize = getPlotSize();
+        const layout = {
+            // 图表标题配置
             title: {
-                text: 'Energy (eV)', // X轴标题文本
+                text: 'SC Structure', // 标题文本
                 font: {
-                    size: 16, // 减小X轴标题字体大小
-                    family: 'Arial, sans-serif', // X轴标题字体
-                    color: '#1f2937' // X轴标题颜色
+                    size: 20, // 减小标题字体大小
+                    family: 'Arial, sans-serif', // 标题字体
+                    color: '#1f2937' // 标题颜色
                 }
             },
-            showgrid: true, // 显示网格线
-            gridcolor: '#e5e7eb', // 网格线颜色
-            gridwidth: 1, // 网格线宽度
-            zeroline: true, // 显示零线
-            zerolinecolor: '#6b7280', // 零线颜色
-            zerolinewidth: 1.5, // 零线宽度
-            showline: true, // 显示轴线
-            linecolor: '#374151', // 轴线颜色
-            linewidth: 2, // 轴线宽度
-            tickfont: { // 刻度标签字体设置
-                size: 12, // 减小刻度字体大小
-                family: 'Arial, sans-serif',
-                color: '#4b5563'
-            },
-            mirror: true // 在对面也显示轴线
-        },
-        // Y轴配置，与X轴类似
-        yaxis: {
-            title: {
-                text: 'Sigma (uA/V²)', // Y轴标题文本
-                font: {
-                    size: 16, // 减小Y轴标题字体大小
-                    family: 'Arial, sans-serif',
-                    color: '#1f2937'
-                }
-            },
-            showgrid: true,
-            gridcolor: '#e5e7eb',
-            gridwidth: 1,
-            zeroline: true,
-            zerolinecolor: '#6b7280',
-            zerolinewidth: 1.5,
-            showline: true,
-            linecolor: '#374151',
-            linewidth: 2,
-            tickfont: {
-                size: 12, // 减小刻度字体大小
-                family: 'Arial, sans-serif',
-                color: '#4b5563'
-            },
-            mirror: 'ticks' // 显示对称刻度线
-        },
-        hovermode: 'closest', // 悬停模式设为最近点
-        // 图例配置
-        legend: {
-            orientation: 'h', // 水平方向排列
-            xanchor: 'center', // 中心对齐
-            x: 0.5, // 居中放置
-            yanchor: 'top', // 顶部对齐
-            y: -0.25, // 放在图表下方，增加与x轴的距离
-            font: { // 图例字体设置
-                size: 14, // 增大图例字体大小
-                family: 'Arial, sans-serif'
-            },
-            tracegroupgap: 8, // 减小图例组间距
-            bgcolor: '#ffffff', // 白色背景
-            bordercolor: '#e2e8f0',
-            borderwidth: 1,
-            itemsizing: 'constant',
-            itemwidth: 40 // 图例项宽度
-        },
-        // 图表边距设置
-        margin: {
-            t: 50, // 顶部边距
-            r: 30, // 右侧边距
-            b: 120, // 显著增加底部边距，为图例留出更多空间
-            l: 80 // 左侧边距
-        },
-        autosize: true, // 自动调整大小
-        paper_bgcolor: '#ffffff', // 画布背景色
-        plot_bgcolor: '#ffffff', // 绘图区背景色
-        // 添加形状（用于绘制边框）
-        shapes: [
-            {
-                type: 'rect', // 矩形形状
-                xref: 'paper', // 相对于画布的X参考
-                yref: 'paper', // 相对于画布的Y参考
-                x0: 0, // 起始X坐标
-                y0: 0, // 起始Y坐标
-                x1: 1, // 结束X坐标
-                y1: 1, // 结束Y坐标
-                line: {
-                    width: 2, // 边框线宽
-                    color: '#374151' // 边框颜色
+            // X轴配置
+            xaxis: {
+                title: {
+                    text: 'Energy (eV)', // X轴标题文本
+                    font: {
+                        size: 16, // 减小X轴标题字体大小
+                        family: 'Arial, sans-serif', // X轴标题字体
+                        color: '#1f2937' // X轴标题颜色
+                    }
                 },
-                fillcolor: 'rgba(0,0,0,0)' // 填充色（透明）
-            }
-        ]
-    };
-    
-    // Plotly配置中添加自定义图例样式插件
-    const config = {
-        responsive: true,
-        displayModeBar: true,
-        displaylogo: false,
-        modeBarButtonsToRemove: ['lasso2d', 'select2d'],
-        toImageButtonOptions: {
-            format: 'png',
-            filename: 'sc_structure',
-            height: 800,
-            width: 1200,
-            scale: 2
-        }
-    };
-    
-    // 修改曲线样式，增强显示效果
-    traces.forEach(trace => {
-        trace.line.width = 2.5; // 线宽适中，避免过粗
-        trace.hoverlabel = {
-            bgcolor: '#f8fafc',
-            bordercolor: trace.line.color,
-            font: {
-                size: 14, // 适中的悬停标签字体
-                family: 'Arial, sans-serif'
+                showgrid: true, // 显示网格线
+                gridcolor: '#e5e7eb', // 网格线颜色
+                gridwidth: 1, // 网格线宽度
+                zeroline: true, // 显示零线
+                zerolinecolor: '#6b7280', // 零线颜色
+                zerolinewidth: 1.5, // 零线宽度
+                showline: true, // 显示轴线
+                linecolor: '#374151', // 轴线颜色
+                linewidth: 2, // 轴线宽度
+                tickfont: { // 刻度标签字体设置
+                    size: 12, // 减小刻度字体大小
+                    family: 'Arial, sans-serif',
+                    color: '#4b5563'
+                },
+                mirror: true // 在对面也显示轴线
+            },
+            // Y轴配置，与X轴类似
+            yaxis: {
+                title: {
+                    text: 'Sigma (uA/V²)', // Y轴标题文本
+                    font: {
+                        size: 16, // 减小Y轴标题字体大小
+                        family: 'Arial, sans-serif',
+                        color: '#1f2937'
+                    }
+                },
+                showgrid: true,
+                gridcolor: '#e5e7eb',
+                gridwidth: 1,
+                zeroline: true,
+                zerolinecolor: '#6b7280',
+                zerolinewidth: 1.5,
+                showline: true,
+                linecolor: '#374151',
+                linewidth: 2,
+                tickfont: {
+                    size: 12, // 减小刻度字体大小
+                    family: 'Arial, sans-serif',
+                    color: '#4b5563'
+                },
+                mirror: 'ticks' // 显示对称刻度线
+            },
+            hovermode: 'closest', // 悬停模式设为最近点
+            // 图例配置
+            legend: {
+                orientation: 'h', // 水平方向排列
+                xanchor: 'center', // 中心对齐
+                x: 0.5, // 居中放置
+                yanchor: 'top', // 顶部对齐
+                y: -0.25, // 放在图表下方，增加与x轴的距离
+                font: { // 图例字体设置
+                    size: 14, // 增大图例字体大小
+                    family: 'Arial, sans-serif'
+                },
+                tracegroupgap: 8, // 减小图例组间距
+                bgcolor: '#ffffff', // 白色背景
+                bordercolor: '#e2e8f0',
+                borderwidth: 1,
+                itemsizing: 'constant',
+                itemwidth: 40 // 图例项宽度
+            },
+            // 图表边距设置
+            margin: {
+                t: 50, // 顶部边距
+                r: 30, // 右侧边距
+                b: 120, // 显著增加底部边距，为图例留出更多空间
+                l: 80 // 左侧边距
+            },
+            autosize: false, // 关闭Plotly自动尺寸，采用自定义
+            height: plotSize.height,
+            width: plotSize.width,
+            paper_bgcolor: '#ffffff',
+            plot_bgcolor: '#ffffff',
+            // 添加形状（用于绘制边框）
+            shapes: [
+                {
+                    type: 'rect', // 矩形形状
+                    xref: 'paper', // 相对于画布的X参考
+                    yref: 'paper', // 相对于画布的Y参考
+                    x0: 0, // 起始X坐标
+                    y0: 0, // 起始Y坐标
+                    x1: 1, // 结束X坐标
+                    y1: 1, // 结束Y坐标
+                    line: {
+                        width: 2, // 边框线宽
+                        color: '#374151' // 边框颜色
+                    },
+                    fillcolor: 'rgba(0,0,0,0)' // 填充色（透明）
+                }
+            ]
+        };
+        
+        // Plotly配置中添加自定义图例样式插件
+        const config = {
+            responsive: true,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d'],
+            toImageButtonOptions: {
+                format: 'png',
+                filename: 'sc_structure',
+                height: 800,
+                width: 1200,
+                scale: 2
             }
         };
-    });
-    
-    // 绘制图表
-    const plotElement = document.getElementById('sc-plot');
-    Plotly.newPlot(plotElement, traces, layout, config);
-    
-    // 跟踪每条曲线的点击次数
-    const curveClickCounts = new Array(traces.length).fill(0);
-    
-    // 增大图例中的线条显示
-    setTimeout(() => {
-        const legendLines = document.querySelectorAll('.legendlines path');
-        legendLines.forEach(line => {
-            line.setAttribute('stroke-width', '4'); // 增加线宽
-            line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '15.0')); // 增加线长
+        
+        // 修改曲线样式，增强显示效果
+        traces.forEach(trace => {
+            trace.line.width = 2.5; // 线宽适中，避免过粗
+            trace.hoverlabel = {
+                bgcolor: '#f8fafc',
+                bordercolor: trace.line.color,
+                font: {
+                    size: 14, // 适中的悬停标签字体
+                    family: 'Arial, sans-serif'
+                }
+            };
         });
         
-        // 增强图例滚动交互
-        const legendEl = document.querySelector('.legend');
-        if (legendEl) {
-            // 为图例添加滚动提示
-            const observer = new MutationObserver((mutations) => {
-                const legendRect = legendEl.getBoundingClientRect();
-                const contentHeight = legendEl.scrollHeight;
-                
-                // 如果内容高度超过可见高度，添加滚动提示
-                if (contentHeight > legendRect.height && !legendEl.classList.contains('scrollable')) {
-                    legendEl.classList.add('scrollable');
-                    
-                    // 添加滚动提示样式
-                    const scrollStyle = document.createElement('style');
-                    scrollStyle.textContent = `
-                        .scrollable::after {
-                            content: '';
-                            position: absolute;
-                            bottom: 5px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            width: 30px;
-                            height: 4px;
-                            background-color: #0047AB;
-                            border-radius: 2px;
-                            opacity: 0.7;
-                            animation: scrollPulse 1.5s infinite;
-                        }
-                        @keyframes scrollPulse {
-                            0% { opacity: 0.7; }
-                            50% { opacity: 0.3; }
-                            100% { opacity: 0.7; }
-                        }
-                    `;
-                    document.head.appendChild(scrollStyle);
-                }
+        // 绘制图表
+        Plotly.newPlot(plotElement, traces, layout, config);
+
+        // 跟踪每条曲线的点击次数
+        const curveClickCounts = new Array(traces.length).fill(0);
+        
+        // 增大图例中的线条显示
+        setTimeout(() => {
+            const legendLines = document.querySelectorAll('.legendlines path');
+            legendLines.forEach(line => {
+                line.setAttribute('stroke-width', '4'); // 增加线宽
+                line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '15.0')); // 增加线长
             });
             
-            observer.observe(legendEl, { childList: true, subtree: true });
-        }
-    }, 300);
-    
-    // 添加自定义样式
-    const style = document.createElement('style');
-    style.textContent = `
-        /* 增强图例项样式 */
-        .js-plotly-plot .legend .traces .legendtext {
-            font-size: 14px !important;
-            font-weight: 500 !important;
-            padding: 4px 8px !important;
-        }
-        
-        .js-plotly-plot .legend .traces .legendtoggle {
-            transform: scale(1.2);
-        }
-        
-        /* 确保图例在底部有足够空间 */
-        .js-plotly-plot .svg-container {
-            margin-bottom: 10px;
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // 更新可见曲线计数
-    function updateVisibleCount() {
-        // 使用点击次数判断曲线可见性
-        // 偶数次点击表示显示，奇数次点击表示隐藏
-        let visible = 0;
-        for (let i = 0; i < curveClickCounts.length; i++) {
-            // 如果点击次数为偶数(包括0)，曲线可见
-            if (curveClickCounts[i] % 2 === 0) {
-                visible++;
+            // 增强图例滚动交互
+            const legendEl = document.querySelector('.legend');
+            if (legendEl) {
+                // 为图例添加滚动提示
+                const observer = new MutationObserver((mutations) => {
+                    const legendRect = legendEl.getBoundingClientRect();
+                    const contentHeight = legendEl.scrollHeight;
+                    
+                    // 如果内容高度超过可见高度，添加滚动提示
+                    if (contentHeight > legendRect.height && !legendEl.classList.contains('scrollable')) {
+                        legendEl.classList.add('scrollable');
+                        
+                        // 添加滚动提示样式
+                        const scrollStyle = document.createElement('style');
+                        scrollStyle.textContent = `
+                            .scrollable::after {
+                                content: '';
+                                position: absolute;
+                                bottom: 5px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                width: 30px;
+                                height: 4px;
+                                background-color: #0047AB;
+                                border-radius: 2px;
+                                opacity: 0.7;
+                                animation: scrollPulse 1.5s infinite;
+                            }
+                            @keyframes scrollPulse {
+                                0% { opacity: 0.7; }
+                                50% { opacity: 0.3; }
+                                100% { opacity: 0.7; }
+                            }
+                        `;
+                        document.head.appendChild(scrollStyle);
+                    }
+                });
+                
+                observer.observe(legendEl, { childList: true, subtree: true });
             }
-        }
+        }, 300);
         
-        document.getElementById('visibleCount').textContent = visible;
-        return visible;
-    }
-    
-    // 重置图表按钮
-    document.getElementById('resetBtn').addEventListener('click', function() {
-        const update = {visible: true};
-        Plotly.restyle(plotElement, update);
-        
-        // 重置所有曲线的点击计数
-        curveClickCounts.fill(0);
-        updateVisibleCount();
-        
-        // 添加视觉反馈
-        this.classList.add('active');
-        setTimeout(() => this.classList.remove('active'), 200);
-    });
-    
-    // 监听图例点击，更新可见曲线计数
-    plotElement.on('plotly_legendclick', function(data) {
-        if (data && data.curveNumber !== undefined) {
-            // 更新点击次数
-            curveClickCounts[data.curveNumber]++;
+        // 添加自定义样式
+        const style = document.createElement('style');
+        style.textContent = `
+            /* 增强图例项样式 */
+            .js-plotly-plot .legend .traces .legendtext {
+                font-size: 14px !important;
+                font-weight: 500 !important;
+                padding: 4px 8px !important;
+            }
             
-            // 立即更新计数
-            updateVisibleCount();
-        
-        // 添加点击动画反馈
-        const legendItems = document.querySelectorAll('.traces');
-        if (legendItems && legendItems.length > 0 && data.curveNumber < legendItems.length) {
-            const item = legendItems[data.curveNumber];
-            item.classList.add('active');
-            setTimeout(() => item.classList.remove('active'), 300);
+            .js-plotly-plot .legend .traces .legendtoggle {
+                transform: scale(1.2);
             }
-        }
-    });
-    
-    // 监听双击图例，保持监视更新计数
-    plotElement.on('plotly_legenddoubleclick', function(data) {
-        if (data && data.curveNumber !== undefined) {
-            // 双击时重置所有曲线的点击次数，除了当前曲线
+            
+            /* 确保图例在底部有足够空间 */
+            .js-plotly-plot .svg-container {
+                margin-bottom: 10px;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 更新可见曲线计数
+        function updateVisibleCount() {
+            // 使用点击次数判断曲线可见性
+            // 偶数次点击表示显示，奇数次点击表示隐藏
+            let visible = 0;
             for (let i = 0; i < curveClickCounts.length; i++) {
-                if (i !== data.curveNumber) {
-                    // 设为1表示隐藏
-                    curveClickCounts[i] = 1;
-                } else {
-                    // 当前曲线设为0表示显示
-                    curveClickCounts[i] = 0;
+                // 如果点击次数为偶数(包括0)，曲线可见
+                if (curveClickCounts[i] % 2 === 0) {
+                    visible++;
                 }
             }
             
-            // 立即更新计数
+            document.getElementById('visibleCount').textContent = visible;
+            return visible;
+        }
+        
+        // 重置图表按钮
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            const update = {visible: true};
+            Plotly.restyle(plotElement, update);
+            
+            // 重置所有曲线的点击计数
+            curveClickCounts.fill(0);
             updateVisibleCount();
             
-            const traceName = traces[data.curveNumber].name;
-            
-            const notification = document.createElement('div');
-            notification.className = 'sc-notification';
-            notification.innerHTML = `<i class="fas fa-eye"></i> Only showing "${traceName}" curve`;
-            
-            document.querySelector('.sc-control-panel').appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => notification.remove(), 500);
-            }, 2000);
-        }
-    });
-    
-    // 初始添加图例项鼠标悬停提示
-    setTimeout(() => {
-        const legendItems = document.querySelectorAll('.legendtext');
-        legendItems.forEach(item => {
-            item.setAttribute('data-tooltip', 'Click to toggle visibility, Double-click to isolate');
-            item.setAttribute('title', 'Click to toggle visibility, Double-click to isolate');
+            // 添加视觉反馈
+            this.classList.add('active');
+            setTimeout(() => this.classList.remove('active'), 200);
         });
-    }, 500);
-    
-    // 在分析数据后添加关系分析
-    const relationships = analyzeCurveRelationships(data, traceNames);
-    const relationsTableHtml = generateRelationsTable(relationships);
-    
-    // 发送关系表到Element Relations卡片
-    setTimeout(() => {
-        const relationsTableContainer = document.getElementById('relations-table-container');
-        if (relationsTableContainer) {
-            relationsTableContainer.innerHTML = relationsTableHtml;
-        }
-    }, 500);
-    
-    // 添加窗口大小变化时的重绘逻辑
-    function handleResize() {
-        // 获取容器尺寸
-        const container = document.getElementById('scStructure');
-        if (!container) return;
         
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        
-        // 调整图表大小，考虑到图例在外部
-        Plotly.relayout('sc-plot', {
-            autosize: true,
-            height: containerHeight * 0.8, // 为底部图例留出更多空间
-            'xaxis.automargin': true,
-            'yaxis.automargin': true,
-            'margin.b': 120 // 确保底部边距足够
+        // 监听图例点击，更新可见曲线计数
+        plotElement.on('plotly_legendclick', function(data) {
+            if (data && data.curveNumber !== undefined) {
+                // 更新点击次数
+                curveClickCounts[data.curveNumber]++;
+                
+                // 立即更新计数
+                updateVisibleCount();
+            
+            // 添加点击动画反馈
+            const legendItems = document.querySelectorAll('.traces');
+            if (legendItems && legendItems.length > 0 && data.curveNumber < legendItems.length) {
+                const item = legendItems[data.curveNumber];
+                item.classList.add('active');
+                setTimeout(() => item.classList.remove('active'), 300);
+                }
+            }
         });
-    }
-    
-    // 监听窗口大小变化事件
-    window.addEventListener('resize', handleResize);
-    
-    // 监听卡片展开/折叠事件，以便在卡片展开时重绘图表
-    const cardHeader = container.closest('.viewer-container').querySelector('.card-header');
-    if (cardHeader) {
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                    const isCollapsed = cardHeader.classList.contains('collapsed');
-                    if (!isCollapsed) {
-                        // 卡片展开时，延迟一点重绘图表以确保容器已完全展开
-                        setTimeout(handleResize, 300);
+        
+        // 监听双击图例，保持监视更新计数
+        plotElement.on('plotly_legenddoubleclick', function(data) {
+            if (data && data.curveNumber !== undefined) {
+                // 双击时重置所有曲线的点击次数，除了当前曲线
+                for (let i = 0; i < curveClickCounts.length; i++) {
+                    if (i !== data.curveNumber) {
+                        // 设为1表示隐藏
+                        curveClickCounts[i] = 1;
+                    } else {
+                        // 当前曲线设为0表示显示
+                        curveClickCounts[i] = 0;
                     }
                 }
-            });
+                
+                // 立即更新计数
+                updateVisibleCount();
+                
+                const traceName = traces[data.curveNumber].name;
+                
+                const notification = document.createElement('div');
+                notification.className = 'sc-notification';
+                notification.innerHTML = `<i class="fas fa-eye"></i> Only showing "${traceName}" curve`;
+                
+                document.querySelector('.sc-control-panel').appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 500);
+                }, 2000);
+            }
         });
         
-        observer.observe(cardHeader, { attributes: true });
-    }
-    
-    // 获取重置按钮并添加点击事件
-    const resetBtn = document.getElementById('resetBtn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function() {
-            Plotly.restyle('sc-plot', 'visible', true);
-            updateVisibleCount();
-        });
-    }
+        // 初始添加图例项鼠标悬停提示
+        setTimeout(() => {
+            const legendItems = document.querySelectorAll('.legendtext');
+            legendItems.forEach(item => {
+                item.setAttribute('data-tooltip', 'Click to toggle visibility, Double-click to isolate');
+                item.setAttribute('title', 'Click to toggle visibility, Double-click to isolate');
+            });
+        }, 500);
+        
+        // 在分析数据后添加关系分析
+        const relationships = analyzeCurveRelationships(data, traceNames);
+        const relationsTableHtml = generateRelationsTable(relationships);
+        
+        // 发送关系表到Element Relations卡片
+        setTimeout(() => {
+            const relationsTableContainer = document.getElementById('relations-table-container');
+            if (relationsTableContainer) {
+                relationsTableContainer.innerHTML = relationsTableHtml;
+            }
+        }, 500);
+        
+        // 响应窗口和容器变化，动态调整Plotly尺寸
+        function handleResize() {
+            const plotSize = getPlotSize();
+            Plotly.relayout('sc-plot', {
+                height: plotSize.height,
+                width: plotSize.width,
+                autosize: false
+            });
+        }
+        window.addEventListener('resize', handleResize);
+
+        // 卡片展开/折叠时也触发
+        const cardHeader = container.closest('.viewer-container').querySelector('.card-header');
+        if (cardHeader) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                        const isCollapsed = cardHeader.classList.contains('collapsed');
+                        if (!isCollapsed) {
+                            setTimeout(handleResize, 300);
+                        }
+                    }
+                });
+            });
+            observer.observe(cardHeader, { attributes: true });
+        }
+        
+        // 获取重置按钮并添加点击事件
+        const resetBtn = document.getElementById('resetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                Plotly.restyle('sc-plot', 'visible', true);
+                updateVisibleCount();
+            });
+        }
+    }, 0); // 0ms延迟，等DOM渲染
 } 

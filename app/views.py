@@ -161,34 +161,25 @@ def add():
             properties_json = request.files.get('properties_json')
             sc_structure_file = request.files.get('sc_structure_file')
             
-            # 验证CIF文件
-            if not structure_file or not structure_file.filename.endswith('.cif'):
-                flash('请上传有效的CIF文件！', 'error')
-                return redirect(url_for('views.add'))
-            
-            # 保存结构文件并提取化学式
             from werkzeug.utils import secure_filename
             import os
             
-            structure_filename = secure_filename(structure_file.filename)
-            temp_structure_path = os.path.join(current_app.root_path, 'static/temp', structure_filename)
-            os.makedirs(os.path.dirname(temp_structure_path), exist_ok=True)
-            structure_file.save(temp_structure_path)
+            # 先保存结构文件到临时目录
+            structure_filename = None
+            temp_structure_path = None
+            chemical_name = None
+            if structure_file and structure_file.filename.endswith('.cif'):
+                structure_filename = secure_filename(structure_file.filename)
+                temp_structure_path = os.path.join(current_app.root_path, 'static/temp', structure_filename)
+                os.makedirs(os.path.dirname(temp_structure_path), exist_ok=True)
+                structure_file.save(temp_structure_path)
+                # 尝试提取化学式
+                chemical_name = extract_chemical_formula_from_cif(temp_structure_path)
             
-            # 提取化学式
-            chemical_name = extract_chemical_formula_from_cif(temp_structure_path)
-            if not chemical_name:
-                flash('无法从CIF文件提取材料名称，请检查文件格式', 'error')
-                return redirect(url_for('views.add'))
-            
-            # 检查材料名是否已存在
-            if Material.query.filter_by(name=chemical_name).first():
-                flash(f'材料名称"{chemical_name}"已存在，请使用不同的CIF文件', 'error')
-                return redirect(url_for('views.add'))
-            
-            # 创建材料对象
+            # 先不校验材料名是否存在，允许同名
+            # 材料名优先用CIF解析结果，否则用Material+ID
             material_data = {
-                'name': chemical_name,
+                'name': chemical_name if chemical_name else None,  # 先占位，后面补充
                 'status': request.form.get('status'),
                 'structure_file': structure_filename,
                 'properties_json': properties_json.filename if properties_json and properties_json.filename else None,
@@ -208,14 +199,16 @@ def add():
                 'cbm_index': safe_int(request.form.get('cbm_index'))
             }
 
-            # 创建并验证材料对象
+            # 创建并验证材料对象（此时name可能为None）
             material = Material(**material_data)
+            db.session.add(material)
+            db.session.flush()  # 获取ID
+
+            # 如果没有CIF名称，则用Material+ID命名
+            if not material.name:
+                material.name = f"Material_IMR-{material.id:08d}"
             material.validate()
             
-            # 添加到数据库以获取ID
-            db.session.add(material)
-            db.session.flush()
-
             formatted_id = f"IMR-{material.id:08d}"
             
             # 创建材料目录结构
@@ -223,14 +216,14 @@ def add():
             structure_dir = os.path.join(material_dir, 'structure')
             band_dir = os.path.join(material_dir, 'band')
             bcd_dir = os.path.join(material_dir, 'bcd')
-            
             os.makedirs(structure_dir, exist_ok=True)
             os.makedirs(band_dir, exist_ok=True)
             os.makedirs(bcd_dir, exist_ok=True)
             
             # 保存CIF文件
-            structure_path = os.path.join(structure_dir, structure_filename)
-            os.rename(temp_structure_path, structure_path)
+            if temp_structure_path and structure_filename:
+                structure_path = os.path.join(structure_dir, structure_filename)
+                os.rename(temp_structure_path, structure_path)
             
             # 处理其他文件
             if properties_json and properties_json.filename:
@@ -238,21 +231,18 @@ def add():
                 properties_json_path = os.path.join(material_dir, properties_json_filename)
                 properties_json.save(properties_json_path)
                 material.properties_json = properties_json_filename
-            
             if band_file and band_file.filename:
                 band_filename = secure_filename(band_file.filename)
                 band_path = os.path.join(band_dir, band_filename)
                 band_file.save(band_path)
-            
             if sc_structure_file and sc_structure_file.filename:
                 sc_filename = secure_filename(sc_structure_file.filename)
                 sc_path = os.path.join(bcd_dir, sc_filename)
                 sc_structure_file.save(sc_path)
                 material.sc_structure_file = sc_filename
             
-            # 提交到数据库
             db.session.commit()
-            flash(f'材料 {chemical_name} 添加成功！', 'success')
+            flash(f'材料 {material.name} 添加成功！', 'success')
             return redirect(url_for('views.detail', material_id=material.id))
 
         except ValueError as e:

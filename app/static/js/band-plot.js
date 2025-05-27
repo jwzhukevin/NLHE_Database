@@ -57,12 +57,25 @@ async function parseBandData(filePath) {
 
 // 绘制能带图
 async function plotBandStructure(containerId, bandDataPath) {
+    let isExample = false;
+    let exampleBandPath = '/static/materials/example_band.dat';
+    let bandData = null;
+    let errorMsg = '';
     try {
-        // 加载Plotly
         await loadPlotly();
-        
-        // 解析数据
-        const { kpoints, bands, kLabels, kPositions } = await parseBandData(bandDataPath);
+        try {
+            bandData = await parseBandData(bandDataPath);
+        } catch (error) {
+            // 主文件加载失败，尝试加载示例
+            try {
+                bandData = await parseBandData(exampleBandPath);
+                isExample = true;
+            } catch (ex2) {
+                errorMsg = 'No data';
+            }
+        }
+        if (!bandData) throw new Error(errorMsg || 'No data');
+        const { kpoints, bands, kLabels, kPositions } = bandData;
         
         // 准备绘图数据
         const traces = [];
@@ -113,15 +126,15 @@ async function plotBandStructure(containerId, bandDataPath) {
         // 绘图布局
         const layout = {
             title: {
-                text: 'Band Structure',
+                text: isExample ? 'Band Structure (Example)' : 'Band Structure',
                 font: {
                     family: 'system-ui, -apple-system, sans-serif',
                     size: 20
                 },
-                y: 0.97, // 将标题上移，增加与图表内容的距离
-                x: 0.5,  // 确保水平居中
-                xanchor: 'center', // 锚点居中对齐
-                yanchor: 'top'     // 顶部对齐
+                y: 0.97,
+                x: 0.5,
+                xanchor: 'center',
+                yanchor: 'top'
             },
             // 设置图表尺寸
             autosize: true,  // 启用自动尺寸调整
@@ -234,6 +247,15 @@ async function plotBandStructure(containerId, bandDataPath) {
             });
             
             observer.observe(container.parentNode, { childList: true });
+        }
+        
+        // 插入英文红色提示（只插入一次）
+        if (isExample && container && !container.parentNode.querySelector('.band-example-tip')) {
+            let tip = document.createElement('div');
+            tip.className = 'band-example-tip';
+            tip.style = 'color:#b91c1c;font-size:16px;text-align:center;margin-bottom:8px;';
+            tip.innerText = 'Example band structure is shown. Original data file not found.';
+            container.parentNode.insertBefore(tip, container);
         }
         
     } catch (error) {

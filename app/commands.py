@@ -1,4 +1,4 @@
-# commands.py:
+# commands.py: 
 import click
 from flask import Blueprint, current_app
 from . import db
@@ -26,9 +26,9 @@ def safe_int(value):
     except (ValueError, TypeError):
         return None
 
-# 修改为直接注册到Flask应用的CLI命令
+# 注册Flask CLI命令
 def register_commands(app):
-    """Register Flask CLI commands."""
+    """注册Flask CLI命令"""
     
     @app.cli.command('user-add')
     @click.argument('email')
@@ -36,109 +36,115 @@ def register_commands(app):
     @click.argument('password')
     @click.argument('role', default='user')
     def user_add(email, username, password, role):
-        """Add a new user."""
+        """添加新用户"""
         db.create_all()
         
+        # 验证角色是否有效
         if role not in ['admin', 'user']:
-            click.echo(f'Invalid role: {role}. Must be either "admin" or "user".')
+            click.echo(f'无效的角色: {role}。必须是 "admin" 或 "user"。')
             return 1
         
-        # Email validation
+        # 验证邮箱格式
         email = email.strip().lower()
         if '@' not in email:
-            click.echo(f'Invalid email format: {email}')
+            click.echo(f'无效的邮箱格式: {email}')
             return 1
         
-        # Check if email already exists
+        # 检查邮箱是否已存在
         existing_email = User.query.filter_by(email=email).first()
         if existing_email:
-            click.echo(f'User with email {email} already exists.')
+            click.echo(f'邮箱 {email} 已被注册。')
             return 1
         
-        # Check username availability
+        # 检查用户名是否可用
         existing_username = User.query.filter_by(username=username).first()
         if existing_username:
-            click.echo(f'Username {username} is already taken. Please choose another.')
+            click.echo(f'用户名 {username} 已被使用。请选择其他用户名。')
             return 1
         
-        # Create new user
-        click.echo(f'Creating new {role} account for {username} ({email})...')
+        # 创建新用户
+        click.echo(f'正在创建新的 {role} 账户，用户名: {username} (邮箱: {email})...')
         user = User(username=username, name=username, email=email, role=role)
         user.set_password(password)
         db.session.add(user)
         
         try:
             db.session.commit()
-            click.echo(f'User {username} with role {role} has been created successfully.')
+            click.echo(f'用户 {username} (角色: {role}) 创建成功。')
         except SQLAlchemyError as e:
             db.session.rollback()
-            click.echo(f'Error creating user: {str(e)}')
+            click.echo(f'创建用户时出错: {str(e)}')
             return 1
         
         return 0
     
     @app.cli.command('init-users')
     def init_users():
-        """Initialize users from users.dat file."""
+        """从users.dat文件初始化用户"""
         users_file = os.path.join(os.path.dirname(app.root_path), 'app/static/users/users.dat')
         
+        # 检查用户数据文件是否存在
         if not os.path.exists(users_file):
-            click.echo(f'Error: User data file not found at {users_file}')
+            click.echo(f'错误: 未找到用户数据文件 {users_file}')
             return 1
         
-        click.echo(f'Initializing users from {users_file}...')
+        click.echo(f'正在从 {users_file} 初始化用户...')
         count = 0
         
+        # 读取并处理用户数据文件
         with open(users_file, 'r') as f:
             for line in f:
                 line = line.strip()
+                # 跳过空行和注释行
                 if not line or line.startswith('#'):
                     continue
                 
                 try:
+                    # 解析用户数据行
                     parts = line.split(':')
                     if len(parts) < 4:
-                        click.echo(f'Error: Invalid format in line: {line}')
+                        click.echo(f'错误: 行格式无效: {line}')
                         continue
                     
                     email, username, password, role = parts[0], parts[1], parts[2], parts[3]
                     
-                    # Email validation
+                    # 验证邮箱格式
                     email = email.strip().lower()
                     if '@' not in email:
-                        click.echo(f'Warning: Invalid email format for "{email}". Skipping.')
+                        click.echo(f'警告: 邮箱格式无效 "{email}"。跳过此用户。')
                         continue
                     
+                    # 验证用户角色
                     if role not in ['admin', 'user']:
-                        click.echo(f'Warning: Invalid role "{role}" for user {username}. Setting to "user".')
+                        click.echo(f'警告: 用户 {username} 的角色 "{role}" 无效。设置为 "user"。')
                         role = 'user'
                     
-                    # Check if user exists
+                    # 检查用户是否存在
                     user = User.query.filter_by(email=email).first()
                     if user:
-                        # User exists, update their information
+                        # 更新现有用户信息
                         user.username = username
                         user.set_password(password)
                         user.role = role
-                        user.name = user.name or username  # Keep name if exists, otherwise use username
-                        click.echo(f'Updated user: {username} ({email}) with role: {role}')
+                        user.name = user.name or username  # 如果name存在则保留，否则使用username
+                        click.echo(f'更新用户: {username} ({email}) 角色: {role}')
                     else:
-                        # Create new user
+                        # 创建新用户
                         user = User(username=username, name=username, email=email, role=role)
                         user.set_password(password)
                         db.session.add(user)
-                        click.echo(f'Added user: {username} ({email}) with role: {role}')
+                        click.echo(f'添加用户: {username} ({email}) 角色: {role}')
                     
                     count += 1
                 except Exception as e:
-                    click.echo(f'Error processing line "{line}": {str(e)}')
+                    click.echo(f'处理行 "{line}" 时出错: {str(e)}')
         
         try:
             db.session.commit()
-            click.echo(f'Successfully processed {count} users.')
+            click.echo(f'成功处理 {count} 个用户。')
         except SQLAlchemyError as e:
             db.session.rollback()
-            click.echo(f'Database error: {str(e)}')
+            click.echo(f'数据库错误: {str(e)}')
             return 1
         
         return 0
@@ -197,8 +203,15 @@ def register_commands(app):
             try:
                 # 首先检查是否有CIF文件并从中读取化学式
                 structure_dir = os.path.join(material_path, 'structure')
-                if os.path.exists(structure_dir):
-                    cif_file_path = os.path.join(structure_dir, 'structure.cif')
+                cif_file_path = os.path.join(structure_dir, 'structure.cif')
+                if not os.path.exists(cif_file_path):
+                    # 如果没有structure.cif，查找目录下第一个.cif文件
+                    cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
+                    if cif_files:
+                        cif_file_path = os.path.join(structure_dir, cif_files[0])
+                    else:
+                        cif_file_path = None
+                if cif_file_path and os.path.exists(cif_file_path):
                     chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
                     if chemical_formula:
                         default_data['name'] = chemical_formula
@@ -297,65 +310,65 @@ def register_commands(app):
             click.echo(f"数据库提交错误: {str(e)}")
 
     @app.cli.command()
-    @click.option('--drop', is_flag=True, help='Create after drop.')
+    @click.option('--drop', is_flag=True, help='删除现有数据库后重新创建')
     def initdb(drop):
-        """Initialize the database."""
+        """初始化数据库"""
         if drop:
             db.drop_all()
         db.create_all()
-        click.echo('Initialized database.')
+        click.echo('数据库初始化完成。')
 
     @app.cli.command()
     @click.option('--username', prompt=True)
     @click.option('--email', prompt=True)
     @click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True)
     def admin(username, email, password):
-        """Create admin user."""
+        """创建管理员用户"""
         db.create_all()
         
-        # Email validation
+        # 验证邮箱格式
         email = email.strip().lower()
         if '@' not in email:
-            click.echo(f'Invalid email format: {email}')
+            click.echo(f'无效的邮箱格式: {email}')
             return 1
         
-        # Check if user exists by email or username
+        # 检查用户是否已存在（通过邮箱或用户名）
         user_by_email = User.query.filter_by(email=email).first()
         user_by_username = User.query.filter_by(username=username).first()
         
         if user_by_email:
-            click.echo('Updating existing user...')
+            click.echo('更新现有用户...')
             user = user_by_email
             user.username = username
             user.set_password(password)
             
-            # Ensure user has admin role
+            # 确保用户具有管理员角色
             if user.role != 'admin':
                 user.role = 'admin'
-                click.echo('User role updated to admin.')
+                click.echo('用户角色已更新为管理员。')
         elif user_by_username:
-            click.echo('Updating existing user and adding email...')
+            click.echo('更新现有用户并添加邮箱...')
             user = user_by_username
             user.email = email
             user.set_password(password)
             
-            # Ensure user has admin role
+            # 确保用户具有管理员角色
             if user.role != 'admin':
                 user.role = 'admin'
-                click.echo('User role updated to admin.')
+                click.echo('用户角色已更新为管理员。')
         else:
-            click.echo('Creating new admin user...')
+            click.echo('创建新管理员用户...')
             user = User(username=username, name='NLHE Database', email=email, role='admin')
             user.set_password(password)
             db.session.add(user)
         
         try:
             db.session.commit()
-            click.echo('Admin account updated successfully.')
+            click.echo('管理员账户更新成功。')
             return 0
         except Exception as e:
             db.session.rollback()
-            click.echo(f'Error creating/updating admin: {str(e)}')
+            click.echo(f'创建/更新管理员时出错: {str(e)}')
             return 1
 
     @app.cli.command()
@@ -387,24 +400,24 @@ def register_commands(app):
             click.echo(f"检查数据库结构时出错: {str(e)}")
 
     @app.cli.command()
-    @click.option('--drop', is_flag=True, help='Drop and recreate all tables.')
-    @click.option('--json-dir', default='app/static/materials', help='Directory containing JSON material data files.')
-    @click.option('--test', is_flag=True, help='Run in test mode with sample CIF files.')
+    @click.option('--drop', is_flag=True, help='删除并重新创建所有表')
+    @click.option('--json-dir', default='app/static/materials', help='包含JSON材料数据文件的目录')
+    @click.option('--test', is_flag=True, help='使用示例CIF文件运行测试模式')
     def initialize_database(drop, json_dir, test):
-        """Initialize database and import all data from JSON files in one operation."""
+        """一次性初始化数据库并从JSON文件导入所有数据"""
         # 初始化数据库
         if drop:
-            click.echo('Dropping and recreating all tables...')
+            click.echo('删除并重新创建所有表...')
             db.drop_all()
         db.create_all()
-        click.echo('Database structure initialized.')
+        click.echo('数据库结构初始化完成。')
         
         import_count = 0
         error_count = 0
         
         # 测试模式：直接从CIF文件创建材料记录
         if test and json_dir == 'app/static/structures':
-            click.echo('Test mode enabled: Creating materials from CIF files...')
+            click.echo('测试模式已启用：正在从CIF文件创建材料...')
             
             # 获取结构文件目录
             structures_dir = os.path.abspath(json_dir)
@@ -464,11 +477,11 @@ def register_commands(app):
                         continue
             
             click.echo(f"测试数据导入完成: 成功导入 {import_count} 个材料, 失败 {error_count} 个")
-            click.echo('Test database initialization completed successfully.')
+            click.echo('测试数据库初始化成功完成。')
             return
         
         # 正常模式：从JSON文件导入    
-        click.echo('Importing material data from JSON files...')
+        click.echo('从JSON文件导入材料数据...')
         
         # 递归扫描所有子目录查找JSON文件
         for root, dirs, files in os.walk(json_dir):
@@ -494,8 +507,7 @@ def register_commands(app):
             
             # 检查是否有CIF文件并从中读取化学式
             structure_dir = os.path.join(root, 'structure')
-            material_name = f"Material {dir_name}"
-            
+            material_name = None
             if os.path.exists(structure_dir):
                 cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
                 if cif_files:
@@ -503,6 +515,9 @@ def register_commands(app):
                     chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
                     if chemical_formula:
                         material_name = chemical_formula
+            # 如果没有CIF或解析失败，则用Material+ID
+            if not material_name:
+                material_name = f"Material_{dir_name}"
             
             # 处理当前目录中的第一个JSON文件
             file_name = json_files[0]  # 只处理第一个JSON文件
@@ -512,7 +527,7 @@ def register_commands(app):
                 with open(file_path, 'r', encoding='utf-8') as file:
                     material_data = json.load(file)
                 
-                # 设置材料名称为从CIF文件中读取的化学式
+                # 设置材料名称为从CIF文件中读取的化学式或Material+ID
                 material_data['name'] = material_name
                 
                 # 检查该ID的材料是否已存在
@@ -566,13 +581,13 @@ def register_commands(app):
             db.session.rollback()
             click.echo(f"数据库提交错误: {str(e)}")
             
-        click.echo('Database initialization and data import completed successfully.')
+        click.echo('数据库初始化和数据导入成功完成。')
 
     @app.cli.command('migrate-users-email')
     def migrate_users_email():
-        """Migrate users to include email field."""
+        """迁移用户表以包含email字段"""
         try:
-            # Import the migration script
+            # 导入迁移脚本
             import sys
             import os
             sys.path.append(os.path.join(os.path.dirname(app.root_path), 'migrations'))
@@ -580,8 +595,8 @@ def register_commands(app):
             from add_email_field import migrate_database
             migrate_database()
             
-            click.echo("User migration completed successfully.")
+            click.echo("用户迁移成功完成。")
             return 0
         except Exception as e:
-            click.echo(f"Error during migration: {str(e)}")
+            click.echo(f"迁移过程中出错: {str(e)}")
             return 1
