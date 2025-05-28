@@ -127,7 +127,8 @@
 
         /* Number Input Optimization */
         .form-group input[type="number"] {
-            -moz-appearance: textfield; /* Firefox: hide number spinner buttons */
+            appearance: textfield; /* 标准写法，兼容所有浏览器 */
+            -moz-appearance: textfield; /* Firefox: 隐藏数字输入的上下箭头 */
         }
 
         /* Hide spinner buttons for number inputs in Webkit browsers */
