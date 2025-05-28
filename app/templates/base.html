@@ -6,6 +6,7 @@
     <title>NLHE Database - Nonlinear Hall Effect Materials Database</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <style>
         /* ========== 全局变量和基础样式 ========== */
         :root {
@@ -124,87 +125,96 @@
         }
 
         /* ========== Flash消息样式 ========== */
-        /* Flash消息容器样式 */
+        /* Flash消息容器：居中悬浮于页面顶部，极简风格 */
         .flash-messages {
-            padding: 0; /* 移除内边距 */
-            background-color: var(--light-bg); /* 使用浅色背景 */
+            position: fixed;
+            top: 90px;
+            left: 0;
+            width: 100vw;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
         }
-
-        /* Flash消息内容容器样式 */
         .flash-messages .container {
-            padding-top: 1rem; /* 顶部内边距 */
+            width: 100%;
+            max-width: 100vw;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-
-        /* 单个Flash消息样式 */
+        /* 单条Flash消息极简样式 */
         .flash-message {
-            display: flex; /* 弹性布局 */
-            justify-content: space-between; /* 两端对齐 */
-            align-items: center; /* 垂直居中 */
-            padding: 0.75rem 1rem; /* 内边距 */
-            margin-bottom: 0.75rem; /* 底部外边距 */
-            border-radius: 6px; /* 圆角 */
-            animation: slideDown 0.3s ease-out; /* 滑入动画 */
+            min-width: 220px;
+            max-width: 350px;
+            margin: 0.5rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.2rem;
+            border-radius: 0.8rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            font-size: 1.12rem;
+            font-weight: 500;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.4s, transform 0.4s;
+            pointer-events: auto;
+            position: relative;
+            color: #fff;
+            letter-spacing: 0.01em;
         }
-
-        /* Flash消息滑入动画定义 */
-        @keyframes slideDown {
-            from {
-                transform: translateY(-20px); /* 初始位置 */
-                opacity: 0; /* 初始透明 */
-            }
-            to {
-                transform: translateY(0); /* 最终位置 */
-                opacity: 1; /* 完全不透明 */
-            }
-        }
-
-        /* 成功消息样式 */
+        /* 成功消息：半透明蓝色 */
         .flash-message.success {
-            background-color: #d4edda; /* 浅绿色背景 */
-            border-left: 4px solid #28a745; /* 绿色左边框 */
-            color: #155724; /* 深绿色文字 */
+            background: rgba(33, 150, 243, 0.85); /* 蓝色，透明度高 */
         }
-
-        /* 错误消息样式 */
+        /* 错误消息：半透明红色 */
         .flash-message.error {
-            background-color: #f8d7da; /* 浅红色背景 */
-            border-left: 4px solid #dc3545; /* 红色左边框 */
-            color: #721c24; /* 深红色文字 */
+            background: rgba(220, 53, 69, 0.88); /* 红色，透明度高 */
         }
-
-        /* 信息消息样式 */
+        /* 信息消息：半透明深灰 */
         .flash-message.info {
-            background-color: #d1ecf1; /* 浅蓝色背景 */
-            border-left: 4px solid #17a2b8; /* 蓝色左边框 */
-            color: #0c5460; /* 深蓝色文字 */
+            background: rgba(51, 51, 51, 0.80); /* 深灰，透明度高 */
         }
-
-        /* 消息内容样式 */
-        .flash-message .message-content {
-            display: flex; /* 弹性布局 */
-            align-items: center; /* 垂直居中 */
-            gap: 0.5rem; /* 元素间距 */
+        /* 图标样式 */
+        .flash-message .message-content i {
+            font-size: 1.3rem;
+            margin-right: 0.6rem;
         }
-
-        /* 消息图标样式 */
-        .flash-message i {
-            font-size: 1.25rem; /* 图标大小 */
-        }
-
-        /* 关闭按钮样式 */
+        /* 关闭按钮极简样式 */
         .close-flash {
-            background: none; /* 无背景 */
-            border: none; /* 无边框 */
-            font-size: 1.25rem; /* 字体大小 */
-            cursor: pointer; /* 鼠标指针样式 */
-            color: inherit; /* 继承颜色 */
-            opacity: 0.7; /* 初始透明度 */
-            transition: opacity 0.2s; /* 透明度变化动画 */
+            background: none;
+            border: none;
+            border-radius: 50%;
+            width: 1.8rem;
+            height: 1.8rem;
+            font-size: 1.2rem;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 0.7rem;
+            opacity: 0.7;
+            transition: background 0.2s, color 0.2s, opacity 0.2s;
         }
-
-        /* 关闭按钮悬停效果 */
         .close-flash:hover {
-            opacity: 1; /* 完全不透明 */
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            opacity: 1;
+        }
+        .flash-message .message-content {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .flash-message.hide {
+            opacity: 0;
+            transform: translateY(-24px) scale(0.98);
+            transition: opacity 0.4s, transform 0.4s;
         }
     </style>
 </head>
@@ -212,7 +222,7 @@
     <!-- ========== 导航栏 ========== -->
     <nav class="navbar">
         <div class="container nav-content">
-            <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> NLHE Database</a>
+            <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> Database</a>
             <div class="nav-links">
                 <a href="{{ url_for('views.index') }}">
                     <i class="fas fa-table"></i> Database
@@ -240,24 +250,35 @@
                 <a href="{{ url_for('views.add') }}">
                     <i class="fas fa-plus"></i> Add
                 </a>
-                <a href="{{ url_for('views.settings') }}">
-                    <i class="fas fa-cogs"></i> Settings
-                </a>
-                <a href="{{ url_for('views.logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Logout (Admin)
-                </a>
                 {% elif current_user.is_authenticated %}
-                <a href="{{ url_for('views.settings') }}">
-                    <i class="fas fa-user-cog"></i> User Settings
-                </a>
-                <a href="{{ url_for('views.logout') }}">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
+                <!-- 移除Logout按钮 -->
                 {% else %}
                 <a href="{{ url_for('views.login') }}">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </a>
                 {% endif %}
+                <!-- 用户类型提示区域，头像+用户名+下拉菜单 -->
+                <div class="user-type-indicator user-dropdown">
+                    {% if current_user.is_authenticated and current_user.is_admin() %}
+                        <span class="user-avatar admin user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
+                        <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
+                        <div class="user-dropdown-menu">
+                            <a href="{{ url_for('views.settings') }}"><i class="fas fa-cogs"></i> Settings</a>
+                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    {% elif current_user.is_authenticated %}
+                        <span class="user-avatar user user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
+                        <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
+                        <div class="user-dropdown-menu">
+                            <a href="{{ url_for('views.settings') }}"><i class="fas fa-user-cog"></i> User Settings</a>
+                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    {% else %}
+                        <span class="user-avatar guest"><i class="fas fa-user-circle"></i></span>
+                        <span class="user-name">Guest</span>
+                    {% endif %}
+                </div>
+                <!-- 结束 -->
             </div>
         </div>
     </nav>
@@ -383,6 +404,90 @@
                 display: none;                     /* 在小屏幕上隐藏导航链接 */
             }
         }
+
+        /* 用户类型提示样式 */
+        .user-type-indicator {
+            display: flex;
+            align-items: center;
+            margin-left: 1.5rem;
+            font-size: 1.08rem;
+            font-weight: 500;
+            gap: 0.4rem;
+        }
+        .user-avatar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            width: 2.1rem;
+            height: 2.1rem;
+            margin-right: 0.3rem;
+        }
+        .user-avatar.user {
+            background: rgba(33, 150, 243, 0.18); /* 蓝色背景 */
+            color: #2196f3;
+        }
+        .user-avatar.admin {
+            background: rgba(220, 53, 69, 0.18); /* 红色背景 */
+            color: #dc3545;
+        }
+        .user-avatar.guest {
+            background: rgba(255,255,255,0.7); /* 白色背景 */
+            color: #bbb;
+            border: 1.5px solid #eee;
+        }
+        .user-name {
+            color: #222;
+            font-size: 1.08rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+        .user-avatar.admin + .user-name {
+            color: #dc3545;
+        }
+        .user-avatar.user + .user-name {
+            color: #2196f3;
+        }
+        .user-avatar.guest + .user-name {
+            color: #888;
+        }
+        /* 用户类型提示+下拉菜单样式 */
+        .user-type-indicator.user-dropdown {
+            position: relative;
+            cursor: pointer;
+        }
+        .user-type-indicator .user-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 120%;
+            right: 0;
+            min-width: 160px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+            z-index: 3000;
+            padding: 0.5em 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .user-type-indicator .user-dropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.6em;
+            color: #333;
+            padding: 0.7em 1.2em;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .user-type-indicator .user-dropdown-menu a:hover {
+            background: #f0f4fa;
+            color: #1976d2;
+        }
+        .user-type-indicator.user-dropdown.active .user-dropdown-menu {
+            display: block;
+        }
     </style>
 
     <!-- ========== 主内容区域 ========== -->
@@ -414,9 +519,9 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>NLHE Database</h3>
-                    <p>Nonlinear Hall Effect Materials Database</p>
-                    <p>Explore and discover novel nonlinear Hall effect materials</p>
+                    <h3>Database</h3>
+                    <p>Materials Database</p>
+                    <p>Explore and discover novel materials</p>
                 </div>
                 <div class="footer-section">
                     <h3>Related Links</h3>
@@ -512,42 +617,47 @@
             });
 
             // 处理Flash消息关闭按钮的点击事件
-            // 获取所有关闭按钮并为其添加事件监听器
             document.querySelectorAll('.close-flash').forEach(button => {
                 button.addEventListener('click', function() {
-                    const flashMessage = this.parentElement; // 获取消息元素
-                    // 设置消息淡出和上移动画效果
-                    flashMessage.style.opacity = '0';
-                    flashMessage.style.transform = 'translateY(-20px)';
-                    flashMessage.style.transition = 'opacity 0.3s, transform 0.3s';
-                    
-                    // 300毫秒后移除消息元素
+                    const flashMessage = this.parentElement;
+                    flashMessage.classList.add('hide');
                     setTimeout(() => {
                         flashMessage.remove();
-                    }, 300);
+                    }, 400);
                 });
             });
 
-            // 自动关闭Flash消息
-            // 5秒后自动淡出所有Flash消息
+            // 自动关闭Flash消息（3秒后渐变消失）
             setTimeout(() => {
                 document.querySelectorAll('.flash-message').forEach(message => {
                     if (message) {
-                        // 设置消息淡出和上移动画效果
-                        message.style.opacity = '0';
-                        message.style.transform = 'translateY(-20px)';
-                        message.style.transition = 'opacity 0.3s, transform 0.3s';
-                        
-                        // 300毫秒后移除消息元素
-                        // 检查父元素是否存在以避免可能的错误
+                        message.classList.add('hide');
                         setTimeout(() => {
                             if (message.parentElement) {
                                 message.remove();
                             }
-                        }, 300);
+                        }, 400);
                     }
                 });
-            }, 5000); // 5秒延迟
+            }, 3000);
+
+            // 用户头像+用户名下拉菜单交互
+            (function(){
+                const dropdown = document.querySelector('.user-type-indicator.user-dropdown');
+                if (!dropdown) return;
+                const toggles = dropdown.querySelectorAll('.user-dropdown-toggle');
+                toggles.forEach(el => {
+                    el.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('active');
+                    });
+                });
+                document.addEventListener('click', function(e) {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+            })();
         });
     </script>
 </body>

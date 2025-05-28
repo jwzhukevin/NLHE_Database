@@ -416,24 +416,42 @@ static/materials/IMR-XXXXXXXX/
 
 <!-- File Input Event Handler -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get all file inputs with the custom class
-        const fileInputs = document.querySelectorAll('.custom-file-input');
-        
-        // Add event listener to each file input
-        fileInputs.forEach(input => {
-            input.addEventListener('change', function(e) {
-                // Get the file name display element (the span that follows this input)
-                const fileNameDisplay = this.nextElementSibling.nextElementSibling;
-                
-                // Update the text based on whether a file is selected
-                if (this.files.length > 0) {
-                    fileNameDisplay.textContent = this.files[0].name;
-                } else {
-                    fileNameDisplay.textContent = 'No file selected';
-                }
-            });
-        });
+document.querySelectorAll('input[type="file"]').forEach(function(input) {
+    input.addEventListener('change', function(e) {
+        const file = this.files[0];
+        const fileNameSpan = this.parentElement.querySelector('.file-name');
+        if (!file) {
+            fileNameSpan.textContent = 'No file selected';
+            return;
+        }
+        // 规范文件名
+        let requiredName = '';
+        if (this.name === 'structure_file') requiredName = 'structure.cif';
+        if (this.name === 'band_file') requiredName = 'band.dat';
+        if (this.name === 'properties_json') requiredName = 'material.json';
+        if (this.name === 'sc_structure_file') requiredName = 'sc.dat';
+        // 目标路径（示例，实际ID需后端生成）
+        let folder = '';
+        if (this.name === 'structure_file') folder = 'structure/';
+        if (this.name === 'band_file') folder = 'band/';
+        if (this.name === 'properties_json') folder = '';
+        if (this.name === 'sc_structure_file') folder = 'bcd/';
+        let path = `/static/materials/IMR-XXXXXXXX/${folder}${requiredName}`;
+        // 文件大小
+        let size = file.size;
+        let sizeStr = size > 1024*1024 ? (size/1024/1024).toFixed(2)+' MB' : (size/1024).toFixed(2)+' KB';
+        // 显示信息
+        fileNameSpan.innerHTML = `
+            <b>File:</b> ${file.name} <br>
+            <b>Required name:</b> <span style="color:#1976d2">${requiredName}</span> <br>
+            <b>Target path:</b> <span style="color:#888">${path}</span> <br>
+            <b>Size:</b> ${sizeStr}
+        `;
+        // 文件名不一致警告
+        if (file.name !== requiredName) {
+            fileNameSpan.innerHTML += `<br><span style="color:#e74c3c;font-weight:bold">Warning: File name must be <u>${requiredName}</u></span>`;
+        }
     });
+});
 </script>
 {% endblock %}

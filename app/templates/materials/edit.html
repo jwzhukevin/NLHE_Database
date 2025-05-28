@@ -40,18 +40,32 @@
                 <div class="form-group">
                     <label>Structure File (CIF)</label>
                     <input type="file" name="structure_file" accept=".cif" class="custom-file-input">
-                    {% if material.structure_file %}
-                    <p class="file-info">Current file: {{ material.structure_file }}</p>
+                    {% if cif_files %}
+                    <p class="file-info">Current CIF file(s):<br>
+                        {% for f in cif_files %}
+                        <b>{{ f }}</b><br><span style="color:#888">Path: {{ structure_dir }}/{{ f }}</span><br>
+                        {% endfor %}
+                        {% if cif_files|length > 1 %}
+                        <span style="color:#e74c3c;font-weight:bold">Warning: 存在多个.cif文件，请只保留一个！</span>
+                        {% endif %}
+                    </p>
                     {% endif %}
-                    <small class="help-text">CIF structure file for crystal visualization</small>
+                    <small class="help-text">支持.cif格式，文件名不限，若有多个.cif文件将报错</small>
                     <span class="file-name">No file selected</span>
                 </div>
                 <div class="form-group">
-                    <label>Band Structure File (DAT)</label>
+                    <label>Band Structure File (DAT/JSON)</label>
                     <input type="file" name="band_file" accept=".json,.dat" class="custom-file-input">
-                    <small class="help-text">For band structure visualization</small>
-                    {% if material.id %}
-                    <p class="file-info">Current file: {{ material.id }}.dat</p>
+                    <small class="help-text">支持.dat/.json格式，文件名不限，若有多个同类文件将报错</small>
+                    {% if band_files %}
+                    <p class="file-info">Current band file(s):<br>
+                        {% for f in band_files %}
+                        <b>{{ f }}</b><br><span style="color:#888">Path: {{ band_dir }}/{{ f }}</span><br>
+                        {% endfor %}
+                        {% if band_files|length > 1 %}
+                        <span style="color:#e74c3c;font-weight:bold">Warning: 存在多个能带文件，请只保留一个！</span>
+                        {% endif %}
+                    </p>
                     {% endif %}
                     <span class="file-name">No file selected</span>
                 </div>
@@ -67,16 +81,23 @@
                     <input type="file" name="properties_json" accept=".json" class="custom-file-input">
                     <small class="help-text">JSON file with material properties</small>
                     {% if material.properties_json %}
-                    <p class="file-info">Current file: {{ material.properties_json }}</p>
+                    <p class="file-info">Current file: <b>{{ material.properties_json }}</b><br><span style="color:#888">Path: /static/materials/IMR-{{ material.id }}/{{ material.properties_json }}</span><br><span style="color:#1976d2">Required name: material.json</span></p>
                     {% endif %}
                     <span class="file-name">No file selected</span>
                 </div>
                 <div class="form-group">
                     <label>SC Structure File (DAT)</label>
                     <input type="file" name="sc_structure_file" accept=".dat" class="custom-file-input">
-                    <small class="help-text">DAT file for SC structure visualization</small>
-                    {% if material.sc_structure_file %}
-                    <p class="file-info">Current file: {{ material.sc_structure_file }}</p>
+                    <small class="help-text">支持.dat格式，文件名不限，若有多个同类文件将报错</small>
+                    {% if sc_files %}
+                    <p class="file-info">Current SC file(s):<br>
+                        {% for f in sc_files %}
+                        <b>{{ f }}</b><br><span style="color:#888">Path: {{ bcd_dir }}/{{ f }}</span><br>
+                        {% endfor %}
+                        {% if sc_files|length > 1 %}
+                        <span style="color:#e74c3c;font-weight:bold">Warning: 存在多个SC文件，请只保留一个！</span>
+                        {% endif %}
+                    </p>
                     {% endif %}
                     <span class="file-name">No file selected</span>
                 </div>
@@ -455,38 +476,19 @@ static/materials/IMR-XXXXXXXX/
 
 <!-- File Input Event Handler -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get all file inputs with the custom class
-        const fileInputs = document.querySelectorAll('.custom-file-input');
-        
-        // Add event listener to each file input
-        fileInputs.forEach(input => {
-            input.addEventListener('change', function(e) {
-                // Find the corresponding file name display element
-                const fileNameDisplay = this.nextElementSibling;
-                let foundFileNameDisplay = null;
-                
-                // We need to look for the file-name span, which might not be the immediate next element
-                // due to the "Current file:" display in edit mode
-                let sibling = this.nextElementSibling;
-                while (sibling) {
-                    if (sibling.classList.contains('file-name')) {
-                        foundFileNameDisplay = sibling;
-                        break;
-                    }
-                    sibling = sibling.nextElementSibling;
-                }
-                
-                // Update the text based on whether a file is selected
-                if (foundFileNameDisplay) {
-                    if (this.files.length > 0) {
-                        foundFileNameDisplay.textContent = this.files[0].name;
-                    } else {
-                        foundFileNameDisplay.textContent = 'No file selected';
-                    }
-                }
-            });
-        });
+document.querySelectorAll('input[type="file"]').forEach(function(input) {
+    input.addEventListener('change', function(e) {
+        const file = this.files[0];
+        const fileNameSpan = this.parentElement.querySelector('.file-name');
+        if (!file) {
+            fileNameSpan.textContent = 'No file selected';
+            return;
+        }
+        // 只显示文件名和大小，不再校验文件名
+        let size = file.size;
+        let sizeStr = size > 1024*1024 ? (size/1024/1024).toFixed(2)+' MB' : (size/1024).toFixed(2)+' KB';
+        fileNameSpan.innerHTML = `<b>File:</b> ${file.name} <br><b>Size:</b> ${sizeStr}`;
     });
+});
 </script>
 {% endblock %}

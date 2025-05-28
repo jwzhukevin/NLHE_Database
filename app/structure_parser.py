@@ -9,11 +9,27 @@ from pymatgen.core import Structure  # pymatgen库用于处理晶体结构
 from pymatgen.io.cif import CifWriter  # 用于生成CIF文件
 from flask import current_app, abort
 from .models import Material
+import re
+
+
+def get_material_dir(material_id):
+    """
+    根据材料ID返回材料目录路径，优先新格式IMR-{id}，找不到则兼容旧格式IMR-00000001。
+    """
+    base_dir = os.path.join(current_app.root_path, 'static', 'materials')
+    new_dir = os.path.join(base_dir, f'IMR-{material_id}')
+    if os.path.exists(new_dir):
+        return new_dir
+    # 兼容旧格式
+    old_dir = os.path.join(base_dir, f'IMR-{int(material_id):08d}')
+    if os.path.exists(old_dir):
+        return old_dir
+    return new_dir  # 默认返回新格式路径
 
 
 def save_structure_file(file_content, filename, material_id=None, material_name=None):
     """
-    保存上传的CIF文件到材料对应的结构目录
+    保存上传的CIF文件到材料对应的结构目录，目录格式IMR-{id}，自动兼容。
     
     参数:
         file_content: 文件内容（二进制数据）
@@ -30,12 +46,8 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
             return None
         
         # 构建路径和目录
-        formatted_id = f"IMR-{int(material_id):08d}"
-        materials_dir = os.path.join(current_app.root_path, 'static/materials')
-        material_dir = os.path.join(materials_dir, formatted_id)
+        material_dir = get_material_dir(material_id)
         structure_dir = os.path.join(material_dir, 'structure')
-        
-        # 创建所有必要目录（一次性创建）
         os.makedirs(structure_dir, exist_ok=True)
         
         # 处理文件名和保存文件
@@ -46,7 +58,7 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
             f.write(file_content)
         
         # 返回相对路径
-        relative_path = os.path.join('materials', formatted_id, 'structure', save_filename)
+        relative_path = os.path.join('materials', os.path.basename(material_dir), 'structure', save_filename)
         return relative_path
     
     except Exception as e:
@@ -56,7 +68,7 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
 
 def find_structure_file(material_id=None, material_name=None):
     """
-    根据材料ID查找对应的CIF文件
+    根据材料ID查找对应的CIF文件，目录格式IMR-{id}，自动兼容。
     
     参数:
         material_id: 材料ID，用于构建目录路径
@@ -66,28 +78,17 @@ def find_structure_file(material_id=None, material_name=None):
         CIF文件相对路径，未找到则返回None
     """
     try:
-        # 只通过材料ID查找文件
         if material_id is None:
             return None
-            
-        # 构建材料目录路径
-        formatted_id = f"IMR-{int(material_id):08d}"
-        structure_dir = os.path.join(current_app.root_path, 'static/materials', formatted_id, 'structure')
-        
-        # 检查目录是否存在
+        material_dir = get_material_dir(material_id)
+        structure_dir = os.path.join(material_dir, 'structure')
         if not os.path.exists(structure_dir):
             return None
-            
-        # 查找目录中的CIF文件
         cif_files = glob.glob(os.path.join(structure_dir, "*.cif"))
-        
-        # 返回找到的第一个CIF文件的相对路径
         if cif_files:
             relative_path = os.path.relpath(cif_files[0], os.path.join(current_app.root_path, 'static'))
             return relative_path
-        
         return None
-    
     except Exception as e:
         current_app.logger.error(f"Error finding structure file: {str(e)}")
         return None
@@ -194,11 +195,11 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
         except Exception:
             wyckoff_sites = None
             equivalent_atoms = None
-        
+
         for i, site in enumerate(conventional_structure.sites):
             element_str = site.species_string
             wyckoff = wyckoff_sites[i] if wyckoff_sites is not None else None
-            
+
             atom = {
                 'element': element_str,
                 'position': site.coords.tolist(),
@@ -403,9 +404,9 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
                 pass  # 如果转换失败，使用原始结构
         
         # 创建超晶胞
-        supercell = structure.copy()
+            supercell = structure.copy()
         supercell.make_supercell([float(a), float(b), float(c)])
-        
+            
         # 提取晶格参数
         lattice = supercell.lattice
         lattice_data = {
@@ -563,7 +564,7 @@ def _process_structure(structure, cell_type='primitive', symprec=0.1, angle_tole
         for i, site in enumerate(converted_structure.sites):
             element_str = site.species_string
             wyckoff = wyckoff_sites[i] if wyckoff_sites is not None else None
-            
+                
             atom = {
                 'element': element_str,
                 'position': site.coords.tolist(),
