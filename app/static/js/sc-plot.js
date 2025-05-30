@@ -18,6 +18,7 @@
  * 6. 处理错误情况并显示相应提示
  */
 function plotSCStructure(containerId, dataUrl) {
+    console.log('SC dataUrl:', dataUrl);
     // 获取并验证容器元素
     const container = document.getElementById(containerId);
     
@@ -42,39 +43,16 @@ function plotSCStructure(containerId, dataUrl) {
             parseAndPlotSCData(data, container);
         })
         .catch(() => {
-            // 主数据文件加载失败,尝试加载示例数据文件
-            fetch('/static/materials/example_sc.dat')
-                .then(response => {
-                    if (!response.ok) throw new Error('not found');
-                    return response.text();
-                })
-                .then(data => {
-                    // 使用示例数据绘制图表
-                    parseAndPlotSCData(data, container);
-                    
-                    // 添加示例数据提示信息
-                    // 首先检查容器元素存在且提示信息尚未添加
-                    if (container && !container.parentNode.querySelector('.sc-example-tip')) {
-                        // 创建新的div元素作为提示容器
-                        let tip = document.createElement('div');
-                        // 设置提示元素的类名,用于后续查找和样式设置
-                        tip.className = 'sc-example-tip';
-                        // 设置提示样式:
-                        // - 红色文字(#b91c1c)
-                        // - 16px字体大小
-                        // - 文字居中对齐
-                        // - 底部外边距8px
-                        tip.style = 'color:#b91c1c;font-size:16px;text-align:center;margin-bottom:8px;';
-                        // 设置提示文本内容,告知用户当前显示的是示例数据
-                        tip.innerText = 'Example SC plot is shown. Original data file not found.';
-                        // 将提示元素插入到容器元素之前
-                        container.parentNode.insertBefore(tip, container);
-                    }
-                })
-                .catch(() => {
-                    // 示例数据也加载失败时,显示错误提示
-                    container.innerHTML = `<div style='color: #666; padding: 50px; text-align: center; font-size: 18px; background: #f9f9f9; border-radius: 8px; margin: 20px 0;'><p>No data</p></div>`;
-                });
+            // 主数据文件加载失败,直接显示无数据提示，不再加载示例数据
+            container.innerHTML = `<div style=\"padding: 48px 16px; text-align: center; background: linear-gradient(90deg,#fff,#f3f4f6 60%,#fff); border-radius: 12px; margin: 24px 0; box-shadow:0 2px 8px #e5e7eb;\">
+                <div style=\"font-size: 2rem; font-weight: bold; color: #dc2626; margin-bottom: 12px; letter-spacing:1px;\">SC data not found</div>
+                <div style=\"font-size: 1rem; color: #666; max-width: 480px; margin: 0 auto; line-height: 1.7;\">
+                    Sorry, the SC data for this material is currently unavailable.<br>
+                    This may be due to missing or incorrectly formatted data files.<br>
+                    Our development team is actively working to improve this feature.<br>
+                    If you have any questions or suggestions, please contact us via <a href='mailto:your_email@example.com' style='color:#2563eb;text-decoration:underline;'>email</a> or submit a <a href='https://github.com/yourrepo/issues' target='_blank' style='color:#2563eb;text-decoration:underline;'>GitHub Issue</a>.
+                </div>
+            </div>`;
         });
 }
 
@@ -437,8 +415,14 @@ function parseAndPlotSCData(dataText, container) {
     
     // 如果没有数据，显示错误消息
     if (data.length === 0) {
-        container.innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
-            <p>No data</p>
+        container.innerHTML = `<div style="padding: 48px 16px; text-align: center; background: linear-gradient(90deg,#fff,#f3f4f6 60%,#fff); border-radius: 12px; margin: 24px 0; box-shadow:0 2px 8px #e5e7eb;">
+            <div style="font-size: 2rem; font-weight: bold; color: #dc2626; margin-bottom: 12px; letter-spacing:1px;">SC data not found</div>
+            <div style="font-size: 1rem; color: #666; max-width: 480px; margin: 0 auto; line-height: 1.7;">
+                Sorry, the SC data for this material is currently unavailable.<br>
+                This may be due to missing or incorrectly formatted data files.<br>
+                Our development team is actively working to improve this feature.<br>
+                If you have any questions or suggestions, please contact us via <a href='mailto:your_email@example.com' style='color:#2563eb;text-decoration:underline;'>email</a> or submit a <a href='https://github.com/yourrepo/issues' target='_blank' style='color:#2563eb;text-decoration:underline;'>GitHub Issue</a>.
+            </div>
         </div>`;
         return;
     }

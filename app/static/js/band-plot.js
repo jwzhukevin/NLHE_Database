@@ -66,15 +66,29 @@ async function plotBandStructure(containerId, bandDataPath) {
         try {
             bandData = await parseBandData(bandDataPath);
         } catch (error) {
-            // 主文件加载失败，尝试加载示例
-            try {
-                bandData = await parseBandData(exampleBandPath);
-                isExample = true;
-            } catch (ex2) {
-                errorMsg = 'No data';
-            }
+            errorMsg = 'No data';
         }
-        if (!bandData) throw new Error(errorMsg || 'No data');
+        if (!bandData ||
+            !bandData.kpoints || bandData.kpoints.length === 0 ||
+            !bandData.bands || bandData.bands.length === 0 ||
+            !bandData.kLabels || bandData.kLabels.length === 0 ||
+            !bandData.kPositions || bandData.kPositions.length === 0
+        ) {
+            // 显示无数据提示
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `<div style=\"padding: 48px 16px; text-align: center; background: linear-gradient(90deg,#fff,#f3f4f6 60%,#fff); border-radius: 12px; margin: 24px 0; box-shadow:0 2px 8px #e5e7eb;\">
+                    <div style=\"font-size: 2rem; font-weight: bold; color: #dc2626; margin-bottom: 12px; letter-spacing:1px;\">Band structure data not found</div>
+                    <div style=\"font-size: 1rem; color: #666; max-width: 480px; margin: 0 auto; line-height: 1.7;\">
+                        Sorry, the band structure data for this material is currently unavailable.<br>
+                        This may be due to missing or incorrectly formatted data files.<br>
+                        Our development team is actively working to improve this feature.<br>
+                        If you have any questions or suggestions, please contact us via <a href='mailto:your_email@example.com' style='color:#2563eb;text-decoration:underline;'>email</a> or submit a <a href='https://github.com/yourrepo/issues' target='_blank' style='color:#2563eb;text-decoration:underline;'>GitHub Issue</a>.
+                    </div>
+                </div>`;
+            }
+            return;
+        }
         const { kpoints, bands, kLabels, kPositions } = bandData;
         
         // 准备绘图数据

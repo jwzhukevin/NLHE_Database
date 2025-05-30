@@ -1830,59 +1830,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化SC结构图（自相关性结构图）
     // 构建主要SC数据文件的URL路径
     const scDataPath = "{{ url_for('static', filename='materials/IMR-' + material.id|string + '/bcd/sc.dat') }}";
-    // 构建备用示例数据文件的URL路径，当主文件不可用时使用
-    const fallbackScDataPath = "{{ url_for('static', filename='materials/example_sc.dat') }}";
-    
-    // 使用fetch API加载SC数据文件
-    fetch(scDataPath)
-        .then(response => {
-            // 检查响应状态
-            if (!response.ok) {
-                // 如果主数据文件不可用，记录信息并尝试加载备用文件
-                console.log('使用示例SC数据文件');
-                return fetch(fallbackScDataPath);
-            }
-            // 主数据文件加载成功，直接返回响应对象
-            return response;
-        })
-        .then(response => {
-            // 检查响应状态（可能是主文件或备用文件）
-            if (response.ok) {
-                // 数据加载成功，调用绘图函数
-                plotSCStructure('scStructure', response.url);
-                
-                // 添加SC卡片展开时的处理逻辑
-                const scCardHeader = document.querySelector('#sc-section .card-header');
-                if (scCardHeader) {
-                    scCardHeader.addEventListener('click', function() {
-                        // 检查卡片是否展开
-                        if (!this.classList.contains('collapsed')) {
-                            // 延迟执行以确保DOM已完全更新
-                            setTimeout(() => {
-                                // 如果Plotly已加载并且SC图表已创建
-                                if (window.Plotly && document.getElementById('sc-plot')) {
-                                    // 重新布局图表以适应新的容器大小
-                                    Plotly.relayout('sc-plot', {autosize: true});
-                                }
-                            }, 300);
-                        }
-                    });
-                }
-            } else {
-                // 所有数据源均不可用，显示错误信息
-                console.error('无法加载SC数据文件');
-                document.getElementById('scStructure').innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
-                    <p>No data</p>
-                </div>`;
-            }
-        })
-        .catch(error => {
-            // 处理请求过程中的任何错误（网络问题等）
-            console.error('SC数据加载失败:', error);
-            document.getElementById('scStructure').innerHTML = `<div style="text-align:center;padding:50px;color:#666;background:#f9f9f9;border-radius:8px;margin:20px 0;font-size:18px;">
-                <p>No data</p>
-            </div>`;
-        });
+    // 直接调用绘图函数，不再兜底加载示例文件
+    plotSCStructure('scStructure', scDataPath);
     
     // 初始化卡片折叠功能
     initializeCollapsibleCards();
