@@ -74,12 +74,21 @@ async function plotBandStructure(containerId, bandDataPath) {
             !bandData.kLabels || bandData.kLabels.length === 0 ||
             !bandData.kPositions || bandData.kPositions.length === 0
         ) {
-            // 显示无数据提示
+            // 显示无数据提示，卡片内容水平垂直居中
             const container = document.getElementById(containerId);
             if (container) {
-                container.innerHTML = `<div style=\"padding: 48px 16px; text-align: center; background: linear-gradient(90deg,#fff,#f3f4f6 60%,#fff); border-radius: 12px; margin: 24px 0; box-shadow:0 2px 8px #e5e7eb;\">
+                container.innerHTML = `<div style="
+                    min-height: 220px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(90deg,#fff,#f3f4f6 60%,#fff);
+                    border-radius: 12px;
+                    margin: 24px 0;
+                    box-shadow:0 2px 8px #e5e7eb;">
                     <div style=\"font-size: 2rem; font-weight: bold; color: #dc2626; margin-bottom: 12px; letter-spacing:1px;\">Band structure data not found</div>
-                    <div style=\"font-size: 1rem; color: #666; max-width: 480px; margin: 0 auto; line-height: 1.7;\">
+                    <div style=\"font-size: 1rem; color: #666; max-width: 480px; margin: 0 auto; line-height: 1.7; text-align: center;\">
                         Sorry, the band structure data for this material is currently unavailable.<br>
                         This may be due to missing or incorrectly formatted data files.<br>
                         Our development team is actively working to improve this feature.<br>
@@ -274,11 +283,19 @@ async function plotBandStructure(containerId, bandDataPath) {
         
     } catch (error) {
         console.error('Error plotting band structure:', error);
-        // 显示错误信息在容器中
+        // 显示错误信息在容器中，卡片内容水平垂直居中
         const container = document.getElementById(containerId);
         if (container) {
-            container.innerHTML = `<div style="color: #666; padding: 50px; text-align: center; font-size: 18px; background: #f9f9f9; border-radius: 8px; margin: 20px 0;">
-                <p>No data</p>
+            container.innerHTML = `<div style="
+                min-height: 180px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: #f9f9f9;
+                border-radius: 8px;
+                margin: 20px 0;">
+                <p style=\"color: #666; font-size: 18px; text-align: center;\">No data</p>
             </div>`;
         }
     }

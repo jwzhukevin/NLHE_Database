@@ -13,6 +13,7 @@ import functools  # For decorators
 from .material_importer import extract_chemical_formula_from_cif  # Material data import module
 import os
 import re
+from werkzeug.utils import secure_filename
 
 # Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
