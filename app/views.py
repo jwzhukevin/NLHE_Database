@@ -3,7 +3,7 @@
 # Includes homepage, material details page, add/edit materials, user authentication, etc.
 
 # Import required modules
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify  # Flask core modules
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify, send_file  # Flask core modules
 from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
 from sqlalchemy import and_, or_  # Database query condition builders
 from .models import User, Material, BlockedIP  # Custom data models
@@ -14,6 +14,8 @@ from .material_importer import extract_chemical_formula_from_cif  # Material dat
 import os
 import re
 from werkzeug.utils import secure_filename
+from captcha.image import ImageCaptcha
+import random, string, io
 
 # Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
@@ -574,6 +576,11 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         username = request.form.get('username')
+        captcha_input = request.form.get('captcha', '').upper()
+        real_captcha = session.get('captcha', '')
+        if captcha_input != real_captcha:
+            flash('验证码错误，请重新输入', 'error')
+            return render_template('auth/login.html')
         password = request.form.get('password')
         remember = 'remember' in request.form
         login_type = request.form.get('login_type')
@@ -918,3 +925,11 @@ def update_users_dat():
     except Exception as e:
         current_app.logger.error(f"Failed to update users.dat: {str(e)}")
         raise
+
+@bp.route('/captcha')
+def captcha():
+    image = ImageCaptcha()
+    captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+    session['captcha'] = captcha_text
+    data = image.generate(captcha_text)
+    return send_file(data, mimetype='image/png')

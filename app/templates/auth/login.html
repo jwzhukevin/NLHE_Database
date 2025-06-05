@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- 登录主体内容 -->
+<!-- Login Main Content -->
 <section class="login-content">
     <div class="container">
         <div class="login-card">
-            <!-- 登录类型选择器 -->
+            <!-- Login Type Selector -->
             <div class="login-type-selector">
                 <button class="type-btn active" id="user-btn">
                     <i class="fas fa-user"></i>
@@ -17,7 +17,7 @@
                 </button>
             </div>
             
-            <!-- 登录表单 -->
+            <!-- Login Form -->
             <div class="login-form-wrapper">
                 <h2 id="form-title">Sign In</h2>
                 
@@ -38,6 +38,17 @@
                             <span>Username</span>
                         </label>
                         <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="captcha">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Captcha</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="text" id="captcha" name="captcha" placeholder="Enter the captcha" maxlength="5" required style="flex:1;" />
+                            <img id="captcha-img" src="{{ url_for('views.captcha') }}" alt="Captcha" style="height:40px;cursor:pointer;" />
+                        </div>
                     </div>
                     
                     <div class="form-field">
@@ -116,23 +127,27 @@
             loginTypeInput.value = 'admin';
             loginButton.textContent = 'Log In as Administrator';
         });
+
+        document.getElementById('captcha-img').onclick = function() {
+            this.src = "{{ url_for('views.captcha') }}?" + Math.random();
+        };
     });
 </script>
 
 <style>
-    /* ===== 登录页面样式 ===== */
+    /* ===== Login Page Styles ===== */
     
-    /* 主体内容样式 */
+    /* Main Content Styles */
     .login-content {
         background-color: var(--light-bg);
-        padding: 0 0 2rem 0; /* 移除顶部内边距，保留底部内边距 */
-        min-height: calc(100vh - 64px - 350px); /* 减去导航栏和页脚高度 */
+        padding: 0 0 2rem 0;
+        min-height: calc(100vh - 64px - 350px);
         display: flex;
         align-items: center;
         justify-content: center;
     }
     
-    /* 登录卡片样式 */
+    /* Login Card Styles */
     .login-card {
         background-color: white;
         border-radius: 12px;
@@ -144,7 +159,7 @@
         transition: all 0.3s ease;
     }
     
-    /* 登录类型选择器 */
+    /* Login Type Selector */
     .login-type-selector {
         display: flex;
         background-color: #f8fafc;
@@ -183,7 +198,7 @@
         color: var(--primary-color);
     }
     
-    /* 表单样式 */
+    /* Form Styles */
     .login-form-wrapper {
         padding: 2rem;
     }
@@ -242,7 +257,7 @@
         color: #94a3b8;
     }
     
-    /* 按钮样式 */
+    /* Button Styles */
     .form-actions {
         display: flex;
         flex-direction: row;
@@ -356,7 +371,7 @@
         outline: none;
     }
     
-    /* 响应式调整 */
+    /* Responsive adjustments */
     @media (max-width: 640px) {
         .login-content {
             padding: 1.5rem 1rem;
