@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="main-content" style="max-width:600px;margin:40px auto;">
+    <h2>TXT文件格式转换</h2>
+    <form method="post" enctype="multipart/form-data" style="margin-bottom:2rem;">
+        <div style="margin-bottom:1rem;">
+            <input type="file" name="file" accept=".txt" required>
+        </div>
+        <button type="submit" class="btn btn-primary">上传并转换</button>
+    </form>
+    {% if dat_file or docx_file %}
+    <div style="margin-top:1.5rem;">
+        <h4>下载转换结果：</h4>
+        {% if dat_file %}
+        <a href="{{ url_for('program.download', filename=dat_file) }}" class="btn btn-outline-primary" style="margin-right:1rem;">下载 .dat 文件</a>
+        {% endif %}
+        {% if docx_file %}
+        <a href="{{ url_for('program.download', filename=docx_file) }}" class="btn btn-outline-primary">下载 .docx 文件</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -155,6 +155,13 @@ def create_app():
         from .articles import articles as articles_bp
         app.register_blueprint(articles_bp)  # 注册内容路由
 
+        # 注册deepseek蓝图
+        from .deepseek import siliconflow_bp
+        app.register_blueprint(siliconflow_bp)
+        # 注册程序蓝图
+        from .program import program_bp
+        app.register_blueprint(program_bp)
+
         # 注册命令行命令
         register_commands(app)
 

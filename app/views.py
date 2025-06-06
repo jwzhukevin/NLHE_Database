@@ -3,7 +3,7 @@
 # Includes homepage, material details page, add/edit materials, user authentication, etc.
 
 # Import required modules
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, jsonify, send_file  # Flask core modules
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file  # Flask core modules
 from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
 from sqlalchemy import and_, or_  # Database query condition builders
 from .models import User, Material, BlockedIP  # Custom data models
