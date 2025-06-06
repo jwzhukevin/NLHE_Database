@@ -12,11 +12,9 @@ API_KEY = 'sk-ywrgajeyefkbzukcxouatcqgxtebnbjdhmvrqtrqnvffykpn'
 
 def get_user_chat_dir():
     username = getattr(current_user, 'username', None)
-    print(f"[调试] 当前用户名: {username}")
-    # 直接指定绝对路径（假设项目根目录名为 NLHE_Database）
-    chat_dir = os.path.join('/mnt/d/NLHE_Database/app/static/chat', str(username))
+    # 用 Flask 推荐的方式拼接路径，保证跨平台
+    chat_dir = os.path.join(current_app.root_path, 'static', 'chat', str(username))
     os.makedirs(chat_dir, exist_ok=True)
-    print(f"[调试] 用户聊天目录: {chat_dir}")
     return chat_dir
 
 def get_history_path(filename='history.json'):
