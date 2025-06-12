@@ -2,7 +2,7 @@
 import click
 from flask import Blueprint, current_app
 from . import db
-from .models import User, Material
+from .models import User, Material, Member
 import os
 import json
 from sqlalchemy.exc import SQLAlchemyError
@@ -600,3 +600,24 @@ def register_commands(app):
         except Exception as e:
             click.echo(f"迁移过程中出错: {str(e)}")
             return 1
+
+    @app.cli.command('import-member')
+    @click.option('--info', required=True, help='成员信息json文件路径')
+    @click.option('--photo', required=True, help='成员照片文件路径')
+    def import_member(info, photo):
+        """导入单个成员信息"""
+        with open(info, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        member = Member(
+            name=data.get('name'),
+            title=data.get('title'),
+            bio=data.get('bio'),
+            achievements='\n'.join(data.get('achievements', [])),
+            photo=data.get('photo') or photo.split('/')[-1]
+        )
+        db.session.add(member)
+        db.session.commit()
+        click.echo(f"导入成员：{member.name}")
+
+    # 注册命令到Flask
+    app.cli.add_command(import_member)

@@ -198,3 +198,17 @@ def update_formatted_id(mapper, connection, target):
     )
     # 更新内存中的对象
     target.formatted_id = f"IMR-{target.id:08d}"
+
+class Member(db.Model):
+    """
+    研究部成员数据模型
+    """
+    id = db.Column(db.Integer, primary_key=True)  # 主键
+    name = db.Column(db.String(64), nullable=False)  # 姓名
+    title = db.Column(db.String(64))  # 职位/头衔
+    photo = db.Column(db.String(128))  # 照片文件名
+    bio = db.Column(db.Text)  # 简介
+    achievements = db.Column(db.Text)  # 成就（可用Markdown格式）
+
+    def __repr__(self):
+        return f'<Member {self.name}>'

@@ -6,7 +6,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file  # Flask core modules
 from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
 from sqlalchemy import and_, or_  # Database query condition builders
-from .models import User, Material, BlockedIP  # Custom data models
+from .models import User, Material, BlockedIP, Member  # Custom data models
 from . import db  # Database instance
 import datetime  # Processing dates and times
 import functools  # For decorators
@@ -933,3 +933,11 @@ def captcha():
     session['captcha'] = captcha_text
     data = image.generate(captcha_text)
     return send_file(data, mimetype='image/png')
+
+@bp.route('/members')
+def members():
+    """
+    研究部成员展示页面
+    """
+    members = Member.query.all()  # 查询所有成员
+    return render_template('members.html', members=members)
