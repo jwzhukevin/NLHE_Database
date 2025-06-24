@@ -49,6 +49,9 @@ NLHE_Database材料数据库管理系统是一个专为材料科学研究设计�
 4. **交互式3D可视化**：基于Three.js实现晶体结构的WebGL渲染
 5. **安全防护机制**：实现IP封锁保护，有效防止暴力登录尝试
 6. **标准化材料ID系统**：采用IMR-XXXXXXXX格式的统一编码规范
+7. **AI辅助功能**：集成Deepseek大型语言模型API，提供智能问答和科研咨询
+8. **文件格式转换**：支持TXT文件到DAT和DOCX格式的便捷转换
+9. **科学数据可视化**：使用Plotly.js实现专业的能带和SC结构图表
 
 ## 三、系统架构
 
@@ -102,6 +105,8 @@ NLHE_Database采用经典的MVC（Model-View-Controller）架构模式，并结�
 5. **文章管理模块**：支持研究文章的编辑和发布
 6. **API接口模块**：提供RESTful API，支持外部系统集成
 7. **命令行工具模块**：提供数据库初始化和管理功能
+8. **AI对话模块**：集成Deepseek API，提供智能问答和科研咨询服务
+9. **文件转换模块**：支持TXT文件到DAT和DOCX格式的转换功能
 
 ### 3.3 数据流程
 
@@ -877,6 +882,159 @@ def register_commands(app):
    flask import-json --dir=app/static/materials         # 导入材料数据
    flask import-json --dir=app/static/structures --test # 测试模式导入
    ``` 
+
+### 4.7 AI对话模块
+
+#### 4.7.1 功能描述
+
+AI对话模块集成了Deepseek大型语言模型API，为用户提供智能问答和科研咨询服务，支持材料科学专业问题的解答和研究辅助。
+
+#### 4.7.2 技术实现
+
+- **核心组件**：基于Deepseek API接口集成QwQ-32B大型语言模型
+- **会话管理**：
+  - 多会话保存：支持将不同主题的对话保存为独立会话
+  - 会话切换：灵活切换不同的历史会话
+  - 历史记录：自动保存对话历史，支持查看和编辑
+- **交互功能**：
+  - 重试回答：支持重新生成AI回答
+  - 删除问答：可删除特定问答对
+  - 保存回答：支持复制AI回答到剪贴板
+
+#### 4.7.3 关键代码
+
+```python
+# AI对话接口调用
+def call_siliconflow(messages):
+    headers = {
+        'Authorization': f'Bearer {API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "model": "Qwen/QwQ-32B",
+        "messages": messages,
+        "stream": False,
+        "max_tokens": 4096,
+        "temperature": 0.7,
+        "top_p": 0.7,
+        "top_k": 50,
+        "frequency_penalty": 0.5,
+        "n": 1,
+        "response_format": {"type": "text"}
+    }
+    try:
+        response = requests.post(API_URL, headers=headers, json=data, timeout=20)
+        result = response.json()
+        return result['choices'][0]['message']['content']
+    except Exception as e:
+        raise RuntimeError(f"AI接口返回异常：{e}")
+```
+
+```python
+# 会话管理实现
+@siliconflow_bp.route('/', methods=['GET', 'POST'])
+@login_required
+def chat():
+    # 处理历史会话选择
+    selected_history = request.form.get('history_select') or request.args.get('history') or 'current'
+    if selected_history == 'current':
+        filename = 'history.json'
+    else:
+        filename = selected_history
+    # 加载历史会话列表
+    history_list = list_histories()
+    # 加载当前会话
+    if 'chat_history' not in session or session.get('selected_history') != filename:
+        session['chat_history'] = load_history(filename)
+        session['selected_history'] = filename
+    chat_history = session['chat_history']
+
+    if request.method == 'POST':
+        # 处理用户输入和AI回复
+        user_input = request.form.get('prompt')
+        if user_input:
+            messages = []
+            for turn in chat_history:
+                messages.append({'role': 'user', 'content': turn['user']})
+                messages.append({'role': 'assistant', 'content': turn['assistant']})
+            messages.append({'role': 'user', 'content': user_input})
+            ai_reply = call_siliconflow(messages)
+            chat_history.append({'user': user_input, 'assistant': ai_reply})
+            session['chat_history'] = chat_history
+            save_history(chat_history, filename)
+    return render_template('deepseek_chat.html', chat_history=chat_history, 
+                          history_list=history_list, selected_history=filename)
+```
+
+#### 4.7.4 界面展示
+
+AI对话界面采用现代聊天应用风格，包含对话历史显示区、用户输入框、会话管理工具栏等组件。用户问题和AI回答通过不同样式的气泡清晰区分，支持Markdown格式显示，增强科学内容的可读性。
+
+### 4.8 文件格式转换模块
+
+#### 4.8.1 功能描述
+
+文件格式转换模块提供简单实用的文本文件格式转换功能，支持将TXT文本文件转换为DAT数据文件和DOCX文档文件，方便用户进行数据处理和文档编辑。
+
+#### 4.8.2 技术实现
+
+- **核心组件**：
+  - 文件上传：基于Flask的安全文件上传机制
+  - 格式转换：使用python-docx库实现TXT到DOCX的转换
+  - 文件下载：支持转换结果的直接下载
+- **安全措施**：
+  - 文件类型验证：限制只接受TXT文件
+  - 安全文件名：使用secure_filename防止路径遍历攻击
+  - 访问控制：要求用户登录才能使用转换功能
+
+#### 4.8.3 关键代码
+
+```python
+# 文件格式转换实现
+@program_bp.route('/', methods=['GET', 'POST'])
+@login_required
+def index():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('没有文件被上传', 'danger')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '' or not allowed_file(file.filename):
+            flash('请上传txt文件', 'danger')
+            return redirect(request.url)
+        filename = secure_filename(file.filename)
+        save_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(save_path)
+        # 转换为dat
+        dat_filename = filename.rsplit('.', 1)[0] + '.dat'
+        dat_path = os.path.join(UPLOAD_FOLDER, dat_filename)
+        with open(save_path, 'r', encoding='utf-8') as fin, open(dat_path, 'w', encoding='utf-8') as fout:
+            fout.write(fin.read())
+        # 转换为word
+        docx_filename = filename.rsplit('.', 1)[0] + '.docx'
+        docx_path = os.path.join(UPLOAD_FOLDER, docx_filename)
+        doc = Document()
+        with open(save_path, 'r', encoding='utf-8') as fin:
+            for line in fin:
+                doc.add_paragraph(line.rstrip())
+        doc.save(docx_path)
+        flash('转换成功！', 'success')
+        return render_template('program_index.html', dat_file=dat_filename, docx_file=docx_filename)
+    return render_template('program_index.html')
+```
+
+```python
+# 文件下载实现
+@program_bp.route('/download/<filename>')
+@login_required
+def download(filename):
+    abs_folder = os.path.join(current_app.root_path, 'static', 'functions', 'trans_txt')
+    return send_from_directory(abs_folder, filename, as_attachment=True)
+```
+
+#### 4.8.4 界面展示
+
+文件转换界面设计简洁直观，包含文件上传区域和转换按钮。转换成功后显示下载链接，用户可以直接下载转换后的DAT和DOCX文件。界面提供清晰的操作反馈，包括成功提示和错误信息。
 
 ## 五、技术实现
 
