@@ -186,7 +186,7 @@ def chat():
                 chat_history.append({'user': user_input, 'assistant': ai_reply})
                 session['chat_history'] = chat_history
                 save_history(chat_history, filename)
-    return render_template('deepseek_chat.html', chat_history=chat_history, history_list=history_list, selected_history=filename)
+    return render_template('deepseek/chat.html', chat_history=chat_history, history_list=history_list, selected_history=filename)
 
 @siliconflow_bp.route('/ask', methods=['POST'])
 @login_required

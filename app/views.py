@@ -940,4 +940,4 @@ def members():
     研究部成员展示页面
     """
     members = Member.query.all()  # 查询所有成员
-    return render_template('members.html', members=members)
+    return render_template('members/index.html', members=members)

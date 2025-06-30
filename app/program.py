@@ -42,8 +42,8 @@ def index():
                 doc.add_paragraph(line.rstrip())
         doc.save(docx_path)
         flash('转换成功！', 'success')
-        return render_template('program_index.html', dat_file=dat_filename, docx_file=docx_filename)
-    return render_template('program_index.html')
+        return render_template('program/index.html', dat_file=dat_filename, docx_file=docx_filename)
+    return render_template('program/index.html')
 
 @program_bp.route('/download/<filename>')
 @login_required
