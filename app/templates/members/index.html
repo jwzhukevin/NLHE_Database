@@ -1,148 +1,161 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container members-container">
-  <div class="members-header">
-    <h1 class="members-title">Department of Materials Computation and Design, Institute of Metal Research, Chinese Academy of Sciences</h1>
-    <p class="members-subtitle">Meet our research team dedicated to cutting-edge materials science and computational design.</p>
-  </div>
-  <div class="member-grid">
-    {# 循环渲染所有成员 #}
-    {% for member in members %}
-    <div class="member-card">
-      <div class="member-photo-wrapper">
-        <img src="{{ url_for('static', filename='members/' + member.name|lower|replace(' ', '') + '/' + member.photo) }}" alt="{{ member.name }}" class="member-photo">
-      </div>
-      <h3 class="member-name">{{ member.name }}</h3>
-      <p class="title">{{ member.title }}</p>
-      <p class="bio">{{ member.bio }}</p>
-      <div class="achievements">
-        <strong>Achievements:</strong>
-        <ul class="achievements-list">
-          {% for ach in member.achievements.split('\n') if ach.strip() %}
-          <li>{{ ach }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-<style>
-.members-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 0 60px 0;
-}
-.members-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-.members-title {
-  font-size: 2.3rem;
-  font-weight: 700;
-  color: #0047AB;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-}
-.members-subtitle {
-  font-size: 1.18rem;
-  color: #555;
-  margin-bottom: 0;
-  font-weight: 400;
-}
-.member-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 32px;
-  justify-content: center;
-}
-.member-card {
-  background: linear-gradient(135deg, #f8fafc 60%, #e3ecfa 100%);
-  border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(0,71,171,0.08), 0 1.5px 6px rgba(0,0,0,0.04);
-  padding: 36px 28px 28px 28px;
-  width: 340px;
-  min-height: 420px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: box-shadow 0.2s, transform 0.2s;
-  border: 1.5px solid #e0e7ef;
-}
-.member-card:hover {
-  box-shadow: 0 8px 32px rgba(0,71,171,0.13), 0 2px 8px rgba(0,0,0,0.07);
-  transform: translateY(-4px) scale(1.025);
-  border-color: #b3cdfa;
-}
-.member-photo-wrapper {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 18px;
-  border-radius: 50%;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,71,171,0.10);
-  border: 3px solid #e3ecfa;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.member-photo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-  display: block;
-}
-.member-name {
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 4px;
-  letter-spacing: 0.2px;
-}
-.title {
-  color: #1976d2;
-  font-weight: 500;
-  margin-bottom: 10px;
-  font-size: 1.08rem;
-}
-.bio {
-  font-size: 1.01rem;
-  color: #444;
-  margin-bottom: 16px;
-  min-height: 48px;
-}
-.achievements {
-  font-size: 1rem;
-  color: #333;
-  text-align: left;
-  margin-top: 12px;
-  width: 100%;
-}
-.achievements-list {
-  margin: 8px 0 0 0;
-  padding: 0 0 0 18px;
-  color: #2d3a4a;
-  font-size: 0.98rem;
-  line-height: 1.7;
-}
-.achievements-list li {
-  margin-bottom: 4px;
-  list-style: disc inside;
-}
-@media (max-width: 900px) {
-  .member-grid {
-    gap: 18px;
-  }
-  .member-card {
-    width: 95vw;
-    min-width: 0;
-    max-width: 400px;
-    padding: 28px 10px 20px 10px;
-  }
-}
-</style>
+    <!-- ========== 英雄区域 ========== -->
+    <section class="hero">
+        <div class="container">
+            <h1>Research Team</h1>
+            <p>Meet our talented researchers dedicated to cutting-edge materials science and computational design at the Department of Materials Computation and Design, Institute of Metal Research, Chinese Academy of Sciences.</p>
+        </div>
+    </section>
+
+    <!-- ========== 成员区域 ========== -->
+    <section class="members-section">
+        <div class="container">
+            <div class="member-grid">
+                {# 循环渲染所有成员 #}
+                {% for member in members %}
+                <div class="member-card">
+                    <div class="member-photo-wrapper">
+                        <img src="{{ url_for('static', filename='members/' + member.name|lower|replace(' ', '') + '/' + member.photo) }}" alt="{{ member.name }}" class="member-photo">
+                    </div>
+                    <h3 class="member-name">{{ member.name }}</h3>
+                    <p class="title">{{ member.title }}</p>
+                    <p class="bio">{{ member.bio }}</p>
+                    <div class="achievements">
+                        <strong>Achievements:</strong>
+                        <ul class="achievements-list">
+                            {% for ach in member.achievements.split('\n') if ach.strip() %}
+                            <li>{{ ach }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <style>
+        /* ========== 英雄区域样式 ========== */
+        .hero {
+            padding: 5rem 0 4rem; /* 上下内边距设置,营造空间感 */
+            text-align: left; /* 文本左对齐 */
+            background: linear-gradient(135deg, #003c85, #0d274b); /* 深蓝色渐变背景,增加视觉层次感 */
+            color: white; /* 文字颜色设为白色,与深色背景形成对比 */
+            margin-bottom: 3rem; /* 与下方内容保持间距 */
+        }
+
+        /* 英雄区域标题样式 */
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem); /* 响应式字体大小,最小2rem,最大3.5rem */
+            margin-bottom: 1rem; /* 底部外边距,与下方段落保持间距 */
+            line-height: 1.2; /* 行高设置,提高可读性 */
+        }
+
+        /* 英雄区域描述文本样式 */
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.25rem); /* 响应式字体大小,最小1rem,最大1.25rem */
+            max-width: 800px; /* 限制最大宽度,保持良好的阅读体验 */
+            margin: 0; /* 重置外边距 */
+            opacity: 0.9; /* 轻微透明度,使文字柔和 */
+        }
+
+        /* ========== 成员区域样式 ========== */
+        .members-section {
+            padding: 2rem 0 4rem;
+            background-color: #F5F8FF;
+        }
+
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 71, 171, 0.08);
+            padding: 2rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e0e7ef;
+        }
+
+        .member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 71, 171, 0.15);
+        }
+
+        .member-photo-wrapper {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1.5rem;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 71, 171, 0.15);
+            border: 3px solid #e3ecfa;
+        }
+
+        .member-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .member-name {
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #0047AB;
+            margin-bottom: 0.5rem;
+        }
+
+        .title {
+            color: #1976d2;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .bio {
+            font-size: 1rem;
+            color: #444;
+            margin-bottom: 1.5rem;
+        }
+
+        .achievements {
+            text-align: left;
+            width: 100%;
+        }
+
+        .achievements strong {
+            color: #0047AB;
+        }
+
+        .achievements-list {
+            margin: 0.5rem 0 0 0;
+            padding: 0 0 0 1.5rem;
+            color: #333;
+        }
+
+        .achievements-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* ========== 响应式设计 ========== */
+        @media (max-width: 768px) {
+            .member-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .member-card {
+                max-width: 90%;
+                margin: 0 auto;
+            }
+        }
+    </style>
 {% endblock %} 
