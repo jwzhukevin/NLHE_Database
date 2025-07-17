@@ -227,10 +227,10 @@ def add():
             material_dir = get_material_dir(material.id)
             structure_dir = os.path.join(material_dir, 'structure')
             band_dir = os.path.join(material_dir, 'band')
-            bcd_dir = os.path.join(material_dir, 'bcd')
+            sc_dir = os.path.join(material_dir, 'sc')
             os.makedirs(structure_dir, exist_ok=True)
             os.makedirs(band_dir, exist_ok=True)
-            os.makedirs(bcd_dir, exist_ok=True)
+            os.makedirs(sc_dir, exist_ok=True)
 
             # 保存CIF文件
             if temp_structure_path and structure_filename:
@@ -249,9 +249,24 @@ def add():
                 band_file.save(band_path)
             if sc_structure_file and sc_structure_file.filename:
                 sc_filename = secure_filename(sc_structure_file.filename)
-                sc_path = os.path.join(bcd_dir, sc_filename)
+                sc_path = os.path.join(sc_dir, sc_filename)
                 sc_structure_file.save(sc_path)
                 material.sc_structure_file = sc_filename
+
+            # 处理Shift Current文件
+            if sc_structure_file:
+                sc_filename = secure_filename(sc_structure_file.filename)
+                sc_path = os.path.join(sc_dir, sc_filename)
+                sc_structure_file.save(sc_path)
+                flash(f'Shift Current文件 {sc_filename} 上传成功', 'success')
+                
+                # 如果是dat文件，尝试重命名为sc.dat
+                if sc_filename.endswith('.dat') and sc_filename != 'sc.dat':
+                    try:
+                        os.rename(sc_path, os.path.join(sc_dir, 'sc.dat'))
+                        flash('Shift Current文件已重命名为sc.dat', 'success')
+                    except:
+                        pass
 
             db.session.commit()
             flash(f'材料 {material.name} 添加成功！', 'success')
@@ -320,10 +335,10 @@ def edit(material_id):
             material_dir = get_material_dir(material.id)
             structure_dir = os.path.join(material_dir, 'structure')
             band_dir = os.path.join(material_dir, 'band')
-            bcd_dir = os.path.join(material_dir, 'bcd')
+            sc_dir = os.path.join(material_dir, 'sc')
             os.makedirs(structure_dir, exist_ok=True)
             os.makedirs(band_dir, exist_ok=True)
-            os.makedirs(bcd_dir, exist_ok=True)
+            os.makedirs(sc_dir, exist_ok=True)
 
             # 结构文件上传，直接保存原始文件名
             if structure_file and structure_file.filename:
@@ -357,7 +372,7 @@ def edit(material_id):
             # SC结构文件上传
             if sc_structure_file and sc_structure_file.filename:
                 sc_structure_filename = secure_filename(sc_structure_file.filename)
-                sc_structure_path = os.path.join(bcd_dir, sc_structure_filename)
+                sc_structure_path = os.path.join(sc_dir, sc_structure_filename)
                 sc_structure_file.save(sc_structure_path)
                 material.sc_structure_file = sc_structure_filename
 
@@ -403,7 +418,7 @@ def edit(material_id):
     material_dir = get_material_dir(material.id)
     structure_dir = os.path.join(material_dir, 'structure')
     band_dir = os.path.join(material_dir, 'band')
-    bcd_dir = os.path.join(material_dir, 'bcd')
+    sc_dir = os.path.join(material_dir, 'sc')
     cif_files = []
     band_files = []
     sc_files = []
@@ -411,10 +426,10 @@ def edit(material_id):
         cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
     if os.path.exists(band_dir):
         band_files = [f for f in os.listdir(band_dir) if f.endswith('.dat') or f.endswith('.json')]
-    if os.path.exists(bcd_dir):
-        sc_files = [f for f in os.listdir(bcd_dir) if f.endswith('.dat')]
+    if os.path.exists(sc_dir):
+        sc_files = [f for f in os.listdir(sc_dir) if f.endswith('.dat')]
     # 多文件警告逻辑可在前端处理
-    return render_template('materials/edit.html', material=material, cif_files=cif_files, band_files=band_files, sc_files=sc_files, structure_dir=structure_dir, band_dir=band_dir, bcd_dir=bcd_dir)
+    return render_template('materials/edit.html', material=material, cif_files=cif_files, band_files=band_files, sc_files=sc_files, structure_dir=structure_dir, band_dir=band_dir, sc_dir=sc_dir)
 
 # Material detail page
 @bp.route('/materials/IMR-<string:material_id>')
@@ -431,7 +446,7 @@ def detail(material_id):
     material_dir = get_material_dir(material.id)
     structure_dir = os.path.join(material_dir, 'structure')
     band_dir = os.path.join(material_dir, 'band')
-    bcd_dir = os.path.join(material_dir, 'bcd')
+    sc_dir = os.path.join(material_dir, 'sc')
     # 结构文件
     cif_files = glob.glob(os.path.join(structure_dir, '*.cif')) if os.path.exists(structure_dir) else []
     if len(cif_files) == 1:
@@ -450,12 +465,12 @@ def detail(material_id):
         band_file = None
     else:
         band_file = None
-    # sc文件
-    sc_files = glob.glob(os.path.join(bcd_dir, '*.dat')) if os.path.exists(bcd_dir) else []
+    # Shift Current文件
+    sc_files = glob.glob(os.path.join(sc_dir, '*.dat')) if os.path.exists(sc_dir) else []
     if len(sc_files) == 1:
         sc_file = os.path.relpath(sc_files[0], os.path.join(current_app.root_path, 'static'))
     elif len(sc_files) > 1:
-        flash('bcd目录下存在多个SC文件，请保留唯一一个！', 'error')
+        flash('sc目录下存在多个Shift Current文件，请保留唯一一个！', 'error')
         sc_file = None
     else:
         sc_file = None
@@ -514,7 +529,7 @@ def delete(material_id):
         if os.path.exists(json_path):
             os.remove(json_path)
     
-    # Delete SC structure file
+    # Delete Shift Current file
     if material.sc_structure_file:
         sc_path = os.path.join(current_app.root_path, 'static/sc_structures', material.sc_structure_file)
         if os.path.exists(sc_path):

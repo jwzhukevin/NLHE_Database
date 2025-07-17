@@ -1,64 +1,56 @@
-# How to Upload New Materials
+# 上传材料指南
 
-## Prerequisites
+本指南将帮助您了解如何向材料数据库添加新材料。
 
-Before uploading materials to the database, you will need:
+## 准备材料文件
 
-1. A CIF file containing the crystal structure
-2. Optional: Band structure data file (DAT format)
-3. Optional: Material properties in JSON format
-4. Optional: Supercell structure file (DAT format)
+在上传材料之前，请确保您有以下文件：
 
-## Step-by-Step Guide
+1. **结构文件（必需）**：
+   - 支持的格式：CIF
+   - 包含晶体结构信息
 
-### 1. Navigate to the Upload Page
+2. **能带数据（可选）**：
+   - 支持的格式：DAT
+   - 包含能带计算结果
 
-Click on the "Add New Material" button on the dashboard or navigate to the Materials > Add New menu item.
+3. **Shift Current数据（可选）**：
+   - 支持的格式：DAT
+   - 包含Shift Current计算结果
 
-### 2. Fill in the Basic Information
+4. **材料属性JSON（可选）**：
+   - 包含额外的材料属性信息
+   - 可以包括：能带间隙、费米能级等
 
-- The material name will be automatically extracted from the CIF file
-- Select the appropriate status (Done, Unconverged, or Error)
+## 上传步骤
 
-### 3. Upload Required Files
+1. 登录您的账户
+2. 导航到"添加材料"页面
+3. 填写材料基本信息（名称、描述等）
+4. 上传结构文件（CIF）
+5. 上传能带数据文件（如有）
+6. 上传Shift Current文件（如有）
+7. 添加任何其他文件（属性JSON、Shift Current文件）
+8. 点击"提交"按钮
 
-- Click "Browse" to select your CIF structure file
-- If available, upload your band structure file
-- Add any additional files (properties JSON, SC structure file)
+## 文件结构
 
-### 4. Enter Material Properties
+上传后，您的材料将按以下结构存储：
 
-Complete as many of the following sections as possible:
+```
+materials/IMR-XXXXXXXX/
+  ├── material.json      # 材料属性JSON文件
+  ├── structure/         # 结构文件目录
+  │   └── structure.cif  # CIF结构文件
+  ├── band/              # 能带数据目录
+  │   └── band.dat       # 能带数据文件
+  └── sc/                # Shift Current目录
+      └── sc.dat         # Shift Current数据文件
+```
 
-- **Energy Properties**: Total energy, formation energy, Fermi level
-- **Surface Properties**: Vacuum level, work function, metal type
-- **Band Structure**: Band gap, VBM energy, CBM energy
-- **Coordinates**: VBM and CBM coordinates
-- **Band Indexes**: VBM and CBM indices
+## 注意事项
 
-### 5. Submit the Material
-
-Click the "Create Material" button at the bottom of the form. The system will:
-
-1. Validate all inputs for correctness
-2. Process and organize the uploaded files
-3. Create a new entry in the database
-4. Generate a unique identifier (IMR-XXXXXXXX)
-
-### 6. Verify the Upload
-
-After submission, you will be redirected to the material detail page where you can:
-
-- Verify all information was correctly uploaded
-- View the crystal structure
-- Analyze band structure (if provided)
-- Edit any incorrect information
-
-## Best Practices
-
-- Use consistent units for all numerical values (eV for energies)
-- Format coordinates correctly: ['0.333','0.333','0.000']
-- Ensure CIF files are properly formatted and validated
-- Provide as much information as possible for better searchability
-
-If you encounter any issues during the upload process, please contact the database administrator for assistance. 
+- 所有文件大小限制为50MB
+- 确保您的CIF文件是有效的晶体结构文件
+- 能带和Shift Current数据应遵循标准格式
+- 如有问题，请联系管理员获取帮助 

@@ -60,10 +60,12 @@
                     <span class="file-name">No file selected</span>
                 </div>
                 <div class="form-group">
-                    <label>SC Structure File (DAT)</label>
+                    <label>Shift Current File (DAT)</label>
+                    <div class="custom-file">
                     <input type="file" name="sc_structure_file" accept=".dat" class="custom-file-input">
-                    <small class="help-text">Optional. DAT file for SC structure visualization</small>
+                        <small class="help-text">Optional. DAT file for Shift Current visualization</small>
                     <span class="file-name">No file selected</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -321,8 +323,8 @@ static/materials/IMR-XXXXXXXX/
   │   └── structure.cif  # CIF structure file (required)
   ├── band/              # Band data directory
   │   └── band.dat       # Band data file (optional)
-  └── bcd/               # SC structure directory
-      └── sc.dat         # SC structure file (optional)
+  └── sc/                # Shift Current directory
+      └── sc.dat         # Shift Current data file (optional)
             </pre>
             <p>All uploaded files will be automatically organized into appropriate locations for further processing and analysis.</p>
         </div>
@@ -431,12 +433,11 @@ document.querySelectorAll('input[type="file"]').forEach(function(input) {
         if (this.name === 'band_file') requiredName = 'band.dat';
         if (this.name === 'properties_json') requiredName = 'material.json';
         if (this.name === 'sc_structure_file') requiredName = 'sc.dat';
-        // 目标路径（示例，实际ID需后端生成）
+        // 根据文件类型决定存储路径
         let folder = '';
         if (this.name === 'structure_file') folder = 'structure/';
-        if (this.name === 'band_file') folder = 'band/';
-        if (this.name === 'properties_json') folder = '';
-        if (this.name === 'sc_structure_file') folder = 'bcd/';
+        else if (this.name === 'band_file') folder = 'band/';
+        else if (this.name === 'sc_structure_file') folder = 'sc/';
         let path = `/static/materials/IMR-XXXXXXXX/${folder}${requiredName}`;
         // 文件大小
         let size = file.size;

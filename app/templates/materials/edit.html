@@ -86,20 +86,21 @@
                     <span class="file-name">No file selected</span>
                 </div>
                 <div class="form-group">
-                    <label>SC Structure File (DAT)</label>
+                    <label>Shift Current File (DAT)</label>
+                    <div class="custom-file">
                     <input type="file" name="sc_structure_file" accept=".dat" class="custom-file-input">
                     <small class="help-text">支持.dat格式，文件名不限，若有多个同类文件将报错</small>
-                    {% if sc_files %}
-                    <p class="file-info">Current SC file(s):<br>
+                    </div>
+                    <div class="file-list">
                         {% for f in sc_files %}
-                        <b>{{ f }}</b><br><span style="color:#888">Path: {{ bcd_dir }}/{{ f }}</span><br>
+                        <div class="file-item">
+                            <b>{{ f }}</b><br><span style="color:#888">Path: {{ sc_dir }}/{{ f }}</span><br>
+                            <button type="button" class="btn btn-sm btn-danger delete-file" data-file="{{ sc_dir }}/{{ f }}">删除</button>
+                        </div>
+                        {% else %}
+                        <div class="no-files">无Shift Current文件</div>
                         {% endfor %}
-                        {% if sc_files|length > 1 %}
-                        <span style="color:#e74c3c;font-weight:bold">Warning: 存在多个SC文件，请只保留一个！</span>
-                        {% endif %}
-                    </p>
-                    {% endif %}
-                    <span class="file-name">No file selected</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -374,17 +375,18 @@
         <div class="sync-info">
             <h4><i class="fas fa-sync"></i> Data Synchronization Feature</h4>
             <p>After submitting the material, the system will automatically create the following directory structure:</p>
-            <pre class="directory-structure">
-static/materials/IMR-XXXXXXXX/
-  ├── material.json      # Material properties JSON file (if uploaded, the uploaded file will be used)
-  ├── structure/         # Structure files directory
-  │   └── structure.cif  # CIF structure file (required)
-  ├── band/              # Band data directory
-  │   └── band.dat       # Band data file (optional)
-  └── bcd/               # SC structure directory
-      └── sc.dat         # SC structure file (optional)
+            <div class="directory-structure">
+                <pre>
+材料目录结构:
+IMR-[id]/
+├── structure/         # 晶体结构目录
+│   └── structure.cif  # 晶体结构文件
+├── band/              # 能带结构目录
+│   └── band.dat       # 能带数据文件
+└── sc/                # Shift Current目录
+    └── sc.dat         # Shift Current数据文件
             </pre>
-            <p>All uploaded files will be automatically organized into appropriate locations for further processing and analysis.</p>
+            </div>
         </div>
         <style>
         /* Button Action Area */

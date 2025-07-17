@@ -26,56 +26,56 @@
 <!-- ====================== 顶部导航栏 ====================== -->
 <div class="material-hero">
     <div class="container">
-        <div class="material-title-container">
-            <div class="breadcrumbs">
-                <a href="{{ url_for('views.index') }}">Materials</a>
-                <span class="separator">&gt;</span>
-                <span class="current">{{ material.name }}</span>
-            </div>
-            <div class="material-id">IMR-{{ material.id }}</div>
+    <div class="material-title-container">
+        <div class="breadcrumbs">
+            <a href="{{ url_for('views.index') }}">Materials</a>
+            <span class="separator">&gt;</span>
+            <span class="current">{{ material.name }}</span>
+        </div>
+        <div class="material-id">IMR-{{ material.id }}</div>
         </div>
     </div>
     <div class="hero-divider"></div>
-</div>
-
+    </div>
+    
 <div class="material-nav">
     <div class="container">
-        <div class="material-nav-links">
-            <!-- 页内导航链接：通过锚点链接到页面不同部分 -->
+    <div class="material-nav-links">
+        <!-- 页内导航链接：通过锚点链接到页面不同部分 -->
             <a href="#first-section" class="material-nav-link active">Structure</a>
-            <a href="#second-section" class="material-nav-link">Crystal Data</a>
-            <a href="#third-section" class="material-nav-link">Band Structure</a>
-            <a href="#sc-section" class="material-nav-link">SC</a>
-            <a href="#fourth-section" class="material-nav-link">Properties</a>
-            
-            <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
-            {% if current_user.is_authenticated and current_user.is_admin() %}
+        <a href="#second-section" class="material-nav-link">Crystal Data</a>
+        <a href="#third-section" class="material-nav-link">Band Structure</a>
+        <a href="#sc-section" class="material-nav-link">SC</a>
+        <a href="#fourth-section" class="material-nav-link">Properties</a>
+        
+        <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
+        {% if current_user.is_authenticated and current_user.is_admin() %}
                 <div class="material-nav-admin">
-                    <!-- 编辑材料按钮：跳转到编辑页面 -->
+            <!-- 编辑材料按钮：跳转到编辑页面 -->
                     <a href="{{ url_for('views.edit', material_id=material.id) }}" class="admin-btn edit-btn">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                    
-                    <!-- 删除材料按钮：发送删除请求并要求确认 -->
-                    <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            
+            <!-- 删除材料按钮：发送删除请求并要求确认 -->
+        <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
                     type="submit" onclick="return confirm('Delete permanently?')" class="admin-btn delete-btn">
                         <i class="fas fa-trash"></i> Delete
-                    </a>
+            </a>                    
                 </div>                  
-            {% endif %}
-            
+        {% endif %} 
+        
             <div class="material-nav-external">
-                <!-- Materials Project外部链接：打开新标签页查看相同材料 -->
+        <!-- Materials Project外部链接：打开新标签页查看相同材料 -->
                 <a href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" target="_blank" class="external-link">
-                    <i class="fas fa-external-link-alt"></i> MP
-                </a>
-                
-                <!-- 搜索返回：仅当从搜索结果页面进入时显示 -->
-                {% if request.referrer and 'q=' in request.referrer %}
+            <i class="fas fa-external-link-alt"></i> MP
+        </a>
+        
+        <!-- 搜索返回：仅当从搜索结果页面进入时显示 -->
+        {% if request.referrer and 'q=' in request.referrer %}
                     <a href="{{ request.referrer }}" class="back-link">
-                        <i class="fas fa-search"></i> Back to Search
-                    </a>
-                {% endif %}
+                <i class="fas fa-search"></i> Back to Search
+            </a>
+        {% endif %}
             </div>
         </div>
     </div>
@@ -104,10 +104,7 @@
     .material-hero {
         background: linear-gradient(135deg, #003c85, #0d274b); /* 深蓝色渐变背景 */
         color: white; /* 文字使用白色以提供良好对比度 */
-        padding: 0.5rem 0 0rem; /* 上内边距2.5rem提供充足的顶部空间,
-                                    中间0表示左右无内边距,
-                                    下内边距1.5rem稍小一些以平衡视觉效果,
-                                    整体营造出层次分明的空间感 */
+        padding: 0.5rem 0 0rem; 
         margin-top: 0px; /* 与顶部导航栏保持距离 */
         margin-bottom: 0; /* 移除底部边距 */
         position: relative; /* 为分隔线提供定位上下文 */
@@ -163,7 +160,7 @@
     .breadcrumbs .current {
         color: white; /* 完全不透明的白色 */
     }
-    
+
     /* 材料ID样式 */
     .material-id {
         font-size: 1.1rem;
@@ -188,7 +185,7 @@
     .material-nav .container {
         padding: 0;
     }
-    
+
     .material-nav-links {
         display: flex;
         align-items: center;
@@ -210,11 +207,11 @@
     .material-nav-link:hover {
         color: #0047AB;
     }
-    
+
     .material-nav-link.active {
         color: #0047AB;
     }
-    
+
     .material-nav-link.active::after {
         content: '';
         position: absolute;
@@ -224,7 +221,7 @@
         height: 3px;
         background-color: #0047AB;
     }
-    
+
     /* 管理员按钮样式 */
     .material-nav-admin {
         display: flex;
@@ -263,14 +260,14 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
-    
+
     /* 外部链接样式 */
     .material-nav-external {
         display: flex;
         gap: 10px;
         margin-left: 20px;
-    }
-    
+        }
+        
     .external-link, .back-link {
         padding: 8px 16px;
         text-decoration: none;
@@ -285,14 +282,14 @@
     .external-link {
         color: #333;
         background-color: #f1f5f9;
-    }
-    
+        }
+        
     .external-link:hover {
         background-color: #e2e8f0;
         color: #0047AB;
         transform: translateY(-2px);
-    }
-    
+        }
+        
     .back-link {
         color: white;
         background-color: #0047AB;
@@ -328,7 +325,7 @@
         .material-hero {
             padding: 2rem 0;
         }
-        
+
         .material-title-container {
             flex-direction: column;
             align-items: flex-start;
@@ -347,7 +344,7 @@
             font-size: 0.9rem;
         }
     }
-    
+
     /* ===== 内容区域布局样式 ===== */
     
     /* 内容区块样式 - 每个主要内容部分（如结构、晶体数据等）的容器 */
@@ -1649,9 +1646,9 @@
             <div class="column-80">
                 <div class="viewer-container">
                     <div class="card-header collapsed">
-                        <h3>SC Structure
+                        <h3>Shift Current
                             {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('static', filename='materials/IMR-' + material.id|string + '/bcd/sc.dat') }}" download class="download-btn" title="Download SC data">
+                            <a href="{{ url_for('static', filename='materials/IMR-' + material.id|string + '/sc/sc.dat') }}" download class="download-btn" title="Download Shift Current data">
                                 <i class="fas fa-download"></i>
                             </a>
                             {% endif %}
@@ -1832,7 +1829,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化SC结构图（自相关性结构图）
     // 构建主要SC数据文件的URL路径
-    const scDataPath = "{{ url_for('static', filename='materials/IMR-' + material.id|string + '/bcd/sc.dat') }}";
+    const scDataPath = "{{ url_for('static', filename='materials/IMR-' + material.id|string + '/sc/sc.dat') }}";
     // 直接调用绘图函数，不再兜底加载示例文件
     plotSCStructure('scStructure', scDataPath);
     

@@ -514,12 +514,15 @@ function parseAndPlotSCData(dataText, container) {
         const layout = {
             // 图表标题配置
             title: {
-                text: 'SC Structure', // 标题文本
+                text: 'Shift Current', // 标题文本
                 font: {
-                    size: 20, // 减小标题字体大小
-                    family: 'Arial, sans-serif', // 标题字体
-                    color: '#1f2937' // 标题颜色
-                }
+                    family: 'system-ui, -apple-system, sans-serif',
+                    size: 20
+                },
+                y: 0.97,
+                x: 0.5,
+                xanchor: 'center',
+                yanchor: 'top'
             },
             // X轴配置
             xaxis: {
