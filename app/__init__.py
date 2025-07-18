@@ -186,7 +186,6 @@ def create_app():
 
         # 初始化格式化ID（只在需要时执行）
         # 在生产环境中，可以通过环境变量SKIP_DB_INIT=1来跳过初始化
-        import os
         if not os.environ.get('SKIP_DB_INIT'):
             init_formatted_ids()
 
