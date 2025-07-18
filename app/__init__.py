@@ -134,13 +134,18 @@ def create_app():
                 app.logger.info(f"已更新 {count} 条材料记录的格式化ID")
             # 尝试添加唯一索引（如果不存在）
             try:
-                indices = inspector.get_indexes('material')
-                has_index = any(idx.get('name') == 'ix_material_formatted_id' for idx in indices)
-                if not has_index:
-                    db.engine.execute(text("CREATE UNIQUE INDEX ix_material_formatted_id ON material (formatted_id)"))
-                    app.logger.info("已为formatted_id列创建唯一索引")
+                with db.engine.connect() as conn:
+                    inspector_local = inspect(conn)
+                    indices = inspector_local.get_indexes('material')
+                    has_index = any(idx.get('name') == 'ix_material_formatted_id' for idx in indices)
+                    if not has_index:
+                        conn.execute(text("CREATE UNIQUE INDEX ix_material_formatted_id ON material (formatted_id)"))
+                        conn.commit()
+                        app.logger.info("已为formatted_id列创建唯一索引")
             except SQLAlchemyError as e:
                 app.logger.warning(f"创建唯一索引失败: {str(e)}")
+            except Exception as e:
+                app.logger.warning(f"创建唯一索引时发生错误: {str(e)}")
         except OperationalError as e:
             # 数据库操作错误，在多进程环境下可能是正常的竞争条件
             app.logger.info(f"数据库操作被跳过（可能是多进程竞争）: {str(e)}")

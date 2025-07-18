@@ -6,6 +6,7 @@ from .models import User, Material, Member
 import os
 import json
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text
 from .material_importer import extract_chemical_formula_from_cif
 import functools
 
@@ -378,7 +379,7 @@ def register_commands(app):
             # SQLite不直接支持修改列的nullable属性，需要创建新表并复制数据
             # 为简化操作，我们将使用pragma_table_info来验证字段设置
             
-            table_info = db.session.execute("PRAGMA table_info(material)").fetchall()
+            table_info = db.session.execute(text("PRAGMA table_info(material)")).fetchall()
             column_info = {col[1]: col for col in table_info}
             
             # 检查需要变更的字段是否存在NOT NULL约束(notnull值为1表示NOT NULL)
