@@ -93,23 +93,36 @@ def create_app():
         1. 确保数据库中存在formatted_id列
         2. 为所有空的格式化ID赋值
         3. 若material表不存在则跳过，不报错
+        4. 在多进程环境下安全执行
         """
         from sqlalchemy import inspect, text
-        from sqlalchemy.exc import SQLAlchemyError
+        from sqlalchemy.exc import SQLAlchemyError, OperationalError
+        import time
+        import random
+
+        # 在多进程环境下添加随机延迟，避免并发冲突
+        time.sleep(random.uniform(0.1, 0.5))
+
         try:
             # 导入Material模型
             from .models import Material
-            inspector = inspect(db.engine)
-            # 先判断material表是否存在
-            if 'material' not in inspector.get_table_names():
-                app.logger.warning("material表不存在，跳过格式化ID初始化。")
-                return
-            # 检查formatted_id列是否存在
-            columns = [col['name'] for col in inspector.get_columns('material')]
-            # 如果不存在formatted_id列，添加它（不带UNIQUE约束）
-            if 'formatted_id' not in columns:
-                db.engine.execute("ALTER TABLE material ADD COLUMN formatted_id VARCHAR(20)")
-                app.logger.info("已添加formatted_id列到material表")
+
+            # 使用新的数据库连接，避免多进程共享连接问题
+            with db.engine.connect() as conn:
+                inspector = inspect(conn)
+                # 先判断material表是否存在
+                table_names = inspector.get_table_names()
+                if 'material' not in table_names:
+                    app.logger.info("material表不存在，跳过格式化ID初始化。")
+                    return
+                # 检查formatted_id列是否存在
+                columns = [col['name'] for col in inspector.get_columns('material')]
+                # 如果不存在formatted_id列，添加它（不带UNIQUE约束）
+                if 'formatted_id' not in columns:
+                    conn.execute(text("ALTER TABLE material ADD COLUMN formatted_id VARCHAR(20)"))
+                    conn.commit()
+                    app.logger.info("已添加formatted_id列到material表")
+
             # 更新所有没有格式化ID的记录
             materials = Material.query.filter(Material.formatted_id.is_(None)).all()
             count = 0
@@ -128,11 +141,17 @@ def create_app():
                     app.logger.info("已为formatted_id列创建唯一索引")
             except SQLAlchemyError as e:
                 app.logger.warning(f"创建唯一索引失败: {str(e)}")
+        except OperationalError as e:
+            # 数据库操作错误，在多进程环境下可能是正常的竞争条件
+            app.logger.info(f"数据库操作被跳过（可能是多进程竞争）: {str(e)}")
         except SQLAlchemyError as e:
-            app.logger.error(f"初始化格式化ID时发生错误: {str(e)}")
-            db.session.rollback()
+            app.logger.warning(f"初始化格式化ID时发生数据库错误: {str(e)}")
+            try:
+                db.session.rollback()
+            except:
+                pass
         except Exception as e:
-            app.logger.error(f"初始化格式化ID时发生未知错误: {str(e)}")
+            app.logger.warning(f"初始化格式化ID时发生错误: {str(e)}")
 
     # --- 蓝图注册（模块化路由） ---
     # 使用应用上下文确保数据库操作在正确的环境中执行
@@ -165,7 +184,10 @@ def create_app():
         # 注册命令行命令
         register_commands(app)
 
-        # 初始化格式化ID
-        init_formatted_ids()
+        # 初始化格式化ID（只在需要时执行）
+        # 在生产环境中，可以通过环境变量SKIP_DB_INIT=1来跳过初始化
+        import os
+        if not os.environ.get('SKIP_DB_INIT'):
+            init_formatted_ids()
 
     return app  # 返回完全初始化的应用实例
