@@ -199,7 +199,7 @@ def parse_cif_file(filename=None, material_id=None, material_name=None):
         for i, site in enumerate(conventional_structure.sites):
             element_str = site.species_string
             wyckoff = wyckoff_sites[i] if wyckoff_sites is not None else None
-
+                
             atom = {
                 'element': element_str,
                 'position': site.coords.tolist(),
@@ -404,7 +404,7 @@ def generate_supercell(file_path, a=1, b=1, c=1, cell_type='primitive'):
                 pass  # 如果转换失败，使用原始结构
         
         # 创建超晶胞
-            supercell = structure.copy()
+        supercell = structure.copy()
         supercell.make_supercell([float(a), float(b), float(c)])
             
         # 提取晶格参数

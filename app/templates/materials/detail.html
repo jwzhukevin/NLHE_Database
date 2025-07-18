@@ -11,6 +11,16 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
 <!-- Three.js轨道控制器：允许用户旋转、平移和缩放3D模型 -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+<!-- 备用OrbitControls加载 -->
+<script>
+// 检查OrbitControls是否加载成功，如果没有则尝试备用URL
+if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
+    console.log("尝试加载备用OrbitControls...");
+    const script = document.createElement('script');
+    script.src = 'https://threejs.org/examples/js/controls/OrbitControls.js';
+    document.head.appendChild(script);
+}
+</script>
 <!-- 自定义晶体查看器脚本：实现晶体结构的交互式展示 -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/crystal-viewer.js') }}"></script>
 
@@ -1815,11 +1825,20 @@
  * 负责设置各种组件、加载数据和绑定事件监听器
  */
 document.addEventListener('DOMContentLoaded', function() {
+    // 检查必要的库是否已加载
+    console.log("检查库加载状态:");
+    console.log("THREE:", typeof THREE !== 'undefined' ? "已加载" : "未加载");
+    console.log("CrystalViewer:", typeof CrystalViewer !== 'undefined' ? "已加载" : "未加载");
+
     // 初始化3D晶体结构查看器
     // 'crystalViewer'是DOM容器ID，用于放置3D模型
-    CrystalViewer.init('crystalViewer');
-    // 加载特定材料ID的晶体结构数据
-    CrystalViewer.load("{{ material.id }}");
+    if (typeof CrystalViewer !== 'undefined') {
+        CrystalViewer.init('crystalViewer');
+        console.log("CrystalViewer初始化完成");
+    } else {
+        console.error("CrystalViewer未定义，无法初始化3D查看器");
+    }
+    // 注意：晶体结构数据的加载在loadCrystalStructureData()函数中进行
     
     // 初始化能带结构图
     // 构建能带数据文件的URL路径
@@ -2001,6 +2020,20 @@ function loadCrystalStructureData() {
                 return;
             }
             
+            // 加载3D晶体结构模型
+            // 将获取到的数据直接传递给CrystalViewer，避免重复API调用
+            console.log("准备渲染3D结构，数据:", data);
+            console.log("CrystalViewer对象:", window.CrystalViewer);
+
+            if (window.CrystalViewer && typeof window.CrystalViewer.render === 'function') {
+                console.log("使用CrystalViewer.render方法");
+                window.CrystalViewer.render(data);
+            } else {
+                // 如果render方法不存在，则使用load方法
+                console.log("使用CrystalViewer.load方法");
+                CrystalViewer.load(materialId);
+            }
+
             // 更新晶体结构卡片中的数据
             // 晶体系统
             if (data.symmetry && data.symmetry.crystal_system) {

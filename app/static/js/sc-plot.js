@@ -461,7 +461,8 @@ function parseAndPlotSCData(dataText, container) {
                 line: {
                     width: 1.5,
                     color: colors[i % colors.length]
-                }
+                },
+                visible: true  // 明确设置初始状态为可见
             });
         }
     });
@@ -470,7 +471,7 @@ function parseAndPlotSCData(dataText, container) {
     const controlPanelHtml = `
         <div class="sc-control-panel">
             <div class="sc-control-tip">
-                <i class="fas fa-info-circle"></i> <span class="control-tip-text">Double-click on legend items to isolate specific curves. Click "Reset" to show all curves.</span>
+                <i class="fas fa-info-circle"></i> <span class="control-tip-text">Single-click to toggle curves, double-click to isolate (hide all others).</span>
             </div>
             <div class="sc-control-item">
                 <button id="resetBtn" class="sc-control-btn">Reset Chart</button>
@@ -655,10 +656,29 @@ function parseAndPlotSCData(dataText, container) {
         });
         
         // 绘制图表
+        console.log(`SC图表: 准备绘制 ${traces.length} 条曲线，实现完整的交互逻辑`);
         Plotly.newPlot(plotElement, traces, layout, config);
 
-        // 跟踪每条曲线的点击次数
-        const curveClickCounts = new Array(traces.length).fill(0);
+        // 状态管理变量
+        const curveVisibility = new Array(traces.length).fill(true); // 跟踪每条曲线的可见性
+
+        // 双击检测变量
+        let lastClickTime = 0;
+        let lastClickCurve = -1;
+        const DOUBLE_CLICK_THRESHOLD = 400; // 400ms内的两次点击视为双击
+
+        // 初始化完成后立即更新计数显示
+        setTimeout(() => {
+            console.log('SC图表: 初始化完成，更新曲线计数');
+            updateVisibleCount();
+        }, 200);
+
+        // 监听图表重新布局事件，确保计数同步
+        plotElement.on('plotly_relayout', function() {
+            setTimeout(() => {
+                updateVisibleCount();
+            }, 50);
+        });
         
         // 增大图例中的线条显示
         setTimeout(() => {
@@ -672,7 +692,7 @@ function parseAndPlotSCData(dataText, container) {
             const legendEl = document.querySelector('.legend');
             if (legendEl) {
                 // 为图例添加滚动提示
-                const observer = new MutationObserver((mutations) => {
+                const observer = new MutationObserver((_) => {
                     const legendRect = legendEl.getBoundingClientRect();
                     const contentHeight = legendEl.scrollHeight;
                     
@@ -733,91 +753,150 @@ function parseAndPlotSCData(dataText, container) {
         
         // 更新可见曲线计数
         function updateVisibleCount() {
-            // 使用点击次数判断曲线可见性
-            // 偶数次点击表示显示，奇数次点击表示隐藏
+            // 直接从Plotly图表中获取当前可见的曲线数量
             let visible = 0;
-            for (let i = 0; i < curveClickCounts.length; i++) {
-                // 如果点击次数为偶数(包括0)，曲线可见
-                if (curveClickCounts[i] % 2 === 0) {
-                    visible++;
+            try {
+                const plotData = plotElement.data;
+                if (plotData && Array.isArray(plotData)) {
+                    visible = plotData.filter(trace => trace.visible !== false && trace.visible !== 'legendonly').length;
+                    console.log(`SC图表: 当前可见曲线数量 ${visible}/${plotData.length}`);
                 }
+            } catch (e) {
+                // 如果无法获取Plotly数据，则使用内部状态作为备用方案
+                visible = curveVisibility.filter(v => v).length;
+                console.log(`SC图表: 使用备用计数方法，可见曲线数量 ${visible}/${curveVisibility.length}`);
             }
-            
+
             document.getElementById('visibleCount').textContent = visible;
             return visible;
+        }
+
+
+
+        // 应用曲线可见性状态到Plotly图表
+        function applyCurveVisibility() {
+            const visibilityUpdate = curveVisibility.map(visible => visible ? true : 'legendonly');
+            const visibleCount = curveVisibility.filter(v => v).length;
+            console.log(`SC图表: 应用可见性更新，可见曲线: ${visibleCount}/${curveVisibility.length}`);
+            console.log('SC图表: 可见性状态:', curveVisibility.map((v, i) => `${i}:${v}`).join(', '));
+
+            Plotly.restyle(plotElement, {visible: visibilityUpdate});
+            setTimeout(() => {
+                updateVisibleCount();
+            }, 100);
         }
         
         // 重置图表按钮
         document.getElementById('resetBtn').addEventListener('click', function() {
-            const update = {visible: true};
-            Plotly.restyle(plotElement, update);
-            
-            // 重置所有曲线的点击计数
-            curveClickCounts.fill(0);
-            updateVisibleCount();
-            
+            console.log('SC图表: 重置按钮被点击');
+
+            // 重置状态：显示所有曲线
+            curveVisibility.fill(true);
+
+            // 应用到图表
+            applyCurveVisibility();
+
             // 添加视觉反馈
             this.classList.add('active');
             setTimeout(() => this.classList.remove('active'), 200);
+
+            // 显示重置通知
+            const notification = document.createElement('div');
+            notification.className = 'sc-notification';
+            notification.innerHTML = `<i class="fas fa-refresh"></i> All ${traces.length} curves are now visible`;
+
+            document.querySelector('.sc-control-panel').appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 500);
+            }, 1500);
         });
         
-        // 监听图例点击，更新可见曲线计数
+        // 处理单击逻辑的函数
+        function handleSingleClick(curveIndex) {
+            console.log(`SC图表: 处理单击曲线 ${curveIndex}`);
+
+            // 简单逻辑：切换曲线可见性
+            curveVisibility[curveIndex] = !curveVisibility[curveIndex];
+            console.log(`SC图表: 曲线 ${curveIndex} 可见性切换为: ${curveVisibility[curveIndex]}`);
+
+            // 应用可见性变化
+            applyCurveVisibility();
+        }
+
+        // 处理双击逻辑的函数
+        function handleDoubleClick(curveIndex) {
+            console.log(`SC图表: 处理双击曲线 ${curveIndex}，强制隔离显示`);
+
+            // 双击强制隔离：隐藏所有其他曲线，只显示被双击的曲线
+            curveVisibility.fill(false);
+            curveVisibility[curveIndex] = true;
+
+            // 应用可见性变化
+            applyCurveVisibility();
+
+            const traceName = traces[curveIndex].name;
+
+            const notification = document.createElement('div');
+            notification.className = 'sc-notification';
+            notification.innerHTML = `<i class="fas fa-eye"></i> Isolated: Only showing "${traceName}" curve`;
+
+            document.querySelector('.sc-control-panel').appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 500);
+            }, 1500);
+        }
+
+        // 监听图例点击（统一处理单击和双击）
         plotElement.on('plotly_legendclick', function(data) {
             if (data && data.curveNumber !== undefined) {
-                // 更新点击次数
-                curveClickCounts[data.curveNumber]++;
-                
-                // 立即更新计数
-                updateVisibleCount();
-            
-            // 添加点击动画反馈
-            const legendItems = document.querySelectorAll('.traces');
-            if (legendItems && legendItems.length > 0 && data.curveNumber < legendItems.length) {
-                const item = legendItems[data.curveNumber];
-                item.classList.add('active');
-                setTimeout(() => item.classList.remove('active'), 300);
+                const curveIndex = data.curveNumber;
+                const currentTime = Date.now();
+
+                console.log(`SC图表: 检测到点击事件，曲线 ${curveIndex}，时间间隔: ${currentTime - lastClickTime}ms`);
+
+                // 检查是否为双击（同一曲线，时间间隔小于阈值）
+                const isDoubleClick = (curveIndex === lastClickCurve) &&
+                                    (currentTime - lastClickTime < DOUBLE_CLICK_THRESHOLD);
+
+                console.log(`SC图表: 双击检测 - 同一曲线: ${curveIndex === lastClickCurve}, 时间间隔: ${currentTime - lastClickTime}ms < ${DOUBLE_CLICK_THRESHOLD}ms: ${currentTime - lastClickTime < DOUBLE_CLICK_THRESHOLD}`);
+
+                if (isDoubleClick) {
+                    console.log('SC图表: ✅ 检测到双击，执行双击逻辑');
+                    handleDoubleClick(curveIndex);
+                } else {
+                    console.log('SC图表: 📱 执行单击逻辑');
+                    handleSingleClick(curveIndex);
+
+                    // 添加点击动画反馈
+                    const legendItems = document.querySelectorAll('.traces');
+                    if (legendItems && legendItems.length > 0 && curveIndex < legendItems.length) {
+                        const item = legendItems[curveIndex];
+                        item.classList.add('active');
+                        setTimeout(() => item.classList.remove('active'), 300);
+                    }
                 }
+
+                // 更新最后点击信息
+                lastClickTime = currentTime;
+                lastClickCurve = curveIndex;
+
+                // 阻止Plotly的默认图例点击行为
+                return false;
             }
         });
         
-        // 监听双击图例，保持监视更新计数
-        plotElement.on('plotly_legenddoubleclick', function(data) {
-            if (data && data.curveNumber !== undefined) {
-                // 双击时重置所有曲线的点击次数，除了当前曲线
-                for (let i = 0; i < curveClickCounts.length; i++) {
-                    if (i !== data.curveNumber) {
-                        // 设为1表示隐藏
-                        curveClickCounts[i] = 1;
-                    } else {
-                        // 当前曲线设为0表示显示
-                        curveClickCounts[i] = 0;
-                    }
-                }
-                
-                // 立即更新计数
-                updateVisibleCount();
-                
-                const traceName = traces[data.curveNumber].name;
-                
-                const notification = document.createElement('div');
-                notification.className = 'sc-notification';
-                notification.innerHTML = `<i class="fas fa-eye"></i> Only showing "${traceName}" curve`;
-                
-                document.querySelector('.sc-control-panel').appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.style.opacity = '0';
-                    setTimeout(() => notification.remove(), 500);
-                }, 2000);
-            }
-        });
+        // 注意：双击检测现在在单击事件中统一处理，不再需要单独的双击监听器
         
         // 初始添加图例项鼠标悬停提示
         setTimeout(() => {
             const legendItems = document.querySelectorAll('.legendtext');
             legendItems.forEach(item => {
-                item.setAttribute('data-tooltip', 'Click to toggle visibility, Double-click to isolate');
-                item.setAttribute('title', 'Click to toggle visibility, Double-click to isolate');
+                item.setAttribute('data-tooltip', 'Click: toggle | Double-click: isolate');
+                item.setAttribute('title', 'Click: toggle | Double-click: isolate');
             });
         }, 500);
         

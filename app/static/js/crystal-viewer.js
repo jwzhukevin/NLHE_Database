@@ -1169,9 +1169,11 @@ function loadCrystalStructure(materialId) {
  * @param {Object} structureData - 晶体结构数据，包含晶格和原子信息
  */
 function renderCrystalStructure(structureData) {
+    console.log("renderCrystalStructure被调用，数据:", structureData);
+
     // 存储结构数据以便后续使用
     window.currentStructureData = structureData;
-    
+
     // 检查是否为原胞结构
     const isPrimitive = structureData.isPrimitive || false;
     
@@ -2709,6 +2711,7 @@ function updateSupercell(a, b, c, cellType) {
 window.CrystalViewer = {
     init: initCrystalViewer,         // 初始化晶体查看器
     load: loadCrystalStructure,      // 加载晶体结构
+    render: renderCrystalStructure,  // 直接渲染结构数据
     rotateLeft: rotateLeft,          // 向左旋转
     rotateRight: rotateRight,        // 向右旋转
     resetView: resetView,            // 重置视图

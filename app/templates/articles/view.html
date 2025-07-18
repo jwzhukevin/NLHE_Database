@@ -4,37 +4,37 @@
 <div class="article-layout-wide">
     <!-- 目录区域，主容器外部 -->
     <nav id="article-toc" class="article-toc"></nav>
-    <div class="article-container">
-        <!-- Breadcrumbs Navigation -->
-        <div class="breadcrumbs">
-            <a href="{{ url_for('articles.listing') }}">Contents</a>
-            <span class="separator">&gt;</span>
-            <a href="{{ url_for('articles.listing', category=category) }}">{{ category|title }}</a>
-            <span class="separator">&gt;</span>
-            <span class="current">{{ article.title }}</span>
-        </div>
+<div class="article-container">
+    <!-- Breadcrumbs Navigation -->
+    <div class="breadcrumbs">
+        <a href="{{ url_for('articles.listing') }}">Contents</a>
+        <span class="separator">&gt;</span>
+        <a href="{{ url_for('articles.listing', category=category) }}">{{ category|title }}</a>
+        <span class="separator">&gt;</span>
+        <span class="current">{{ article.title }}</span>
+    </div>
         <div class="article-main-content">
-            <!-- Article Header -->
-            <header class="article-header">
-                <div class="article-category {{ category }}">{{ category|title }}</div>
-                <h1 class="article-title">{{ article.title }}</h1>
-                <div class="article-meta">
-                    {% if article.date %}
-                    <span class="article-date">
-                        <i class="far fa-calendar-alt"></i> {{ article.date }}
-                    </span>
-                    {% endif %}
-                </div>
-            </header>
-            <!-- Article Content -->
-            <div class="article-content markdown-body">
-                {{ content|safe }}
-            </div>
-            <!-- Article Footer -->
-            <div class="article-footer">
-                <a href="{{ url_for('articles.listing') }}" class="back-button">
-                    <i class="fas fa-arrow-left"></i> Back to Contents
-                </a>
+    <!-- Article Header -->
+    <header class="article-header">
+        <div class="article-category {{ category }}">{{ category|title }}</div>
+        <h1 class="article-title">{{ article.title }}</h1>
+        <div class="article-meta">
+            {% if article.date %}
+            <span class="article-date">
+                <i class="far fa-calendar-alt"></i> {{ article.date }}
+            </span>
+            {% endif %}
+        </div>
+    </header>
+    <!-- Article Content -->
+    <div class="article-content markdown-body">
+        {{ content|safe }}
+    </div>
+    <!-- Article Footer -->
+    <div class="article-footer">
+        <a href="{{ url_for('articles.listing') }}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Contents
+        </a>
             </div>
         </div>
     </div>
