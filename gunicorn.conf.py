@@ -30,6 +30,7 @@ pidfile = "gunicorn.pid"
 # 环境变量
 raw_env = [
     'SKIP_DB_INIT=1',  # 跳过数据库初始化
+    'FLASK_ENV=production',  # 设置为生产环境
 ]
 
 def when_ready(server):

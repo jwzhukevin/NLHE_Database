@@ -33,59 +33,64 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 <!-- 自定义SC结构绘图脚本：处理SC结构数据的可视化 -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/sc-plot.js') }}"></script>
 
-<!-- ====================== 顶部导航栏 ====================== -->
-<div class="material-hero">
-    <div class="container">
-    <div class="material-title-container">
-        <div class="breadcrumbs">
-            <a href="{{ url_for('views.index') }}">Materials</a>
-            <span class="separator">&gt;</span>
-            <span class="current">{{ material.name }}</span>
-        </div>
-        <div class="material-id">IMR-{{ material.id }}</div>
-        </div>
-    </div>
-    <div class="hero-divider"></div>
-    </div>
-    
+
+<!-- ====================== 面包屑导航栏 ====================== -->
 <div class="material-nav">
     <div class="container">
-    <div class="material-nav-links">
-        <!-- 页内导航链接：通过锚点链接到页面不同部分 -->
-            <a href="#first-section" class="material-nav-link active">Structure</a>
-        <a href="#second-section" class="material-nav-link">Crystal Data</a>
-        <a href="#third-section" class="material-nav-link">Band Structure</a>
-        <a href="#sc-section" class="material-nav-link">SC</a>
-        <a href="#fourth-section" class="material-nav-link">Properties</a>
-        
-        <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
-        {% if current_user.is_authenticated and current_user.is_admin() %}
-                <div class="material-nav-admin">
-            <!-- 编辑材料按钮：跳转到编辑页面 -->
-                    <a href="{{ url_for('views.edit', material_id=material.id) }}" class="admin-btn edit-btn">
-                <i class="fas fa-edit"></i> Edit
-            </a>
-            
-            <!-- 删除材料按钮：发送删除请求并要求确认 -->
-        <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}" 
-                    type="submit" onclick="return confirm('Delete permanently?')" class="admin-btn delete-btn">
-                        <i class="fas fa-trash"></i> Delete
-            </a>                    
-                </div>                  
-        {% endif %} 
-        
-            <div class="material-nav-external">
-        <!-- Materials Project外部链接：打开新标签页查看相同材料 -->
+        <div class="material-nav-container">
+            <!-- 面包屑导航 -->
+            <div class="breadcrumb-nav">
+                <a href="{{ url_for('views.landing') }}" class="breadcrumb-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <span class="breadcrumb-separator">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                <a href="{{ url_for('views.index') }}" class="breadcrumb-link">Materials</a>
+                <span class="breadcrumb-separator">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                <span class="breadcrumb-current">{{ material.name }} (IMR-{{ material.id }})</span>
+            </div>
+
+            <!-- 居中的模块导航链接 -->
+            <div class="module-nav-links">
+                <a href="#first-section" class="material-nav-link active">Structure</a>
+                <a href="#second-section" class="material-nav-link">Crystal Data</a>
+                <a href="#third-section" class="material-nav-link">Band Structure</a>
+                <a href="#sc-section" class="material-nav-link">SC</a>
+                <a href="#fourth-section" class="material-nav-link">Properties</a>
+            </div>
+
+            <!-- 右侧：操作按钮 -->
+            <div class="nav-right">
+                <!-- Materials Project外部链接 -->
                 <a href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" target="_blank" class="external-link">
-            <i class="fas fa-external-link-alt"></i> MP
-        </a>
-        
-        <!-- 搜索返回：仅当从搜索结果页面进入时显示 -->
-        {% if request.referrer and 'q=' in request.referrer %}
-                    <a href="{{ request.referrer }}" class="back-link">
-                <i class="fas fa-search"></i> Back to Search
-            </a>
-        {% endif %}
+                    <i class="fas fa-external-link-alt"></i> MP
+                </a>
+
+                <!-- 搜索返回按钮 -->
+                {% if request.referrer and 'q=' in request.referrer %}
+                <a href="{{ request.referrer }}" class="back-link">
+                    <i class="fas fa-search"></i> Back to Search
+                </a>
+                {% endif %}
+
+                <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
+                {% if current_user.is_authenticated and current_user.is_admin() %}
+                <div class="admin-actions">
+                    <!-- 编辑材料按钮 -->
+                    <a href="{{ url_for('views.edit', material_id=material.id) }}" class="admin-btn edit-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+
+                    <!-- 删除材料按钮 -->
+                    <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}"
+                       type="submit" onclick="return confirm('Delete permanently?')" class="admin-btn delete-btn">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -110,66 +115,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
         background: #f8fafc; /* 与body背景色保持一致 */
     }
     
-    /* ===== 英雄区域样式 - 页面顶部的主要展示区域 ===== */
-    .material-hero {
-        background: linear-gradient(135deg, #003c85, #0d274b); /* 深蓝色渐变背景 */
-        color: white; /* 文字使用白色以提供良好对比度 */
-        padding: 0.5rem 0 0rem; 
-        margin-top: 0px; /* 与顶部导航栏保持距离 */
-        margin-bottom: 0; /* 移除底部边距 */
-        position: relative; /* 为分隔线提供定位上下文 */
-    }
-    
-    /* 英雄区域底部分隔线 */
-    .hero-divider {
-        position: absolute; /* 绝对定位 */
-        bottom: 0; /* 固定在底部 */
-        left: 0;
-        right: 0;
-        height: 1px; /* 1像素高度的分隔线 */
-        background: rgba(255, 255, 255, 0.2); /* 半透明白色 */
-    }
-    
-    /* 标题容器布局 */
-    .material-title-container {
-        display: flex; /* 弹性布局 */
-        align-items: center; /* 垂直居中对齐 */
-        justify-content: space-between; /* 两端对齐 */
-    }
-    
-    /* ===== 面包屑导航样式 ===== */
-    .breadcrumbs {
-        font-size: 2.5rem; /* 大号字体突出显示 */
-        font-weight: 700; /* 粗体 */
-        color: white; /* 白色文字 */
-        display: flex; /* 弹性布局 */
-        align-items: center; /* 垂直居中 */
-    }
-    
-    /* 面包屑链接样式 */
-    .breadcrumbs a {
-        color: rgba(255, 255, 255, 0.9); /* 略微透明的白色 */
-        text-decoration: none; /* 移除下划线 */
-        font-weight: 600; /* 半粗体 */
-        transition: color 0.2s; /* 颜色过渡动画 */
-    }
-    
-    /* 面包屑链接悬停效果 */
-    .breadcrumbs a:hover {
-        color: white; /* 完全不透明的白色 */
-        text-decoration: underline; /* 添加下划线 */
-    }
-    
-    /* 面包屑分隔符样式 */
-    .breadcrumbs .separator {
-        margin: 0 12px; /* 左右间距 */
-        color: rgba(255, 255, 255, 0.7); /* 半透明白色 */
-    }
-    
-    /* 当前页面标识样式 */
-    .breadcrumbs .current {
-        color: white; /* 完全不透明的白色 */
-    }
+
 
     /* 材料ID样式 */
     .material-id {
@@ -182,176 +128,233 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
-    /* ===== 导航栏样式 ===== */
+    /* ===== 面包屑导航栏样式 ===== */
     .material-nav {
         background-color: white;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         position: sticky;
         top: 64px; /* 主导航栏高度 */
         z-index: 100;
-        margin-top: 0; /* 移除顶部边距 */
-    }
-    
-    .material-nav .container {
-        padding: 0;
+        margin-top: 0;
+        padding: 16px 0;
     }
 
-    .material-nav-links {
+    .material-nav .container {
+        padding: 0 24px;
+    }
+
+    .material-nav-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        position: relative;
+    }
+
+    /* 面包屑导航样式 */
+    .breadcrumb-nav {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 0;
+        justify-content: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #64748b;
+        width: 100%;
     }
-    
-    /* 主导航链接 */
-    .material-nav-link {
-        padding: 24px 10px; /* 减小上下内边距 */
-        color: #333;
+
+    .breadcrumb-link {
+        color: #64748b;
         text-decoration: none;
-        font-size: 1rem;
-        font-weight: 600;
-        position: relative;
         transition: color 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
-    
+
+    .breadcrumb-link:hover {
+        color: #0047AB;
+    }
+
+    .breadcrumb-separator {
+        color: #cbd5e1;
+        font-size: 0.75rem;
+    }
+
+    .breadcrumb-current {
+        color: #0047AB;
+        font-weight: 600;
+    }
+
+    /* 模块导航链接 - 居中显示，宽度适中 */
+    .module-nav-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        max-width: 600px;
+        width: 100%;
+    }
+
+    /* 模块导航链接样式 */
+    .material-nav-link {
+        padding: 8px 16px;
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.3s;
+        position: relative;
+    }
+
     .material-nav-link:hover {
         color: #0047AB;
+        background-color: rgba(0, 71, 171, 0.05);
     }
 
     .material-nav-link.active {
         color: #0047AB;
+        background-color: rgba(0, 71, 171, 0.1);
+        font-weight: 600;
     }
 
-    .material-nav-link.active::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background-color: #0047AB;
-    }
-
-    /* 管理员按钮样式 */
-    .material-nav-admin {
+    /* 右侧操作区域 */
+    .nav-right {
         display: flex;
-        gap: 10px;
-        margin-left: auto;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        position: absolute;
+        right: 24px;
+        top: 50%;
+        transform: translateY(-50%);
     }
-    
+
+    /* 管理员操作按钮样式 */
+    .admin-actions {
+        display: flex;
+        gap: 8px;
+    }
+
     .admin-btn {
-        padding: 8px 16px;
+        padding: 8px 12px;
         color: white;
         text-decoration: none;
         font-weight: 500;
+        font-size: 0.85rem;
         border-radius: 6px;
         transition: all 0.3s;
         display: flex;
         align-items: center;
-        gap: 6px;
-    }
-    
-    .edit-btn {
-        background-color: #4CAF50;
-    }
-    
-    .edit-btn:hover {
-        background-color: #45a049;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-    
-    .delete-btn {
-        background-color: #f44336;
-    }
-    
-    .delete-btn:hover {
-        background-color: #d32f2f;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        gap: 4px;
     }
 
-    /* 外部链接样式 */
-    .material-nav-external {
-        display: flex;
-        gap: 10px;
-        margin-left: 20px;
-        }
-        
+    .edit-btn {
+        background-color: #10b981;
+    }
+
+    .edit-btn:hover {
+        background-color: #059669;
+        transform: translateY(-1px);
+    }
+
+    .delete-btn {
+        background-color: #ef4444;
+    }
+
+    .delete-btn:hover {
+        background-color: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    /* 外部链接和返回按钮样式 */
     .external-link, .back-link {
-        padding: 8px 16px;
+        padding: 8px 12px;
         text-decoration: none;
         font-weight: 500;
+        font-size: 0.85rem;
         border-radius: 6px;
         transition: all 0.3s;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
     }
-    
+
     .external-link {
-        color: #333;
+        color: #475569;
         background-color: #f1f5f9;
-        }
-        
+        border: 1px solid #e2e8f0;
+    }
+
     .external-link:hover {
         background-color: #e2e8f0;
-        color: #0047AB;
-        transform: translateY(-2px);
-        }
-        
-    .back-link {
-        color: white;
-        background-color: #0047AB;
+        color: #334155;
+        transform: translateY(-1px);
     }
-    
+
+    .back-link {
+        color: #0047AB;
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+    }
+
     .back-link:hover {
-        background-color: #003c85;
+        background-color: #dbeafe;
+        transform: translateY(-1px);
+    }
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     
     /* 响应式调整 */
     @media (max-width: 1200px) {
-        .breadcrumbs {
-            font-size: 2rem;
-        }
-        
-        .material-nav-links {
-            flex-wrap: wrap;
+        .nav-right {
+            position: static;
+            transform: none;
             justify-content: center;
+            margin-top: 8px;
         }
-        
-        .material-nav-link {
-            padding: 14px 18px;
+
+        .module-nav-links {
+            flex-wrap: wrap;
+            max-width: none;
         }
-        
-        .material-nav-admin, .material-nav-external {
-            margin: 10px 0;
+
+        .breadcrumb-nav {
+            font-size: 0.85rem;
         }
     }
     
     @media (max-width: 768px) {
-        .material-hero {
-            padding: 2rem 0;
+        .material-nav {
+            padding: 12px 0;
         }
 
-        .material-title-container {
-            flex-direction: column;
-            align-items: flex-start;
+        .material-nav .container {
+            padding: 0 16px;
         }
-        
-        .material-id {
-            margin-top: 10px;
+
+        .breadcrumb-nav {
+            font-size: 0.8rem;
         }
-        
-        .breadcrumbs {
-            font-size: 1.5rem;
+
+        .module-nav-links {
+            gap: 4px;
         }
-        
+
         .material-nav-link {
-            padding: 12px 16px;
-            font-size: 0.9rem;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .nav-right {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .admin-btn, .external-link, .back-link {
+            padding: 6px 10px;
+            font-size: 0.8rem;
         }
     }
 
@@ -841,29 +844,14 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
             top: 56px; /* 在小屏幕上，主导航栏通常更窄 */
         }
         
-    .material-title-container {
-        margin-bottom: 10px;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        }
+
         
-        .breadcrumbs {
-            font-size: 1.5em;
-            margin-bottom: 8px;
-            justify-content: center;
-        }
-        
-        .material-id {
-            margin-left: 0;
-        }
-        
-        .material-nav-links {
+        .module-nav-links {
             flex-wrap: wrap;
             justify-content: center;
-        margin: 0;
-        gap: 8px;
-        width: 100%;
+            margin: 0;
+            gap: 8px;
+            width: 100%;
         }
         
         .material-nav-link {
@@ -1018,7 +1006,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 
 /* 确保全局比例缩放时界面元素也相应调整 */
 @media (min-resolution: 120dpi) {
-    .material-nav, .material-title, .material-nav-links,
+    .material-nav, .module-nav-links,
     .card-header, .card-content, .property-label, .property-value {
         transform-origin: left top;
         transform: scale(0.95);
