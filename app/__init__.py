@@ -42,10 +42,10 @@ def create_app():
     # SECRET_KEY用于会话安全和CSRF保护
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
     
-    # 使用Flask实例目录中的app.db文件作为默认数据库
+    # 使用Flask实例目录中的data.db文件作为默认数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(
         app.instance_path,  # 使用Flask应用实例目录
-        os.getenv('DATABASE_FILE', 'app.db')  # 从环境变量读取数据库文件名，默认为'app.db'
+        os.getenv('DATABASE_FILE', 'data.db')  # 从环境变量读取数据库文件名，默认为'data.db'
     )
     # 禁用SQLAlchemy的事件通知系统以提高性能
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 禁用 SQLAlchemy 事件系统以提升性能

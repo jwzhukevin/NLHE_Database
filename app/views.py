@@ -55,7 +55,7 @@ def landing():
 @bp.route('/database')
 def index():
     """Material database page - displays material list, supports search, filtering and pagination
-    
+
     Supported GET parameters:
         q: Search keywords
         status: Material status filter
@@ -64,8 +64,9 @@ def index():
         fermi_level_min/max: Fermi level range filter
         page: Current page number
     """
-    # Basic query (get all material records)
-    query = Material.query
+    try:
+        # Basic query (get all material records)
+        query = Material.query
     
     # Get all search parameters (stored in dictionary for unified processing)
     search_params = {
@@ -123,11 +124,22 @@ def index():
         error_out=False  # Disable invalid page number errors, out of range will return empty list
     )
     
-    # Render template and pass pagination object and search parameters
-    return render_template('main/index.html',
-                         materials=pagination.items,  # Current page data
-                         pagination=pagination,  # Pagination object (including page number information)
-                         search_params=search_params)  # Search parameters (for form display)
+        # Render template and pass pagination object and search parameters
+        return render_template('main/index.html',
+                             materials=pagination.items,  # Current page data
+                             pagination=pagination,  # Pagination object (including page number information)
+                             search_params=search_params)  # Search parameters (for form display)
+
+    except Exception as e:
+        current_app.logger.error(f"数据库查询错误: {str(e)}")
+        # 返回空的材料列表和搜索参数
+        from flask_sqlalchemy import Pagination
+        empty_pagination = Pagination(query=None, page=1, per_page=10, total=0, items=[])
+        return render_template('main/index.html',
+                             materials=[],
+                             pagination=empty_pagination,
+                             search_params={},
+                             error_message="数据库未初始化，请联系管理员")
 
 # Define an admin check decorator
 def admin_required(view_func):
