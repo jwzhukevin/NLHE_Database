@@ -108,7 +108,7 @@ def create_app():
             from .models import Material
 
             # 使用新的数据库连接，避免多进程共享连接问题
-            with db.engine.connect() as conn:
+            with db.engine.begin() as conn:
                 inspector = inspect(conn)
                 # 先判断material表是否存在
                 table_names = inspector.get_table_names()
@@ -120,7 +120,6 @@ def create_app():
                 # 如果不存在formatted_id列，添加它（不带UNIQUE约束）
                 if 'formatted_id' not in columns:
                     conn.execute(text("ALTER TABLE material ADD COLUMN formatted_id VARCHAR(20)"))
-                    conn.commit()
                     app.logger.info("已添加formatted_id列到material表")
 
             # 更新所有没有格式化ID的记录
@@ -134,13 +133,12 @@ def create_app():
                 app.logger.info(f"已更新 {count} 条材料记录的格式化ID")
             # 尝试添加唯一索引（如果不存在）
             try:
-                with db.engine.connect() as conn:
+                with db.engine.begin() as conn:
                     inspector_local = inspect(conn)
                     indices = inspector_local.get_indexes('material')
                     has_index = any(idx.get('name') == 'ix_material_formatted_id' for idx in indices)
                     if not has_index:
                         conn.execute(text("CREATE UNIQUE INDEX ix_material_formatted_id ON material (formatted_id)"))
-                        conn.commit()
                         app.logger.info("已为formatted_id列创建唯一索引")
             except SQLAlchemyError as e:
                 app.logger.warning(f"创建唯一索引失败: {str(e)}")

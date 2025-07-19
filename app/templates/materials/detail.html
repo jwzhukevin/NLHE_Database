@@ -34,62 +34,69 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 <script type="text/javascript" src="{{ url_for('static', filename='js/sc-plot.js') }}"></script>
 
 
-<!-- ====================== 面包屑导航栏 ====================== -->
+<!-- ====================== 材料导航栏 ====================== -->
 <div class="material-nav">
-    <div class="container">
-        <div class="material-nav-container">
-            <!-- 面包屑导航 -->
-            <div class="breadcrumb-nav">
-                <a href="{{ url_for('views.landing') }}" class="breadcrumb-link">
-                    <i class="fas fa-home"></i> Home
-                </a>
-                <span class="breadcrumb-separator">
-                    <i class="fas fa-chevron-right"></i>
-                </span>
-                <a href="{{ url_for('views.index') }}" class="breadcrumb-link">Materials</a>
-                <span class="breadcrumb-separator">
-                    <i class="fas fa-chevron-right"></i>
-                </span>
-                <span class="breadcrumb-current">{{ material.name }} (IMR-{{ material.id }})</span>
+    <div class="material-nav-wrapper">
+        <!-- 导航栏主体：面包屑+属性导航（左对齐）+ 功能按钮（右对齐） -->
+        <div class="nav-main-container">
+            <!-- 左侧：面包屑导航 + 属性导航链接 -->
+            <div class="nav-left-section">
+                <!-- 面包屑导航 -->
+                <div class="breadcrumb-nav">
+                    <a href="{{ url_for('views.landing') }}" class="breadcrumb-link">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <span class="breadcrumb-separator">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                    <a href="{{ url_for('views.index') }}" class="breadcrumb-link">Materials</a>
+                    <span class="breadcrumb-separator">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                    <span class="breadcrumb-current">{{ material.name }} (IMR-{{ material.id }})</span>
+                </div>
+
+                <!-- 属性导航链接 -->
+                <div class="nav-properties">
+                    <a href="#first-section" class="nav-property-link active">Structure</a>
+                    <a href="#second-section" class="nav-property-link">Crystal Data</a>
+                    <a href="#third-section" class="nav-property-link">Band Structure</a>
+                    <a href="#sc-section" class="nav-property-link">SC</a>
+                    <a href="#fourth-section" class="nav-property-link">Properties</a>
+                </div>
             </div>
 
-            <!-- 居中的模块导航链接 -->
-            <div class="module-nav-links">
-                <a href="#first-section" class="material-nav-link active">Structure</a>
-                <a href="#second-section" class="material-nav-link">Crystal Data</a>
-                <a href="#third-section" class="material-nav-link">Band Structure</a>
-                <a href="#sc-section" class="material-nav-link">SC</a>
-                <a href="#fourth-section" class="material-nav-link">Properties</a>
-            </div>
-
-            <!-- 右侧：操作按钮 -->
-            <div class="nav-right">
+            <!-- 右侧：功能按钮 -->
+            <div class="nav-actions">
                 <!-- Materials Project外部链接 -->
-                <a href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" target="_blank" class="external-link">
-                    <i class="fas fa-external-link-alt"></i> MP
+                <a href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" target="_blank"
+                   class="action-btn mp-btn">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span>MP</span>
                 </a>
 
                 <!-- 搜索返回按钮 -->
                 {% if request.referrer and 'q=' in request.referrer %}
-                <a href="{{ request.referrer }}" class="back-link">
-                    <i class="fas fa-search"></i> Back to Search
+                <a href="{{ request.referrer }}" class="action-btn back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
                 </a>
                 {% endif %}
 
                 <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
                 {% if current_user.is_authenticated and current_user.is_admin() %}
-                <div class="admin-actions">
-                    <!-- 编辑材料按钮 -->
-                    <a href="{{ url_for('views.edit', material_id=material.id) }}" class="admin-btn edit-btn">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
+                <a href="{{ url_for('views.edit', material_id=material.id) }}"
+                   class="action-btn edit-btn">
+                    <i class="fas fa-edit"></i>
+                    <span>Edit</span>
+                </a>
 
-                    <!-- 删除材料按钮 -->
-                    <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}"
-                       type="submit" onclick="return confirm('Delete permanently?')" class="admin-btn delete-btn">
-                        <i class="fas fa-trash"></i> Delete
-                    </a>
-                </div>
+                <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}"
+                   type="submit" onclick="return confirm('Delete permanently?')"
+                   class="action-btn delete-btn">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Delete</span>
+                </a>
                 {% endif %}
             </div>
         </div>
@@ -100,9 +107,10 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 <div class="material-detail-container">
     <style>
     /* ===== 页面全局样式 ===== */
-    body {
+    html, body {
         margin: 0;
         padding: 0;
+        width: 100%;
         background: #f8fafc; /* 设置浅灰色背景,提供柔和的视觉效果 */
         font-family: 'Inter', sans-serif; /* 使用Inter字体,提供现代感 */
     }
@@ -110,8 +118,8 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
     /* ===== 主容器布局样式 ===== */
     .material-detail-container {
         max-width: 1600px; /* 限制最大宽度,避免在大屏幕上过宽 */
-        margin: 30px auto 0; /* 上边距30px,水平居中 */
-        padding: 24px; /* 四周内边距24px,提供内容呼吸空间 */
+        margin:2px auto 0; /* 上边距2px,水平居中 */
+        padding: 16px; /* 四周内边距16px,提供内容呼吸空间 */
         background: #f8fafc; /* 与body背景色保持一致 */
     }
     
@@ -128,233 +136,350 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
-    /* ===== 面包屑导航栏样式 ===== */
+    /* ===== 材料导航栏 - 参照顶部导航栏设计 ===== */
+
+    /* 导航栏容器 - 贯穿整个网页，无背景设计 */
     .material-nav {
-        background-color: white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        background: transparent; /* 透明背景 */
+        border-bottom: none; /* 移除底部边框 */
+        box-shadow: none; /* 移除阴影 */
         position: sticky;
-        top: 64px; /* 主导航栏高度 */
+        top: 64px; /* 距离顶部导航栏的高度 */
         z-index: 100;
-        margin-top: 0;
-        padding: 16px 0;
+        width: 100%; /* 贯穿整个网页宽度 */
+        padding: 16px 0; /* 上下内边距 */
+        margin: 0; /* 移除外边距 */
     }
 
-    .material-nav .container {
+    /* 导航栏内容包装器 - 使用container类，与顶部导航栏保持一致 */
+    .material-nav-wrapper {
+        max-width: 1600px;
+        margin: 0 auto;
         padding: 0 24px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    .material-nav-container {
+    /* 主导航容器 - 左右对齐布局 */
+    .nav-main-container {
         display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 16px;
-        position: relative;
+        justify-content: space-between;
+        gap: 24px;
     }
 
-    /* 面包屑导航样式 */
+    /* 左侧导航区域 - 面包屑 + 属性导航 */
+    .nav-left-section {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        flex: 1;
+    }
+
+    /* 面包屑导航 - 简洁样式 */
     .breadcrumb-nav {
         display: flex;
         align-items: center;
-        justify-content: center;
         gap: 8px;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
         color: #64748b;
-        width: 100%;
+        white-space: nowrap;
     }
 
     .breadcrumb-link {
         color: #64748b;
         text-decoration: none;
-        transition: color 0.3s;
+        font-weight: 500;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         gap: 4px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background-color: white;
+        border: 1px solid #e2e8f0;
+        position: relative;
+    }
+
+    .breadcrumb-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 8px;
+        right: 8px;
+        height: 2px;
+        background-color: transparent;
+        transition: background-color 0.3s ease;
     }
 
     .breadcrumb-link:hover {
         color: #0047AB;
+        background-color: white;
+        border-color: rgba(0, 71, 171, 0.3);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 71, 171, 0.12);
+    }
+
+    .breadcrumb-link:hover::after {
+        background-color: #0047AB;
     }
 
     .breadcrumb-separator {
         color: #cbd5e1;
-        font-size: 0.75rem;
+        font-size: 0.9rem;
+        margin: 0 2px;
     }
 
     .breadcrumb-current {
         color: #0047AB;
-        font-weight: 600;
-    }
-
-    /* 模块导航链接 - 居中显示，宽度适中 */
-    .module-nav-links {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        max-width: 600px;
-        width: 100%;
-    }
-
-    /* 模块导航链接样式 */
-    .material-nav-link {
-        padding: 8px 16px;
-        color: #64748b;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 500;
+        font-weight: 700;
+        padding: 4px 8px;
+        background-color: white;
         border-radius: 6px;
-        transition: all 0.3s;
-        position: relative;
+        border: 1px solid rgba(0, 71, 171, 0.2);
+        box-shadow: 0 1px 4px rgba(0, 71, 171, 0.1);
     }
 
-    .material-nav-link:hover {
-        color: #0047AB;
-        background-color: rgba(0, 71, 171, 0.05);
-    }
-
-    .material-nav-link.active {
-        color: #0047AB;
-        background-color: rgba(0, 71, 171, 0.1);
-        font-weight: 600;
-    }
-
-    /* 右侧操作区域 */
-    .nav-right {
+    /* 属性导航 - 简洁样式 */
+    .nav-properties {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 12px;
-        position: absolute;
-        right: 24px;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-
-    /* 管理员操作按钮样式 */
-    .admin-actions {
-        display: flex;
         gap: 8px;
     }
 
-    .admin-btn {
-        padding: 8px 12px;
-        color: white;
+    .nav-property-link {
+        padding: 10px 16px;
+        color: #475569;
         text-decoration: none;
-        font-weight: 500;
-        font-size: 0.85rem;
-        border-radius: 6px;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 4px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
     }
 
+    .nav-property-link:hover {
+        color: #0047AB;
+        background-color: white;
+        border-color: rgba(0, 71, 171, 0.5);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 71, 171, 0.15);
+    }
+
+    .nav-property-link.active {
+        color: white;
+        background-color: #0047AB;
+        border-color: #0047AB;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0, 71, 171, 0.3);
+    }
+
+    /* 功能按钮区域 */
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* 功能按钮 - 简洁设计 */
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .action-btn i {
+        font-size: 0.9rem;
+    }
+
+    .action-btn span {
+        font-weight: 600;
+    }
+
+    /* MP按钮 - 蓝色主题 */
+    .mp-btn {
+        color: #1e40af;
+        background-color: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    .mp-btn:hover {
+        color: white;
+        background-color: #1e40af;
+        border-color: #1e40af;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+    }
+
+    /* 返回按钮 - 灰色主题 */
+    .back-btn {
+        color: #475569;
+        background-color: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+    .back-btn:hover {
+        color: #1e293b;
+        background-color: #e2e8f0;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(71, 85, 105, 0.2);
+    }
+
+    /* 编辑按钮 - 绿色主题 */
     .edit-btn {
-        background-color: #10b981;
+        color: #059669;
+        background-color: #ecfdf5;
+        border-color: #a7f3d0;
     }
 
     .edit-btn:hover {
+        color: white;
         background-color: #059669;
-        transform: translateY(-1px);
+        border-color: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
     }
 
+    /* 删除按钮 - 红色主题 */
     .delete-btn {
-        background-color: #ef4444;
+        color: #dc2626;
+        background-color: #fef2f2;
+        border-color: #fecaca;
     }
 
     .delete-btn:hover {
+        color: white;
         background-color: #dc2626;
-        transform: translateY(-1px);
-    }
-
-    /* 外部链接和返回按钮样式 */
-    .external-link, .back-link {
-        padding: 8px 12px;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.85rem;
-        border-radius: 6px;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .external-link {
-        color: #475569;
-        background-color: #f1f5f9;
-        border: 1px solid #e2e8f0;
-    }
-
-    .external-link:hover {
-        background-color: #e2e8f0;
-        color: #334155;
-        transform: translateY(-1px);
-    }
-
-    .back-link {
-        color: #0047AB;
-        background-color: #eff6ff;
-        border: 1px solid #bfdbfe;
-    }
-
-    .back-link:hover {
-        background-color: #dbeafe;
-        transform: translateY(-1px);
-    }
+        border-color: #dc2626;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    /* 按钮激活状态 */
+    .action-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
-    /* 响应式调整 */
+    /* ===== 响应式设计 ===== */
+
+    /* 平板设备 */
     @media (max-width: 1200px) {
-        .nav-right {
-            position: static;
-            transform: none;
-            justify-content: center;
-            margin-top: 8px;
+        .material-nav {
+            padding: 14px 0; /* 调整上下内边距 */
         }
 
-        .module-nav-links {
-            flex-wrap: wrap;
-            max-width: none;
+        .material-nav-wrapper {
+            padding: 0 20px;
+        }
+
+        .nav-main-container {
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .nav-left-section {
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-start;
+            flex: none;
         }
 
         .breadcrumb-nav {
+            font-size: 1rem;
+        }
+
+        .nav-properties {
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .nav-property-link {
+            padding: 8px 14px;
+            font-size: 0.9rem;
+        }
+
+        .nav-actions {
+            gap: 8px;
+            justify-content: flex-start;
+        }
+
+        .action-btn {
+            padding: 8px 14px;
             font-size: 0.85rem;
         }
     }
     
+    /* 移动设备 */
     @media (max-width: 768px) {
         .material-nav {
-            padding: 12px 0;
+            padding: 12px 0; /* 调整上下内边距 */
         }
 
-        .material-nav .container {
+        .material-nav-wrapper {
             padding: 0 16px;
         }
 
+        .nav-main-container {
+            gap: 12px;
+        }
+
+        .nav-left-section {
+            gap: 10px;
+            width: 100%;
+        }
+
         .breadcrumb-nav {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
         }
 
-        .module-nav-links {
+        .breadcrumb-current {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .nav-properties {
             gap: 4px;
+            width: 100%;
         }
 
-        .material-nav-link {
-            padding: 6px 12px;
+        .nav-property-link {
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            flex: 1;
+            text-align: center;
+            min-width: 0;
+        }
+
+        .nav-actions {
+            gap: 6px;
+            justify-content: flex-start;
+        }
+
+        .action-btn {
+            padding: 8px 10px;
             font-size: 0.8rem;
         }
 
-        .nav-right {
-            flex-wrap: wrap;
-            gap: 8px;
+        .action-btn span {
+            display: none; /* 移动端只显示图标 */
         }
 
-        .admin-btn, .external-link, .back-link {
-            padding: 6px 10px;
-            font-size: 0.8rem;
+        .action-btn i {
+            font-size: 1rem;
         }
     }
 
@@ -846,33 +971,9 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
         
 
         
-        .module-nav-links {
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 0;
-            gap: 8px;
-            width: 100%;
-        }
+
         
-        .material-nav-link {
-            height: 40px;
-        padding: 0 12px;
-        font-size: 1rem;
-        border-radius: 6px;
-    }
-    
-    .material-nav-link.active {
-        border-radius: 6px;
-        background-color: rgba(0, 71, 171, 0.1);
-    }
-    
-    .material-nav-link.active::after {
-        height: 3px;
-        bottom: 5px;
-        left: 10px;
-        right: 10px;
-        border-radius: 1.5px;
-        }
+
 
         .crystal-viewer, #bandStructure, #scStructure, .viewer-content {
             height: 375px; /* 调整高度 */
@@ -1006,7 +1107,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 
 /* 确保全局比例缩放时界面元素也相应调整 */
 @media (min-resolution: 120dpi) {
-    .material-nav, .module-nav-links,
+    .material-nav, .nav-properties,
     .card-header, .card-content, .property-label, .property-value {
         transform-origin: left top;
         transform: scale(0.95);
@@ -1844,7 +1945,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCollapsibleCards();
     
     // 获取所有导航链接
-    const navLinks = document.querySelectorAll('.material-nav-link');
+    const navLinks = document.querySelectorAll('.nav-property-link');
     const sections = document.querySelectorAll('.content-section');
     
     // 阻止下载按钮点击事件传播
