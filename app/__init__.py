@@ -78,13 +78,17 @@ def create_app():
     def inject_user():
         """
         向所有模板注入全局变量（例如当前用户）
-        
+
         返回:
             字典，包含要注入模板的全局变量
         """
-        from .models import User
-        user = User.query.first()  # 示例：注入第一个用户（可替换为实际逻辑）
-        return dict(user=user)  # 模板中可通过 {{ user }} 访问
+        try:
+            from .models import User
+            user = User.query.first()  # 示例：注入第一个用户（可替换为实际逻辑）
+            return dict(user=user)  # 模板中可通过 {{ user }} 访问
+        except Exception as e:
+            app.logger.warning(f"无法查询用户表: {str(e)}")
+            return dict(user=None)  # 返回空用户，避免模板错误
 
     # --- 初始化格式化ID ---
     def init_formatted_ids():
