@@ -67,63 +67,63 @@ def index():
     try:
         # Basic query (get all material records)
         query = Material.query
-    
-    # Get all search parameters (stored in dictionary for unified processing)
-    search_params = {
-        'q': request.args.get('q', '').strip(),  # Text search keywords
-        'status': request.args.get('status', '').strip(),  # Material status
-        'metal_type': request.args.get('metal_type', '').strip(),  # Metal type
-        'formation_energy_min': request.args.get('formation_energy_min', '').strip(),  # Formation energy minimum
-        'formation_energy_max': request.args.get('formation_energy_max', '').strip(),  # Formation energy maximum
-        'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # Fermi level minimum
-        'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # Fermi level maximum
-    }
-    
-    # Build compound filter conditions (using SQLAlchemy logical operators)
-    filters = []
-    
-    # Text search (supports fuzzy query of name, VBM/CBM coordinates)
-    if search_params['q']:
-        filters.append(or_(
-            Material.name.ilike(f'%{search_params["q"]}%'),  # Name fuzzy matching (case insensitive)
-            Material.vbm_coordi.ilike(f'%{search_params["q"]}%'),  # VBM coordinate matching
-            Material.cbm_coordi.ilike(f'%{search_params["q"]}%')  # CBM coordinate matching
-        ))
-    
-    # Exact match conditions
-    if search_params['status']:
-        filters.append(Material.status == search_params['status'])  # Status exact match
-    if search_params['metal_type']:
-        filters.append(Material.metal_type == search_params['metal_type'])  # Metal type exact match
-    
-    # Numeric range filtering (including exception handling to ensure valid numerical input)
-    for param in ['formation_energy', 'fermi_level']:
-        min_val = search_params[f'{param}_min']
-        max_val = search_params[f'{param}_max']
-        if min_val:
-            try:
-                filters.append(getattr(Material, param) >= float(min_val))  # Minimum value filter
-            except ValueError:  # Handle invalid numerical input
-                pass
-        if max_val:
-            try:
-                filters.append(getattr(Material, param) <= float(max_val))  # Maximum value filter
-            except ValueError:
-                pass
-    
-    # Apply all filter conditions (using AND logic combination, i.e., all conditions must be met)
-    if filters:
-        query = query.filter(and_(*filters))
-    
-    # Pagination configuration (10 records per page)
-    page = request.args.get('page', 1, type=int)  # Get current page number, default is page 1
-    per_page = 10  # Items per page
-    pagination = query.order_by(Material.name.asc()).paginate(  # Sort by name in ascending order
-        page=page, 
-        per_page=per_page, 
-        error_out=False  # Disable invalid page number errors, out of range will return empty list
-    )
-    
+
+        # Get all search parameters (stored in dictionary for unified processing)
+        search_params = {
+            'q': request.args.get('q', '').strip(),  # Text search keywords
+            'status': request.args.get('status', '').strip(),  # Material status
+            'metal_type': request.args.get('metal_type', '').strip(),  # Metal type
+            'formation_energy_min': request.args.get('formation_energy_min', '').strip(),  # Formation energy minimum
+            'formation_energy_max': request.args.get('formation_energy_max', '').strip(),  # Formation energy maximum
+            'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # Fermi level minimum
+            'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # Fermi level maximum
+        }
+
+        # Build compound filter conditions (using SQLAlchemy logical operators)
+        filters = []
+
+        # Text search (supports fuzzy query of name, VBM/CBM coordinates)
+        if search_params['q']:
+            filters.append(or_(
+                Material.name.ilike(f'%{search_params["q"]}%'),  # Name fuzzy matching (case insensitive)
+                Material.vbm_coordi.ilike(f'%{search_params["q"]}%'),  # VBM coordinate matching
+                Material.cbm_coordi.ilike(f'%{search_params["q"]}%')  # CBM coordinate matching
+            ))
+
+        # Exact match conditions
+        if search_params['status']:
+            filters.append(Material.status == search_params['status'])  # Status exact match
+        if search_params['metal_type']:
+            filters.append(Material.metal_type == search_params['metal_type'])  # Metal type exact match
+
+        # Numeric range filtering (including exception handling to ensure valid numerical input)
+        for param in ['formation_energy', 'fermi_level']:
+            min_val = search_params[f'{param}_min']
+            max_val = search_params[f'{param}_max']
+            if min_val:
+                try:
+                    filters.append(getattr(Material, param) >= float(min_val))  # Minimum value filter
+                except ValueError:  # Handle invalid numerical input
+                    pass
+            if max_val:
+                try:
+                    filters.append(getattr(Material, param) <= float(max_val))  # Maximum value filter
+                except ValueError:
+                    pass
+
+        # Apply all filter conditions (using AND logic combination, i.e., all conditions must be met)
+        if filters:
+            query = query.filter(and_(*filters))
+
+        # Pagination configuration (10 records per page)
+        page = request.args.get('page', 1, type=int)  # Get current page number, default is page 1
+        per_page = 10  # Items per page
+        pagination = query.order_by(Material.name.asc()).paginate(  # Sort by name in ascending order
+            page=page,
+            per_page=per_page,
+            error_out=False  # Disable invalid page number errors, out of range will return empty list
+        )
+
         # Render template and pass pagination object and search parameters
         return render_template('main/index.html',
                              materials=pagination.items,  # Current page data
