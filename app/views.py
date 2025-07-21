@@ -14,7 +14,7 @@ from .material_importer import extract_chemical_formula_from_cif  # Material dat
 import os
 import re
 from werkzeug.utils import secure_filename
-from captcha.image import ImageCaptcha
+from PIL import Image, ImageDraw, ImageFont
 import random, string, io
 
 # Create a blueprint named 'views' for modular route management
@@ -259,36 +259,33 @@ def add():
                 band_filename = secure_filename(band_file.filename)
                 band_path = os.path.join(band_dir, band_filename)
                 band_file.save(band_path)
+            # 处理Shift Current文件
             if sc_structure_file and sc_structure_file.filename:
                 sc_filename = secure_filename(sc_structure_file.filename)
                 sc_path = os.path.join(sc_dir, sc_filename)
                 sc_structure_file.save(sc_path)
                 material.sc_structure_file = sc_filename
+                flash(f'Shift Current file {sc_filename} uploaded successfully', 'success')
 
-            # 处理Shift Current文件
-            if sc_structure_file:
-                sc_filename = secure_filename(sc_structure_file.filename)
-                sc_path = os.path.join(sc_dir, sc_filename)
-                sc_structure_file.save(sc_path)
-                flash(f'Shift Current文件 {sc_filename} 上传成功', 'success')
-                
                 # 如果是dat文件，尝试重命名为sc.dat
                 if sc_filename.endswith('.dat') and sc_filename != 'sc.dat':
                     try:
-                        os.rename(sc_path, os.path.join(sc_dir, 'sc.dat'))
-                        flash('Shift Current文件已重命名为sc.dat', 'success')
-                    except:
-                        pass
+                        new_sc_path = os.path.join(sc_dir, 'sc.dat')
+                        os.rename(sc_path, new_sc_path)
+                        material.sc_structure_file = 'sc.dat'
+                        flash('Shift Current file renamed to sc.dat', 'success')
+                    except Exception as e:
+                        current_app.logger.warning(f"Failed to rename SC file: {str(e)}")
 
             db.session.commit()
-            flash(f'材料 {material.name} 添加成功！', 'success')
+            flash(f'Material {material.name} added successfully!', 'success')
             return redirect(url_for('views.detail', material_id=material.id))
 
         except ValueError as e:
-            flash(f'数据无效: {str(e)}', 'error')
+            flash(f'Invalid data: {str(e)}', 'error')
             return redirect(url_for('views.add'))
         except Exception as e:
-            flash(f'发生错误: {str(e)}', 'error')
+            flash(f'An error occurred: {str(e)}', 'error')
             return redirect(url_for('views.add'))
 
     return render_template('materials/add.html')
@@ -431,16 +428,28 @@ def edit(material_id):
     structure_dir = os.path.join(material_dir, 'structure')
     band_dir = os.path.join(material_dir, 'band')
     sc_dir = os.path.join(material_dir, 'sc')
+    # 获取文件列表并检查多文件情况
     cif_files = []
     band_files = []
     sc_files = []
+
+    # 检查结构文件
     if os.path.exists(structure_dir):
         cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
+        if len(cif_files) > 1:
+            flash('Warning: Multiple CIF files found in structure directory. Please keep only one!', 'warning')
+
+    # 检查能带文件
     if os.path.exists(band_dir):
         band_files = [f for f in os.listdir(band_dir) if f.endswith('.dat') or f.endswith('.json')]
+        if len(band_files) > 1:
+            flash('Warning: Multiple band files found in band directory. Please keep only one!', 'warning')
+
+    # 检查SC文件
     if os.path.exists(sc_dir):
         sc_files = [f for f in os.listdir(sc_dir) if f.endswith('.dat')]
-    # 多文件警告逻辑可在前端处理
+        if len(sc_files) > 1:
+            flash('Warning: Multiple SC files found in sc directory. Please keep only one!', 'warning')
     return render_template('materials/edit.html', material=material, cif_files=cif_files, band_files=band_files, sc_files=sc_files, structure_dir=structure_dir, band_dir=band_dir, sc_dir=sc_dir)
 
 # Material detail page
@@ -464,7 +473,7 @@ def detail(material_id):
     if len(cif_files) == 1:
         structure_file = os.path.relpath(cif_files[0], os.path.join(current_app.root_path, 'static'))
     elif len(cif_files) > 1:
-        flash('结构文件夹下存在多个.cif文件，请保留唯一一个！', 'error')
+        flash('Error: Multiple CIF files found in structure directory. Please keep only one!', 'error')
         structure_file = None
     else:
         structure_file = None
@@ -473,7 +482,7 @@ def detail(material_id):
     if len(band_files) == 1:
         band_file = os.path.relpath(band_files[0], os.path.join(current_app.root_path, 'static'))
     elif len(band_files) > 1:
-        flash('band目录下存在多个能带文件，请保留唯一一个！', 'error')
+        flash('Error: Multiple band files found in band directory. Please keep only one!', 'error')
         band_file = None
     else:
         band_file = None
@@ -482,7 +491,7 @@ def detail(material_id):
     if len(sc_files) == 1:
         sc_file = os.path.relpath(sc_files[0], os.path.join(current_app.root_path, 'static'))
     elif len(sc_files) > 1:
-        flash('sc目录下存在多个Shift Current文件，请保留唯一一个！', 'error')
+        flash('Error: Multiple SC files found in sc directory. Please keep only one!', 'error')
         sc_file = None
     else:
         sc_file = None
@@ -514,9 +523,6 @@ def delete(material_id):
     import os
     import shutil
     from flask import current_app
-    
-    # Format ID (IMR-00000XXX)
-    formatted_id = f"IMR-{numeric_id:08d}"
     
     # Delete material-specific folder and all its contents
     material_dir = get_material_dir(numeric_id)
@@ -606,7 +612,7 @@ def login():
         captcha_input = request.form.get('captcha', '').upper()
         real_captcha = session.get('captcha', '')
         if captcha_input != real_captcha:
-            flash('验证码错误，请重新输入', 'error')
+            flash('Invalid captcha code, please try again', 'error')
             return render_template('auth/login.html')
         password = request.form.get('password')
         remember = 'remember' in request.form
@@ -953,13 +959,176 @@ def update_users_dat():
         current_app.logger.error(f"Failed to update users.dat: {str(e)}")
         raise
 
+def generate_captcha_image(text, width=140, height=50):
+    """
+    使用Pillow生成符合网站风格的验证码图片
+
+    参数:
+        text: 验证码文本
+        width: 图片宽度
+        height: 图片高度
+
+    返回:
+        BytesIO对象，包含PNG格式的图片数据
+    """
+    # 网站主题色彩配置
+    THEME_COLORS = {
+        'primary': (0, 71, 171),      # #0047AB - 主色
+        'secondary': (30, 92, 179),   # #1E5CB3 - 次色
+        'accent': (0, 127, 255),      # #007FFF - 强调色
+        'light_bg': (245, 248, 255),  # #F5F8FF - 浅色背景
+        'nav_bg': (181, 222, 253),    # 导航栏背景色
+        'text_dark': (51, 51, 51),    # #333333 - 深色文字
+    }
+
+    # 创建渐变背景
+    image = Image.new('RGB', (width, height), color=THEME_COLORS['light_bg'])
+    draw = ImageDraw.Draw(image)
+
+    # 添加微妙的渐变背景效果
+    for y in range(height):
+        # 从浅蓝到更浅的蓝色渐变
+        ratio = y / height
+        r = int(THEME_COLORS['light_bg'][0] + (THEME_COLORS['nav_bg'][0] - THEME_COLORS['light_bg'][0]) * ratio * 0.3)
+        g = int(THEME_COLORS['light_bg'][1] + (THEME_COLORS['nav_bg'][1] - THEME_COLORS['light_bg'][1]) * ratio * 0.3)
+        b = int(THEME_COLORS['light_bg'][2] + (THEME_COLORS['nav_bg'][2] - THEME_COLORS['light_bg'][2]) * ratio * 0.3)
+        draw.line([(0, y), (width, y)], fill=(r, g, b))
+
+    # 尝试加载字体
+    try:
+        # 尝试使用系统字体
+        font = ImageFont.truetype("arial.ttf", 28)
+    except (OSError, IOError):
+        try:
+            # 尝试使用其他常见字体
+            font = ImageFont.truetype("DejaVuSans-Bold.ttf", 28)
+        except (OSError, IOError):
+            try:
+                font = ImageFont.truetype("calibri.ttf", 28)
+            except (OSError, IOError):
+                # 使用默认字体
+                font = ImageFont.load_default()
+
+    # 添加精致的背景装饰点
+    for _ in range(30):
+        x = random.randint(0, width)
+        y = random.randint(0, height)
+        # 使用主题色的浅色版本作为装饰点
+        alpha = random.uniform(0.1, 0.3)
+        base_color = random.choice([THEME_COLORS['primary'], THEME_COLORS['accent']])
+        color = tuple(int(c + (255 - c) * (1 - alpha)) for c in base_color)
+        draw.ellipse([x-1, y-1, x+1, y+1], fill=color)
+
+    # 计算文本位置
+    try:
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+    except AttributeError:
+        # 兼容旧版本Pillow
+        text_width = len(text) * 20
+        text_height = 28
+
+    start_x = (width - text_width) // 2
+    start_y = (height - text_height) // 2
+
+    # 绘制验证码文本 - 使用网站主题色
+    char_colors = [
+        THEME_COLORS['primary'],
+        THEME_COLORS['secondary'],
+        THEME_COLORS['accent'],
+        THEME_COLORS['text_dark']
+    ]
+
+    char_width = text_width // len(text) if len(text) > 0 else 20
+    for i, char in enumerate(text):
+        # 为每个字符选择主题色
+        color = char_colors[i % len(char_colors)]
+
+        # 添加轻微的位置偏移，但保持可读性
+        char_x = start_x + i * char_width + random.randint(-2, 2)
+        char_y = start_y + random.randint(-3, 3)
+
+        # 绘制字符
+        draw.text((char_x, char_y), char, font=font, fill=color)
+
+    # 添加优雅的装饰线条
+    for _ in range(2):
+        # 使用主题色绘制装饰线
+        color = random.choice([THEME_COLORS['primary'], THEME_COLORS['accent']])
+        # 让线条更加柔和
+        alpha_color = tuple(int(c + (255 - c) * 0.6) for c in color)
+
+        start_x_line = random.randint(0, width // 3)
+        start_y_line = random.randint(height // 4, 3 * height // 4)
+        end_x_line = random.randint(2 * width // 3, width)
+        end_y_line = random.randint(height // 4, 3 * height // 4)
+
+        draw.line([(start_x_line, start_y_line), (end_x_line, end_y_line)],
+                 fill=alpha_color, width=1)
+
+    # 添加边框效果
+    border_color = THEME_COLORS['primary']
+    border_alpha = tuple(int(c + (255 - c) * 0.7) for c in border_color)
+    draw.rectangle([0, 0, width-1, height-1], outline=border_alpha, width=1)
+
+    # 保存到BytesIO
+    img_buffer = io.BytesIO()
+    image.save(img_buffer, format='PNG', quality=95)
+    img_buffer.seek(0)
+
+    return img_buffer
+
 @bp.route('/captcha')
 def captcha():
-    image = ImageCaptcha()
-    captcha_text = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
-    session['captcha'] = captcha_text
-    data = image.generate(captcha_text)
-    return send_file(data, mimetype='image/png')
+    """
+    生成符合网站风格的验证码图片
+
+    返回:
+        PNG格式的验证码图片，带有适当的缓存控制头
+    """
+    try:
+        # 生成5位随机验证码（大写字母和数字，排除容易混淆的字符）
+        # 排除 0, O, 1, I, l 等容易混淆的字符
+        chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+        captcha_text = ''.join(random.choices(chars, k=5))
+
+        # 将验证码保存到session中
+        session['captcha'] = captcha_text
+        session.permanent = True  # 确保session持久化
+
+        # 生成验证码图片
+        img_buffer = generate_captcha_image(captcha_text)
+
+        # 创建响应并设置缓存控制头
+        response = send_file(
+            img_buffer,
+            mimetype='image/png',
+            as_attachment=False,
+            download_name='captcha.png'
+        )
+
+        # 设置缓存控制头，防止浏览器缓存验证码
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+
+        return response
+
+    except Exception as e:
+        # 如果生成验证码失败，返回一个简单的错误图片
+        current_app.logger.error(f"Error generating captcha: {str(e)}")
+
+        # 创建一个简单的错误提示图片
+        error_image = Image.new('RGB', (140, 50), color=(245, 248, 255))
+        error_draw = ImageDraw.Draw(error_image)
+        error_draw.text((10, 15), "ERROR", fill=(220, 53, 69))
+
+        error_buffer = io.BytesIO()
+        error_image.save(error_buffer, format='PNG')
+        error_buffer.seek(0)
+
+        return send_file(error_buffer, mimetype='image/png')
 
 @bp.route('/members')
 def members():

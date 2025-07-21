@@ -370,7 +370,74 @@
     .password-toggle:focus {
         outline: none;
     }
-    
+
+    /* Captcha styles */
+    .captcha-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .captcha-input {
+        flex: 1;
+        min-width: 0; /* 防止flex item溢出 */
+    }
+
+    .captcha-image-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .captcha-image {
+        height: 50px;
+        width: 140px;
+        border: 2px solid var(--input-border);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 71, 171, 0.1);
+        background: white;
+    }
+
+    .captcha-image:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 8px rgba(0, 71, 171, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .captcha-refresh-hint {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        color: #64748b;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .captcha-image-wrapper:hover .captcha-refresh-hint {
+        opacity: 1;
+    }
+
+    .captcha-refresh-hint i {
+        font-size: 0.7rem;
+        animation: rotate 2s linear infinite paused;
+    }
+
+    .captcha-image-wrapper:hover .captcha-refresh-hint i {
+        animation-play-state: running;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
     /* Responsive adjustments */
     @media (max-width: 640px) {
         .login-content {
@@ -392,6 +459,26 @@
         .login-form-wrapper h2 {
             font-size: 1.35rem;
             margin-bottom: 1.25rem;
+        }
+
+        /* 移动端验证码适配 */
+        .captcha-container {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: stretch;
+        }
+
+        .captcha-image-wrapper {
+            align-self: center;
+        }
+
+        .captcha-image {
+            width: 120px;
+            height: 45px;
+        }
+
+        .captcha-refresh-hint {
+            font-size: 0.7rem;
         }
     }
 </style>
