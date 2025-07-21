@@ -1,5 +1,6 @@
 #!/bin/bash
-# 设置可执行权限: chmod +x app/static/users/users.sh
+# 用户数据初始化脚本
+# 设置可执行权限: chmod +x users.sh
 
 # 定义变量
 export FLASK_APP=app

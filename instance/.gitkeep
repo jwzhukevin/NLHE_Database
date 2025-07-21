@@ -1,0 +1,3 @@
+# This file ensures the instance directory is tracked by Git
+# The instance directory is used by Flask for storing instance-specific files
+# such as configuration files and databases that should not be in version control

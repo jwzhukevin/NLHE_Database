@@ -46,9 +46,9 @@ else
     exit 1
 fi
 
-# 4. 用户静态资源
-echo -e "\033[36m[3/3] 正在初始化用户静态资源（执行 app/static/users/users.sh ）...\033[0m"
-./app/static/users/users.sh
+# 4. 用户数据初始化
+echo -e "\033[36m[3/3] 正在初始化用户数据（执行 ./users.sh ）...\033[0m"
+./users.sh
 if [ $? -eq 0 ]; then
     echo -e "\033[32m[成功] 用户静态资源初始化成功。\033[0m"
 else

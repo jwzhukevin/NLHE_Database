@@ -1,8 +1,32 @@
+# Python
 *.pyc
 *~
 __pycache__
-.DS_Store
-*.db
+
+# Instance directory - ignore all contents but keep the directory structure
+instance/*
+!instance/.gitkeep
+
+# Environment
 .env
+
+# Directories
 NLHE/
 =1.4.3
+
+# System
+.DS_Store
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
