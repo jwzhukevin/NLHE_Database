@@ -93,10 +93,10 @@ def create_app():
     # --- 初始化格式化ID ---
     def init_formatted_ids():
         """
-        初始化材料格式化ID:
-        1. 确保数据库中存在formatted_id列
-        2. 为所有空的格式化ID赋值
-        3. 若material表不存在则跳过，不报错
+        安全地初始化材料格式化ID:
+        1. 检查数据库和表是否存在
+        2. 检查字段兼容性
+        3. 使用原生SQL避免ORM字段映射问题
         4. 在多进程环境下安全执行
         """
         from sqlalchemy import inspect, text
@@ -108,33 +108,50 @@ def create_app():
         time.sleep(random.uniform(0.1, 0.5))
 
         try:
-            # 导入Material模型
-            from .models import Material
-
-            # 使用新的数据库连接，避免多进程共享连接问题
+            # 完全使用原生SQL，避免ORM模型依赖
             with db.engine.begin() as conn:
                 inspector = inspect(conn)
-                # 先判断material表是否存在
+
+                # 检查material表是否存在
                 table_names = inspector.get_table_names()
                 if 'material' not in table_names:
-                    app.logger.info("material表不存在，跳过格式化ID初始化。")
+                    app.logger.info("material表不存在，跳过格式化ID初始化")
                     return
-                # 检查formatted_id列是否存在
+
+                # 检查必要的列是否存在
                 columns = [col['name'] for col in inspector.get_columns('material')]
-                # 如果不存在formatted_id列，添加它（不带UNIQUE约束）
+                required_columns = ['id', 'formatted_id']
+
+                # 如果不存在formatted_id列，添加它
                 if 'formatted_id' not in columns:
                     conn.execute(text("ALTER TABLE material ADD COLUMN formatted_id VARCHAR(20)"))
                     app.logger.info("已添加formatted_id列到material表")
+                    columns.append('formatted_id')
 
-            # 更新所有没有格式化ID的记录
-            materials = Material.query.filter(Material.formatted_id.is_(None)).all()
-            count = 0
-            for material in materials:
-                material.formatted_id = f"IMR-{material.id:08d}"
-                count += 1
-            if count > 0:
-                db.session.commit()
-                app.logger.info(f"已更新 {count} 条材料记录的格式化ID")
+                # 检查是否有所有必要的列
+                missing_columns = [col for col in required_columns if col not in columns]
+                if missing_columns:
+                    app.logger.warning(f"material表缺少必要字段: {missing_columns}")
+                    return
+
+                # 使用原生SQL查询和更新
+                result = conn.execute(text(
+                    "SELECT id, formatted_id FROM material WHERE formatted_id IS NULL OR formatted_id = '' OR formatted_id = 'IMR-PENDING'"
+                ))
+                materials_to_update = result.fetchall()
+
+                count = 0
+                for material in materials_to_update:
+                    formatted_id = f"IMR-{material.id:08d}"
+                    conn.execute(text(
+                        "UPDATE material SET formatted_id = :formatted_id WHERE id = :id"
+                    ), {"formatted_id": formatted_id, "id": material.id})
+                    count += 1
+
+                if count > 0:
+                    app.logger.info(f"已更新 {count} 条材料记录的格式化ID")
+                else:
+                    app.logger.info("所有材料记录的格式化ID都已存在")
             # 尝试添加唯一索引（如果不存在）
             try:
                 with db.engine.begin() as conn:
@@ -191,9 +208,38 @@ def create_app():
         # 注册命令行命令
         register_commands(app)
 
-        # 初始化格式化ID（只在需要时执行）
-        # 在生产环境中，可以通过环境变量SKIP_DB_INIT=1来跳过初始化
-        if not os.environ.get('SKIP_DB_INIT'):
-            init_formatted_ids()
+        # 添加手动初始化命令，避免自动初始化导致的问题
+        @app.cli.command('init-formatted-ids')
+        def init_formatted_ids_command():
+            """手动初始化材料格式化ID"""
+            try:
+                init_formatted_ids()
+                print("格式化ID初始化完成")
+            except Exception as e:
+                print(f"初始化失败: {e}")
+                return 1
+
+        # 添加一个安全的初始化检查函数
+        def safe_init_check():
+            """安全地检查是否需要初始化"""
+            if os.environ.get('SKIP_DB_INIT'):
+                return
+            try:
+                # 只在明确需要时才初始化
+                from sqlalchemy import text
+                with db.engine.begin() as conn:
+                    result = conn.execute(text(
+                        "SELECT COUNT(*) as count FROM material WHERE formatted_id IS NULL OR formatted_id = '' OR formatted_id = 'IMR-PENDING'"
+                    ))
+                    count = result.scalar()
+                    if count > 0:
+                        app.logger.info(f"发现 {count} 条记录需要初始化格式化ID，请运行: flask init-formatted-ids")
+            except Exception:
+                # 如果检查失败，静默忽略
+                pass
+
+        # 在应用上下文中进行安全检查
+        with app.app_context():
+            safe_init_check()
 
     return app  # 返回完全初始化的应用实例

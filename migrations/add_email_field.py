@@ -12,13 +12,13 @@ from app import create_app, db
 from app.models import User
 
 def generate_random_email(username):
-    """Generate a random email address for a user"""
+    """为用户生成随机邮箱地址"""
     domains = ['example.com', 'email.com', 'test.org', 'mail.net', 'university.edu']
     domain = random.choice(domains)
     return f"{username}@{domain}"
 
 def migrate_database():
-    """Add email field to User model and generate unique email for existing users"""
+    """为User模型添加email字段并为现有用户生成唯一邮箱"""
     app = create_app()
     
     with app.app_context():
@@ -35,14 +35,14 @@ def migrate_database():
                 print("Email column already exists. Skipping migration.")
                 return
             
-            # Add email column to user table
+            # 为user表添加email列
             print("Adding email column to user table...")
             cursor.execute("ALTER TABLE user ADD COLUMN email TEXT")
             cursor.execute("ALTER TABLE user ADD COLUMN verification_code TEXT")
             cursor.execute("ALTER TABLE user ADD COLUMN code_expiry TIMESTAMP")
             conn.commit()
-            
-            # Fetch all users
+
+            # 获取所有用户
             users = User.query.all()
             print(f"Found {len(users)} users to migrate.")
             
@@ -61,18 +61,18 @@ def migrate_database():
                 
                 email_dict[email] = user.username
                 
-                # Update user email in database
+                # 在数据库中更新用户邮箱
                 print(f"Assigning email {email} to user {user.username}")
                 cursor.execute("UPDATE user SET email = ? WHERE id = ?", (email, user.id))
-            
-            # Make email column not nullable and unique
+
+            # 设置email列为非空且唯一
             print("Setting email column constraints...")
             conn.execute("CREATE UNIQUE INDEX idx_user_email ON user(email)")
             conn.commit()
-            
-            # Update users.dat file format
+
+            # 更新users.dat文件格式
             update_users_dat(app, email_dict)
-            
+
             print("Migration completed successfully!")
             
         except Exception as e:
@@ -83,7 +83,7 @@ def migrate_database():
             conn.close()
 
 def update_users_dat(app, email_dict):
-    """Update users.dat file to include email field"""
+    """更新users.dat文件以包含email字段"""
     users_file = os.path.join(app.root_path, 'static/users/users.dat')
     
     if not os.path.exists(users_file):
@@ -91,13 +91,13 @@ def update_users_dat(app, email_dict):
         return
     
     print(f"Updating users.dat file at {users_file}...")
-    
-    # Create backup
+
+    # 创建备份
     backup_file = f"{users_file}.bak"
     import shutil
     shutil.copy2(users_file, backup_file)
-    
-    # Read existing users
+
+    # 读取现有用户
     users = []
     with open(users_file, 'r') as f:
         for line in f:

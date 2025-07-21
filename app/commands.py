@@ -42,39 +42,39 @@ def register_commands(app):
         
         # 验证角色是否有效
         if role not in ['admin', 'user']:
-            click.echo(f'无效的角色: {role}。必须是 "admin" 或 "user"。')
+            click.echo(f'Invalid role: {role}. Must be "admin" or "user".')
             return 1
-        
+
         # 验证邮箱格式
         email = email.strip().lower()
         if '@' not in email:
-            click.echo(f'无效的邮箱格式: {email}')
+            click.echo(f'Invalid email format: {email}')
             return 1
-        
+
         # 检查邮箱是否已存在
         existing_email = User.query.filter_by(email=email).first()
         if existing_email:
-            click.echo(f'邮箱 {email} 已被注册。')
+            click.echo(f'Email {email} is already registered.')
             return 1
-        
+
         # 检查用户名是否可用
         existing_username = User.query.filter_by(username=username).first()
         if existing_username:
-            click.echo(f'用户名 {username} 已被使用。请选择其他用户名。')
+            click.echo(f'Username {username} is already taken. Please choose another username.')
             return 1
         
         # 创建新用户
-        click.echo(f'正在创建新的 {role} 账户，用户名: {username} (邮箱: {email})...')
+        click.echo(f'Creating new {role} account, username: {username} (email: {email})...')
         user = User(username=username, name=username, email=email, role=role)
         user.set_password(password)
         db.session.add(user)
-        
+
         try:
             db.session.commit()
-            click.echo(f'用户 {username} (角色: {role}) 创建成功。')
+            click.echo(f'User {username} (role: {role}) created successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            click.echo(f'创建用户时出错: {str(e)}')
+            click.echo(f'Error creating user: {str(e)}')
             return 1
         
         return 0
@@ -86,10 +86,10 @@ def register_commands(app):
         
         # 检查用户数据文件是否存在
         if not os.path.exists(users_file):
-            click.echo(f'错误: 未找到用户数据文件 {users_file}')
+            click.echo(f'Error: User data file not found {users_file}')
             return 1
-        
-        click.echo(f'正在从 {users_file} 初始化用户...')
+
+        click.echo(f'Initializing users from {users_file}...')
         count = 0
         
         # 读取并处理用户数据文件
@@ -104,20 +104,20 @@ def register_commands(app):
                     # 解析用户数据行
                     parts = line.split(':')
                     if len(parts) < 4:
-                        click.echo(f'错误: 行格式无效: {line}')
+                        click.echo(f'Error: Invalid line format: {line}')
                         continue
-                    
+
                     email, username, password, role = parts[0], parts[1], parts[2], parts[3]
-                    
+
                     # 验证邮箱格式
                     email = email.strip().lower()
                     if '@' not in email:
-                        click.echo(f'警告: 邮箱格式无效 "{email}"。跳过此用户。')
+                        click.echo(f'Warning: Invalid email format "{email}". Skipping this user.')
                         continue
-                    
+
                     # 验证用户角色
                     if role not in ['admin', 'user']:
-                        click.echo(f'警告: 用户 {username} 的角色 "{role}" 无效。设置为 "user"。')
+                        click.echo(f'Warning: Invalid role "{role}" for user {username}. Setting to "user".')
                         role = 'user'
                     
                     # 检查用户是否存在
@@ -128,24 +128,24 @@ def register_commands(app):
                         user.set_password(password)
                         user.role = role
                         user.name = user.name or username  # 如果name存在则保留，否则使用username
-                        click.echo(f'更新用户: {username} ({email}) 角色: {role}')
+                        click.echo(f'Updated user: {username} ({email}) role: {role}')
                     else:
                         # 创建新用户
                         user = User(username=username, name=username, email=email, role=role)
                         user.set_password(password)
                         db.session.add(user)
-                        click.echo(f'添加用户: {username} ({email}) 角色: {role}')
-                    
+                        click.echo(f'Added user: {username} ({email}) role: {role}')
+
                     count += 1
                 except Exception as e:
-                    click.echo(f'处理行 "{line}" 时出错: {str(e)}')
+                    click.echo(f'Error processing line "{line}": {str(e)}')
         
         try:
             db.session.commit()
-            click.echo(f'成功处理 {count} 个用户。')
+            click.echo(f'Successfully processed {count} users.')
         except SQLAlchemyError as e:
             db.session.rollback()
-            click.echo(f'数据库错误: {str(e)}')
+            click.echo(f'Database error: {str(e)}')
             return 1
         
         return 0
@@ -177,11 +177,11 @@ def register_commands(app):
         }
 
         materials_base_dir = os.path.abspath(dir)
-        click.echo(f"开始从目录 {materials_base_dir} 导入材料数据...")
-        
+        click.echo(f"Starting to import material data from directory {materials_base_dir}...")
+
         # 检查目录是否存在
         if not os.path.exists(materials_base_dir):
-            click.echo(f"错误：目录 {materials_base_dir} 不存在")
+            click.echo(f"Error: Directory {materials_base_dir} does not exist")
             return
 
         # 导入计数
@@ -225,7 +225,7 @@ def register_commands(app):
                 json_files = [f for f in os.listdir(material_path) if f.endswith('.json')]
                 
                 if not json_files:
-                    click.echo(f"警告：材料 {material_id} 文件夹中没有JSON文件")
+                    click.echo(f"Warning: No JSON files found in material {material_id} folder")
                     continue
                 
                 # 使用第一个JSON文件
@@ -266,7 +266,7 @@ def register_commands(app):
                         existing_material.cbm_coordi = material_data['cbm_coordi']
                         existing_material.vbm_index = material_data['vbm_index']
                         existing_material.cbm_index = material_data['cbm_index']
-                        click.echo(f"更新材料: {material_id} - {material_data['name']}")
+                        click.echo(f"Updated material: {material_id} - {material_data['name']}")
                     else:
                         # 创建新材料
                         new_material = Material(
@@ -289,26 +289,26 @@ def register_commands(app):
                             cbm_index=material_data['cbm_index']
                         )
                         db.session.add(new_material)
-                        click.echo(f"添加材料: {material_id} - {material_data['name']}")
+                        click.echo(f"Added material: {material_id} - {material_data['name']}")
                     
                     import_count += 1
                     
                 except (json.JSONDecodeError, IOError) as e:
-                    click.echo(f"错误：材料 {material_id} 的JSON文件读取失败: {str(e)}")
+                    click.echo(f"Error: Failed to read JSON file for material {material_id}: {str(e)}")
                     error_count += 1
                     continue
                 
             except Exception as e:
-                click.echo(f"处理材料 {material_id} 时出错: {str(e)}")
+                click.echo(f"Error: Failed to process material {material_id}: {str(e)}")
                 error_count += 1
                 continue
-        
+
         try:
             db.session.commit()
-            click.echo(f"数据导入完成: 成功导入 {import_count} 个材料, 失败 {error_count} 个")
+            click.echo(f"Data import completed: successfully imported {import_count} materials, failed {error_count}")
         except SQLAlchemyError as e:
             db.session.rollback()
-            click.echo(f"数据库提交错误: {str(e)}")
+            click.echo(f"Database commit error: {str(e)}")
 
     @app.cli.command()
     @click.option('--drop', is_flag=True, help='删除现有数据库后重新创建')
@@ -317,7 +317,7 @@ def register_commands(app):
         if drop:
             db.drop_all()
         db.create_all()
-        click.echo('数据库初始化完成。')
+        click.echo('Database initialization completed.')
 
     @app.cli.command()
     @click.option('--username', prompt=True)
@@ -330,7 +330,7 @@ def register_commands(app):
         # 验证邮箱格式
         email = email.strip().lower()
         if '@' not in email:
-            click.echo(f'无效的邮箱格式: {email}')
+            click.echo(f'Invalid email format: {email}')
             return 1
         
         # 检查用户是否已存在（通过邮箱或用户名）
@@ -338,38 +338,38 @@ def register_commands(app):
         user_by_username = User.query.filter_by(username=username).first()
         
         if user_by_email:
-            click.echo('更新现有用户...')
+            click.echo('Updating existing user...')
             user = user_by_email
             user.username = username
             user.set_password(password)
-            
+
             # 确保用户具有管理员角色
             if user.role != 'admin':
                 user.role = 'admin'
-                click.echo('用户角色已更新为管理员。')
+                click.echo('User role updated to admin.')
         elif user_by_username:
-            click.echo('更新现有用户并添加邮箱...')
+            click.echo('Updating existing user and adding email...')
             user = user_by_username
             user.email = email
             user.set_password(password)
-            
+
             # 确保用户具有管理员角色
             if user.role != 'admin':
                 user.role = 'admin'
-                click.echo('用户角色已更新为管理员。')
+                click.echo('User role updated to admin.')
         else:
-            click.echo('创建新管理员用户...')
+            click.echo('Creating new admin user...')
             user = User(username=username, name='NLHE Database', email=email, role='admin')
             user.set_password(password)
             db.session.add(user)
         
         try:
             db.session.commit()
-            click.echo('管理员账户更新成功。')
+            click.echo('Admin account updated successfully.')
             return 0
         except Exception as e:
             db.session.rollback()
-            click.echo(f'创建/更新管理员时出错: {str(e)}')
+            click.echo(f'Error creating/updating admin: {str(e)}')
             return 1
 
     @app.cli.command()
@@ -408,22 +408,22 @@ def register_commands(app):
         """一次性初始化数据库并从JSON文件导入所有数据"""
         # 初始化数据库
         if drop:
-            click.echo('删除并重新创建所有表...')
+            click.echo('Dropping and recreating all tables...')
             db.drop_all()
         db.create_all()
-        click.echo('数据库结构初始化完成。')
+        click.echo('Database structure initialization completed.')
         
         import_count = 0
         error_count = 0
         
         # 测试模式：直接从CIF文件创建材料记录
         if test and json_dir == 'app/static/structures':
-            click.echo('测试模式已启用：正在从CIF文件创建材料...')
-            
+            click.echo('Test mode enabled: creating materials from CIF files...')
+
             # 获取结构文件目录
             structures_dir = os.path.abspath(json_dir)
             if not os.path.exists(structures_dir):
-                click.echo(f"错误：目录 {structures_dir} 不存在")
+                click.echo(f"Error: Directory {structures_dir} does not exist")
                 return
             
             # 遍历所有CIF文件
@@ -465,24 +465,24 @@ def register_commands(app):
                         db.session.add(material)
                         try:
                             db.session.commit()
-                            click.echo(f"添加测试材料: {material_id} - {material_name}")
+                            click.echo(f"Added test material: {material_id} - {material_name}")
                             import_count += 1
                         except Exception as e:
                             db.session.rollback()
-                            click.echo(f"添加材料 {material_name} 失败: {str(e)}")
+                            click.echo(f"Failed to add material {material_name}: {str(e)}")
                             error_count += 1
-                        
+
                     except Exception as e:
-                        click.echo(f"处理测试材料文件 {file_name} 时出错: {str(e)}")
+                        click.echo(f"Error processing test material file {file_name}: {str(e)}")
                         error_count += 1
                         continue
-            
-            click.echo(f"测试数据导入完成: 成功导入 {import_count} 个材料, 失败 {error_count} 个")
-            click.echo('测试数据库初始化成功完成。')
+
+            click.echo(f"Test data import completed: successfully imported {import_count} materials, failed {error_count}")
+            click.echo('Test database initialization completed successfully.')
             return
         
-        # 正常模式：从JSON文件导入    
-        click.echo('从JSON文件导入材料数据...')
+        # 正常模式：从JSON文件导入
+        click.echo('Importing material data from JSON files...')
         
         # 递归扫描所有子目录查找JSON文件
         for root, dirs, files in os.walk(json_dir):
@@ -491,7 +491,7 @@ def register_commands(app):
             if not json_files:
                 continue
             
-            # 从目录名中提取ID (如 IMR-00000001)
+            # 从目录名中提取ID (如 IMR-1)
             dir_name = os.path.basename(root)
             material_id = None
             
@@ -561,28 +561,28 @@ def register_commands(app):
                         cbm_index=material_data['cbm_index']
                     )
                     db.session.add(new_material)
-                    click.echo(f"添加材料: {material_id} - {material_data['name']}")
-                
+                    click.echo(f"Added material: {material_id} - {material_data['name']}")
+
                 import_count += 1
-                
+
             except json.JSONDecodeError:
-                click.echo(f"错误：材料 {dir_name} 的JSON文件格式不正确")
+                click.echo(f"Error: Incorrect JSON file format for material {dir_name}")
                 error_count += 1
                 continue
-            
+
             except Exception as e:
-                click.echo(f"处理材料 {dir_name} 时出错: {str(e)}")
+                click.echo(f"Error processing material {dir_name}: {str(e)}")
                 error_count += 1
                 continue
-        
+
         try:
             db.session.commit()
-            click.echo(f"数据导入完成: 成功导入 {import_count} 个材料, 失败 {error_count} 个")
+            click.echo(f"Data import completed: successfully imported {import_count} materials, failed {error_count}")
         except SQLAlchemyError as e:
             db.session.rollback()
-            click.echo(f"数据库提交错误: {str(e)}")
-            
-        click.echo('数据库初始化和数据导入成功完成。')
+            click.echo(f"Database commit error: {str(e)}")
+
+        click.echo('Database initialization and data import completed successfully.')
 
     @app.cli.command('migrate-users-email')
     def migrate_users_email():
@@ -592,14 +592,56 @@ def register_commands(app):
             import sys
             import os
             sys.path.append(os.path.join(os.path.dirname(app.root_path), 'migrations'))
-            
+
             from migrations.add_email_field import migrate_database
             migrate_database()
-            
-            click.echo("用户迁移成功完成。")
+
+            click.echo("User migration completed successfully.")
             return 0
         except Exception as e:
-            click.echo(f"迁移过程中出错: {str(e)}")
+            click.echo(f"Error during migration: {str(e)}")
+            return 1
+
+    @app.cli.command('check-db-structure')
+    def check_db_structure():
+        """检查数据库结构与模型的兼容性"""
+        from sqlalchemy import inspect, text
+
+        try:
+            with db.engine.begin() as conn:
+                inspector = inspect(conn)
+
+                # 检查material表
+                if 'material' in inspector.get_table_names():
+                    columns = [col['name'] for col in inspector.get_columns('material')]
+                    click.echo(f"Material table fields: {', '.join(columns)}")
+
+                    # 检查必要字段
+                    required_fields = ['id', 'formatted_id', 'name']
+                    missing_fields = [field for field in required_fields if field not in columns]
+                    if missing_fields:
+                        click.echo(f"⚠ Missing fields: {', '.join(missing_fields)}")
+                    else:
+                        click.echo("✓ Material table structure is normal")
+                else:
+                    click.echo("⚠ Material table does not exist")
+
+                # 检查user表
+                if 'user' in inspector.get_table_names():
+                    columns = [col['name'] for col in inspector.get_columns('user')]
+                    click.echo(f"User table fields: {', '.join(columns)}")
+
+                    required_fields = ['id', 'username', 'email', 'password_hash']
+                    missing_fields = [field for field in required_fields if field not in columns]
+                    if missing_fields:
+                        click.echo(f"⚠ Missing fields: {', '.join(missing_fields)}")
+                    else:
+                        click.echo("✓ User table structure is normal")
+                else:
+                    click.echo("⚠ User table does not exist")
+
+        except Exception as e:
+            click.echo(f"Error checking database structure: {str(e)}")
             return 1
 
     @app.cli.command('import-member')
@@ -607,18 +649,23 @@ def register_commands(app):
     @click.option('--photo', required=True, help='成员照片文件路径')
     def import_member(info, photo):
         """导入单个成员信息"""
-        with open(info, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        member = Member(
-            name=data.get('name'),
-            title=data.get('title'),
-            bio=data.get('bio'),
-            achievements='\n'.join(data.get('achievements', [])),
-            photo=data.get('photo') or photo.split('/')[-1]
-        )
-        db.session.add(member)
-        db.session.commit()
-        click.echo(f"导入成员：{member.name}")
+        try:
+            with open(info, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            member = Member(
+                name=data.get('name'),
+                title=data.get('title'),
+                bio=data.get('bio'),
+                achievements='\n'.join(data.get('achievements', [])),
+                photo=data.get('photo') or photo.split('/')[-1]
+            )
+            db.session.add(member)
+            db.session.commit()
+            click.echo(f"Imported member: {member.name}")
+            return 0
+        except Exception as e:
+            click.echo(f"Error importing member: {str(e)}")
+            return 1
 
     # 注册命令到Flask
     app.cli.add_command(import_member)

@@ -15,10 +15,10 @@ import datetime
 class User(db.Model, UserMixin):
     """
     用户数据模型类
-    
+
     负责存储用户认证信息和基本资料，集成了Flask-Login接口用于用户会话管理
     """
-    # 用户表字段定义
+    # 用户表字段定义（保持与当前数据库结构一致）
     id = db.Column(db.Integer, primary_key=True)  # 主键ID，自动递增
     name = db.Column(db.String(20))               # 用户显示名称（最长20字符）
     username = db.Column(db.String(20))           # 登录用户名
@@ -81,11 +81,11 @@ class User(db.Model, UserMixin):
 class Material(db.Model):
     """
     材料数据模型类
-    
+
     存储材料的结构信息、能量特性、表面特性和能带结构等物理化学属性
     作为应用的核心数据模型，包含了丰富的材料性质字段
     """
-    # 材料表字段定义
+    # 材料表字段定义（保持与当前数据库结构一致）
     id = db.Column(db.Integer, primary_key=True)  # 主键ID（用于唯一标识材料）
     formatted_id = db.Column(db.String(20), unique=True)  # 格式化ID（如IMR-00000001）
     name = db.Column(db.String(120), nullable=False)  # 材料名称（必填，允许重复）
@@ -123,9 +123,9 @@ class Material(db.Model):
     def validate(self):
         """
         验证材料数据的有效性和合理性
-        
+
         如果数据无效，将抛出ValueError异常
-        
+
         验证规则:
             1. 名称不能为空
             2. 如果提供了总能量，必须在合理范围内
@@ -134,15 +134,15 @@ class Material(db.Model):
         # 验证名称不能为空
         if not self.name:
             raise ValueError("Material name is required")
-            
+
         # 验证总能量在合理物理范围内（如果有值）
         if self.total_energy is not None and not (-1e6 < self.total_energy < 1e6):
             raise ValueError("Total energy out of valid range")
-        
+
         # 当存在形成能时验证其范围（防止异常值）
         if self.formation_energy is not None and not (-1e4 < self.formation_energy < 1e4):
             raise ValueError("Formation energy out of valid range")
-        
+
         # 可扩展其他参数验证逻辑
         # 例如验证带隙、功函数等是否在合理范围内
         # 或检查坐标格式是否正确
@@ -177,19 +177,21 @@ from sqlalchemy import event
 def set_formatted_id(mapper, connection, target):
     """
     在材料记录插入前自动设置格式化ID
-    
+
     由于此时还没有实际ID，我们会在after_insert中再设置一次格式化ID
     这里先插入一个占位符
     """
+    _ = mapper, connection  # 忽略未使用的参数
     target.formatted_id = 'IMR-PENDING'  # 设置一个临时占位符
 
 @event.listens_for(Material, 'after_insert')
 def update_formatted_id(mapper, connection, target):
     """
     在材料记录插入后更新格式化ID
-    
+
     这时material.id已经生成，可以使用它来构建格式化ID
     """
+    _ = mapper  # 忽略未使用的参数
     # 使用原始SQL更新，避免触发额外的事件
     connection.execute(
         Material.__table__.update().

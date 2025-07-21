@@ -8,9 +8,7 @@
 # ./initdb.sh --force --test  # 强制重建并使用测试数据集
 
 
-# 激活Python虚拟环境
-echo "Activating NLHE virtual environment..."
-source NLHE/bin/activate
+# 虚拟环境由调用脚本管理
 
 # 设置默认选项
 DROP_OPTION=""
@@ -112,5 +110,4 @@ else
     exit 1
 fi
 
-# 可选：取消激活虚拟环境
-# deactivate
+# 虚拟环境由调用脚本管理

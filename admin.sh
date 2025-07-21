@@ -1,10 +1,10 @@
 #!/bin/bash
-# Script to create or update admin user
+# 创建或更新管理员用户的脚本
 
-# Set Flask environment
+# 设置Flask环境变量
 export FLASK_APP=app
 
-# Show debug information
+# 显示调试信息
 echo "==============================="
 echo "Admin User Creation Script"
 echo "==============================="
@@ -13,7 +13,7 @@ echo "Current directory: $(pwd)"
 echo "NOTE: You will be prompted for username, email, and password"
 echo "==============================="
 
-# Ensure database is initialized
+# 确保数据库已初始化
 echo "Ensuring database is initialized..."
 flask initdb
 if [ $? -ne 0 ]; then
@@ -21,7 +21,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Run email migration if needed
+# 运行邮箱字段迁移（如果需要）
 echo "Checking and running email field migration if needed..."
 flask migrate-users-email
 if [ $? -ne 0 ]; then
@@ -29,7 +29,7 @@ if [ $? -ne 0 ]; then
     echo "You might need to recreate the database with 'flask initdb --drop' if problems persist."
 fi
 
-# Run admin creation command
+# 运行管理员创建命令
 echo "Creating/updating admin user..."
 flask admin
 
