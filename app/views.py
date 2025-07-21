@@ -131,15 +131,15 @@ def index():
                              search_params=search_params)  # Search parameters (for form display)
 
     except Exception as e:
-        current_app.logger.error(f"数据库查询错误: {str(e)}")
-        # 返回空的材料列表和搜索参数
+        current_app.logger.error(f"Database query error: {str(e)}")
+        # Return empty material list and search parameters
         from flask_sqlalchemy import Pagination
         empty_pagination = Pagination(query=None, page=1, per_page=10, total=0, items=[])
         return render_template('main/index.html',
                              materials=[],
                              pagination=empty_pagination,
                              search_params={},
-                             error_message="数据库未初始化，请联系管理员")
+                             error_message="Database not initialized, please contact administrator")
 
 # Define an admin check decorator
 def admin_required(view_func):
@@ -352,7 +352,7 @@ def edit(material_id):
             # 结构文件上传，直接保存原始文件名
             if structure_file and structure_file.filename:
                 if not structure_file.filename.endswith('.cif'):
-                    flash('请上传.cif格式的结构文件！', 'error')
+                    flash('Please upload a .cif format structure file!', 'error')
                     return redirect(url_for('views.edit', material_id=material_id))
                 structure_filename = secure_filename(structure_file.filename)
                 structure_path = os.path.join(structure_dir, structure_filename)
@@ -366,10 +366,10 @@ def edit(material_id):
                         Material.id != numeric_id
                     ).first()
                     if existing_material:
-                        flash(f'材料名"{chemical_name}"已存在，请更换CIF文件', 'error')
+                        flash(f'Material name "{chemical_name}" already exists, please change CIF file', 'error')
                         return redirect(url_for('views.edit', material_id=material_id))
                     material.name = chemical_name
-                    flash(f'材料名已从CIF文件更新: {chemical_name}', 'info')
+                    flash(f'Material name updated from CIF file: {chemical_name}', 'info')
 
             # band文件上传
             if band_file and band_file.filename:
@@ -396,7 +396,7 @@ def edit(material_id):
             if not structure_file or not structure_file.filename or not material.name:
                 material.name = request.form.get('name')
             if not material.name:
-                flash('材料名不能为空！', 'error')
+                flash('Material name cannot be empty!', 'error')
                 return redirect(url_for('views.edit', material_id=material_id))
             material.status = request.form.get('status')
             material.total_energy = safe_float(request.form.get('total_energy'))
@@ -413,14 +413,14 @@ def edit(material_id):
             material.vbm_index = safe_int(request.form.get('vbm_index'))
             material.cbm_index = safe_int(request.form.get('cbm_index'))
             db.session.commit()
-            flash('材料信息已更新。', 'success')
+            flash('Material information updated successfully.', 'success')
             return redirect(url_for('views.detail', material_id=material_id))
         except ValueError as e:
-            flash(f'数据无效: {str(e)}', 'error')
+            flash(f'Invalid data: {str(e)}', 'error')
             return redirect(url_for('views.edit', material_id=material_id))
         except Exception as e:
             db.session.rollback()
-            flash(f'发生错误: {str(e)}', 'error')
+            flash(f'An error occurred: {str(e)}', 'error')
             return redirect(url_for('views.edit', material_id=material_id))
 
     # GET请求，显示所有.cif、band、sc文件
