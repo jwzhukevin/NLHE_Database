@@ -1830,7 +1830,8 @@
                 <th>Material Name</th>
                 <th>Space Group</th>
                 <th>Fermi Level (eV)</th>
-                <th>Metal Type</th>
+                <th>Band Gap (eV)</th>
+                <th>Max SC (μA/V²)</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -1846,7 +1847,14 @@
                 </td>
                 <td>{{ material.sg_name if material.sg_name else 'Unknown' }} ({{ material.sg_num if material.sg_num else 'N/A' }})</td>
                 <td>{{ material.fermi_level if material.fermi_level is not none else 'N/A' }}</td>
-                <td>{{ material.metal_type if material.metal_type else 'Unknown' }}</td>
+                <td class="band-gap-cell" data-material-id="{{ material.id }}">Loading...</td>
+                <td class="max-sc-cell" data-material-id="{{ material.id }}">
+                    {% if material.max_sc is not none %}
+                        {{ "%.4f"|format(material.max_sc) }}
+                    {% else %}
+                        Loading...
+                    {% endif %}
+                </td>
                 <td>
                     <div class="action-buttons">
                         <a class="mp" 
@@ -2256,6 +2264,82 @@ function validateSearch() {
     
     return true; // 允许表单提交
 }
+</script>
+
+<!-- Materials Type数据同步脚本 -->
+<script>
+    // 监听材料数据更新事件
+    window.addEventListener('materialDataUpdated', function(event) {
+        const { materialId, bandGap, maxSC } = event.detail;
+        updateMaterialDataInTable(materialId, bandGap, maxSC);
+    });
+
+    // 更新表格中的材料数据
+    function updateMaterialDataInTable(materialId, bandGap, maxSC) {
+        try {
+            // 查找对应的表格行
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const idCell = row.querySelector('td:first-child');
+                if (idCell && idCell.textContent.includes(`IMR-${materialId}`)) {
+
+                    // 更新Band Gap列（第6列）
+                    const bandGapCell = row.querySelector('.band-gap-cell[data-material-id="' + materialId + '"]');
+                    if (bandGapCell && bandGap !== undefined && bandGap !== null) {
+                        const oldGap = bandGapCell.textContent;
+                        bandGapCell.textContent = typeof bandGap === 'number' ? bandGap.toFixed(4) : bandGap;
+
+                        // 添加视觉反馈
+                        bandGapCell.style.backgroundColor = '#e8f5e8';
+                        bandGapCell.style.transition = 'background-color 0.5s';
+
+                        setTimeout(() => {
+                            bandGapCell.style.backgroundColor = '';
+                        }, 2000);
+
+                        console.log(`Updated material ${materialId} Band Gap from "${oldGap}" to "${bandGap}"`);
+                    }
+
+                    // 更新Max SC列（第7列）
+                    const maxSCCell = row.querySelector('.max-sc-cell[data-material-id="' + materialId + '"]');
+                    if (maxSCCell && maxSC !== undefined && maxSC !== null) {
+                        const oldSC = maxSCCell.textContent;
+                        maxSCCell.textContent = typeof maxSC === 'number' ? maxSC.toFixed(4) : maxSC;
+
+                        // 添加视觉反馈
+                        maxSCCell.style.backgroundColor = '#e8f5e8';
+                        maxSCCell.style.transition = 'background-color 0.5s';
+
+                        setTimeout(() => {
+                            maxSCCell.style.backgroundColor = '';
+                        }, 2000);
+
+                        console.log(`Updated material ${materialId} Max SC from "${oldSC}" to "${maxSC}"`);
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error updating material data in table:', error);
+        }
+    }
+
+    // 页面加载时检查是否有待更新的材料数据
+    document.addEventListener('DOMContentLoaded', function() {
+        // 如果从detail页面返回，检查localStorage中是否有更新的材料数据
+        const updatedData = localStorage.getItem('updatedMaterialData');
+        if (updatedData) {
+            try {
+                const updates = JSON.parse(updatedData);
+                updates.forEach(update => {
+                    updateMaterialDataInTable(update.materialId, update.bandGap, update.maxSC);
+                });
+                // 清除localStorage中的数据
+                localStorage.removeItem('updatedMaterialData');
+            } catch (error) {
+                console.error('Error processing updated material data:', error);
+            }
+        }
+    });
 </script>
 
 {% endblock %}

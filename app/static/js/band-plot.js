@@ -48,11 +48,118 @@ async function parseBandData(filePath) {
             }
         }
         
-        return { kpoints, bands, kLabels, kPositions };
+        // 分析能带特性
+        const bandAnalysis = analyzeBandStructure(bands);
+
+        return { kpoints, bands, kLabels, kPositions, bandAnalysis };
     } catch (error) {
         console.error('Error parsing band data:', error);
         throw error;
     }
+}
+
+// 分析能带结构特性
+function analyzeBandStructure(bands) {
+    if (!bands || bands.length === 0) {
+        return null;
+    }
+
+    // 找到所有能量值
+    const allEnergies = bands.flat();
+
+    // 找到费米能级附近的能带（假设费米能级为0）
+    const fermiLevel = 0;
+    const tolerance = 0.1; // 容差值，用于判断能带是否跨越费米能级
+
+    // 分离价带和导带
+    const valenceBands = [];
+    const conductionBands = [];
+
+    bands.forEach((band, bandIndex) => {
+        const maxEnergy = Math.max(...band);
+        const minEnergy = Math.min(...band);
+
+        if (maxEnergy < fermiLevel - tolerance) {
+            // 完全在费米能级以下的能带 - 价带
+            valenceBands.push({ index: bandIndex, energies: band });
+        } else if (minEnergy > fermiLevel + tolerance) {
+            // 完全在费米能级以上的能带 - 导带
+            conductionBands.push({ index: bandIndex, energies: band });
+        }
+        // 跨越费米能级的能带可能表示金属性
+    });
+
+    // 计算带隙
+    let bandGap = null;
+    let vbmEnergy = null;
+    let cbmEnergy = null;
+    let vbmCoordinates = "Not available";
+    let cbmCoordinates = "Not available";
+    let materialType = "Unknown";
+
+    if (valenceBands.length > 0 && conductionBands.length > 0) {
+        // 找到价带顶 (VBM - Valence Band Maximum)
+        let vbmValue = -Infinity;
+        let vbmBandIndex = -1;
+        let vbmKIndex = -1;
+
+        valenceBands.forEach(band => {
+            band.energies.forEach((energy, kIndex) => {
+                if (energy > vbmValue) {
+                    vbmValue = energy;
+                    vbmBandIndex = band.index;
+                    vbmKIndex = kIndex;
+                }
+            });
+        });
+
+        // 找到导带底 (CBM - Conduction Band Minimum)
+        let cbmValue = Infinity;
+        let cbmBandIndex = -1;
+        let cbmKIndex = -1;
+
+        conductionBands.forEach(band => {
+            band.energies.forEach((energy, kIndex) => {
+                if (energy < cbmValue) {
+                    cbmValue = energy;
+                    cbmBandIndex = band.index;
+                    cbmKIndex = kIndex;
+                }
+            });
+        });
+
+        vbmEnergy = vbmValue;
+        cbmEnergy = cbmValue;
+        bandGap = cbmValue - vbmValue;
+
+        // 简化的坐标表示（使用k点索引）
+        vbmCoordinates = `k-point ${vbmKIndex}`;
+        cbmCoordinates = `k-point ${cbmKIndex}`;
+
+        // 判断材料类型
+        if (bandGap > 3.0) {
+            materialType = "Insulator";
+        } else if (bandGap > 0.1) {
+            materialType = "Semiconductor";
+        } else {
+            materialType = "Metal";
+        }
+    } else {
+        // 没有明显的价带导带分离，可能是金属
+        materialType = "Metal";
+        bandGap = 0;
+    }
+
+    return {
+        bandGap: bandGap,
+        vbmEnergy: vbmEnergy,
+        cbmEnergy: cbmEnergy,
+        vbmCoordinates: vbmCoordinates,
+        cbmCoordinates: cbmCoordinates,
+        materialType: materialType,
+        valenceBandCount: valenceBands.length,
+        conductionBandCount: conductionBands.length
+    };
 }
 
 // 绘制能带图
@@ -98,7 +205,7 @@ async function plotBandStructure(containerId, bandDataPath) {
             }
             return;
         }
-        const { kpoints, bands, kLabels, kPositions } = bandData;
+        const { kpoints, bands, kLabels, kPositions, bandAnalysis } = bandData;
         
         // 准备绘图数据
         const traces = [];
@@ -246,7 +353,12 @@ async function plotBandStructure(containerId, bandDataPath) {
         
         // 创建图表
         await Plotly.newPlot(containerId, traces, layout, config);
-        
+
+        // 更新页面上的能带信息
+        if (bandAnalysis) {
+            updateBandStructureInfo(bandAnalysis);
+        }
+
         // 添加窗口大小调整监听器，以确保图表自适应容器大小
         const resizeGraph = () => {
             Plotly.relayout(containerId, {
@@ -298,5 +410,194 @@ async function plotBandStructure(containerId, bandDataPath) {
                 <p style=\"color: #666; font-size: 18px; text-align: center;\">No data</p>
             </div>`;
         }
+    }
+}
+
+// 更新页面上的能带结构信息
+function updateBandStructureInfo(bandAnalysis) {
+    try {
+        console.log('Updating band structure info:', bandAnalysis);
+
+        // 更新带隙信息
+        const bandGapElement = document.querySelector('#band-gap .property-value');
+        if (bandGapElement) {
+            if (bandAnalysis.bandGap !== null && bandAnalysis.bandGap !== undefined) {
+                bandGapElement.textContent = `${bandAnalysis.bandGap.toFixed(4)} eV`;
+            } else {
+                bandGapElement.textContent = 'N/A';
+            }
+        }
+
+        // 更新VBM能量
+        const vbmEnergyElement = document.querySelector('#vbm-energy .property-value');
+        if (vbmEnergyElement) {
+            if (bandAnalysis.vbmEnergy !== null && bandAnalysis.vbmEnergy !== undefined) {
+                vbmEnergyElement.textContent = `${bandAnalysis.vbmEnergy.toFixed(4)} eV`;
+            } else {
+                vbmEnergyElement.textContent = 'N/A';
+            }
+        }
+
+        // 更新CBM能量
+        const cbmEnergyElement = document.querySelector('#cbm-energy .property-value');
+        if (cbmEnergyElement) {
+            if (bandAnalysis.cbmEnergy !== null && bandAnalysis.cbmEnergy !== undefined) {
+                cbmEnergyElement.textContent = `${bandAnalysis.cbmEnergy.toFixed(4)} eV`;
+            } else {
+                cbmEnergyElement.textContent = 'N/A';
+            }
+        }
+
+        // 更新VBM坐标
+        const vbmCoordElement = document.querySelector('#vbm-coordinates .property-value');
+        if (vbmCoordElement) {
+            vbmCoordElement.textContent = bandAnalysis.vbmCoordinates || 'Not available';
+        }
+
+        // 更新CBM坐标
+        const cbmCoordElement = document.querySelector('#cbm-coordinates .property-value');
+        if (cbmCoordElement) {
+            cbmCoordElement.textContent = bandAnalysis.cbmCoordinates || 'Not available';
+        }
+
+        // 更新材料类型（Materials Type字段）
+        const materialTypeElement = document.querySelector('#material-type .property-value');
+        if (materialTypeElement) {
+            materialTypeElement.textContent = bandAnalysis.materialType || 'Unknown';
+        }
+
+        // 尝试更新数据库中的metal_type字段
+        if (bandAnalysis.materialType) {
+            updateMaterialTypeInDatabase(bandAnalysis.materialType);
+        }
+
+        // 获取Max SC数据
+        const maxSCData = getMaxSCFromDatabase();
+
+        // 触发全局事件，通知其他页面数据已更新
+        window.dispatchEvent(new CustomEvent('materialDataUpdated', {
+            detail: {
+                materialId: getMaterialIdFromUrl(),
+                bandGap: bandAnalysis.bandGap,
+                maxSC: maxSCData
+            }
+        }));
+
+        console.log('Band structure info updated successfully');
+
+    } catch (error) {
+        console.error('Error updating band structure info:', error);
+    }
+}
+
+// 获取当前页面的材料ID
+function getMaterialIdFromUrl() {
+    const materialIdMatch = window.location.pathname.match(/\/materials\/(\d+)/);
+    return materialIdMatch ? materialIdMatch[1] : null;
+}
+
+// 从页面获取Max SC数据
+function getMaxSCFromDatabase() {
+    try {
+        // 从Shift Current Properties卡片中读取Max SC值
+        const maxSCElements = document.querySelectorAll('#shift-current-properties .property-value');
+        for (let element of maxSCElements) {
+            const text = element.textContent.trim();
+            if (text.includes('μA/V²')) {
+                // 提取数值部分
+                const match = text.match(/([\d.]+)\s*μA\/V²/);
+                if (match) {
+                    return parseFloat(match[1]);
+                }
+            }
+        }
+
+        // 如果没有找到，尝试从模板变量中获取（如果页面刚加载）
+        const materialData = window.materialData;
+        if (materialData && materialData.max_sc !== undefined && materialData.max_sc !== null) {
+            return materialData.max_sc;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error getting Max SC data:', error);
+        return null;
+    }
+}
+
+// 更新数据库中的材料类型
+function updateMaterialTypeInDatabase(materialType) {
+    try {
+        // 获取材料ID
+        const materialId = getMaterialIdFromUrl();
+        if (!materialId) {
+            console.log('Could not extract material ID from URL');
+            return;
+        }
+
+        // 发送更新请求到后端
+        fetch(`/api/materials/${materialId}/update-metal-type`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                metal_type: materialType.toLowerCase()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Material type updated in database:', materialType);
+
+                // 保存更新信息到localStorage，以便index页面使用
+                const maxSC = getMaxSCFromDatabase();
+                saveMaterialDataUpdate(materialId, bandAnalysis.bandGap, maxSC);
+
+            } else {
+                console.log('Failed to update material type in database:', data.error);
+            }
+        })
+        .catch(error => {
+            console.log('Error updating material type in database:', error);
+        });
+
+    } catch (error) {
+        console.error('Error in updateMaterialTypeInDatabase:', error);
+    }
+}
+
+// 保存材料数据更新信息到localStorage
+function saveMaterialDataUpdate(materialId, bandGap, maxSC) {
+    try {
+        // 获取现有的更新记录
+        let updatedData = localStorage.getItem('updatedMaterialData');
+        let updates = updatedData ? JSON.parse(updatedData) : [];
+
+        // 检查是否已经有该材料的更新记录
+        const existingIndex = updates.findIndex(update => update.materialId === materialId);
+
+        const updateInfo = {
+            materialId: materialId,
+            bandGap: bandGap,
+            maxSC: maxSC,
+            timestamp: new Date().toISOString()
+        };
+
+        if (existingIndex >= 0) {
+            // 更新现有记录
+            updates[existingIndex] = updateInfo;
+        } else {
+            // 添加新记录
+            updates.push(updateInfo);
+        }
+
+        // 保存到localStorage
+        localStorage.setItem('updatedMaterialData', JSON.stringify(updates));
+
+        console.log('Material data update saved to localStorage:', updateInfo);
+
+    } catch (error) {
+        console.error('Error saving material data update:', error);
     }
 }

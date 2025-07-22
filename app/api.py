@@ -496,3 +496,57 @@ def update_material_names():
         db.session.rollback()
         current_app.logger.error(f"Error updating material names: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@bp.route('/materials/<int:material_id>/update-metal-type', methods=['POST'])
+def update_material_metal_type(material_id):
+    """
+    更新材料的金属类型
+
+    参数:
+        material_id: 材料ID
+
+    请求体:
+        {
+            "metal_type": "metal|semiconductor|insulator"
+        }
+
+    返回:
+        更新结果的JSON响应
+    """
+    try:
+        # 获取材料记录
+        material = Material.query.get_or_404(material_id)
+
+        # 获取请求数据
+        data = request.get_json()
+        if not data or 'metal_type' not in data:
+            return jsonify({"error": "metal_type is required"}), 400
+
+        metal_type = data['metal_type'].strip().lower()
+
+        # 验证metal_type值
+        valid_types = ['metal', 'semiconductor', 'insulator', 'unknown']
+        if metal_type not in valid_types:
+            return jsonify({"error": f"Invalid metal_type. Must be one of: {', '.join(valid_types)}"}), 400
+
+        # 更新材料类型
+        old_type = material.metal_type
+        material.metal_type = metal_type
+
+        # 提交更改
+        db.session.commit()
+
+        current_app.logger.info(f"Updated material {material_id} metal_type from '{old_type}' to '{metal_type}'")
+
+        return jsonify({
+            "success": True,
+            "message": f"Material type updated to {metal_type}",
+            "old_type": old_type,
+            "new_type": metal_type
+        })
+
+    except Exception as e:
+        # 回滚会话并返回错误
+        db.session.rollback()
+        current_app.logger.error(f"Error updating material metal type: {str(e)}")
+        return jsonify({"error": str(e)}), 500
