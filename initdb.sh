@@ -91,10 +91,10 @@ if [ $? -eq 0 ]; then
     # 导入材料数据
     if [ -n "$TEST_OPTION" ]; then
         echo "Importing test data..."
-        flask import-json --dir="$JSON_DIR" $TEST_OPTION
+        flask import-materials --dir="$JSON_DIR" $TEST_OPTION
     else
         echo "Importing material data..."
-        flask import-json --dir="$JSON_DIR"
+        flask import-materials --dir="$JSON_DIR"
     fi
     
     # 验证数据导入是否成功

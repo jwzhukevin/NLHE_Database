@@ -151,30 +151,12 @@ def register_commands(app):
         return 0
 
     # 添加其他CLI命令...
-    @app.cli.command('import-json')
-    @click.option('--dir', default='app/static/materials', help='材料数据JSON文件所在目录')
-    def import_json_data(dir):
-        """从JSON文件批量导入材料数据"""
-        
-        # 设置默认值
-        default_data = {
-            "name": "No Data",
-            "status": "No Data",
-            "structure_file": None,
-            "total_energy": None,
-            "formation_energy": None,
-            "fermi_level": None,
-            "vacuum_level": None,
-            "workfunction": None,
-            "metal_type": "No Data",
-            "gap": None,
-            "vbm_energy": None,
-            "cbm_energy": None,
-            "vbm_coordi": "No Data",
-            "cbm_coordi": "No Data",
-            "vbm_index": None,
-            "cbm_index": None
-        }
+    @app.cli.command('import-materials')
+    @click.option('--dir', default='app/static/materials', help='材料数据目录路径')
+    def import_materials_data(dir):
+        """从sc_data/data.json文件批量导入材料数据"""
+
+
 
         materials_base_dir = os.path.abspath(dir)
         click.echo(f"Starting to import material data from directory {materials_base_dir}...")
@@ -202,101 +184,99 @@ def register_commands(app):
             material_path = os.path.join(materials_base_dir, material_folder)
             
             try:
-                # 首先检查是否有CIF文件并从中读取化学式
+                # 读取sc_data/data.json文件
+                sc_data_path = os.path.join(material_path, 'sc_data', 'data.json')
+                sc_data = None
+
+                if os.path.exists(sc_data_path):
+                    try:
+                        with open(sc_data_path, 'r', encoding='utf-8') as f:
+                            sc_data = json.load(f)
+                        click.echo(f"Found sc_data for {material_id}")
+                    except Exception as e:
+                        click.echo(f"Error reading sc_data for {material_id}: {str(e)}")
+                        sc_data = None
+                else:
+                    click.echo(f"Warning: sc_data/data.json not found for {material_id}")
+
+                # 确定材料名称：优先使用CIF文件提取的化学式，其次使用sc_data中的formula
+                material_name = None
+
+                # 首先尝试从CIF文件提取化学式
                 structure_dir = os.path.join(material_path, 'structure')
-                cif_file_path = os.path.join(structure_dir, 'structure.cif')
-                if not os.path.exists(cif_file_path):
-                    # 如果没有structure.cif，查找目录下第一个.cif文件
+                if os.path.exists(structure_dir):
                     cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
                     if cif_files:
                         cif_file_path = os.path.join(structure_dir, cif_files[0])
-                    else:
-                        cif_file_path = None
-                if cif_file_path and os.path.exists(cif_file_path):
-                    chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
-                    if chemical_formula:
-                        default_data['name'] = chemical_formula
-                    else:
-                        default_data['name'] = f"Material {material_id}"
+                        chemical_formula = extract_chemical_formula_from_cif(cif_file_path)
+                        if chemical_formula:
+                            material_name = chemical_formula
+
+                # 如果CIF文件没有提供名称，使用sc_data中的formula
+                if not material_name and sc_data and 'formula' in sc_data:
+                    material_name = sc_data['formula']
+
+                # 最后的备用名称
+                if not material_name:
+                    material_name = f"Material_{material_id}"
+
+                # 准备材料数据
+                material_data = {
+                    'name': material_name,
+                    'status': 'done' if sc_data else 'unknown',
+                    'structure_file': None,  # 将在后面设置
+                    'mp_id': sc_data.get('mp_id', 'Unknown') if sc_data else 'Unknown',
+                    'sg_name': sc_data.get('sg_name', 'Unknown') if sc_data else 'Unknown',
+                    'sg_num': sc_data.get('sg_num', None) if sc_data else None,
+                    'fermi_level': sc_data.get('Energy', None) if sc_data else None,
+                    'metal_type': 'Unknown',  # 需要单独确定
+                    'max_sc': sc_data.get('max_sc', None) if sc_data else None,
+                    'max_photon_energy': sc_data.get('max_photon_energy', None) if sc_data else None,
+                    'max_tensor_type': sc_data.get('max_tensor_type', 'Unknown') if sc_data else 'Unknown'
+                }
+
+                # 检查材料是否已存在
+                id_number = int(material_id.replace('IMR-', ''))
+                existing_material = Material.query.filter_by(id=id_number).first()
+
+                if existing_material:
+                    # 更新现有材料
+                    existing_material.name = material_data['name']
+                    existing_material.status = material_data['status']
+                    existing_material.mp_id = material_data['mp_id']
+                    existing_material.sg_name = material_data['sg_name']
+                    existing_material.sg_num = material_data['sg_num']
+                    existing_material.fermi_level = material_data['fermi_level']
+                    existing_material.metal_type = material_data['metal_type']
+                    existing_material.max_sc = material_data['max_sc']
+                    existing_material.max_photon_energy = material_data['max_photon_energy']
+                    existing_material.max_tensor_type = material_data['max_tensor_type']
+                    click.echo(f"Updated material: {material_id} - {material_data['name']}")
                 else:
-                    default_data['name'] = f"Material {material_id}"
-                
-                # 获取文件夹中的所有JSON文件
-                json_files = [f for f in os.listdir(material_path) if f.endswith('.json')]
-                
-                if not json_files:
-                    click.echo(f"Warning: No JSON files found in material {material_id} folder")
-                    continue
-                
-                # 使用第一个JSON文件
-                json_file_path = os.path.join(material_path, json_files[0])
-                
-                try:
-                    # 读取JSON文件内容
-                    with open(json_file_path, 'r', encoding='utf-8') as f:
-                        material_data = json.load(f)
-                    
-                    # 设置材料名称为从CIF文件中提取的化学式
-                    material_data['name'] = default_data['name']
-                    
-                    # 合并默认值和JSON数据
-                    for key in default_data:
-                        if key not in material_data or material_data[key] is None:
-                            material_data[key] = default_data[key]
-                    
-                    # 检查材料是否已存在
-                    id_number = int(material_id.replace('IMR-', ''))
-                    existing_material = Material.query.filter_by(id=id_number).first()
-                    
-                    if existing_material:
-                        # 更新现有材料
-                        existing_material.name = material_data['name']
-                        existing_material.status = material_data['status']
-                        existing_material.structure_file = material_data['structure_file']
-                        existing_material.total_energy = material_data['total_energy']
-                        existing_material.formation_energy = material_data['formation_energy']
-                        existing_material.fermi_level = material_data['fermi_level']
-                        existing_material.vacuum_level = material_data['vacuum_level']
-                        existing_material.workfunction = material_data['workfunction']
-                        existing_material.metal_type = material_data['metal_type']
-                        existing_material.gap = material_data['gap']
-                        existing_material.vbm_energy = material_data['vbm_energy']
-                        existing_material.cbm_energy = material_data['cbm_energy']
-                        existing_material.vbm_coordi = material_data['vbm_coordi']
-                        existing_material.cbm_coordi = material_data['cbm_coordi']
-                        existing_material.vbm_index = material_data['vbm_index']
-                        existing_material.cbm_index = material_data['cbm_index']
-                        click.echo(f"Updated material: {material_id} - {material_data['name']}")
-                    else:
-                        # 创建新材料
-                        new_material = Material(
-                            id=id_number,
-                            name=material_data['name'],
-                            status=material_data['status'],
-                            structure_file=material_data['structure_file'],
-                            total_energy=material_data['total_energy'],
-                            formation_energy=material_data['formation_energy'],
-                            fermi_level=material_data['fermi_level'],
-                            vacuum_level=material_data['vacuum_level'],
-                            workfunction=material_data['workfunction'],
-                            metal_type=material_data['metal_type'],
-                            gap=material_data['gap'],
-                            vbm_energy=material_data['vbm_energy'],
-                            cbm_energy=material_data['cbm_energy'],
-                            vbm_coordi=material_data['vbm_coordi'],
-                            cbm_coordi=material_data['cbm_coordi'],
-                            vbm_index=material_data['vbm_index'],
-                            cbm_index=material_data['cbm_index']
-                        )
-                        db.session.add(new_material)
-                        click.echo(f"Added material: {material_id} - {material_data['name']}")
-                    
-                    import_count += 1
-                    
-                except (json.JSONDecodeError, IOError) as e:
-                    click.echo(f"Error: Failed to read JSON file for material {material_id}: {str(e)}")
-                    error_count += 1
-                    continue
+                    # 创建新材料
+                    new_material = Material(
+                        id=id_number,
+                        name=material_data['name'],
+                        status=material_data['status'],
+                        structure_file=material_data['structure_file'],
+                        mp_id=material_data['mp_id'],
+                        sg_name=material_data['sg_name'],
+                        sg_num=material_data['sg_num'],
+                        fermi_level=material_data['fermi_level'],
+                        metal_type=material_data['metal_type'],
+                        max_sc=material_data['max_sc'],
+                        max_photon_energy=material_data['max_photon_energy'],
+                        max_tensor_type=material_data['max_tensor_type']
+                    )
+                    db.session.add(new_material)
+                    click.echo(f"Added material: {material_id} - {material_data['name']}")
+
+                import_count += 1
+
+            except Exception as e:
+                click.echo(f"Error: Failed to process material {material_id}: {str(e)}")
+                error_count += 1
+                continue
                 
             except Exception as e:
                 click.echo(f"Error: Failed to process material {material_id}: {str(e)}")
