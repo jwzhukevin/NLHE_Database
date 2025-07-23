@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-471",
+    "formula": "CdAs2",
+    "lattice_abc": [
+        8.0381177,
+        8.0381177,
+        4.7256347
+    ],
+    "lattice_angles": [
+        90.0,
+        90.0,
+        90.0
+    ],
+    "sg_name": "I4_122",
+    "sg_num": 98,
+    "link": "https://next-gen.materialsproject.org/materials/mp-471",
+    "max_sc": 32.94530671890579,
+    "max_photon_energy": 2.88,
+    "max_tensor_type": "yxz",
+    "Energy": -8.024088084994695
+}

@@ -422,7 +422,23 @@ function updateBandStructureInfo(bandAnalysis) {
         const bandGapElement = document.querySelector('#band-gap .property-value');
         if (bandGapElement) {
             if (bandAnalysis.bandGap !== null && bandAnalysis.bandGap !== undefined) {
-                bandGapElement.textContent = `${bandAnalysis.bandGap.toFixed(4)} eV`;
+                const newValue = `${bandAnalysis.bandGap.toFixed(4)} eV`;
+                const oldValue = bandGapElement.textContent;
+
+                // 只有当值发生变化时才更新并添加视觉反馈
+                if (oldValue !== newValue) {
+                    bandGapElement.textContent = newValue;
+
+                    // 添加更新动画效果
+                    bandGapElement.style.backgroundColor = '#e8f5e8';
+                    bandGapElement.style.transition = 'background-color 0.5s';
+
+                    setTimeout(() => {
+                        bandGapElement.style.backgroundColor = '';
+                    }, 2000);
+
+                    console.log(`Band Gap updated from "${oldValue}" to "${newValue}"`);
+                }
             } else {
                 bandGapElement.textContent = 'N/A';
             }
@@ -473,6 +489,9 @@ function updateBandStructureInfo(bandAnalysis) {
 
         // 获取Max SC数据
         const maxSCData = getMaxSCFromDatabase();
+
+        // 保存Band Gap到数据库
+        saveBandGapToDatabase(getMaterialIdFromUrl(), bandAnalysis.bandGap);
 
         // 触发全局事件，通知其他页面数据已更新
         window.dispatchEvent(new CustomEvent('materialDataUpdated', {
@@ -599,5 +618,39 @@ function saveMaterialDataUpdate(materialId, bandGap, maxSC) {
 
     } catch (error) {
         console.error('Error saving material data update:', error);
+    }
+}
+
+// 保存Band Gap到数据库
+function saveBandGapToDatabase(materialId, bandGap) {
+    if (bandGap === null || bandGap === undefined) {
+        console.log('Band Gap is null, skipping database update');
+        return;
+    }
+
+    try {
+        fetch('/api/materials/update-band-gap', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                material_id: materialId,
+                band_gap: bandGap
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(`Band Gap ${bandGap.toFixed(4)} eV saved to database for material ${materialId}`);
+            } else {
+                console.error('Failed to save Band Gap to database:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving Band Gap to database:', error);
+        });
+    } catch (error) {
+        console.error('Error in saveBandGapToDatabase:', error);
     }
 }

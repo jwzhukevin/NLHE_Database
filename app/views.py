@@ -3,7 +3,7 @@
 # Includes homepage, material details page, add/edit materials, user authentication, etc.
 
 # Import required modules
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file  # Flask core modules
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file, jsonify  # Flask core modules
 from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
 from sqlalchemy import and_, or_  # Database query condition builders
 from .models import User, Material, BlockedIP, Member  # Custom data models
@@ -11,6 +11,9 @@ from . import db  # Database instance
 import datetime  # Processing dates and times
 import functools  # For decorators
 from .material_importer import extract_chemical_formula_from_cif  # Material data import module
+from .chemical_parser import chemical_parser  # 智能化学式解析器
+from .search_optimizer import search_cache, QueryOptimizer, performance_monitor, cached_search  # 搜索性能优化
+from .band_gap_calculator import band_gap_calculator  # Band Gap计算器
 import os
 import re
 from werkzeug.utils import secure_filename
@@ -53,6 +56,8 @@ def landing():
     return render_template('main/landing.html')
 
 @bp.route('/database')
+@performance_monitor
+@cached_search(cache_enabled=True)
 def index():
     """Material database page - displays material list, supports search, filtering and pagination
 
@@ -65,55 +70,67 @@ def index():
         page: Current page number
     """
     try:
-        # Basic query (get all material records)
-        query = Material.query
-
         # Get all search parameters (stored in dictionary for unified processing)
         search_params = {
             'q': request.args.get('q', '').strip(),  # Text search keywords
-            'status': request.args.get('status', '').strip(),  # Material status
-            'metal_type': request.args.get('metal_type', '').strip(),  # Metal type
-            'formation_energy_min': request.args.get('formation_energy_min', '').strip(),  # Formation energy minimum
-            'formation_energy_max': request.args.get('formation_energy_max', '').strip(),  # Formation energy maximum
+            'metal_type': request.args.get('metal_type', '').strip(),  # Materials type
+            'elements': request.args.get('elements', '').strip(),  # Selected elements from periodic table
             'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # Fermi level minimum
             'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # Fermi level maximum
+            'max_sc_min': request.args.get('max_sc_min', '').strip(),  # Max SC minimum
+            'max_sc_max': request.args.get('max_sc_max', '').strip(),  # Max SC maximum
+            'band_gap_min': request.args.get('band_gap_min', '').strip(),  # Band gap minimum
+            'band_gap_max': request.args.get('band_gap_max', '').strip(),  # Band gap maximum
         }
 
-        # Build compound filter conditions (using SQLAlchemy logical operators)
-        filters = []
+        # 使用优化的查询器
+        optimization_result = QueryOptimizer.optimize_material_search(search_params)
+        query = optimization_result['query']
 
-        # Text search (supports fuzzy query of name, VBM/CBM coordinates)
-        if search_params['q']:
-            filters.append(or_(
-                Material.name.ilike(f'%{search_params["q"]}%'),  # Name fuzzy matching (case insensitive)
-                Material.vbm_coordi.ilike(f'%{search_params["q"]}%'),  # VBM coordinate matching
-                Material.cbm_coordi.ilike(f'%{search_params["q"]}%')  # CBM coordinate matching
-            ))
+        # 记录性能信息
+        current_app.logger.info(
+            f"Search optimization: {optimization_result['filters_applied']} filters, "
+            f"{optimization_result['total_count']} results, "
+            f"{optimization_result['execution_time']:.3f}s"
+        )
 
-        # Exact match conditions
-        if search_params['status']:
-            filters.append(Material.status == search_params['status'])  # Status exact match
-        if search_params['metal_type']:
-            filters.append(Material.metal_type == search_params['metal_type'])  # Metal type exact match
+        # 处理元素搜索（QueryOptimizer不处理的特殊逻辑）
+        additional_filters = []
 
-        # Numeric range filtering (including exception handling to ensure valid numerical input)
-        for param in ['formation_energy', 'fermi_level']:
-            min_val = search_params[f'{param}_min']
-            max_val = search_params[f'{param}_max']
-            if min_val:
-                try:
-                    filters.append(getattr(Material, param) >= float(min_val))  # Minimum value filter
-                except ValueError:  # Handle invalid numerical input
-                    pass
-            if max_val:
-                try:
-                    filters.append(getattr(Material, param) <= float(max_val))  # Maximum value filter
-                except ValueError:
-                    pass
+        # Element-based search (智能化学式搜索) - 这是QueryOptimizer不处理的特殊逻辑
+        if search_params['elements']:
+            element_list = [elem.strip() for elem in search_params['elements'].split(',') if elem.strip()]
+            if element_list:
+                # 智能元素搜索：支持精确匹配、包含匹配和相似元素建议
+                element_filters = []
 
-        # Apply all filter conditions (using AND logic combination, i.e., all conditions must be met)
-        if filters:
-            query = query.filter(and_(*filters))
+                # 优化：只获取当前查询结果中的材料进行元素匹配
+                current_materials = query.all()
+                matching_material_ids = []
+
+                for material in current_materials:
+                    if material.name:
+                        # 使用化学式解析器检查元素匹配
+                        if chemical_parser.contains_elements(material.name, element_list, 'any'):
+                            matching_material_ids.append(material.id)
+
+                # 如果找到匹配的材料，添加到过滤条件
+                if matching_material_ids:
+                    additional_filters.append(Material.id.in_(matching_material_ids))
+                else:
+                    # 如果没有精确匹配，尝试模糊匹配
+                    for element in element_list:
+                        element_filters.append(Material.name.ilike(f'%{element}%'))
+                    if element_filters:
+                        additional_filters.append(or_(*element_filters))
+
+        # 应用额外的过滤条件（主要是元素搜索）
+        if additional_filters:
+            query = query.filter(and_(*additional_filters))
+
+        # 添加搜索结果验证
+        total_results = query.count()
+        current_app.logger.info(f"Search query returned {total_results} results with search params: {search_params}")
 
         # Pagination configuration (10 records per page)
         page = request.args.get('page', 1, type=int)  # Get current page number, default is page 1
@@ -463,6 +480,14 @@ def detail(material_id):
     except ValueError:
         return render_template('404.html'), 404
     material = Material.query.get_or_404(numeric_id)
+
+    # 自动计算Band Gap（如果尚未计算）
+    try:
+        if material.band_gap is None:
+            current_app.logger.info(f"Auto-calculating band gap for {material.formatted_id}")
+            band_gap_calculator.calculate_band_gap(material)
+    except Exception as e:
+        current_app.logger.error(f"Failed to auto-calculate band gap for {material.formatted_id}: {e}")
     import glob
     material_dir = get_material_dir(material.id)
     structure_dir = os.path.join(material_dir, 'structure')
@@ -1137,3 +1162,241 @@ def members():
     """
     members = Member.query.all()  # 查询所有成员
     return render_template('members/index.html', members=members)
+
+# ==================== 智能搜索API端点 ====================
+
+@bp.route('/api/search/suggestions')
+def search_suggestions():
+    """
+    提供实时搜索建议
+
+    参数:
+        q: 搜索查询字符串
+        type: 建议类型 ('all', 'materials', 'elements', 'mp_ids', 'space_groups')
+        limit: 返回结果数量限制 (默认10)
+
+    返回:
+        JSON格式的搜索建议列表
+    """
+    query = request.args.get('q', '').strip()
+    suggestion_type = request.args.get('type', 'all')
+    limit = min(int(request.args.get('limit', 10)), 50)  # 最多50个建议
+
+    if len(query) < 2:
+        return jsonify({'suggestions': []})
+
+    suggestions = []
+
+    try:
+        if suggestion_type in ['all', 'materials']:
+            # 材料名称建议
+            material_suggestions = Material.query.filter(
+                Material.name.ilike(f'%{query}%')
+            ).limit(limit).all()
+
+            for material in material_suggestions:
+                suggestions.append({
+                    'type': 'material',
+                    'value': material.name,
+                    'label': f"{material.name} ({material.formatted_id})",
+                    'category': 'Materials'
+                })
+
+        if suggestion_type in ['all', 'mp_ids']:
+            # Materials Project ID建议
+            mp_suggestions = Material.query.filter(
+                Material.mp_id.ilike(f'%{query}%')
+            ).limit(limit).all()
+
+            for material in mp_suggestions:
+                if material.mp_id:
+                    suggestions.append({
+                        'type': 'mp_id',
+                        'value': material.mp_id,
+                        'label': f"{material.mp_id} - {material.name}",
+                        'category': 'MP IDs'
+                    })
+
+        if suggestion_type in ['all', 'space_groups']:
+            # 空间群建议
+            sg_suggestions = Material.query.filter(
+                Material.sg_name.ilike(f'%{query}%')
+            ).distinct(Material.sg_name).limit(limit).all()
+
+            for material in sg_suggestions:
+                if material.sg_name:
+                    suggestions.append({
+                        'type': 'space_group',
+                        'value': material.sg_name,
+                        'label': f"{material.sg_name} (#{material.sg_num})",
+                        'category': 'Space Groups'
+                    })
+
+        if suggestion_type in ['all', 'elements']:
+            # 元素建议
+            element_suggestions = _get_element_suggestions(query)
+            suggestions.extend(element_suggestions)
+
+        # 去重并限制数量
+        seen = set()
+        unique_suggestions = []
+        for suggestion in suggestions:
+            key = (suggestion['type'], suggestion['value'])
+            if key not in seen:
+                seen.add(key)
+                unique_suggestions.append(suggestion)
+                if len(unique_suggestions) >= limit:
+                    break
+
+        return jsonify({'suggestions': unique_suggestions})
+
+    except Exception as e:
+        current_app.logger.error(f"Search suggestions error: {str(e)}")
+        return jsonify({'suggestions': [], 'error': 'Internal server error'}), 500
+
+def _get_element_suggestions(query):
+    """获取元素建议"""
+    suggestions = []
+    query_lower = query.lower()
+
+    # 从化学式解析器获取所有元素
+    for element in chemical_parser.elements:
+        if element.lower().startswith(query_lower):
+            suggestions.append({
+                'type': 'element',
+                'value': element,
+                'label': f"{element} (Element)",
+                'category': 'Elements'
+            })
+
+    return suggestions[:10]  # 限制元素建议数量
+
+@bp.route('/api/search/element-analysis')
+def element_analysis():
+    """
+    分析选中元素的相关信息
+
+    参数:
+        elements: 逗号分隔的元素列表
+
+    返回:
+        元素分析结果，包括相似元素建议、元素族信息等
+    """
+    elements_param = request.args.get('elements', '')
+    if not elements_param:
+        return jsonify({'error': 'No elements provided'}), 400
+
+    elements = [e.strip() for e in elements_param.split(',') if e.strip()]
+
+    try:
+        # 获取相似元素建议
+        similar_elements = chemical_parser.suggest_similar_elements(elements)
+
+        # 获取元素族匹配
+        group_matches = chemical_parser.find_element_group_matches(elements)
+
+        # 统计包含这些元素的材料数量
+        material_count = 0
+        all_materials = Material.query.all()
+        for material in all_materials:
+            if material.name and chemical_parser.contains_elements(material.name, elements, 'any'):
+                material_count += 1
+
+        return jsonify({
+            'selected_elements': elements,
+            'similar_elements': similar_elements[:10],  # 限制建议数量
+            'element_groups': {k: list(v) for k, v in group_matches.items()},
+            'material_count': material_count,
+            'analysis': {
+                'total_elements': len(elements),
+                'has_metals': bool(set(elements) & chemical_parser.element_groups.get('transition_metals', set())),
+                'has_nonmetals': bool(set(elements) & {'C', 'N', 'O', 'F', 'P', 'S', 'Cl', 'Se', 'Br', 'I'}),
+            }
+        })
+
+    except Exception as e:
+        current_app.logger.error(f"Element analysis error: {str(e)}")
+        return jsonify({'error': 'Analysis failed'}), 500
+
+@bp.route('/api/materials/update-band-gap', methods=['POST'])
+def update_band_gap():
+    """
+    更新材料的Band Gap值
+
+    接收从前端计算得出的Band Gap值并保存到数据库
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        material_id = data.get('material_id')
+        band_gap = data.get('band_gap')
+
+        if material_id is None:
+            return jsonify({'success': False, 'error': 'Material ID is required'}), 400
+
+        if band_gap is None:
+            return jsonify({'success': False, 'error': 'Band gap value is required'}), 400
+
+        # 查找材料
+        material = Material.query.get(material_id)
+        if not material:
+            return jsonify({'success': False, 'error': 'Material not found'}), 404
+
+        # 验证Band Gap值的合理性
+        try:
+            band_gap_float = float(band_gap)
+            if band_gap_float < 0 or band_gap_float > 20:  # 合理范围检查
+                return jsonify({'success': False, 'error': 'Band gap value out of reasonable range (0-20 eV)'}), 400
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'error': 'Invalid band gap value'}), 400
+
+        # 更新Band Gap值
+        old_band_gap = material.band_gap
+        material.band_gap = band_gap_float
+
+        try:
+            db.session.commit()
+            current_app.logger.info(
+                f"Updated band gap for material {material.formatted_id}: "
+                f"{old_band_gap} -> {band_gap_float} eV"
+            )
+
+            return jsonify({
+                'success': True,
+                'message': 'Band gap updated successfully',
+                'material_id': material_id,
+                'old_band_gap': old_band_gap,
+                'new_band_gap': band_gap_float
+            })
+
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Database error updating band gap: {str(e)}")
+            return jsonify({'success': False, 'error': 'Database update failed'}), 500
+
+    except Exception as e:
+        current_app.logger.error(f"Error in update_band_gap: {str(e)}")
+        return jsonify({'success': False, 'error': 'Internal server error'}), 500
+
+@bp.route('/admin/calculate-band-gaps')
+@login_required
+@admin_required
+def admin_calculate_band_gaps():
+    """管理员批量计算Band Gap功能"""
+    force_recalculate = request.args.get('force', 'false').lower() == 'true'
+
+    try:
+        stats = band_gap_calculator.calculate_all_band_gaps(force_recalculate)
+
+        flash(f'Band Gap calculation completed! '
+              f'Calculated: {stats["calculated"]}, '
+              f'Cached: {stats["cached"]}, '
+              f'Failed: {stats["failed"]}', 'success')
+
+    except Exception as e:
+        current_app.logger.error(f"Error in batch band gap calculation: {e}")
+        flash(f'Batch calculation failed: {str(e)}', 'error')
+
+    return redirect(url_for('views.index'))

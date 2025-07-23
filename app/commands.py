@@ -8,6 +8,7 @@ import json
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 from .material_importer import extract_chemical_formula_from_cif
+from .band_gap_calculator import band_gap_calculator
 import functools
 
 # 独立定义命令蓝图 - 用于API路由而非CLI命令
@@ -286,6 +287,15 @@ def register_commands(app):
         try:
             db.session.commit()
             click.echo(f"Data import completed: successfully imported {import_count} materials, failed {error_count}")
+
+            # 自动计算所有导入材料的Band Gap
+            click.echo("Starting automatic Band Gap calculation for imported materials...")
+            try:
+                stats = band_gap_calculator.calculate_all_band_gaps(force_recalculate=False)
+                click.echo(f"Band Gap calculation completed: {stats['calculated']} calculated, {stats['cached']} cached, {stats['failed']} failed")
+            except Exception as e:
+                click.echo(f"Warning: Band Gap calculation failed: {str(e)}")
+
         except SQLAlchemyError as e:
             db.session.rollback()
             click.echo(f"Database commit error: {str(e)}")
@@ -558,6 +568,15 @@ def register_commands(app):
         try:
             db.session.commit()
             click.echo(f"Data import completed: successfully imported {import_count} materials, failed {error_count}")
+
+            # 自动计算所有导入材料的Band Gap
+            click.echo("Starting automatic Band Gap calculation for imported materials...")
+            try:
+                stats = band_gap_calculator.calculate_all_band_gaps(force_recalculate=False)
+                click.echo(f"Band Gap calculation completed: {stats['calculated']} calculated, {stats['cached']} cached, {stats['failed']} failed")
+            except Exception as e:
+                click.echo(f"Warning: Band Gap calculation failed: {str(e)}")
+
         except SQLAlchemyError as e:
             db.session.rollback()
             click.echo(f"Database commit error: {str(e)}")

@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-382",
+    "formula": "Th3As4",
+    "lattice_abc": [
+        8.90340192,
+        8.90340192,
+        8.90340192
+    ],
+    "lattice_angles": [
+        90.0,
+        90.0,
+        90.0
+    ],
+    "sg_name": "I-43d",
+    "sg_num": 220,
+    "link": "https://next-gen.materialsproject.org/materials/mp-382",
+    "max_sc": 16.53358732451314,
+    "max_photon_energy": 4.0,
+    "max_tensor_type": "yxz",
+    "Energy": -5.477390908957535
+}

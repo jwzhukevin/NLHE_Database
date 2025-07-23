@@ -51,12 +51,17 @@
 
         <!-- 基本搜索 -->
         <div class="basic-search">
-            <input type="text" 
-                   name="q" 
-                   id="searchInput"
-                   placeholder="Search materials..." 
-                   value="{{ search_params.q }}"
-                   aria-label="Search">
+            <div class="search-input-container">
+                <input type="text"
+                       name="q"
+                       id="searchInput"
+                       placeholder="Search materials, MP IDs, space groups..."
+                       value="{{ search_params.q }}"
+                       aria-label="Search"
+                       autocomplete="off">
+                <div class="search-suggestions" id="searchSuggestions" style="display: none;"></div>
+            </div>
+            <button type="button" class="btn btn-clear" id="clearSearchBtn">Clear</button>
             <button type="submit" class="btn">Search</button>
             <button type="button" class="btn" id="elementsToggleBtn">Elements</button>
             <button type="button" class="btn" onclick="toggleAdvanced()">Advanced</button>
@@ -96,6 +101,170 @@
           font-weight: 500;             /* 字体粗细 */
           transition: all 0.2s;         /* 过渡效果 */
         }
+
+        /* Clear按钮特殊样式 */
+        .basic-search .btn-clear {
+          background-color: #f3f4f6;    /* 浅灰色背景 */
+          color: #6b7280;               /* 灰色文字 */
+          border: 1px solid #d1d5db;    /* 灰色边框 */
+        }
+
+        .basic-search .btn-clear:hover {
+          background-color: #e5e7eb;    /* 悬停时稍深的灰色 */
+          color: #374151;               /* 悬停时深色文字 */
+          border-color: #9ca3af;        /* 悬停时深色边框 */
+        }
+
+        .basic-search .btn-clear:active {
+          background-color: #d1d5db;    /* 点击时更深的灰色 */
+          transform: translateY(1px);   /* 点击时轻微下移效果 */
+        }
+
+        /* 搜索输入容器样式 */
+        .search-input-container {
+          flex: 1;
+          position: relative;
+        }
+
+        /* 搜索建议样式 */
+        .search-suggestions {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 1px solid #d1d5db;
+          border-top: none;
+          border-radius: 0 0 6px 6px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          max-height: 300px;
+          overflow-y: auto;
+          z-index: 1000;
+        }
+
+        .suggestion-item {
+          padding: 0.75rem 1rem;
+          cursor: pointer;
+          border-bottom: 1px solid #f3f4f6;
+          transition: background-color 0.15s;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.highlighted {
+          background-color: #f8fafc;
+        }
+
+        .suggestion-item:last-child {
+          border-bottom: none;
+        }
+
+        .suggestion-label {
+          font-weight: 500;
+          color: #374151;
+        }
+
+        .suggestion-category {
+          font-size: 0.75rem;
+          color: #6b7280;
+          margin-top: 0.25rem;
+        }
+
+        .suggestion-highlight {
+          background-color: #fef3c7;
+          font-weight: 600;
+        }
+
+        /* 元素分析模态框样式 */
+        .analysis-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 2000;
+        }
+
+        .analysis-content {
+          background: white;
+          border-radius: 8px;
+          max-width: 600px;
+          max-height: 80vh;
+          overflow-y: auto;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .analysis-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem;
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .analysis-header h3 {
+          margin: 0;
+          color: #374151;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 1.5rem;
+          cursor: pointer;
+          color: #6b7280;
+        }
+
+        .analysis-body {
+          padding: 1.5rem;
+        }
+
+        .analysis-section {
+          margin-bottom: 1.5rem;
+        }
+
+        .analysis-section h4 {
+          margin: 0 0 0.5rem 0;
+          color: #374151;
+          font-size: 1.1rem;
+        }
+
+        .element-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin: 0.5rem 0;
+        }
+
+        .element-tag {
+          background: #e5e7eb;
+          color: #374151;
+          padding: 0.25rem 0.75rem;
+          border-radius: 4px;
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        .element-tag.similar {
+          background: #dbeafe;
+          color: #1e40af;
+          cursor: pointer;
+          transition: background-color 0.15s;
+        }
+
+        .element-tag.similar:hover {
+          background: #bfdbfe;
+        }
+
+        .group-info {
+          margin: 0.5rem 0;
+          padding: 0.5rem;
+          background: #f9fafb;
+          border-radius: 4px;
+        }
         </style>
 
         <!-- 元素周期表组件 -->
@@ -105,7 +274,11 @@
                     <span>Periodic Table</span>
                     <button type="button" class="btn btn-sm" id="clearElements">Clear All</button>
                 </div>
-                <span id="selectedElementsCount">0 selected</span>
+                <div class="header-right">
+                    <small style="color: #666; margin-right: 10px;">Click elements to add to search</small>
+                    <button type="button" class="btn btn-sm" id="analyzeElements" style="margin-right: 10px; display: none;">Analyze</button>
+                    <span id="selectedElementsCount">0 selected</span>
+                </div>
             </div>
             <div class="periodic-table-container">
                 <div class="periodic-table" id="periodicTable">
@@ -1278,7 +1451,13 @@
             align-items: center;
             gap: 10px;
         }
-        
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .elements-header span:first-child {
             font-weight: 600;
             color: var(--primary-color);
@@ -1363,11 +1542,19 @@
             z-index: 2;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
         }
-        
+
         .element.selected {
             box-shadow: 0 0 0 2px var(--primary-color);
             color: white;
             background-color: var(--primary-color);
+            transform: scale(1.05);
+            animation: elementSelected 0.3s ease-out;
+        }
+
+        @keyframes elementSelected {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1.05); }
         }
         
         .element-controls {
@@ -1500,44 +1687,48 @@
         <!-- 高级搜索 -->
         <div class="advanced-search" id="advancedSearch" style="display: none;">
             <div class="search-group">
-                <!-- 第一行: 状态和金属类型选择 -->
+                <!-- 第一行: 材料类型和带隙选择 -->
                 <div class="search-row">
-                <!-- 状态下拉框 -->
-                <div class="filter-group">
-                    <label for="status">Status</label>
-                    <select name="status" id="status">
-                        <option value="">All</option>
-                        <option value="active" {% if search_params.status == 'active' %}selected{% endif %}>Active</option>
-                        <option value="pending" {% if search_params.status == 'pending' %}selected{% endif %}>Pending</option>
-                        <option value="archived" {% if search_params.status == 'archived' %}selected{% endif %}>Archived</option>
-                    </select>
-                </div>
+                    <!-- 材料类型下拉框 -->
+                    <div class="filter-group">
+                        <label for="metal_type">Materials Type</label>
+                        <select name="metal_type" id="metal_type">
+                            <option value="">All</option>
+                            <option value="Unknown" {% if search_params.metal_type == 'Unknown' %}selected{% endif %}>Unknown</option>
+                            <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
+                            <option value="semiconductor" {% if search_params.metal_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
+                            <option value="insulator" {% if search_params.metal_type == 'insulator' %}selected{% endif %}>Insulator</option>
+                        </select>
+                    </div>
 
-                <!-- 金属类型下拉框 -->
-                <div class="filter-group">
-                    <label for="metal_type">Metal Type</label>
-                    <select name="metal_type" id="metal_type">
-                        <option value="">All</option>
-                        <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
-                        <option value="nonmetal" {% if search_params.metal_type == 'nonmetal' %}selected{% endif %}>Non-metal</option>
-                        <option value="metalloid" {% if search_params.metal_type == 'metalloid' %}selected{% endif %}>Metalloid</option>
-                    </select>
+                    <!-- 带隙范围 -->
+                    <div class="filter-group">
+                        <label for="band_gap_min">Band Gap (eV)</label>
+                        <div class="range-inputs">
+                            <input type="number" name="band_gap_min" id="band_gap_min"
+                                   placeholder="Min" step="0.01"
+                                   value="{{ search_params.band_gap_min }}">
+                            <span>to</span>
+                            <input type="number" name="band_gap_max" id="band_gap_max"
+                                   placeholder="Max" step="0.01"
+                                   value="{{ search_params.band_gap_max }}">
+                        </div>
                     </div>
                 </div>
 
                 <!-- 第二行: 形成能和费米能级范围选择 -->
                 <div class="search-row">
-                    <!-- 形成能范围 -->
+                    <!-- Max Shift Current范围 -->
                     <div class="filter-group">
-                        <label for="formation_energy_min">Formation Energy (eV)</label>
+                        <label for="max_sc_min">Max Shift Current (μA/V²)</label>
                         <div class="range-inputs">
-                            <input type="number" name="formation_energy_min" id="formation_energy_min" 
-                                   placeholder="Min" step="0.01" 
-                                   value="{{ search_params.formation_energy_min }}">
+                            <input type="number" name="max_sc_min" id="max_sc_min"
+                                   placeholder="Min" step="0.01"
+                                   value="{{ search_params.max_sc_min }}">
                             <span>to</span>
-                            <input type="number" name="formation_energy_max" id="formation_energy_max" 
-                                   placeholder="Max" step="0.01" 
-                                   value="{{ search_params.formation_energy_max }}">
+                            <input type="number" name="max_sc_max" id="max_sc_max"
+                                   placeholder="Max" step="0.01"
+                                   value="{{ search_params.max_sc_max }}">
                         </div>
                     </div>
 
@@ -1847,7 +2038,13 @@
                 </td>
                 <td>{{ material.sg_name if material.sg_name else 'Unknown' }} ({{ material.sg_num if material.sg_num else 'N/A' }})</td>
                 <td>{{ material.fermi_level if material.fermi_level is not none else 'N/A' }}</td>
-                <td class="band-gap-cell" data-material-id="{{ material.id }}">Loading...</td>
+                <td class="band-gap-cell" data-material-id="{{ material.id }}">
+                    {% if material.band_gap is not none %}
+                        {{ "%.4f"|format(material.band_gap) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
                 <td class="max-sc-cell" data-material-id="{{ material.id }}">
                     {% if material.max_sc is not none %}
                         {{ "%.4f"|format(material.max_sc) }}
@@ -2092,14 +2289,250 @@ function toggleElements() {
     }
 }
 
+// 实时搜索建议功能
+class SearchSuggestions {
+    constructor() {
+        this.searchInput = document.getElementById('searchInput');
+        this.suggestionsContainer = document.getElementById('searchSuggestions');
+        this.currentSuggestions = [];
+        this.selectedIndex = -1;
+        this.debounceTimer = null;
+        this.isVisible = false;
+
+        this.init();
+    }
+
+    init() {
+        // 绑定事件监听器
+        this.searchInput.addEventListener('input', (e) => this.handleInput(e));
+        this.searchInput.addEventListener('keydown', (e) => this.handleKeydown(e));
+        this.searchInput.addEventListener('focus', (e) => this.handleFocus(e));
+
+        // 点击外部隐藏建议
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-input-container')) {
+                this.hideSuggestions();
+            }
+        });
+    }
+
+    handleInput(e) {
+        const query = e.target.value.trim();
+
+        // 清除之前的定时器
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+        }
+
+        // 防抖处理：300ms后执行搜索
+        this.debounceTimer = setTimeout(() => {
+            if (query.length >= 2) {
+                this.fetchSuggestions(query);
+            } else {
+                this.hideSuggestions();
+            }
+        }, 300);
+    }
+
+    handleKeydown(e) {
+        if (!this.isVisible || this.currentSuggestions.length === 0) {
+            return;
+        }
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                this.selectedIndex = Math.min(this.selectedIndex + 1, this.currentSuggestions.length - 1);
+                this.updateHighlight();
+                break;
+
+            case 'ArrowUp':
+                e.preventDefault();
+                this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
+                this.updateHighlight();
+                break;
+
+            case 'Enter':
+                e.preventDefault();
+                if (this.selectedIndex >= 0) {
+                    this.selectSuggestion(this.currentSuggestions[this.selectedIndex]);
+                }
+                break;
+
+            case 'Escape':
+                this.hideSuggestions();
+                break;
+        }
+    }
+
+    handleFocus(e) {
+        const query = e.target.value.trim();
+        if (query.length >= 2 && this.currentSuggestions.length > 0) {
+            this.showSuggestions();
+        }
+    }
+
+    async fetchSuggestions(query) {
+        try {
+            const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}&limit=8`);
+            const data = await response.json();
+
+            if (data.suggestions && data.suggestions.length > 0) {
+                this.currentSuggestions = data.suggestions;
+                this.renderSuggestions(query);
+                this.showSuggestions();
+            } else {
+                this.hideSuggestions();
+            }
+        } catch (error) {
+            console.error('Failed to fetch search suggestions:', error);
+            this.hideSuggestions();
+        }
+    }
+
+    renderSuggestions(query) {
+        const html = this.currentSuggestions.map((suggestion, index) => {
+            const highlightedLabel = this.highlightMatch(suggestion.label, query);
+            return `
+                <div class="suggestion-item" data-index="${index}">
+                    <div class="suggestion-label">${highlightedLabel}</div>
+                    <div class="suggestion-category">${suggestion.category}</div>
+                </div>
+            `;
+        }).join('');
+
+        this.suggestionsContainer.innerHTML = html;
+
+        // 绑定点击事件
+        this.suggestionsContainer.querySelectorAll('.suggestion-item').forEach((item, index) => {
+            item.addEventListener('click', () => {
+                this.selectSuggestion(this.currentSuggestions[index]);
+            });
+        });
+    }
+
+    highlightMatch(text, query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<span class="suggestion-highlight">$1</span>');
+    }
+
+    updateHighlight() {
+        this.suggestionsContainer.querySelectorAll('.suggestion-item').forEach((item, index) => {
+            if (index === this.selectedIndex) {
+                item.classList.add('highlighted');
+            } else {
+                item.classList.remove('highlighted');
+            }
+        });
+    }
+
+    selectSuggestion(suggestion) {
+        this.searchInput.value = suggestion.value;
+        this.hideSuggestions();
+
+        // 触发搜索表单提交
+        const form = this.searchInput.closest('form');
+        if (form) {
+            form.submit();
+        }
+    }
+
+    showSuggestions() {
+        this.suggestionsContainer.style.display = 'block';
+        this.isVisible = true;
+        this.selectedIndex = -1;
+    }
+
+    hideSuggestions() {
+        this.suggestionsContainer.style.display = 'none';
+        this.isVisible = false;
+        this.selectedIndex = -1;
+    }
+}
+
+// 搜索清除功能
+function initClearSearchFunction() {
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const searchInput = document.getElementById('searchInput');
+    const searchForm = document.getElementById('searchForm');
+
+    clearBtn.addEventListener('click', function() {
+        // 清除基本搜索输入
+        searchInput.value = '';
+
+        // 清除所有高级搜索字段
+        const advancedInputs = document.querySelectorAll('#advancedSearch input, #advancedSearch select');
+        advancedInputs.forEach(input => {
+            if (input.type === 'text' || input.type === 'number') {
+                input.value = '';
+            } else if (input.type === 'select-one') {
+                input.selectedIndex = 0; // 选择第一个选项（通常是"All"）
+            }
+        });
+
+        // 清除元素选择
+        const selectedElements = document.querySelectorAll('.element.selected');
+        selectedElements.forEach(element => {
+            element.classList.remove('selected');
+        });
+
+        // 清除隐藏的元素输入字段
+        const selectedElementsInput = document.getElementById('selectedElements');
+        if (selectedElementsInput) {
+            selectedElementsInput.value = '';
+        }
+
+        // 更新元素计数显示
+        const selectedElementsCount = document.getElementById('selectedElementsCount');
+        if (selectedElementsCount) {
+            selectedElementsCount.textContent = '0 selected';
+        }
+
+        // 隐藏分析按钮
+        const analyzeElementsBtn = document.getElementById('analyzeElements');
+        if (analyzeElementsBtn) {
+            analyzeElementsBtn.style.display = 'none';
+        }
+
+        // 隐藏搜索建议
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        if (searchSuggestions) {
+            searchSuggestions.style.display = 'none';
+        }
+
+        // 提供用户反馈
+        const originalText = clearBtn.textContent;
+        clearBtn.textContent = 'Cleared!';
+        clearBtn.style.backgroundColor = '#10b981';
+        clearBtn.style.color = 'white';
+        clearBtn.style.borderColor = '#10b981';
+
+        setTimeout(() => {
+            clearBtn.textContent = originalText;
+            clearBtn.style.backgroundColor = '';
+            clearBtn.style.color = '';
+            clearBtn.style.borderColor = '';
+        }, 1000);
+
+        // 聚焦到搜索输入框
+        searchInput.focus();
+    });
+}
+
 // 元素周期表功能
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化搜索建议功能
+    new SearchSuggestions();
+
+    // 初始化清除搜索功能
+    initClearSearchFunction();
     // 周期表切换按钮
     const elementsToggleBtn = document.getElementById('elementsToggleBtn');
     const periodicTableWrapper = document.getElementById('periodicTableWrapper');
     const selectedElementsInput = document.getElementById('selectedElements');
     const selectedElementsCount = document.getElementById('selectedElementsCount');
     const clearElementsBtn = document.getElementById('clearElements');
+    const analyzeElementsBtn = document.getElementById('analyzeElements');
     const elements = document.querySelectorAll('.element');
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
@@ -2172,19 +2605,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 添加切换按钮点击事件
     elementsToggleBtn.addEventListener('click', toggleElements);
+
+    // 监听搜索框输入变化，自动同步元素选择状态
+    searchInput.addEventListener('input', function() {
+        syncElementsFromSearchInput();
+    });
     
     // 初始化已选中的元素
     let selectedElements = [];
     if (selectedElementsInput.value) {
-        selectedElements = selectedElementsInput.value.split(',');
+        selectedElements = selectedElementsInput.value.split(',').filter(el => el.trim());
         updateSelectedCount();
-        
+
         // 标记已选中的元素
         elements.forEach(el => {
             if (selectedElements.includes(el.dataset.symbol)) {
                 el.classList.add('selected');
             }
         });
+    }
+
+    // 初始化时同步搜索框和元素选择状态
+    if (searchInput.value.trim()) {
+        syncElementsFromSearchInput();
     }
     
     // 元素点击事件
@@ -2205,10 +2648,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 更新选中元素计数和隐藏字段
             updateSelectedCount();
-            
-            // 更新搜索输入框的值为所有选中元素
-            searchInput.value = selectedElements.join(' ');
-            
+
+            // 智能更新搜索输入框：只有当搜索框为空或只包含元素符号时才自动更新
+            updateSearchInputWithElements();
+
             // 不再自动隐藏周期表和提交表单
         });
     });
@@ -2218,14 +2661,193 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedElements = [];
         elements.forEach(el => el.classList.remove('selected'));
         updateSelectedCount();
+        // 清除搜索框中的元素内容
+        updateSearchInputWithElements();
+
+        // 提供用户反馈
+        const originalText = clearElementsBtn.textContent;
+        clearElementsBtn.textContent = 'Cleared!';
+        clearElementsBtn.style.backgroundColor = '#28a745';
+
+        setTimeout(() => {
+            clearElementsBtn.textContent = originalText;
+            clearElementsBtn.style.backgroundColor = '';
+        }, 1000);
     });
-    
+
     // 更新选中元素计数
     function updateSelectedCount() {
         selectedElementsCount.textContent = `${selectedElements.length} selected`;
         selectedElementsInput.value = selectedElements.join(',');
+
+        // 显示或隐藏分析按钮
+        if (selectedElements.length > 0) {
+            analyzeElementsBtn.style.display = 'inline-block';
+        } else {
+            analyzeElementsBtn.style.display = 'none';
+        }
+    }
+
+    // 元素分析功能
+    analyzeElementsBtn.addEventListener('click', async function() {
+        if (selectedElements.length === 0) return;
+
+        try {
+            const response = await fetch(`/api/search/element-analysis?elements=${selectedElements.join(',')}`);
+            const data = await response.json();
+
+            if (data.error) {
+                alert('Analysis failed: ' + data.error);
+                return;
+            }
+
+            // 显示分析结果
+            showElementAnalysis(data);
+
+        } catch (error) {
+            console.error('Element analysis failed:', error);
+            alert('Failed to analyze elements. Please try again.');
+        }
+    });
+
+    // 显示元素分析结果
+    function showElementAnalysis(data) {
+        const modal = document.createElement('div');
+        modal.className = 'analysis-modal';
+        modal.innerHTML = `
+            <div class="analysis-content">
+                <div class="analysis-header">
+                    <h3>Element Analysis Results</h3>
+                    <button class="close-btn" onclick="this.closest('.analysis-modal').remove()">&times;</button>
+                </div>
+                <div class="analysis-body">
+                    <div class="analysis-section">
+                        <h4>Selected Elements (${data.selected_elements.length})</h4>
+                        <div class="element-tags">
+                            ${data.selected_elements.map(el => `<span class="element-tag">${el}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h4>Material Count</h4>
+                        <p>Found <strong>${data.material_count}</strong> materials containing these elements</p>
+                    </div>
+
+                    ${data.similar_elements.length > 0 ? `
+                    <div class="analysis-section">
+                        <h4>Similar Elements</h4>
+                        <div class="element-tags">
+                            ${data.similar_elements.map(el => `<span class="element-tag similar" onclick="addSimilarElement('${el}')">${el}</span>`).join('')}
+                        </div>
+                        <small>Click to add to selection</small>
+                    </div>
+                    ` : ''}
+
+                    ${Object.keys(data.element_groups).length > 0 ? `
+                    <div class="analysis-section">
+                        <h4>Element Groups</h4>
+                        ${Object.entries(data.element_groups).map(([group, elements]) => `
+                            <div class="group-info">
+                                <strong>${group.replace('_', ' ').toUpperCase()}:</strong>
+                                <span>${elements.join(', ')}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <div class="analysis-section">
+                        <h4>Analysis Summary</h4>
+                        <ul>
+                            <li>Total elements selected: ${data.analysis.total_elements}</li>
+                            <li>Contains metals: ${data.analysis.has_metals ? 'Yes' : 'No'}</li>
+                            <li>Contains non-metals: ${data.analysis.has_nonmetals ? 'Yes' : 'No'}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    // 智能更新搜索输入框
+    function updateSearchInputWithElements() {
+        const currentValue = searchInput.value.trim();
+
+        // 检查当前搜索框内容是否只包含元素符号（用空格分隔）
+        const isElementsOnly = currentValue === '' ||
+            currentValue.split(/\s+/).every(term =>
+                term.length <= 3 && /^[A-Z][a-z]?$/.test(term)
+            );
+
+        // 如果搜索框为空或只包含元素符号，则自动更新
+        if (isElementsOnly) {
+            if (selectedElements.length > 0) {
+                searchInput.value = selectedElements.join(' ');
+            } else {
+                searchInput.value = '';
+            }
+        }
+
+        // 如果用户输入了其他内容，不覆盖，但在末尾添加元素
+        else if (selectedElements.length > 0) {
+            // 移除现有的元素符号，保留其他搜索词
+            const nonElementTerms = currentValue.split(/\s+/).filter(term =>
+                !(term.length <= 3 && /^[A-Z][a-z]?$/.test(term))
+            );
+
+            // 组合非元素词汇和选中的元素
+            const combinedTerms = [...nonElementTerms, ...selectedElements];
+            searchInput.value = combinedTerms.join(' ');
+        }
+    }
+
+    // 从搜索框内容同步元素选择状态
+    function syncElementsFromSearchInput() {
+        const searchValue = searchInput.value.trim();
+        if (!searchValue) {
+            // 如果搜索框为空，清除所有选择
+            selectedElements = [];
+            elements.forEach(el => el.classList.remove('selected'));
+            updateSelectedCount();
+            return;
+        }
+
+        // 提取搜索框中的元素符号
+        const terms = searchValue.split(/\s+/);
+        const elementsInSearch = terms.filter(term =>
+            term.length <= 3 && /^[A-Z][a-z]?$/.test(term)
+        );
+
+        // 更新选中状态
+        elements.forEach(el => {
+            const symbol = el.dataset.symbol;
+            if (elementsInSearch.includes(symbol)) {
+                if (!el.classList.contains('selected')) {
+                    el.classList.add('selected');
+                    if (!selectedElements.includes(symbol)) {
+                        selectedElements.push(symbol);
+                    }
+                }
+            } else {
+                if (el.classList.contains('selected')) {
+                    el.classList.remove('selected');
+                    selectedElements = selectedElements.filter(s => s !== symbol);
+                }
+            }
+        });
+
+        updateSelectedCount();
     }
 });
+
+// 全局函数：添加相似元素
+function addSimilarElement(element) {
+    const elementDiv = document.querySelector(`[data-symbol="${element}"]`);
+    if (elementDiv && !elementDiv.classList.contains('selected')) {
+        elementDiv.click(); // 触发点击事件
+    }
+}
 
 function validateSearch() {
     // 获取基本搜索输入

@@ -112,6 +112,9 @@ class Material(db.Model):
     max_photon_energy = db.Column(db.Float)  # 最大光子能量（eV）
     max_tensor_type = db.Column(db.String(10))  # 最大张量类型（如yyy、xxx等）
 
+    # 电子性质参数
+    band_gap = db.Column(db.Float)  # 带隙（eV，从band_data或计算得出）
+
     # 数据验证方法
     def validate(self):
         """

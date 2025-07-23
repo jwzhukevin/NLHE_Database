@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-947",
+    "formula": "Au2S",
+    "lattice_abc": [
+        5.27398218,
+        5.27398218,
+        5.27398218
+    ],
+    "lattice_angles": [
+        90.0,
+        90.0,
+        90.0
+    ],
+    "sg_name": "Pn-3m",
+    "sg_num": 224,
+    "link": "https://next-gen.materialsproject.org/materials/mp-947",
+    "max_sc": 1.1457645718406586e-06,
+    "max_photon_energy": 3.42,
+    "max_tensor_type": "zyy",
+    "Energy": -9.33673758168284
+}

@@ -1736,7 +1736,15 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
                     </div>
                     <div class="card-content collapsed">
                         <ul>
-                            <li id="band-gap"><span class="property-label">Band Gap:</span> <span class="property-value">Loading...</span></li>
+                            <li id="band-gap"><span class="property-label">Band Gap:</span>
+                                <span class="property-value">
+                                    {% if material.band_gap is not none %}
+                                        {{ "%.4f"|format(material.band_gap) }} eV
+                                    {% else %}
+                                        Calculating...
+                                    {% endif %}
+                                </span>
+                            </li>
                             <li id="vbm-energy"><span class="property-label">VBM Energy:</span> <span class="property-value">Loading...</span></li>
                             <li id="cbm-energy"><span class="property-label">CBM Energy:</span> <span class="property-value">Loading...</span></li>
                             <li id="vbm-coordinates"><span class="property-label">VBM Coordinates:</span> <span class="property-value">Loading...</span></li>
@@ -1956,39 +1964,16 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 <!-- 引入材料详情页面的JavaScript文件 -->
 <script src="{{ url_for('static', filename='js/material-detail.js') }}"></script>
 
-<script>
-// 安全地将后端材料数据传递给前端JavaScript
-// 使用JSON格式确保数据的正确性和安全性
-(function() {
-    // 创建材料数据对象，包含所有必要的信息
-    const materialData = {
-        // 材料ID - 数字类型，直接输出
-        id: {{ material.id }},
-        // 材料名称 - 字符串类型，使用JSON编码确保安全
-        name: {{ material.name|tojson }},
-        // 最大超导临界温度 - 可能为空值，使用三元运算符处理
-        max_sc: {{ material.max_sc if material.max_sc is not none else 'null' }},
-        // 最大光子能量 - 可能为空值，使用三元运算符处理
-        max_photon_energy: {{ material.max_photon_energy if material.max_photon_energy is not none else 'null' }},
-        // 最大张量类型 - 字符串类型，使用JSON编码确保安全
-        max_tensor_type: {{ (material.max_tensor_type if material.max_tensor_type else 'Unknown')|tojson }},
-        // 金属类型 - 字符串类型，使用JSON编码确保安全
-        metal_type: {{ (material.metal_type if material.metal_type else 'Unknown')|tojson }}
-    };
-
-    // 调用外部JavaScript文件中的函数来设置数据
-    if (typeof setMaterialData === 'function') {
-        setMaterialData(materialData);
-    } else {
-        // 如果函数还未加载，则等待DOM加载完成后再设置
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof setMaterialData === 'function') {
-                setMaterialData(materialData);
-            }
-        });
-    }
-})();
-
-
+<!-- 使用JSON script标签安全地传递材料数据到前端 -->
+<!-- 这种方法避免了在JavaScript代码中使用Jinja2语法，IDE不会报错 -->
+<script id="material-data" type="application/json">
+{
+    "id": {{ material.id }},
+    "name": {{ material.name|tojson }},
+    "max_sc": {{ material.max_sc if material.max_sc is not none else 'null' }},
+    "max_photon_energy": {{ material.max_photon_energy if material.max_photon_energy is not none else 'null' }},
+    "max_tensor_type": {{ (material.max_tensor_type if material.max_tensor_type else 'Unknown')|tojson }},
+    "metal_type": {{ (material.metal_type if material.metal_type else 'Unknown')|tojson }}
+}
 </script>
 {% endblock %}

@@ -219,6 +219,18 @@ def create_app():
                 print(f"初始化失败: {e}")
                 return 1
 
+        # 添加数据库索引初始化命令
+        @app.cli.command('init-search-indexes')
+        def init_search_indexes_command():
+            """初始化搜索性能优化索引"""
+            try:
+                from .search_optimizer import QueryOptimizer
+                QueryOptimizer.create_database_indexes()
+                print("搜索索引初始化完成")
+            except Exception as e:
+                print(f"索引初始化失败: {e}")
+                return 1
+
         # 添加一个安全的初始化检查函数
         def safe_init_check():
             """安全地检查是否需要初始化"""

@@ -2,7 +2,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 import os
 from werkzeug.utils import secure_filename
-from docx import Document
+try:
+    from docx import Document
+except ImportError:
+    Document = None
 
 program_bp = Blueprint('program', __name__, url_prefix='/program')
 

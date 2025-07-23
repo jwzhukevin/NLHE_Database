@@ -10,17 +10,31 @@
  * 5. 处理原子坐标的显示切换
  */
 
-// 全局变量：存储材料数据，由HTML模板传入
+// 全局变量：存储材料数据，从JSON script标签中读取
 window.materialData = null;
 
 /**
- * 设置材料数据
- * 这个函数由HTML模板调用，用于安全地传递后端数据到前端
- * @param {Object} data - 材料数据对象
+ * 从HTML页面的JSON script标签中读取材料数据
+ * 这种方法避免了在JavaScript代码中使用模板语法，IDE不会报错
+ * @returns {Object|null} 材料数据对象，如果读取失败则返回null
  */
-function setMaterialData(data) {
-    window.materialData = data;
-    console.log('材料数据已设置:', window.materialData);
+function loadMaterialDataFromPage() {
+    try {
+        // 查找包含材料数据的JSON script标签
+        const dataScript = document.getElementById('material-data');
+        if (!dataScript) {
+            console.error('未找到材料数据script标签');
+            return null;
+        }
+
+        // 解析JSON数据
+        const materialData = JSON.parse(dataScript.textContent);
+        console.log('材料数据已从页面加载:', materialData);
+        return materialData;
+    } catch (error) {
+        console.error('解析材料数据时出错:', error);
+        return null;
+    }
 }
 
 /**
@@ -28,9 +42,10 @@ function setMaterialData(data) {
  * 负责设置各种组件、加载数据和绑定事件监听器
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // 检查材料数据是否已设置
+    // 从页面加载材料数据
+    window.materialData = loadMaterialDataFromPage();
     if (!window.materialData) {
-        console.error('材料数据未设置，请检查HTML模板中的数据传递');
+        console.error('材料数据加载失败，请检查HTML模板中的数据传递');
         return;
     }
     
@@ -80,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let current = '';
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
-            const sectionHeight = section.clientHeight;
+            // 检查当前滚动位置是否在这个section范围内
             if (pageYOffset >= (sectionTop - 180)) {
                 current = section.getAttribute('id');
             }
