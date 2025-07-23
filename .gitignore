@@ -14,6 +14,9 @@ instance/*
 NLHE/
 =1.4.3
 
+# Materials data directory - contains large material files and user data
+app/static/materials/
+
 # System
 .DS_Store
 
