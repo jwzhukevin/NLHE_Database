@@ -128,9 +128,6 @@ function analyzeBandStructure(bands) {
         return null;
     }
 
-    // 找到所有能量值
-    const allEnergies = bands.flat();
-
     // 找到费米能级附近的能带（假设费米能级为0）
     const fermiLevel = 0;
     const tolerance = 0.1; // 容差值，用于判断能带是否跨越费米能级
@@ -139,9 +136,25 @@ function analyzeBandStructure(bands) {
     const valenceBands = [];
     const conductionBands = [];
 
+    // 预计算全局能量范围，避免使用bands.flat()
+    let globalMinEnergy = Infinity;
+    let globalMaxEnergy = -Infinity;
+
     bands.forEach((band, bandIndex) => {
-        const maxEnergy = Math.max(...band);
-        const minEnergy = Math.min(...band);
+        if (band.length === 0) return;
+
+        // 高效计算每条能带的最小值和最大值
+        let maxEnergy = band[0];
+        let minEnergy = band[0];
+
+        for (let i = 1; i < band.length; i++) {
+            if (band[i] > maxEnergy) maxEnergy = band[i];
+            if (band[i] < minEnergy) minEnergy = band[i];
+        }
+
+        // 更新全局范围
+        globalMinEnergy = Math.min(globalMinEnergy, minEnergy);
+        globalMaxEnergy = Math.max(globalMaxEnergy, maxEnergy);
 
         if (maxEnergy < fermiLevel - tolerance) {
             // 完全在费米能级以下的能带 - 价带
@@ -304,11 +317,40 @@ async function plotBandStructure(containerId, bandDataPath) {
             showlegend: false
         });
         
+        // 预计算能带的最小值和最大值，避免重复计算大数组
+        let minEnergy = Infinity;
+        let maxEnergy = -Infinity;
+
+        // 高效计算能量范围：只处理每条能带的最小值和最大值
+        bands.forEach(band => {
+            if (band.length > 0) {
+                // 对于大数组，使用更高效的方法
+                let bandMin = band[0];
+                let bandMax = band[0];
+
+                for (let i = 1; i < band.length; i++) {
+                    if (band[i] < bandMin) bandMin = band[i];
+                    if (band[i] > bandMax) bandMax = band[i];
+                }
+
+                minEnergy = Math.min(minEnergy, bandMin);
+                maxEnergy = Math.max(maxEnergy, bandMax);
+            }
+        });
+
+        // 添加一些边距
+        const energyRange = maxEnergy - minEnergy;
+        const margin = energyRange * 0.05;
+        minEnergy -= margin;
+        maxEnergy += margin;
+
+        console.log(`能带能量范围: ${minEnergy.toFixed(2)} 到 ${maxEnergy.toFixed(2)} eV`);
+
         // 添加高对称点垂直虚线
         kPositions.forEach((pos, index) => {
             traces.push({
                 x: [pos, pos],
-                y: [Math.min(...bands.flat()), Math.max(...bands.flat())],
+                y: [minEnergy, maxEnergy],
                 mode: 'lines',
                 name: `${kLabels[index]} line`,
                 line: {
