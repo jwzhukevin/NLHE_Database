@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-539",
+    "formula": "Ga2S3",
+    "lattice_abc": [
+        11.230091000000002,
+        6.45523076,
+        7.05343939
+    ],
+    "lattice_angles": [
+        90.0,
+        121.01692296,
+        90.0
+    ],
+    "sg_name": "Cc",
+    "sg_num": 9,
+    "link": "https://next-gen.materialsproject.org/materials/mp-539",
+    "max_sc": 1.7936451920378227,
+    "max_photon_energy": 2.23,
+    "max_tensor_type": "zzz",
+    "Energy": -4.2112913323124515
+}

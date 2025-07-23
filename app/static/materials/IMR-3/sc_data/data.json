@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-189",
+    "formula": "SiRu",
+    "lattice_abc": [
+        4.70859538,
+        4.70859538,
+        4.70859538
+    ],
+    "lattice_angles": [
+        90.0,
+        90.0,
+        90.0
+    ],
+    "sg_name": "P2_13",
+    "sg_num": 198,
+    "link": "https://next-gen.materialsproject.org/materials/mp-189",
+    "max_sc": 154.2619162460944,
+    "max_photon_energy": 0.43,
+    "max_tensor_type": "xyz",
+    "Energy": -5.878877538682818
+}

@@ -196,10 +196,10 @@ def update_formatted_id(mapper, connection, target):
     connection.execute(
         Material.__table__.update().
         where(Material.__table__.c.id == target.id).
-        values(formatted_id=f"IMR-{target.id:08d}")
+        values(formatted_id=f"IMR-{target.id}")
     )
     # 更新内存中的对象
-    target.formatted_id = f"IMR-{target.id:08d}"
+    target.formatted_id = f"IMR-{target.id}"
 
 class Member(db.Model):
     """

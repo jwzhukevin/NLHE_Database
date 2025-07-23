@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-672",
+    "formula": "CdS",
+    "lattice_abc": [
+        4.1688381,
+        4.1688381,
+        6.77961741
+    ],
+    "lattice_angles": [
+        90.0,
+        90.0,
+        119.99999999999999
+    ],
+    "sg_name": "P6_3mc",
+    "sg_num": 186,
+    "link": "https://next-gen.materialsproject.org/materials/mp-672",
+    "max_sc": 2.7878574505943816,
+    "max_photon_energy": 4.0,
+    "max_tensor_type": "zzz",
+    "Energy": -4.597363809863974
+}

@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-181",
+    "formula": "KGa3",
+    "lattice_abc": [
+        6.23285852,
+        6.23285852,
+        14.71120746
+    ],
+    "lattice_angles": [
+        90.0,
+        90.0,
+        90.0
+    ],
+    "sg_name": "I-4m2",
+    "sg_num": 119,
+    "link": "https://next-gen.materialsproject.org/materials/mp-181",
+    "max_sc": 60.10105326195435,
+    "max_photon_energy": 1.47,
+    "max_tensor_type": "yyz",
+    "Energy": -1.3039128537493916
+}

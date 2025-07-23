@@ -53,7 +53,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
                     <span class="breadcrumb-separator">
                         <i class="fas fa-chevron-right"></i>
                     </span>
-                    <span class="breadcrumb-current">{{ material.name }} (IMR-{{ material.id }})</span>
+                    <span class="breadcrumb-current">{{ material.name }} ({{ material.formatted_id }})</span>
                 </div>
 
                 <!-- 属性导航链接 -->
@@ -1714,7 +1714,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
                     <div class="card-header collapsed">
         <h3>Band Structure
             {% if current_user.is_authenticated %}
-            <a href="{{ url_for('static', filename='materials/IMR-' + material.id|string + '/band/band.dat') }}" download class="download-btn" title="Download band data">
+            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/band/band.dat') }}" download class="download-btn" title="Download band data">
                 <i class="fas fa-download"></i>
             </a>
             {% endif %}
@@ -1766,7 +1766,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
                     <div class="card-header collapsed">
                         <h3>Shift Current
                             {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('static', filename='materials/IMR-' + material.id|string + '/sc/sc.dat') }}" download class="download-btn" title="Download Shift Current data">
+                            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/sc/sc.dat') }}" download class="download-btn" title="Download Shift Current data">
                                 <i class="fas fa-download"></i>
                             </a>
                             {% endif %}
@@ -1931,7 +1931,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
                     </div>
                     <div class="card-content collapsed">
                         <ul>
-                            <li><span class="property-label">ID:</span> <span class="property-value">IMR-{{ material.id }}</span></li>
+                            <li><span class="property-label">ID:</span> <span class="property-value">{{ material.formatted_id }}</span></li>
                             <li><span class="property-label">Status:</span> <span class="property-value">{{ material.status or 'Not available yet' }}</span></li>
                             <li><span class="property-label">Total Energy:</span> <span class="property-value">{{ material.total_energy ~ ' eV' if material.total_energy is not none else 'Not available yet' }}</span></li>
                             <li><span class="property-label">Formation Energy:</span> <span class="property-value">{{ material.formation_energy ~ ' eV' if material.formation_energy is not none else 'Not available yet' }}</span></li>
@@ -1974,8 +1974,8 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
     "max_photon_energy": {{ material.max_photon_energy if material.max_photon_energy is not none else 'null' }},
     "max_tensor_type": {{ (material.max_tensor_type if material.max_tensor_type else 'Unknown')|tojson }},
     "metal_type": {{ (material.metal_type if material.metal_type else 'Unknown')|tojson }},
-    "band_data_path": "/static/materials/IMR-{{ material.id }}/band/band.dat",
-    "sc_data_path": "/static/materials/IMR-{{ material.id }}/sc/sc.dat"
+    "band_data_path": "/static/materials/{{ material.formatted_id }}/band/band.dat",
+    "sc_data_path": "/static/materials/{{ material.formatted_id }}/sc/sc.dat"
 }
 </script>
 {% endblock %}

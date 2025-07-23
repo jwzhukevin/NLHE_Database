@@ -2029,7 +2029,7 @@
         <tbody>
             {% for material in materials %}
             <tr>
-                <td>IMR-{{ material.id }}</td>
+                <td>{{ material.formatted_id }}</td>
                 <td>{{ material.mp_id if material.mp_id else 'Unknown' }}</td>
                 <td>
                     <a href="{{ url_for('views.detail', material_id=material.id) }}" class="material-link">

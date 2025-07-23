@@ -1,0 +1,21 @@
+{
+    "mp_id": "mp-19",
+    "formula": "Te",
+    "lattice_abc": [
+        4.60135252,
+        4.60135252,
+        5.900062
+    ],
+    "lattice_angles": [
+        90.0,
+        90.0,
+        119.99999999999999
+    ],
+    "sg_name": "P3_121",
+    "sg_num": 152,
+    "link": "https://next-gen.materialsproject.org/materials/mp-19",
+    "max_sc": 25.10165210989444,
+    "max_photon_energy": 1.95,
+    "max_tensor_type": "yyy",
+    "Energy": -5.547817336333329
+}
