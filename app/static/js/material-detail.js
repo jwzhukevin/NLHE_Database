@@ -65,14 +65,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // 注意：晶体结构数据的加载在loadCrystalStructureData()函数中进行
     
     // 初始化能带结构图
-    // 构建能带数据文件的URL路径
-    const bandDataPath = `/static/materials/IMR-${window.materialData.id}/band/band.dat`;
+    // 使用从模板传递的完整路径，确保路径正确性
+    const bandDataPath = window.materialData.band_data_path || `/static/materials/IMR-${window.materialData.id}/band/band.dat`;
+    console.log('能带数据路径:', bandDataPath);
     // 调用绘图函数，传入容器ID和数据路径
     plotBandStructure('bandStructure', bandDataPath);
-    
+
     // 初始化SC结构图（自相关性结构图）
-    // 构建主要SC数据文件的URL路径
-    const scDataPath = `/static/materials/IMR-${window.materialData.id}/sc/sc.dat`;
+    // 使用从模板传递的完整路径，确保路径正确性
+    const scDataPath = window.materialData.sc_data_path || `/static/materials/IMR-${window.materialData.id}/sc/sc.dat`;
+    console.log('SC数据路径:', scDataPath);
     // 直接调用绘图函数，不再兜底加载示例文件
     plotSCStructure('scStructure', scDataPath);
     

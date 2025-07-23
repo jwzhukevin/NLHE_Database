@@ -1973,7 +1973,9 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
     "max_sc": {{ material.max_sc if material.max_sc is not none else 'null' }},
     "max_photon_energy": {{ material.max_photon_energy if material.max_photon_energy is not none else 'null' }},
     "max_tensor_type": {{ (material.max_tensor_type if material.max_tensor_type else 'Unknown')|tojson }},
-    "metal_type": {{ (material.metal_type if material.metal_type else 'Unknown')|tojson }}
+    "metal_type": {{ (material.metal_type if material.metal_type else 'Unknown')|tojson }},
+    "band_data_path": "/static/materials/IMR-{{ material.id }}/band/band.dat",
+    "sc_data_path": "/static/materials/IMR-{{ material.id }}/sc/sc.dat"
 }
 </script>
 {% endblock %}

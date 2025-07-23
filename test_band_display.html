@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>能带数据显示测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .band-container {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .info-panel {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        .error-log {
+            background: #ffe6e6;
+            border: 1px solid #ffcccc;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>能带数据显示问题调试测试</h1>
+        <p>此页面用于测试能带数据的加载和显示功能，帮助诊断"能带无数据"的问题。</p>
+        
+        <!-- 测试1：正常的能带文件 -->
+        <div class="test-section">
+            <div class="test-title">测试1：IMR-1 材料能带数据</div>
+            <div id="bandTest1" class="band-container"></div>
+            <div class="info-panel">
+                <strong>测试路径：</strong>/static/materials/IMR-1/band/band.dat<br>
+                <strong>预期结果：</strong>应该显示正常的能带图
+            </div>
+        </div>
+        
+        <!-- 测试2：另一个材料 -->
+        <div class="test-section">
+            <div class="test-title">测试2：IMR-10 材料能带数据</div>
+            <div id="bandTest2" class="band-container"></div>
+            <div class="info-panel">
+                <strong>测试路径：</strong>/static/materials/IMR-10/band/band.dat<br>
+                <strong>预期结果：</strong>应该显示正常的能带图
+            </div>
+        </div>
+        
+        <!-- 测试3：不存在的文件 -->
+        <div class="test-section">
+            <div class="test-title">测试3：不存在的文件（错误处理测试）</div>
+            <div id="bandTest3" class="band-container"></div>
+            <div class="info-panel">
+                <strong>测试路径：</strong>/static/materials/IMR-999/band/band.dat<br>
+                <strong>预期结果：</strong>应该显示"数据未找到"的错误信息
+            </div>
+        </div>
+        
+        <!-- 控制台日志显示 -->
+        <div class="test-section">
+            <div class="test-title">控制台日志</div>
+            <div id="consoleLog" class="error-log">
+                控制台日志将显示在这里...
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入必要的JavaScript库 -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="/static/js/band-plot.js"></script>
+    
+    <script>
+        // 重写console.log和console.error来显示在页面上
+        const originalLog = console.log;
+        const originalError = console.error;
+        const logContainer = document.getElementById('consoleLog');
+        
+        function addLogMessage(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#d32f2f' : '#333';
+            logEntry.style.marginBottom = '5px';
+            logEntry.innerHTML = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLogMessage(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLogMessage(args.join(' '), 'error');
+        };
+        
+        // 页面加载完成后开始测试
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('开始能带数据显示测试');
+            
+            // 测试1：正常文件
+            console.log('=== 测试1：IMR-1 ===');
+            plotBandStructure('bandTest1', '/static/materials/IMR-1/band/band.dat');
+            
+            // 延迟执行其他测试，避免并发问题
+            setTimeout(() => {
+                console.log('=== 测试2：IMR-10 ===');
+                plotBandStructure('bandTest2', '/static/materials/IMR-10/band/band.dat');
+            }, 2000);
+            
+            setTimeout(() => {
+                console.log('=== 测试3：不存在的文件 ===');
+                plotBandStructure('bandTest3', '/static/materials/IMR-999/band/band.dat');
+            }, 4000);
+        });
+    </script>
+</body>
+</html>

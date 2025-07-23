@@ -21,35 +21,99 @@ function loadPlotly() {
 // 解析能带数据文件
 async function parseBandData(filePath) {
     try {
+        console.log('正在获取能带数据文件:', filePath);
         const response = await fetch(filePath);
+
+        // 检查HTTP响应状态
+        if (!response.ok) {
+            console.error(`HTTP错误: ${response.status} ${response.statusText} - ${filePath}`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
         const text = await response.text();
+        console.log('文件内容长度:', text.length, '字符');
+
         const lines = text.trim().split('\n');
+        console.log('文件行数:', lines.length);
         
+        // 检查文件格式
+        if (lines.length < 3) {
+            console.error('文件格式错误: 至少需要3行数据');
+            throw new Error(`文件格式错误: 只有${lines.length}行，至少需要3行`);
+        }
+
         // 解析高对称点信息
         const kLabels = lines[0].trim().split(/\s+/);  // 第一行：高对称点标签
         const kPositions = lines[1].trim().split(/\s+/).map(Number);  // 第二行：高对称点位置
-        
+
+        console.log('高对称点标签:', kLabels);
+        console.log('高对称点位置:', kPositions);
+
         // 初始化数据数组
         const kpoints = [];
         const bands = [];
-        
+
         // 获取能带数量（数据行的列数减1，因为第一列是k点）
-        const numBands = lines[2].trim().split(/\s+/).length - 1;
+        const firstDataLine = lines[2].trim().split(/\s+/);
+        const numBands = firstDataLine.length - 1;
+        console.log('检测到能带数量:', numBands);
+
+        if (numBands <= 0) {
+            console.error('数据格式错误: 没有检测到能带数据');
+            throw new Error('数据格式错误: 没有检测到能带数据');
+        }
+
         for (let i = 0; i < numBands; i++) {
             bands.push([]);
         }
         
         // 解析能带数据（从第三行开始）
+        let validDataLines = 0;
         for (let i = 2; i < lines.length; i++) {
-            const values = lines[i].trim().split(/\s+/).map(Number);
-            kpoints.push(values[0]);
-            for (let j = 0; j < numBands; j++) {
-                bands[j].push(values[j + 1]);
+            const line = lines[i].trim();
+            if (!line) continue; // 跳过空行
+
+            try {
+                const values = line.split(/\s+/).map(Number);
+
+                // 检查数据完整性
+                if (values.length < numBands + 1) {
+                    console.warn(`第${i+1}行数据不完整: 期望${numBands + 1}个值，实际${values.length}个`);
+                    continue;
+                }
+
+                // 检查是否有NaN值
+                if (values.some(isNaN)) {
+                    console.warn(`第${i+1}行包含无效数值:`, line);
+                    continue;
+                }
+
+                kpoints.push(values[0]);
+                for (let j = 0; j < numBands; j++) {
+                    bands[j].push(values[j + 1]);
+                }
+                validDataLines++;
+
+            } catch (error) {
+                console.warn(`第${i+1}行解析失败:`, error.message);
+                continue;
             }
         }
-        
+
+        console.log(`成功解析${validDataLines}行数据，${kpoints.length}个k点`);
+
+        // 检查解析结果
+        if (kpoints.length === 0) {
+            throw new Error('没有有效的k点数据');
+        }
+
+        if (bands.length === 0 || bands[0].length === 0) {
+            throw new Error('没有有效的能带数据');
+        }
+
         // 分析能带特性
         const bandAnalysis = analyzeBandStructure(bands);
+        console.log('能带分析结果:', bandAnalysis);
 
         return { kpoints, bands, kLabels, kPositions, bandAnalysis };
     } catch (error) {
@@ -165,46 +229,49 @@ function analyzeBandStructure(bands) {
 // 绘制能带图
 async function plotBandStructure(containerId, bandDataPath) {
     let isExample = false;
-    let exampleBandPath = '/static/materials/example_band.dat';
     let bandData = null;
-    let errorMsg = '';
+
+    console.log('开始绘制能带图，容器ID:', containerId, '数据路径:', bandDataPath);
+
     try {
         await loadPlotly();
+        console.log('Plotly库加载成功');
+
         try {
             bandData = await parseBandData(bandDataPath);
+            console.log('能带数据解析成功');
         } catch (error) {
-            errorMsg = 'No data';
+            console.error('能带数据解析失败:', error);
+            throw error;
         }
-        if (!bandData ||
-            !bandData.kpoints || bandData.kpoints.length === 0 ||
-            !bandData.bands || bandData.bands.length === 0 ||
-            !bandData.kLabels || bandData.kLabels.length === 0 ||
-            !bandData.kPositions || bandData.kPositions.length === 0
-        ) {
-            // 显示无数据提示，卡片内容水平垂直居中
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.innerHTML = `<div style="
-                    min-height: 220px;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: center;
-                    align-items: center;
-                    background: linear-gradient(90deg,#fff,#f3f4f6 60%,#fff);
-                    border-radius: 12px;
-                    margin: 24px 0;
-                    box-shadow:0 2px 8px #e5e7eb;">
-                    <div style=\"font-size: 2rem; font-weight: bold; color: #dc2626; margin-bottom: 12px; letter-spacing:1px;\">Band structure data not found</div>
-                    <div style=\"font-size: 1rem; color: #666; max-width: 480px; margin: 0 auto; line-height: 1.7; text-align: center;\">
-                        Sorry, the band structure data for this material is currently unavailable.<br>
-                        This may be due to missing or incorrectly formatted data files.<br>
-                        Our development team is actively working to improve this feature.<br>
-                        If you have any questions or suggestions, please contact us via <a href='mailto:your_email@example.com' style='color:#2563eb;text-decoration:underline;'>email</a> or submit a <a href='https://github.com/yourrepo/issues' target='_blank' style='color:#2563eb;text-decoration:underline;'>GitHub Issue</a>.
-                    </div>
-                </div>`;
+
+        // 详细验证数据完整性
+        const validationErrors = [];
+
+        if (!bandData) {
+            validationErrors.push('bandData为空');
+        } else {
+            if (!bandData.kpoints || bandData.kpoints.length === 0) {
+                validationErrors.push('k点数据缺失或为空');
             }
-            return;
+            if (!bandData.bands || bandData.bands.length === 0) {
+                validationErrors.push('能带数据缺失或为空');
+            }
+            if (!bandData.kLabels || bandData.kLabels.length === 0) {
+                validationErrors.push('高对称点标签缺失或为空');
+            }
+            if (!bandData.kPositions || bandData.kPositions.length === 0) {
+                validationErrors.push('高对称点位置缺失或为空');
+            }
         }
+
+        if (validationErrors.length > 0) {
+            console.error('数据验证失败:', validationErrors);
+            throw new Error('数据验证失败: ' + validationErrors.join(', '));
+        }
+
+        // 数据验证通过，开始绘图
+        console.log('数据验证通过，开始绘制能带图');
         const { kpoints, bands, kLabels, kPositions, bandAnalysis } = bandData;
         
         // 准备绘图数据
@@ -394,20 +461,28 @@ async function plotBandStructure(containerId, bandDataPath) {
         }
         
     } catch (error) {
-        console.error('Error plotting band structure:', error);
-        // 显示错误信息在容器中，卡片内容水平垂直居中
+        console.error('绘制能带图时发生错误:', error);
+
+        // 显示详细的错误信息在容器中
         const container = document.getElementById(containerId);
         if (container) {
             container.innerHTML = `<div style="
-                min-height: 180px;
+                min-height: 220px;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
-                background: #f9f9f9;
-                border-radius: 8px;
-                margin: 20px 0;">
-                <p style=\"color: #666; font-size: 18px; text-align: center;\">No data</p>
+                background: linear-gradient(90deg,#fff,#f3f4f6 60%,#fff);
+                border-radius: 12px;
+                margin: 24px 0;
+                box-shadow:0 2px 8px #e5e7eb;">
+                <div style="font-size: 2rem; font-weight: bold; color: #dc2626; margin-bottom: 12px; letter-spacing:1px;">Band structure data not found</div>
+                <div style="font-size: 1rem; color: #666; max-width: 480px; margin: 0 auto; line-height: 1.7; text-align: center;">
+                    Sorry, the band structure data for this material is currently unavailable.<br>
+                    Error: ${error.message}<br>
+                    This may be due to missing or incorrectly formatted data files.<br>
+                    Please check the browser console for more details.
+                </div>
             </div>`;
         }
     }
