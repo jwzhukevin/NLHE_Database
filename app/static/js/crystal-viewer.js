@@ -2088,7 +2088,8 @@ function getCurrentMaterialId() {
     }
     
     // 最后检查URL路径，看是否包含ID信息
-    const pathMatch = window.location.pathname.match(/\/(\d+)($|\/)/);
+    // 匹配新格式: /materials/IMR-{id}
+    const pathMatch = window.location.pathname.match(/\/materials\/IMR-(\d+)/);
     if (pathMatch && pathMatch[1]) {
         return pathMatch[1];
     }

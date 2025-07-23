@@ -628,7 +628,8 @@ function updateBandStructureInfo(bandAnalysis) {
 
 // 获取当前页面的材料ID
 function getMaterialIdFromUrl() {
-    const materialIdMatch = window.location.pathname.match(/\/materials\/(\d+)/);
+    // 匹配新格式: /materials/IMR-{id}
+    const materialIdMatch = window.location.pathname.match(/\/materials\/IMR-(\d+)/);
     return materialIdMatch ? materialIdMatch[1] : null;
 }
 
