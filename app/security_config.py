@@ -29,7 +29,8 @@ class SecurityConfig:
     REQUIRE_SPECIAL_CHARS = True
     
     # 速率限制
-    RATELIMIT_STORAGE_URL = "memory://"
+    # RATELIMIT_STORAGE_URL在__init__.py中动态配置，支持Valkey存储
+    # RATELIMIT_STORAGE_URL = "memory://"  # 已移至__init__.py动态配置
     RATELIMIT_DEFAULT = "100 per hour"
     
     # 安全头部
