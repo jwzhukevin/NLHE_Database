@@ -68,6 +68,10 @@ def create_app():
     # 禁用SQLAlchemy的事件通知系统以提高性能
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 禁用 SQLAlchemy 事件系统以提升性能
 
+    # Redis配置 - 用于速率限制存储
+    app.config['REDIS_URL'] = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+    app.config['RATELIMIT_STORAGE_URL'] = os.getenv('RATELIMIT_STORAGE_URL', 'redis://localhost:6379/1')
+
     # 安全配置
     from .security_config import SecurityConfig
     app.config.update(SecurityConfig.__dict__)
@@ -97,12 +101,23 @@ def create_app():
 
     # 速率限制
     if limiter_available:
-        limiter = Limiter(
-            key_func=get_remote_address,
-            default_limits=["200 per day", "50 per hour"]
-        )
-        limiter.init_app(app)
-        app.logger.info("Rate limiting enabled")
+        try:
+            limiter = Limiter(
+                key_func=get_remote_address,
+                default_limits=["200 per day", "50 per hour"],
+                storage_uri=app.config['RATELIMIT_STORAGE_URL']
+            )
+            limiter.init_app(app)
+            app.logger.info("Rate limiting enabled with Redis storage")
+        except Exception as e:
+            # 如果Redis连接失败，回退到内存存储
+            app.logger.warning(f"Redis connection failed, falling back to memory storage: {e}")
+            limiter = Limiter(
+                key_func=get_remote_address,
+                default_limits=["200 per day", "50 per hour"]
+            )
+            limiter.init_app(app)
+            app.logger.info("Rate limiting enabled with memory storage")
     else:
         app.logger.warning("Flask-Limiter not available, rate limiting disabled")
     
