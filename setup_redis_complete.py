@@ -31,16 +31,18 @@ def run_command(command, description):
         return False
 
 def check_python_redis():
-    """检查Python Redis客户端"""
-    print("📦 检查Python Redis客户端...")
+    """检查Python Redis客户端（用于连接Valkey）"""
+    print("📦 检查Python Redis客户端（用于连接Valkey）...")
+    print("📝 Valkey使用Redis协议，可以使用redis-py客户端")
     try:
         import redis
         print(f"  ✅ Redis客户端已安装: 版本 {redis.__version__}")
+        print("  📝 此客户端可以连接Valkey服务器")
         return True
     except ImportError:
         print("  ❌ Redis客户端未安装")
         print("  🔧 正在安装...")
-        return run_command("pip install redis", "安装Redis客户端")
+        return run_command("pip install redis", "安装Redis客户端（用于Valkey）")
 
 def check_flask_limiter():
     """检查Flask-Limiter"""
@@ -54,49 +56,61 @@ def check_flask_limiter():
         print("  🔧 正在安装...")
         return run_command("pip install Flask-Limiter", "安装Flask-Limiter")
 
-def test_redis_service():
-    """测试Redis服务"""
-    print("🔍 测试Redis服务...")
-    
-    # 检查Redis进程
+def test_valkey_service():
+    """测试Valkey服务"""
+    print("🔍 测试Valkey服务...")
+
+    # 检查Valkey进程
     if os.name == 'nt':  # Windows
-        result = run_command('tasklist /FI "IMAGENAME eq redis-server.exe"', "检查Redis进程")
+        result = run_command('tasklist /FI "IMAGENAME eq valkey-server.exe"', "检查Valkey进程")
+        if not result:
+            # 检查Redis进程（可能兼容）
+            result = run_command('tasklist /FI "IMAGENAME eq redis-server.exe"', "检查Redis进程（兼容模式）")
     else:  # Linux/macOS
-        result = run_command('pgrep -f redis-server', "检查Redis进程")
-    
+        result = run_command('pgrep -f valkey-server', "检查Valkey进程")
+        if not result:
+            # 检查Redis进程（可能兼容）
+            result = run_command('pgrep -f redis-server', "检查Redis进程（兼容模式）")
+
     if not result:
-        print("  ⚠️  Redis服务可能未运行")
-        print("  💡 请运行: ./start_redis.sh 或手动启动Redis")
+        print("  ⚠️  Valkey服务可能未运行")
+        print("  💡 请运行: ./install_valkey.sh 安装并启动Valkey")
         return False
-    
-    # 测试Redis连接
-    return run_command('redis-cli ping', "测试Redis连接")
+
+    # 测试Valkey连接（使用redis-cli，因为协议兼容）
+    result = run_command('valkey-cli ping', "测试Valkey连接")
+    if not result:
+        result = run_command('redis-cli ping', "测试连接（使用redis-cli）")
+
+    return result
 
 def test_flask_app():
     """测试Flask应用配置"""
-    print("🌐 测试Flask应用配置...")
-    
+    print("🌐 测试Flask应用Valkey配置...")
+
     try:
         # 导入应用
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         from app import create_app
-        
+
         app = create_app()
-        
+
         # 检查配置
-        redis_url = app.config.get('REDIS_URL')
+        valkey_url = app.config.get('VALKEY_URL')
+        redis_url = app.config.get('REDIS_URL')  # 向后兼容
         ratelimit_url = app.config.get('RATELIMIT_STORAGE_URL')
-        
-        print(f"  📋 Redis URL: {redis_url}")
+
+        print(f"  📋 Valkey URL: {valkey_url}")
+        print(f"  📋 Redis URL (兼容): {redis_url}")
         print(f"  📋 Rate Limit URL: {ratelimit_url}")
-        
-        if redis_url and ratelimit_url:
-            print("  ✅ Flask应用Redis配置正确")
+
+        if valkey_url and ratelimit_url:
+            print("  ✅ Flask应用Valkey配置正确")
             return True
         else:
-            print("  ❌ Flask应用Redis配置缺失")
+            print("  ❌ Flask应用Valkey配置缺失")
             return False
-            
+
     except Exception as e:
         print(f"  ❌ Flask应用测试失败: {e}")
         return False
@@ -152,41 +166,52 @@ def test_rate_limiting():
 def generate_summary():
     """生成配置总结"""
     print("\n" + "=" * 60)
-    print("📋 Redis配置总结")
+    print("📋 Valkey配置总结")
     print("=" * 60)
-    
+
     print("\n🔧 已完成的配置:")
     print("  1. ✅ 更新了Flask应用配置 (app/__init__.py)")
-    print("  2. ✅ 添加了Redis URL配置")
+    print("  2. ✅ 添加了Valkey URL配置")
     print("  3. ✅ 配置了速率限制存储")
-    print("  4. ✅ 添加了Redis连接错误处理")
-    
+    print("  4. ✅ 添加了Valkey连接错误处理")
+    print("  5. ✅ 保持了Redis协议兼容性")
+
     print("\n📁 创建的文件:")
-    print("  - test_redis_connection.py  (Redis连接测试)")
-    print("  - start_redis.sh           (Redis启动脚本)")
-    print("  - setup_redis_complete.py  (完整配置验证)")
-    
+    print("  - install_valkey.sh         (Valkey安装脚本)")
+    print("  - test_valkey_connection.py (Valkey连接测试)")
+    print("  - setup_redis_complete.py   (完整配置验证)")
+
     print("\n🚀 使用方法:")
-    print("  1. 启动Redis: ./start_redis.sh")
-    print("  2. 测试连接: python test_redis_connection.py")
+    print("  1. 安装Valkey: ./install_valkey.sh")
+    print("  2. 测试连接: python test_valkey_connection.py")
     print("  3. 重启Flask应用")
-    print("  4. 检查日志中的 'Rate limiting enabled with Redis storage'")
-    
+    print("  4. 检查日志中的 'Rate limiting enabled with Valkey storage'")
+
     print("\n🔍 故障排除:")
-    print("  - 如果Redis连接失败，应用会自动回退到内存存储")
-    print("  - 检查Redis服务状态: redis-cli ping")
+    print("  - 如果Valkey连接失败，应用会自动回退到内存存储")
+    print("  - 检查Valkey服务状态: sudo systemctl status valkey")
+    print("  - 测试连接: valkey-cli ping 或 redis-cli ping")
     print("  - 检查端口6379是否被占用: netstat -an | grep 6379")
+
+    print("\n💡 Valkey优势:")
+    print("  - 开源分支，由Linux基金会维护")
+    print("  - 完全兼容Redis协议和客户端")
+    print("  - 更适合生产环境和企业使用")
+    print("  - 避免Redis许可证变更的影响")
 
 def main():
     """主函数"""
-    print("🎯 Redis完整配置验证")
+    print("🎯 Valkey完整配置验证")
     print("=" * 60)
-    
+    print("📝 Valkey是Redis的开源分支，由Linux基金会维护")
+    print("📝 使用相同的协议，可以无缝替换Redis")
+    print("")
+
     # 运行所有检查
     checks = [
         ("Python Redis客户端", check_python_redis),
         ("Flask-Limiter", check_flask_limiter),
-        ("Redis服务", test_redis_service),
+        ("Valkey服务", test_valkey_service),
         ("Flask应用配置", test_flask_app),
         ("速率限制功能", test_rate_limiting),
     ]

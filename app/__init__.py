@@ -68,9 +68,13 @@ def create_app():
     # 禁用SQLAlchemy的事件通知系统以提高性能
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 禁用 SQLAlchemy 事件系统以提升性能
 
-    # Redis配置 - 用于速率限制存储
-    app.config['REDIS_URL'] = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+    # Valkey配置 - 用于速率限制存储 (Valkey是Redis的开源分支)
+    # 支持Redis协议，可以无缝替换Redis
+    app.config['VALKEY_URL'] = os.getenv('VALKEY_URL', 'redis://localhost:6379/0')
     app.config['RATELIMIT_STORAGE_URL'] = os.getenv('RATELIMIT_STORAGE_URL', 'redis://localhost:6379/1')
+
+    # 向后兼容Redis配置
+    app.config['REDIS_URL'] = app.config['VALKEY_URL']
 
     # 安全配置
     from .security_config import SecurityConfig
@@ -108,16 +112,16 @@ def create_app():
                 storage_uri=app.config['RATELIMIT_STORAGE_URL']
             )
             limiter.init_app(app)
-            app.logger.info("Rate limiting enabled with Redis storage")
+            app.logger.info("Rate limiting enabled with Valkey storage")
         except Exception as e:
-            # 如果Redis连接失败，回退到内存存储
-            app.logger.warning(f"Redis connection failed, falling back to memory storage: {e}")
+            # 如果Valkey连接失败，回退到内存存储
+            app.logger.warning(f"Valkey connection failed, falling back to memory storage: {e}")
             limiter = Limiter(
                 key_func=get_remote_address,
                 default_limits=["200 per day", "50 per hour"]
             )
             limiter.init_app(app)
-            app.logger.info("Rate limiting enabled with memory storage")
+            app.logger.info("Rate limiting enabled with memory storage (Valkey fallback)")
     else:
         app.logger.warning("Flask-Limiter not available, rate limiting disabled")
     
