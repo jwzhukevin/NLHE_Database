@@ -628,6 +628,7 @@ def login():
     POST request: Validate user credentials and process login
     """
     # If user is already logged in, redirect to homepage
+    # 不显示任何Flash消息，避免重复显示登录成功消息
     if current_user.is_authenticated:
         return redirect(url_for('views.index'))
     
@@ -735,10 +736,13 @@ def login():
         # Login successful, clear failure count
         session.pop(failed_key, None)
         login_user(user_by_email, remember=remember)
-        
-        # Show welcome message with username
-        flash(f'Welcome back, {user_by_email.username}!', 'success')
-        
+
+        # Show welcome message with username (only once per login session)
+        # 使用session标记防止重复显示登录成功消息
+        if not session.get('login_message_shown'):
+            flash(f'Welcome back, {user_by_email.username}!', 'success')
+            session['login_message_shown'] = True
+
         next_page = request.args.get('next')
         if next_page:
             return redirect(next_page)
@@ -752,10 +756,12 @@ def login():
 def logout():
     """
     Handle user logout
-    
+
     Perform logout operation and redirect to homepage
     """
     logout_user()  # Flask-Login logout method, clear user session
+    # 清除登录消息显示标记，以便下次登录时可以正常显示欢迎消息
+    session.pop('login_message_shown', None)
     flash('Goodbye.', 'info')  # Display information message
     return redirect(url_for('views.index'))  # Redirect to homepage
 
