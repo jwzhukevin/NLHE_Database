@@ -8,18 +8,32 @@
 <!-- 确保Inter字体加载 -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Three.js相关脚本：用于创建和渲染3D晶体结构模型 -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"
+        onerror="console.warn('Three.js CDN加载失败，3D功能将不可用')"></script>
 <!-- Three.js轨道控制器：允许用户旋转、平移和缩放3D模型 -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-<!-- 备用OrbitControls加载 -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"
+        onerror="console.warn('OrbitControls CDN加载失败，3D控制功能将不可用')"></script>
+<!-- 备用OrbitControls加载和错误处理 -->
 <script>
-// 检查OrbitControls是否加载成功，如果没有则尝试备用URL
-if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
-    console.log("尝试加载备用OrbitControls...");
-    const script = document.createElement('script');
-    script.src = 'https://threejs.org/examples/js/controls/OrbitControls.js';
-    document.head.appendChild(script);
-}
+// 延迟检查库是否加载成功
+setTimeout(function() {
+    if (typeof THREE === 'undefined') {
+        console.warn('⚠️ Three.js库未加载，3D晶体结构功能将不可用');
+        // 可以在这里添加用户友好的提示
+        const crystalContainer = document.getElementById('crystal-container');
+        if (crystalContainer) {
+            crystalContainer.innerHTML = '<div class="alert alert-warning">3D晶体结构功能暂时不可用（网络连接问题）</div>';
+        }
+    } else if (!THREE.OrbitControls) {
+        console.log("尝试加载备用OrbitControls...");
+        const script = document.createElement('script');
+        script.src = 'https://threejs.org/examples/js/controls/OrbitControls.js';
+        script.onerror = function() {
+            console.warn('⚠️ OrbitControls加载失败，3D控制功能受限');
+        };
+        document.head.appendChild(script);
+    }
+}, 1000);
 </script>
 <!-- 自定义晶体查看器脚本：实现晶体结构的交互式展示 -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/crystal-viewer.js') }}"></script>
@@ -29,7 +43,22 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
 
 <!-- SC结构相关脚本 -->
 <!-- Plotly.js：强大的图表库，用于创建交互式图表 -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/plotly.js@2.18.0/dist/plotly.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/plotly.js@2.18.0/dist/plotly.min.js"
+        onerror="console.warn('Plotly.js CDN加载失败，图表功能将不可用')"></script>
+<!-- Plotly.js错误处理 -->
+<script>
+// 延迟检查Plotly是否加载成功
+setTimeout(function() {
+    if (typeof Plotly === 'undefined') {
+        console.warn('⚠️ Plotly.js库未加载，图表功能将不可用');
+        // 可以在这里添加用户友好的提示
+        const scContainer = document.getElementById('sc-plot-container');
+        if (scContainer) {
+            scContainer.innerHTML = '<div class="alert alert-warning">图表功能暂时不可用（网络连接问题）</div>';
+        }
+    }
+}, 1000);
+</script>
 <!-- 自定义SC结构绘图脚本：处理SC结构数据的可视化 -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/sc-plot.js') }}"></script>
 
@@ -1973,7 +2002,7 @@ if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
     "max_sc": {{ material.max_sc if material.max_sc is not none else 'null' }},
     "max_photon_energy": {{ material.max_photon_energy if material.max_photon_energy is not none else 'null' }},
     "max_tensor_type": {{ (material.max_tensor_type if material.max_tensor_type else 'Unknown')|tojson }},
-    "metal_type": {{ (material.metal_type if material.metal_type else 'Unknown')|tojson }},
+    "materials_type": "Unknown",
     "band_data_path": "/static/materials/{{ material.formatted_id }}/band/band.dat",
     "sc_data_path": "/static/materials/{{ material.formatted_id }}/sc/sc.dat"
 }

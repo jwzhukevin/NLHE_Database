@@ -17,6 +17,7 @@
 
     <span class="title2">Add New Material</span>
     <form method="post" class="material-form" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <!-- Core Properties -->
         <div class="form-section">
             <h3>Core Properties</h3>

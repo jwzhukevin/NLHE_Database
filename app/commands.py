@@ -167,7 +167,7 @@ def register_commands(app):
                     'sg_name': sc_data.get('sg_name', 'Unknown') if sc_data else 'Unknown',
                     'sg_num': sc_data.get('sg_num', None) if sc_data else None,
                     'fermi_level': sc_data.get('Energy', None) if sc_data else None,
-                    'metal_type': 'Unknown',  # 需要单独确定
+                    # 'metal_type': 'Unknown',  # 字段已移除 - 现在从band.json读取materials_type
                     'max_sc': sc_data.get('max_sc', None) if sc_data else None,
                     'max_photon_energy': sc_data.get('max_photon_energy', None) if sc_data else None,
                     'max_tensor_type': sc_data.get('max_tensor_type', 'Unknown') if sc_data else 'Unknown'
@@ -185,7 +185,7 @@ def register_commands(app):
                     existing_material.sg_name = material_data['sg_name']
                     existing_material.sg_num = material_data['sg_num']
                     existing_material.fermi_level = material_data['fermi_level']
-                    existing_material.metal_type = material_data['metal_type']
+                    # existing_material.metal_type = material_data['metal_type']  # 字段已移除
                     existing_material.max_sc = material_data['max_sc']
                     existing_material.max_photon_energy = material_data['max_photon_energy']
                     existing_material.max_tensor_type = material_data['max_tensor_type']
@@ -201,7 +201,7 @@ def register_commands(app):
                         sg_name=material_data['sg_name'],
                         sg_num=material_data['sg_num'],
                         fermi_level=material_data['fermi_level'],
-                        metal_type=material_data['metal_type'],
+                        # metal_type字段已移除 - 现在从band.json读取materials_type
                         max_sc=material_data['max_sc'],
                         max_photon_energy=material_data['max_photon_energy'],
                         max_tensor_type=material_data['max_tensor_type']
@@ -378,7 +378,7 @@ def register_commands(app):
                             fermi_level=0.5,
                             vacuum_level=4.5,
                             workfunction=5.0,
-                            metal_type="metal" if import_count % 2 == 0 else "semiconductor",
+                            # metal_type="metal" if import_count % 2 == 0 else "semiconductor",  # 字段已移除
                             gap=0.0 if import_count % 2 == 0 else 1.5,
                             vbm_energy=-1.0,
                             cbm_energy=0.5,
@@ -478,7 +478,7 @@ def register_commands(app):
                         fermi_level=material_data['fermi_level'],
                         vacuum_level=material_data['vacuum_level'],
                         workfunction=material_data['workfunction'],
-                        metal_type=material_data['metal_type'],
+                        # metal_type=material_data['metal_type'],  # 字段已移除
                         gap=material_data['gap'],
                         vbm_energy=material_data['vbm_energy'],
                         cbm_energy=material_data['cbm_energy'],

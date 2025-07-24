@@ -86,15 +86,14 @@ def create_app():
     # 初始化安全扩展
     global csrf, limiter
 
-    # CSRF保护 - 暂时禁用以确保API正常工作
-    # TODO: 实施更精确的CSRF豁免机制
+    # CSRF保护
     global csrf
-    if csrf_available and False:  # 暂时禁用
+    if csrf_available:
         csrf = CSRFProtect(app)
         app.logger.info("CSRF protection enabled")
     else:
         csrf = None
-        app.logger.warning("CSRF protection temporarily disabled for API compatibility")
+        app.logger.warning("Flask-WTF not available, CSRF protection disabled")
 
     # 速率限制
     if limiter_available:
@@ -287,6 +286,56 @@ def create_app():
                 print("搜索索引初始化完成")
             except Exception as e:
                 print(f"索引初始化失败: {e}")
+                return 1
+
+        # 添加能带数据分析命令
+        @app.cli.command('analyze-bands')
+        def analyze_bands_command():
+            """分析所有材料的能带数据并生成band.json文件"""
+            try:
+                from .band_analyzer import band_analyzer
+                from .models import Material
+
+                print("开始分析能带数据...")
+
+                # 获取所有材料
+                materials = Material.query.all()
+                total_materials = len(materials)
+                analyzed_count = 0
+                error_count = 0
+
+                print(f"找到 {total_materials} 个材料需要分析")
+
+                for i, material in enumerate(materials, 1):
+                    print(f"[{i}/{total_materials}] 分析材料 {material.formatted_id}...")
+
+                    try:
+                        # 分析能带数据
+                        result = band_analyzer.analyze_material_band(material.id)
+
+                        if result:
+                            # 更新数据库中的band_gap字段
+                            material.band_gap = result['band_gap']
+                            analyzed_count += 1
+                            print(f"  ✅ 成功: 带隙 = {result['band_gap']:.4f} eV, 类型 = {result['materials_type']}")
+                        else:
+                            error_count += 1
+                            print(f"  ❌ 分析失败")
+
+                    except Exception as e:
+                        error_count += 1
+                        print(f"  ❌ 错误: {str(e)}")
+
+                # 提交数据库更改
+                db.session.commit()
+
+                print(f"\n能带分析完成!")
+                print(f"✅ 成功分析: {analyzed_count}")
+                print(f"❌ 失败: {error_count}")
+                print(f"📊 总计: {total_materials}")
+
+            except Exception as e:
+                print(f"能带分析错误: {str(e)}")
                 return 1
 
         # 添加一个安全的初始化检查函数

@@ -215,6 +215,7 @@
     <div class="deepseek-chat-box">
         <h2>SiliconFlow LLM Chat</h2>
         <form method="post" class="chat-toolbar" id="toolbar-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button type="submit" name="delete_session" value="1">Del</button>
             <button type="submit" name="clear" value="1">Clear</button>
             <button type="submit" name="new" value="1">New</button>
@@ -236,6 +237,7 @@
         <div class="modal" id="save-modal">
             <div class="modal-content">
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <h4>Name this session</h4>
                     <input type="text" name="save_name" placeholder="Session name" required maxlength="32" />
                     <div>
@@ -249,6 +251,7 @@
         <div class="modal" id="rename-modal">
             <div class="modal-content">
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <h4>Rename this session</h4>
                     <input type="text" name="rename_name" placeholder="New name" required maxlength="32" />
                     <div>
@@ -287,6 +290,7 @@
             {% endfor %}
         </div>
         <form method="post" class="deepseek-chat-form" id="chat-form" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <textarea name="prompt" rows="2" placeholder="Type your message..." required></textarea>
             <button type="submit">Send</button>
         </form>
@@ -363,6 +367,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const form = document.createElement('form');
             form.method = 'post';
             form.style.display = 'none';
+
+            // 添加CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'retry_index';
@@ -380,6 +392,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const form = document.createElement('form');
             form.method = 'post';
             form.style.display = 'none';
+
+            // 添加CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            form.appendChild(csrfInput);
+
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'delete_index';
@@ -456,6 +476,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         const form = document.createElement('form');
                         form.method = 'post';
                         form.style.display = 'none';
+
+                        // 添加CSRF token
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrf_token';
+                        csrfInput.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfInput);
+
                         const input = document.createElement('input');
                         input.type = 'hidden';
                         input.name = 'retry_index';
@@ -472,6 +500,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         const form = document.createElement('form');
                         form.method = 'post';
                         form.style.display = 'none';
+
+                        // 添加CSRF token
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrf_token';
+                        csrfInput.value = '{{ csrf_token() }}';
+                        form.appendChild(csrfInput);
+
                         const input = document.createElement('input');
                         input.type = 'hidden';
                         input.name = 'delete_index';

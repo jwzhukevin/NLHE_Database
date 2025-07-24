@@ -109,8 +109,7 @@ class Material(db.Model):
     # 能量参数（来自sc_data/data.json）
     fermi_level = db.Column(db.Float)  # 费米能级（eV，从Energy字段读取）
 
-    # 材料类型参数（保留用于分类和筛选）
-    metal_type = db.Column(db.String(20))  # 金属分类（如"metal"、"semiconductor"等）
+    # 材料类型参数已移除 - 现在从band.json文件中读取
 
     # Shift Current特性参数（来自sc_data/data.json）
     max_sc = db.Column(db.Float)  # 最大Shift Current值（uA/V^2）

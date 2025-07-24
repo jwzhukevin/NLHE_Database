@@ -100,10 +100,20 @@ if [ $? -eq 0 ]; then
     # 验证数据导入是否成功
     if [ $? -eq 0 ]; then
         echo "Data import completed successfully."
+
+        # 分析能带数据并生成band.json文件
+        echo "Analyzing band data and generating band.json files..."
+        flask analyze-bands
+
+        if [ $? -eq 0 ]; then
+            echo "Band analysis completed successfully."
+        else
+            echo "WARNING: Band analysis finished with errors."
+        fi
     else
         echo "WARNING: Data import finished with errors."
     fi
-    
+
     echo "Database initialization completed."
 else
     echo "ERROR: Database initialization failed!"

@@ -21,16 +21,14 @@ from PIL import Image, ImageDraw, ImageFont
 import random, string, io
 from .security_utils import log_security_event, sanitize_input, regenerate_session, check_rate_limit
 
-# CSRF豁免装饰器
-def csrf_exempt(f):
-    """CSRF豁免装饰器"""
-    @functools.wraps(f)
-    def decorated_function(*args, **kwargs):
-        return f(*args, **kwargs)
-
-    # 标记函数为CSRF豁免
-    decorated_function._csrf_exempt = True
-    return decorated_function
+# 尝试导入CSRF豁免装饰器
+try:
+    from flask_wtf.csrf import exempt as csrf_exempt
+    csrf_exempt_available = True
+except ImportError:
+    csrf_exempt_available = False
+    def csrf_exempt(f):
+        return f  # 如果没有Flask-WTF，返回原函数
 
 # Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
@@ -76,7 +74,7 @@ def index():
     Supported GET parameters:
         q: Search keywords
         status: Material status filter
-        metal_type: Metal type filter
+        materials_type: Materials type filter (从band.json读取)
         formation_energy_min/max: Formation energy range filter
         fermi_level_min/max: Fermi level range filter
         page: Current page number
@@ -85,7 +83,7 @@ def index():
         # Get all search parameters (stored in dictionary for unified processing)
         search_params = {
             'q': request.args.get('q', '').strip(),  # Text search keywords
-            'metal_type': request.args.get('metal_type', '').strip(),  # Materials type
+            'materials_type': request.args.get('materials_type', '').strip(),  # Materials type (从band.json读取)
             'elements': request.args.get('elements', '').strip(),  # Selected elements from periodic table
             'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # Fermi level minimum
             'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # Fermi level maximum
@@ -468,11 +466,13 @@ def edit(material_id):
         if len(cif_files) > 1:
             flash('Warning: Multiple CIF files found in structure directory. Please keep only one!', 'warning')
 
-    # 检查能带文件
+    # 检查能带文件（只检查.dat文件，.json是分析结果文件）
     if os.path.exists(band_dir):
+        band_dat_files = [f for f in os.listdir(band_dir) if f.endswith('.dat')]
+        if len(band_dat_files) > 1:
+            flash('Warning: Multiple band .dat files found in band directory. Please keep only one!', 'warning')
+        # 获取所有能带相关文件用于显示
         band_files = [f for f in os.listdir(band_dir) if f.endswith('.dat') or f.endswith('.json')]
-        if len(band_files) > 1:
-            flash('Warning: Multiple band files found in band directory. Please keep only one!', 'warning')
 
     # 检查SC文件
     if os.path.exists(sc_dir):
@@ -514,12 +514,12 @@ def detail(material_id):
         structure_file = None
     else:
         structure_file = None
-    # band文件
-    band_files = glob.glob(os.path.join(band_dir, '*.dat')) + glob.glob(os.path.join(band_dir, '*.json')) if os.path.exists(band_dir) else []
-    if len(band_files) == 1:
-        band_file = os.path.relpath(band_files[0], os.path.join(current_app.root_path, 'static'))
-    elif len(band_files) > 1:
-        flash('Error: Multiple band files found in band directory. Please keep only one!', 'error')
+    # band文件（只检查.dat文件，.json是分析结果文件）
+    band_dat_files = glob.glob(os.path.join(band_dir, '*.dat')) if os.path.exists(band_dir) else []
+    if len(band_dat_files) == 1:
+        band_file = os.path.relpath(band_dat_files[0], os.path.join(current_app.root_path, 'static'))
+    elif len(band_dat_files) > 1:
+        flash('Error: Multiple band .dat files found in band directory. Please keep only one!', 'error')
         band_file = None
     else:
         band_file = None
@@ -1309,66 +1309,7 @@ def update_band_gap():
         current_app.logger.error(f"Error in update_band_gap: {str(e)}")
         return jsonify({'success': False, 'error': 'Internal server error'}), 500
 
-@bp.route('/api/materials/<int:material_id>/update-metal-type', methods=['POST'])
-@csrf_exempt  # CSRF豁免，因为这是API端点
-def update_metal_type(material_id):
-    """
-    更新材料的金属类型
-
-    接收从前端分析得出的材料类型并保存到数据库
-    """
-    try:
-        data = request.get_json()
-        current_app.logger.info(f"Metal type update request for material {material_id}, data: {data}")
-
-        if not data:
-            current_app.logger.error("No JSON data provided in metal type update request")
-            return jsonify({'success': False, 'error': 'No data provided'}), 400
-
-        metal_type = data.get('metal_type')
-        current_app.logger.info(f"Extracted metal_type: {metal_type}")
-
-        if not metal_type:
-            current_app.logger.error("Metal type is missing from request data")
-            return jsonify({'success': False, 'error': 'Metal type is required'}), 400
-
-        # 查找材料
-        material = Material.query.get(material_id)
-        if not material:
-            return jsonify({'success': False, 'error': 'Material not found'}), 404
-
-        # 验证metal_type值
-        valid_types = ['metal', 'semiconductor', 'insulator', 'semimetal']
-        if metal_type.lower() not in valid_types:
-            return jsonify({'success': False, 'error': f'Invalid metal type. Must be one of: {valid_types}'}), 400
-
-        # 更新metal_type值
-        old_metal_type = material.metal_type
-        material.metal_type = metal_type.lower()
-
-        try:
-            db.session.commit()
-            current_app.logger.info(
-                f"Updated metal type for material {material.formatted_id}: "
-                f"{old_metal_type} -> {metal_type.lower()}"
-            )
-
-            return jsonify({
-                'success': True,
-                'message': 'Metal type updated successfully',
-                'material_id': material_id,
-                'old_metal_type': old_metal_type,
-                'new_metal_type': metal_type.lower()
-            })
-
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Database error updating metal type: {str(e)}")
-            return jsonify({'success': False, 'error': 'Database update failed'}), 500
-
-    except Exception as e:
-        current_app.logger.error(f"Error in update_metal_type: {str(e)}")
-        return jsonify({'success': False, 'error': 'Internal server error'}), 500
+# update_metal_type API端点已移除 - 现在材料类型从band.json文件中读取
 
 @bp.route('/admin/calculate-band-gaps')
 @login_required

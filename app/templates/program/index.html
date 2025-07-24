@@ -3,6 +3,7 @@
 <div class="main-content" style="max-width:600px;margin:40px auto;">
     <h2>TXT文件格式转换</h2>
     <form method="post" enctype="multipart/form-data" style="margin-bottom:2rem;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div style="margin-bottom:1rem;">
             <input type="file" name="file" accept=".txt" required>
         </div>

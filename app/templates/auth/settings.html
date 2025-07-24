@@ -16,6 +16,7 @@
             </div>
             <div class="card-content">
                 <form id="settings-form" method="post" class="settings-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <!-- Username Field -->
                     <div class="setting-item">
                         <div class="setting-label">Username</div>

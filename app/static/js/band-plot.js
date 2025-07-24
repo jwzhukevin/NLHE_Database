@@ -463,9 +463,26 @@ async function plotBandStructure(containerId, bandDataPath) {
         // 创建图表
         await Plotly.newPlot(containerId, traces, layout, config);
 
+        // 优先从band.json文件读取分析数据，否则使用实时分析
+        const jsonBandAnalysis = await loadBandAnalysisFromJson();
+
+        let finalBandAnalysis;
+        if (jsonBandAnalysis) {
+            // 使用预分析的数据
+            finalBandAnalysis = jsonBandAnalysis;
+            console.log('✅ 使用预分析的能带数据');
+        } else if (bandAnalysis) {
+            // 使用实时分析的数据
+            finalBandAnalysis = bandAnalysis;
+            console.log('⚡ 使用实时分析的能带数据');
+
+            // Band Gap现在从band.json文件中读取，不再需要保存到数据库
+            console.log('⚡ 实时分析完成，建议运行 flask analyze-bands 生成band.json文件');
+        }
+
         // 更新页面上的能带信息
-        if (bandAnalysis) {
-            updateBandStructureInfo(bandAnalysis);
+        if (finalBandAnalysis) {
+            updateBandStructureInfo(finalBandAnalysis);
         }
 
         // 添加窗口大小调整监听器，以确保图表自适应容器大小
@@ -599,16 +616,10 @@ function updateBandStructureInfo(bandAnalysis) {
             materialTypeElement.textContent = bandAnalysis.materialType || 'Unknown';
         }
 
-        // 尝试更新数据库中的metal_type字段
-        if (bandAnalysis.materialType) {
-            updateMaterialTypeInDatabase(bandAnalysis.materialType, bandAnalysis.bandGap);
-        }
+        // 材料类型现在从band.json文件中读取，不再需要更新数据库
 
         // 获取Max SC数据
         const maxSCData = getMaxSCFromDatabase();
-
-        // 保存Band Gap到数据库
-        saveBandGapToDatabase(getMaterialIdFromUrl(), bandAnalysis.bandGap);
 
         // 触发全局事件，通知其他页面数据已更新
         window.dispatchEvent(new CustomEvent('materialDataUpdated', {
@@ -662,61 +673,35 @@ function getMaxSCFromDatabase() {
     }
 }
 
-// 更新数据库中的材料类型
-function updateMaterialTypeInDatabase(materialType, bandGap) {
+// updateMaterialTypeInDatabase函数已移除 - 材料类型现在从band.json文件中读取
+
+// 从band.json文件读取能带分析数据
+async function loadBandAnalysisFromJson() {
     try {
-        // 获取材料ID
         const materialId = getMaterialIdFromUrl();
         if (!materialId) {
-            console.log('Could not extract material ID from URL');
-            return;
+            console.error('无法获取材料ID');
+            return null;
         }
 
-        // 发送更新请求到后端
-        fetch(`/api/materials/${materialId}/update-metal-type`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                metal_type: materialType.toLowerCase()
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                // 尝试读取错误响应
-                return response.json().then(errorData => {
-                    console.error('Server error response for metal type:', errorData);
-                    throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
-                }).catch(() => {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                console.log(`🔄 Material type updated in database: ${materialType}`);
+        const response = await fetch(`/static/materials/IMR-${materialId}/band/band.json`);
+        if (!response.ok) {
+            console.warn(`Band.json文件不存在，使用实时计算: ${response.status}`);
+            return null;
+        }
 
-                // 保存更新信息到localStorage，以便index页面使用
-                const maxSC = getMaxSCFromDatabase();
-                saveMaterialDataUpdate(materialId, bandGap, maxSC);
+        const bandData = await response.json();
+        console.log('📊 从band.json加载能带分析数据:', bandData);
 
-            } else {
-                console.error('❌ Failed to update material type in database:', data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error updating material type in database:', error);
-            console.error('Request data was:', {
-                material_id: materialId,
-                metal_type: materialType.toLowerCase()
-            });
-            console.error('Request URL was:', `/api/materials/${materialId}/update-metal-type`);
-        });
+        return {
+            bandGap: bandData.band_gap,
+            materialType: bandData.materials_type,
+            analysisInfo: bandData.analysis_info
+        };
 
     } catch (error) {
-        console.error('Error in updateMaterialTypeInDatabase:', error);
+        console.error('读取band.json文件失败:', error);
+        return null;
     }
 }
 
