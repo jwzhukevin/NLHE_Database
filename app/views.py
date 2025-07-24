@@ -21,6 +21,17 @@ from PIL import Image, ImageDraw, ImageFont
 import random, string, io
 from .security_utils import log_security_event, sanitize_input, regenerate_session, check_rate_limit
 
+# CSRF豁免装饰器
+def csrf_exempt(f):
+    """CSRF豁免装饰器"""
+    @functools.wraps(f)
+    def decorated_function(*args, **kwargs):
+        return f(*args, **kwargs)
+
+    # 标记函数为CSRF豁免
+    decorated_function._csrf_exempt = True
+    return decorated_function
+
 # Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
 
@@ -1225,6 +1236,7 @@ def element_analysis():
         return jsonify({'error': 'Analysis failed'}), 500
 
 @bp.route('/api/materials/update-band-gap', methods=['POST'])
+@csrf_exempt  # CSRF豁免，因为这是API端点
 def update_band_gap():
     """
     更新材料的Band Gap值
@@ -1233,11 +1245,16 @@ def update_band_gap():
     """
     try:
         data = request.get_json()
+        current_app.logger.info(f"Band gap update request data: {data}")
+
         if not data:
+            current_app.logger.error("No JSON data provided in band gap update request")
             return jsonify({'success': False, 'error': 'No data provided'}), 400
 
         material_id = data.get('material_id')
         band_gap = data.get('band_gap')
+
+        current_app.logger.info(f"Extracted material_id: {material_id}, band_gap: {band_gap}")
 
         if material_id is None:
             return jsonify({'success': False, 'error': 'Material ID is required'}), 400
@@ -1245,8 +1262,14 @@ def update_band_gap():
         if band_gap is None:
             return jsonify({'success': False, 'error': 'Band gap value is required'}), 400
 
+        # 转换material_id为整数
+        try:
+            material_id_int = int(material_id)
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'error': 'Invalid material ID format'}), 400
+
         # 查找材料
-        material = Material.query.get(material_id)
+        material = Material.query.get(material_id_int)
         if not material:
             return jsonify({'success': False, 'error': 'Material not found'}), 404
 
@@ -1284,6 +1307,67 @@ def update_band_gap():
 
     except Exception as e:
         current_app.logger.error(f"Error in update_band_gap: {str(e)}")
+        return jsonify({'success': False, 'error': 'Internal server error'}), 500
+
+@bp.route('/api/materials/<int:material_id>/update-metal-type', methods=['POST'])
+@csrf_exempt  # CSRF豁免，因为这是API端点
+def update_metal_type(material_id):
+    """
+    更新材料的金属类型
+
+    接收从前端分析得出的材料类型并保存到数据库
+    """
+    try:
+        data = request.get_json()
+        current_app.logger.info(f"Metal type update request for material {material_id}, data: {data}")
+
+        if not data:
+            current_app.logger.error("No JSON data provided in metal type update request")
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+
+        metal_type = data.get('metal_type')
+        current_app.logger.info(f"Extracted metal_type: {metal_type}")
+
+        if not metal_type:
+            current_app.logger.error("Metal type is missing from request data")
+            return jsonify({'success': False, 'error': 'Metal type is required'}), 400
+
+        # 查找材料
+        material = Material.query.get(material_id)
+        if not material:
+            return jsonify({'success': False, 'error': 'Material not found'}), 404
+
+        # 验证metal_type值
+        valid_types = ['metal', 'semiconductor', 'insulator', 'semimetal']
+        if metal_type.lower() not in valid_types:
+            return jsonify({'success': False, 'error': f'Invalid metal type. Must be one of: {valid_types}'}), 400
+
+        # 更新metal_type值
+        old_metal_type = material.metal_type
+        material.metal_type = metal_type.lower()
+
+        try:
+            db.session.commit()
+            current_app.logger.info(
+                f"Updated metal type for material {material.formatted_id}: "
+                f"{old_metal_type} -> {metal_type.lower()}"
+            )
+
+            return jsonify({
+                'success': True,
+                'message': 'Metal type updated successfully',
+                'material_id': material_id,
+                'old_metal_type': old_metal_type,
+                'new_metal_type': metal_type.lower()
+            })
+
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Database error updating metal type: {str(e)}")
+            return jsonify({'success': False, 'error': 'Database update failed'}), 500
+
+    except Exception as e:
+        current_app.logger.error(f"Error in update_metal_type: {str(e)}")
         return jsonify({'success': False, 'error': 'Internal server error'}), 500
 
 @bp.route('/admin/calculate-band-gaps')

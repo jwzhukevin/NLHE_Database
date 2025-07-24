@@ -601,7 +601,7 @@ function updateBandStructureInfo(bandAnalysis) {
 
         // 尝试更新数据库中的metal_type字段
         if (bandAnalysis.materialType) {
-            updateMaterialTypeInDatabase(bandAnalysis.materialType);
+            updateMaterialTypeInDatabase(bandAnalysis.materialType, bandAnalysis.bandGap);
         }
 
         // 获取Max SC数据
@@ -663,7 +663,7 @@ function getMaxSCFromDatabase() {
 }
 
 // 更新数据库中的材料类型
-function updateMaterialTypeInDatabase(materialType) {
+function updateMaterialTypeInDatabase(materialType, bandGap) {
     try {
         // 获取材料ID
         const materialId = getMaterialIdFromUrl();
@@ -682,21 +682,37 @@ function updateMaterialTypeInDatabase(materialType) {
                 metal_type: materialType.toLowerCase()
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                // 尝试读取错误响应
+                return response.json().then(errorData => {
+                    console.error('Server error response for metal type:', errorData);
+                    throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+                }).catch(() => {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                console.log('Material type updated in database:', materialType);
+                console.log(`🔄 Material type updated in database: ${materialType}`);
 
                 // 保存更新信息到localStorage，以便index页面使用
                 const maxSC = getMaxSCFromDatabase();
-                saveMaterialDataUpdate(materialId, bandAnalysis.bandGap, maxSC);
+                saveMaterialDataUpdate(materialId, bandGap, maxSC);
 
             } else {
-                console.log('Failed to update material type in database:', data.error);
+                console.error('❌ Failed to update material type in database:', data.error);
             }
         })
         .catch(error => {
-            console.log('Error updating material type in database:', error);
+            console.error('Error updating material type in database:', error);
+            console.error('Request data was:', {
+                material_id: materialId,
+                metal_type: materialType.toLowerCase()
+            });
+            console.error('Request URL was:', `/api/materials/${materialId}/update-metal-type`);
         });
 
     } catch (error) {
@@ -732,7 +748,8 @@ function saveMaterialDataUpdate(materialId, bandGap, maxSC) {
         // 保存到localStorage
         localStorage.setItem('updatedMaterialData', JSON.stringify(updates));
 
-        console.log('Material data update saved to localStorage:', updateInfo);
+        console.log('📦 Material data update saved to localStorage:', updateInfo);
+        console.log('💡 Data will be updated in index page when you return');
 
     } catch (error) {
         console.error('Error saving material data update:', error);
@@ -757,16 +774,31 @@ function saveBandGapToDatabase(materialId, bandGap) {
                 band_gap: bandGap
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                // 尝试读取错误响应
+                return response.json().then(errorData => {
+                    console.error('Server error response:', errorData);
+                    throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+                }).catch(() => {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                console.log(`Band Gap ${bandGap.toFixed(4)} eV saved to database for material ${materialId}`);
+                console.log(`💾 Band Gap ${bandGap.toFixed(4)} eV saved to database for material ${materialId}`);
             } else {
-                console.error('Failed to save Band Gap to database:', data.error);
+                console.error('❌ Failed to save Band Gap to database:', data.error);
             }
         })
         .catch(error => {
             console.error('Error saving Band Gap to database:', error);
+            console.error('Request data was:', {
+                material_id: materialId,
+                band_gap: bandGap
+            });
         });
     } catch (error) {
         console.error('Error in saveBandGapToDatabase:', error);

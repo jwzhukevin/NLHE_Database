@@ -107,15 +107,16 @@ def add_security_headers(response):
     """添加安全头部"""
     headers = {
         'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY', 
+        'X-Frame-Options': 'DENY',
         'X-XSS-Protection': '1; mode=block',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'"
+        # 移除过于严格的CSP，允许必要的外部资源
+        # 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',  # 仅在HTTPS环境启用
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https:;"
     }
-    
+
     for header, value in headers.items():
         response.headers[header] = value
-    
+
     return response
 
 def check_rate_limit(key, limit=5, window=300):

@@ -2896,6 +2896,8 @@ function validateSearch() {
         updateMaterialDataInTable(materialId, bandGap, maxSC);
     });
 
+    // 通知系统已移除 - 用户不希望看到更新提示
+
     // 更新表格中的材料数据
     function updateMaterialDataInTable(materialId, bandGap, maxSC) {
         try {
@@ -2908,35 +2910,21 @@ function validateSearch() {
                     // 更新Band Gap列（第6列）
                     const bandGapCell = row.querySelector('.band-gap-cell[data-material-id="' + materialId + '"]');
                     if (bandGapCell && bandGap !== undefined && bandGap !== null) {
-                        const oldGap = bandGapCell.textContent;
+                        const oldGap = bandGapCell.textContent.trim(); // 清理空白字符
                         bandGapCell.textContent = typeof bandGap === 'number' ? bandGap.toFixed(4) : bandGap;
 
-                        // 添加视觉反馈
-                        bandGapCell.style.backgroundColor = '#e8f5e8';
-                        bandGapCell.style.transition = 'background-color 0.5s';
-
-                        setTimeout(() => {
-                            bandGapCell.style.backgroundColor = '';
-                        }, 2000);
-
-                        console.log(`Updated material ${materialId} Band Gap from "${oldGap}" to "${bandGap}"`);
+                        // 只在console显示更新信息，不显示视觉反馈
+                        console.log(`✅ Material ${materialId} Band Gap updated: ${oldGap} → ${bandGap}`);
                     }
 
                     // 更新Max SC列（第7列）
                     const maxSCCell = row.querySelector('.max-sc-cell[data-material-id="' + materialId + '"]');
                     if (maxSCCell && maxSC !== undefined && maxSC !== null) {
-                        const oldSC = maxSCCell.textContent;
+                        const oldSC = maxSCCell.textContent.trim(); // 清理空白字符
                         maxSCCell.textContent = typeof maxSC === 'number' ? maxSC.toFixed(4) : maxSC;
 
-                        // 添加视觉反馈
-                        maxSCCell.style.backgroundColor = '#e8f5e8';
-                        maxSCCell.style.transition = 'background-color 0.5s';
-
-                        setTimeout(() => {
-                            maxSCCell.style.backgroundColor = '';
-                        }, 2000);
-
-                        console.log(`Updated material ${materialId} Max SC from "${oldSC}" to "${maxSC}"`);
+                        // 只在console显示更新信息，不显示视觉反馈
+                        console.log(`✅ Material ${materialId} Max SC updated: ${oldSC} → ${maxSC}`);
                     }
                 }
             });
