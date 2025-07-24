@@ -45,9 +45,15 @@
                             <i class="fas fa-shield-alt"></i>
                             <span>Captcha</span>
                         </label>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <input type="text" id="captcha" name="captcha" placeholder="Enter the captcha" maxlength="5" required style="flex:1;" />
-                            <img id="captcha-img" src="{{ url_for('views.captcha') }}" alt="Captcha" style="height:40px;cursor:pointer;" />
+                        <div class="captcha-container">
+                            <input type="text" id="captcha" name="captcha" placeholder="Enter the captcha" maxlength="5" required class="captcha-input" />
+                            <div class="captcha-image-wrapper">
+                                <img id="captcha-img" src="{{ url_for('views.captcha') }}" alt="Captcha" class="captcha-image" />
+                                <div class="captcha-refresh-hint">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>Click to refresh</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -374,7 +380,7 @@
     /* Captcha styles */
     .captcha-container {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 1rem;
         width: 100%;
     }
@@ -382,6 +388,25 @@
     .captcha-input {
         flex: 1;
         min-width: 0; /* 防止flex item溢出 */
+        /* 确保继承标准输入框样式 */
+        height: 3rem;
+        padding: 0 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.2s;
+        background-color: #f8fafc;
+    }
+
+    .captcha-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+        outline: none;
+        background-color: white;
+    }
+
+    .captcha-input::placeholder {
+        color: #94a3b8;
     }
 
     .captcha-image-wrapper {
@@ -390,23 +415,31 @@
         flex-direction: column;
         align-items: center;
         gap: 0.25rem;
+        /* 确保验证码图片与输入框顶部对齐 */
+        margin-top: 0;
     }
 
     .captcha-image {
-        height: 50px;
+        height: 3rem; /* 与输入框高度保持一致 */
         width: 140px;
-        border: 2px solid var(--input-border);
-        border-radius: 8px;
+        border: 1px solid #e2e8f0; /* 与输入框边框颜色一致 */
+        border-radius: 6px; /* 与输入框圆角一致 */
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0, 71, 171, 0.1);
         background: white;
+        /* 确保图片清晰显示，兼容各种浏览器 */
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
+        /* 防止图片变形 */
+        object-fit: contain;
+        /* 确保尺寸固定 */
+        flex-shrink: 0;
     }
 
     .captcha-image:hover {
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 8px rgba(0, 71, 171, 0.2);
-        transform: translateY(-1px);
+        border-color: #0047AB;
+        opacity: 0.8;
     }
 
     .captcha-refresh-hint {
@@ -473,8 +506,11 @@
         }
 
         .captcha-image {
-            width: 120px;
-            height: 45px;
+            width: 130px;
+            height: 3rem; /* 保持与输入框一致的高度 */
+            /* 在移动端保持更好的可读性 */
+            min-width: 130px;
+            min-height: 3rem;
         }
 
         .captcha-refresh-hint {

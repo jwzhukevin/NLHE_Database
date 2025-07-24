@@ -990,14 +990,16 @@ def update_users_dat():
         current_app.logger.error(f"Failed to update users.dat: {str(e)}")
         raise
 
-def generate_captcha_image(text, width=140, height=50):
+def generate_captcha_image(text, width=140, height=50, scale_factor=2):
     """
     使用Pillow生成符合网站风格的验证码图片
+    采用高分辨率渲染后缩放的方式，确保在各种环境下都清晰显示
 
     参数:
         text: 验证码文本
-        width: 图片宽度
-        height: 图片高度
+        width: 最终图片宽度
+        height: 最终图片高度
+        scale_factor: 渲染缩放因子，用于提高清晰度
 
     返回:
         BytesIO对象，包含PNG格式的图片数据
@@ -1012,56 +1014,75 @@ def generate_captcha_image(text, width=140, height=50):
         'text_dark': (51, 51, 51),    # #333333 - 深色文字
     }
 
-    # 创建渐变背景
-    image = Image.new('RGB', (width, height), color=THEME_COLORS['light_bg'])
+    # 使用高分辨率渲染，然后缩放到目标尺寸
+    # 这样可以确保在各种DPI和浏览器环境下都清晰显示
+    render_width = int(width * scale_factor)
+    render_height = int(height * scale_factor)
+
+    # 创建高分辨率图像
+    image = Image.new('RGB', (render_width, render_height), color=THEME_COLORS['light_bg'])
     draw = ImageDraw.Draw(image)
 
-    # 添加微妙的渐变背景效果
-    for y in range(height):
+    # 添加微妙的渐变背景效果（适应高分辨率）
+    for y in range(render_height):
         # 从浅蓝到更浅的蓝色渐变
-        ratio = y / height
+        ratio = y / render_height
         r = int(THEME_COLORS['light_bg'][0] + (THEME_COLORS['nav_bg'][0] - THEME_COLORS['light_bg'][0]) * ratio * 0.3)
         g = int(THEME_COLORS['light_bg'][1] + (THEME_COLORS['nav_bg'][1] - THEME_COLORS['light_bg'][1]) * ratio * 0.3)
         b = int(THEME_COLORS['light_bg'][2] + (THEME_COLORS['nav_bg'][2] - THEME_COLORS['light_bg'][2]) * ratio * 0.3)
-        draw.line([(0, y), (width, y)], fill=(r, g, b))
+        draw.line([(0, y), (render_width, y)], fill=(r, g, b))
 
-    # 尝试加载字体
-    try:
-        # 尝试使用系统字体
-        font = ImageFont.truetype("arial.ttf", 28)
-    except (OSError, IOError):
+    # 智能字体加载 - 根据缩放因子调整字体大小
+    base_font_size = 28
+    font_size = int(base_font_size * scale_factor)
+
+    # 按优先级尝试加载字体，确保跨平台兼容性
+    font_candidates = [
+        "arial.ttf",                    # Windows
+        "Arial.ttf",                    # macOS
+        "DejaVuSans-Bold.ttf",         # Linux
+        "calibri.ttf",                  # Windows备选
+        "Helvetica.ttc",               # macOS备选
+        "/System/Library/Fonts/Arial.ttf",  # macOS系统路径
+        "C:/Windows/Fonts/arial.ttf",  # Windows系统路径
+    ]
+
+    font = None
+    for font_name in font_candidates:
         try:
-            # 尝试使用其他常见字体
-            font = ImageFont.truetype("DejaVuSans-Bold.ttf", 28)
+            font = ImageFont.truetype(font_name, font_size)
+            break
         except (OSError, IOError):
-            try:
-                font = ImageFont.truetype("calibri.ttf", 28)
-            except (OSError, IOError):
-                # 使用默认字体
-                font = ImageFont.load_default()
+            continue
 
-    # 添加精致的背景装饰点
-    for _ in range(30):
-        x = random.randint(0, width)
-        y = random.randint(0, height)
+    # 如果所有字体都加载失败，使用默认字体
+    if font is None:
+        font = ImageFont.load_default()
+
+    # 添加精致的背景装饰点（适应高分辨率）
+    dot_count = int(30 * scale_factor)
+    dot_size = int(1 * scale_factor)
+    for _ in range(dot_count):
+        x = random.randint(0, render_width)
+        y = random.randint(0, render_height)
         # 使用主题色的浅色版本作为装饰点
         alpha = random.uniform(0.1, 0.3)
         base_color = random.choice([THEME_COLORS['primary'], THEME_COLORS['accent']])
         color = tuple(int(c + (255 - c) * (1 - alpha)) for c in base_color)
-        draw.ellipse([x-1, y-1, x+1, y+1], fill=color)
+        draw.ellipse([x-dot_size, y-dot_size, x+dot_size, y+dot_size], fill=color)
 
-    # 计算文本位置
+    # 计算文本位置（在高分辨率画布上）
     try:
         text_bbox = draw.textbbox((0, 0), text, font=font)
         text_width = text_bbox[2] - text_bbox[0]
         text_height = text_bbox[3] - text_bbox[1]
     except AttributeError:
         # 兼容旧版本Pillow
-        text_width = len(text) * 20
-        text_height = 28
+        text_width = len(text) * int(20 * scale_factor)
+        text_height = int(28 * scale_factor)
 
-    start_x = (width - text_width) // 2
-    start_y = (height - text_height) // 2
+    start_x = (render_width - text_width) // 2
+    start_y = (render_height - text_height) // 2
 
     # 绘制验证码文本 - 使用网站主题色
     char_colors = [
@@ -1071,41 +1092,46 @@ def generate_captcha_image(text, width=140, height=50):
         THEME_COLORS['text_dark']
     ]
 
-    char_width = text_width // len(text) if len(text) > 0 else 20
+    char_width = text_width // len(text) if len(text) > 0 else int(20 * scale_factor)
+    offset_range = int(3 * scale_factor)  # 根据缩放因子调整偏移范围
+
     for i, char in enumerate(text):
         # 为每个字符选择主题色
         color = char_colors[i % len(char_colors)]
 
         # 添加轻微的位置偏移，但保持可读性
-        char_x = start_x + i * char_width + random.randint(-2, 2)
-        char_y = start_y + random.randint(-3, 3)
+        char_x = start_x + i * char_width + random.randint(-offset_range, offset_range)
+        char_y = start_y + random.randint(-offset_range, offset_range)
 
         # 绘制字符
         draw.text((char_x, char_y), char, font=font, fill=color)
 
-    # 添加优雅的装饰线条
+    # 添加优雅的装饰线条（适应高分辨率）
+    line_width = max(1, int(1 * scale_factor))
     for _ in range(2):
         # 使用主题色绘制装饰线
         color = random.choice([THEME_COLORS['primary'], THEME_COLORS['accent']])
         # 让线条更加柔和
         alpha_color = tuple(int(c + (255 - c) * 0.6) for c in color)
 
-        start_x_line = random.randint(0, width // 3)
-        start_y_line = random.randint(height // 4, 3 * height // 4)
-        end_x_line = random.randint(2 * width // 3, width)
-        end_y_line = random.randint(height // 4, 3 * height // 4)
+        start_x_line = random.randint(0, render_width // 3)
+        start_y_line = random.randint(render_height // 4, 3 * render_height // 4)
+        end_x_line = random.randint(2 * render_width // 3, render_width)
+        end_y_line = random.randint(render_height // 4, 3 * render_height // 4)
 
         draw.line([(start_x_line, start_y_line), (end_x_line, end_y_line)],
-                 fill=alpha_color, width=1)
+                 fill=alpha_color, width=line_width)
 
-    # 添加边框效果
-    border_color = THEME_COLORS['primary']
-    border_alpha = tuple(int(c + (255 - c) * 0.7) for c in border_color)
-    draw.rectangle([0, 0, width-1, height-1], outline=border_alpha, width=1)
+    # 移除边框效果，保持简洁外观
 
-    # 保存到BytesIO
+    # 如果使用了缩放，将图像缩放回目标尺寸
+    if scale_factor != 1:
+        # 使用高质量的重采样算法
+        image = image.resize((width, height), Image.Resampling.LANCZOS)
+
+    # 保存到BytesIO，使用最高质量
     img_buffer = io.BytesIO()
-    image.save(img_buffer, format='PNG', quality=95)
+    image.save(img_buffer, format='PNG', quality=100, optimize=True)
     img_buffer.seek(0)
 
     return img_buffer
@@ -1128,8 +1154,8 @@ def captcha():
         session['captcha'] = captcha_text
         session.permanent = True  # 确保session持久化
 
-        # 生成验证码图片
-        img_buffer = generate_captcha_image(captcha_text)
+        # 生成验证码图片 - 使用2倍缩放提高清晰度
+        img_buffer = generate_captcha_image(captcha_text, scale_factor=2)
 
         # 创建响应并设置缓存控制头
         response = send_file(
