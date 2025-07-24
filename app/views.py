@@ -19,6 +19,7 @@ import re
 from werkzeug.utils import secure_filename
 from PIL import Image, ImageDraw, ImageFont
 import random, string, io
+from .security_utils import log_security_event, sanitize_input, regenerate_session, check_rate_limit
 
 # Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
@@ -650,11 +651,14 @@ def login():
             flash('All fields are required.', 'error')
             return render_template('auth/login.html')
         
-        # Check login failure count
+        # Check login failure count with enhanced security logging
         ip = get_client_ip()
         failed_key = f"login_failed:{ip}"
         failed_attempts = session.get(failed_key, 0)
         max_attempts = 5  # Maximum attempts
+
+        # 记录登录尝试
+        log_security_event("LOGIN_ATTEMPT", f"User: {username}, Email: {email}", ip)
         
         # Check if email exists
         user_by_email = User.query.filter_by(email=email).first()
@@ -735,7 +739,14 @@ def login():
         
         # Login successful, clear failure count
         session.pop(failed_key, None)
+
+        # 重新生成session ID防止会话固定攻击
+        regenerate_session()
+
         login_user(user_by_email, remember=remember)
+
+        # 记录成功登录
+        log_security_event("LOGIN_SUCCESS", f"User: {user_by_email.username}", ip)
 
         # Show welcome message with username (only once per login session)
         # 使用session标记防止重复显示登录成功消息
@@ -759,6 +770,10 @@ def logout():
 
     Perform logout operation and redirect to homepage
     """
+    # 记录登出事件
+    if current_user.is_authenticated:
+        log_security_event("LOGOUT", f"User: {current_user.username}")
+
     logout_user()  # Flask-Login logout method, clear user session
     # 清除登录消息显示标记，以便下次登录时可以正常显示欢迎消息
     session.pop('login_message_shown', None)
@@ -818,98 +833,18 @@ def settings():
                 return redirect(url_for('views.settings'))
         
         try:
-            # Start a transaction
-            # First update the database
+            # 安全改进：直接更新数据库，不再使用users.dat文件
             current_user.username = username
-            
+
             # Set new password if provided
             if has_password_change:
                 current_user.set_password(new_password)
-                
-            # Now directly update the users.dat file
-            users_file = os.path.join(current_app.root_path, 'static/users/users.dat')
-            
-            # Create backup of original file
-            backup_file = f"{users_file}.bak"
-            if os.path.exists(users_file):
-                import shutil
-                try:
-                    shutil.copy2(users_file, backup_file)
-                except Exception as e:
-                    current_app.logger.warning(f"Could not create backup of users.dat: {str(e)}")
-            
-            # Create directory if it doesn't exist
-            os.makedirs(os.path.dirname(users_file), exist_ok=True)
-            
-            # Read all lines from users.dat
-            lines = []
-            if os.path.exists(users_file):
-                try:
-                    with open(users_file, 'r') as f:
-                        lines = f.readlines()
-                except Exception as e:
-                    current_app.logger.error(f"Error reading users.dat: {str(e)}")
-                    lines = []
-            
-            # Find and update the current user's line
-            updated = False
-            new_lines = []
-            
-            for line in lines:
-                line = line.strip()
-                if not line or line.startswith('#'):
-                    new_lines.append(line)
-                    continue
-                
-                parts = line.split(':')
-                if len(parts) >= 4:
-                    email, old_username, password, role = parts[0], parts[1], parts[2], parts[3]
-                    
-                    # If this is the current user's line
-                    if email == current_user.email:
-                        # Update username
-                        old_username = username
-                        
-                        # Update password if changed
-                        if has_password_change:
-                            # We need to extract the raw password from bcrypt hash
-                            # Since we can't do that, we'll use the new_password directly
-                            password = new_password
-                        
-                        updated = True
-                        new_line = f"{email}:{old_username}:{password}:{role}"
-                        new_lines.append(new_line)
-                    else:
-                        new_lines.append(line)
-                else:
-                    new_lines.append(line)
-            
-            # If user wasn't found in the file, add them
-            if not updated:
-                role = current_user.role
-                password = new_password if has_password_change else "password123"  # Default password
-                new_line = f"{current_user.email}:{username}:{password}:{role}"
-                new_lines.append(new_line)
-            
-            # Write updated content back to users.dat
-            try:
-                with open(users_file, 'w') as f:
-                    for i, line in enumerate(new_lines):
-                        # Add newline except for the last line
-                        if i < len(new_lines) - 1 or not line.strip():
-                            f.write(line + '\n')
-                        else:
-                            f.write(line)
-                
-                current_app.logger.info(f"Updated user {current_user.email} in users.dat file")
-            except Exception as e:
-                current_app.logger.error(f"Failed to update users.dat: {str(e)}")
-                db.session.rollback()
-                flash(f'An error occurred while saving your settings: {str(e)}', 'error')
-                return redirect(url_for('views.settings'))
-            
-            # Commit database changes after successful file update
+
+            # 提交数据库更改
             db.session.commit()
+
+            # 记录安全事件
+            log_security_event("SETTINGS_UPDATE", f"User {current_user.email} updated settings")
             
             if has_password_change:
                 flash('Settings updated successfully. Your password has been changed.', 'success')
@@ -925,70 +860,9 @@ def settings():
     
     return render_template('auth/settings.html', user=current_user)
 
-# Helper function to update users.dat file (kept for backward compatibility)
-def update_users_dat():
-    """Update users.dat file with latest user information"""
-    users_file = os.path.join(current_app.root_path, 'static/users/users.dat')
-    
-    # Get all users from database
-    users = User.query.all()
-    
-    # Create backup of original file
-    backup_file = f"{users_file}.bak"
-    if os.path.exists(users_file):
-        import shutil
-        try:
-            shutil.copy2(users_file, backup_file)
-        except Exception as e:
-            current_app.logger.warning(f"Could not create backup of users.dat: {str(e)}")
-    
-    # Create directory if it doesn't exist
-    os.makedirs(os.path.dirname(users_file), exist_ok=True)
-    
-    # Read existing users.dat file to preserve passwords
-    existing_data = {}
-    if os.path.exists(users_file):
-        try:
-            with open(users_file, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith('#'):
-                        continue
-                    parts = line.split(':')
-                    if len(parts) >= 4:
-                        email, username, password, role = parts[0], parts[1], parts[2], parts[3]
-                        # Store data by email
-                        existing_data[email] = {'username': username, 'password': password, 'role': role}
-        except Exception as e:
-            current_app.logger.error(f"Error reading users.dat: {str(e)}")
-    
-    # Write updated user data to file
-    try:
-        with open(users_file, 'w') as f:
-            f.write("# Format: email:username:password:role\n")
-            f.write("# Available roles: admin, user\n")
-            f.write("# One user per line\n")
-            
-            for user in users:
-                # Get password from existing file or use default
-                password = None
-                
-                if user.email in existing_data:
-                    password = existing_data[user.email]['password']
-                    
-                # If password not found, use a placeholder
-                if not password:
-                    password = "password123"  # Default password
-                    current_app.logger.warning(f"No existing password found for {user.email}, using default")
-                
-                line = f"{user.email}:{user.username}:{password}:{user.role}\n"
-                f.write(line)
-        
-        current_app.logger.info(f"Updated users.dat file with {len(users)} users")
-        return True
-    except Exception as e:
-        current_app.logger.error(f"Failed to update users.dat: {str(e)}")
-        raise
+# 注意：旧的users.dat文件管理函数已被移除
+# 现在所有用户数据都安全地存储在数据库中，使用bcrypt加密
+# 如需管理用户，请使用 user_management.py 脚本
 
 def generate_captcha_image(text, width=140, height=50, scale_factor=2):
     """

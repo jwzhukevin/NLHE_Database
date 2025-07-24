@@ -47,13 +47,13 @@ class User(db.Model, UserMixin):
     def validate_password(self, password):
         """
         验证用户密码是否正确
-        
+
         参数:
             password: 待验证的明文密码
-            
+
         返回:
             布尔值，表示密码是否正确
-            
+
         说明:
             使用bcrypt的恒定时间比较函数，防止时序攻击
         """
@@ -65,6 +65,11 @@ class User(db.Model, UserMixin):
             )
         except Exception:  # 捕获编码错误或空值异常
             return False   # 验证失败时返回False
+
+    def check_password_strength(self, password):
+        """检查密码强度"""
+        from .security_utils import validate_password_strength
+        return validate_password_strength(password)
     
     # 管理员检查方法
     def is_admin(self):

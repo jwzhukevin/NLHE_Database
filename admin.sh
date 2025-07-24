@@ -21,13 +21,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 运行邮箱字段迁移（如果需要）
-echo "Checking and running email field migration if needed..."
-flask migrate-users-email
-if [ $? -ne 0 ]; then
-    echo "Warning: Email migration may have encountered issues."
-    echo "You might need to recreate the database with 'flask initdb --drop' if problems persist."
-fi
+# 安全提示：不再需要邮箱字段迁移
+echo "Security notice: Email field migration is no longer needed."
+echo "All user data is now securely managed through the database with bcrypt encryption."
 
 # 运行管理员创建命令
 echo "Creating/updating admin user..."

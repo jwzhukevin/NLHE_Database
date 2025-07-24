@@ -22,6 +22,7 @@
                 <h2 id="form-title">Sign In</h2>
                 
                 <form method="post" class="login-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <input type="hidden" id="login-type" name="login_type" value="user">
                     
                     <div class="form-field">

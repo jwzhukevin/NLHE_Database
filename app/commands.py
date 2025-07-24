@@ -82,74 +82,11 @@ def register_commands(app):
     
     @app.cli.command('init-users')
     def init_users():
-        """从users.dat文件初始化用户"""
-        users_file = os.path.join(os.path.dirname(app.root_path), 'app/static/users/users.dat')
-        
-        # 检查用户数据文件是否存在
-        if not os.path.exists(users_file):
-            click.echo(f'Error: User data file not found {users_file}')
-            return 1
-
-        click.echo(f'Initializing users from {users_file}...')
-        count = 0
-        
-        # 读取并处理用户数据文件
-        with open(users_file, 'r') as f:
-            for line in f:
-                line = line.strip()
-                # 跳过空行和注释行
-                if not line or line.startswith('#'):
-                    continue
-                
-                try:
-                    # 解析用户数据行
-                    parts = line.split(':')
-                    if len(parts) < 4:
-                        click.echo(f'Error: Invalid line format: {line}')
-                        continue
-
-                    email, username, password, role = parts[0], parts[1], parts[2], parts[3]
-
-                    # 验证邮箱格式
-                    email = email.strip().lower()
-                    if '@' not in email:
-                        click.echo(f'Warning: Invalid email format "{email}". Skipping this user.')
-                        continue
-
-                    # 验证用户角色
-                    if role not in ['admin', 'user']:
-                        click.echo(f'Warning: Invalid role "{role}" for user {username}. Setting to "user".')
-                        role = 'user'
-                    
-                    # 检查用户是否存在
-                    user = User.query.filter_by(email=email).first()
-                    if user:
-                        # 更新现有用户信息
-                        user.username = username
-                        user.set_password(password)
-                        user.role = role
-                        user.name = user.name or username  # 如果name存在则保留，否则使用username
-                        click.echo(f'Updated user: {username} ({email}) role: {role}')
-                    else:
-                        # 创建新用户
-                        user = User(username=username, name=username, email=email, role=role)
-                        user.set_password(password)
-                        db.session.add(user)
-                        click.echo(f'Added user: {username} ({email}) role: {role}')
-
-                    count += 1
-                except Exception as e:
-                    click.echo(f'Error processing line "{line}": {str(e)}')
-        
-        try:
-            db.session.commit()
-            click.echo(f'Successfully processed {count} users.')
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            click.echo(f'Database error: {str(e)}')
-            return 1
-        
-        return 0
+        """DEPRECATED: 此命令已弃用，不再使用users.dat文件"""
+        click.echo("❌ 此命令已弃用！")
+        click.echo("安全改进：系统不再使用users.dat文件存储用户数据")
+        click.echo("请使用 'python user_management.py' 来管理用户")
+        return 1
 
     # 添加其他CLI命令...
     @app.cli.command('import-materials')

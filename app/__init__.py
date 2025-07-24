@@ -13,10 +13,28 @@ from flask_sqlalchemy import SQLAlchemy  # ORM 数据库扩展
 from flask_login import LoginManager  # 用户登录管理扩展
 from flask_migrate import Migrate  # 数据库迁移工具
 
+# 导入安全相关扩展
+try:
+    from flask_wtf.csrf import CSRFProtect  # CSRF保护
+    csrf_available = True
+except ImportError:
+    csrf_available = False
+
+try:
+    from flask_limiter import Limiter  # 速率限制
+    from flask_limiter.util import get_remote_address
+    limiter_available = True
+except ImportError:
+    limiter_available = False
+
 # 初始化全局扩展对象（此时未绑定应用实例）
 # 使用延迟绑定模式，支持应用工厂模式
 db = SQLAlchemy()  # 创建 SQLAlchemy 实例，后续通过 init_app() 绑定应用
 login_manager = LoginManager()  # 创建登录管理实例，支持多应用实例场景
+
+# 初始化安全扩展
+csrf = None
+limiter = None
 
 def create_app():
     """
@@ -40,7 +58,7 @@ def create_app():
     
     # 从环境变量读取密钥（生产环境推荐），默认值 'dev' 用于开发
     # SECRET_KEY用于会话安全和CSRF保护
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev')
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
     
     # 使用Flask实例目录中的data.db文件作为默认数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = prefix + os.path.join(
@@ -50,11 +68,41 @@ def create_app():
     # 禁用SQLAlchemy的事件通知系统以提高性能
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # 禁用 SQLAlchemy 事件系统以提升性能
 
+    # 安全配置
+    from .security_config import SecurityConfig
+    app.config.update(SecurityConfig.__dict__)
+
+    # 会话安全配置
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['PERMANENT_SESSION_LIFETIME'] = SecurityConfig.PERMANENT_SESSION_LIFETIME
+
     # --- 扩展初始化 ---
     # 延迟绑定模式：先创建扩展实例，再与应用关联
     db.init_app(app)  # 延迟绑定 SQLAlchemy 到应用（工厂模式核心）
     migrate = Migrate(app, db)  # 初始化数据库迁移工具（生成迁移脚本）
     login_manager.init_app(app)  # 绑定登录管理到应用
+
+    # 初始化安全扩展
+    global csrf, limiter
+
+    # CSRF保护
+    if csrf_available:
+        csrf = CSRFProtect(app)
+        app.logger.info("CSRF protection enabled")
+    else:
+        app.logger.warning("Flask-WTF not available, CSRF protection disabled")
+
+    # 速率限制
+    if limiter_available:
+        limiter = Limiter(
+            key_func=get_remote_address,
+            default_limits=["200 per day", "50 per hour"]
+        )
+        limiter.init_app(app)
+        app.logger.info("Rate limiting enabled")
+    else:
+        app.logger.warning("Flask-Limiter not available, rate limiting disabled")
     
     # --- 用户加载器（必须实现） ---
     # Flask-Login要求实现的回调函数，用于从会话cookie恢复用户
@@ -62,15 +110,22 @@ def create_app():
     def load_user(user_id):
         """
         根据用户 ID 加载用户对象（Flask-Login 要求）
-        
+
         参数:
             user_id: 从会话中恢复的用户ID（字符串类型）
-            
+
         返回:
             用户对象，未找到则返回None
         """
         from .models import User  # 延迟导入避免循环依赖
         return User.query.get(int(user_id))  # 查询数据库并返回用户实例
+
+    # --- 安全头部处理器 ---
+    @app.after_request
+    def add_security_headers(response):
+        """为所有响应添加安全头部"""
+        from .security_utils import add_security_headers
+        return add_security_headers(response)
 
     # --- 模板上下文处理器 ---
     # 向所有模板注入全局变量，避免在每个视图函数中重复传递

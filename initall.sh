@@ -80,15 +80,12 @@ else
     exit 1
 fi
 
-# 4. 用户数据初始化
-echo -e "\033[36m[3/4] Initializing user data (executing ./users.sh)...\033[0m"
-./users.sh
-if [ $? -eq 0 ]; then
-    echo -e "\033[32m[Success] User data initialization successful.\033[0m"
-else
-    echo -e "\033[31m[Failed] User data initialization failed, terminating.\033[0m"
-    exit 1
-fi
+# 4. 用户管理提示（使用新的安全工具）
+echo -e "\033[36m[3/4] User management information...\033[0m"
+echo -e "\033[32m[Security] User management has been upgraded for enhanced security.\033[0m"
+echo -e "\033[32m[Info] All user data is now stored securely in the database with bcrypt encryption.\033[0m"
+echo -e "\033[33m[Note] To add or manage users after initialization, use: python user_management.py\033[0m"
+echo -e "\033[32m[Success] Security-enhanced user management ready.\033[0m"
 
 # 5. 成员信息导入
 echo -e "\033[36m[4/4] Importing member information (executing ./import_members.sh)...\033[0m"
