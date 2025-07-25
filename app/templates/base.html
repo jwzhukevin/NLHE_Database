@@ -125,16 +125,16 @@
         }
 
         /* ========== Flash消息样式 ========== */
-        /* Flash消息容器：居中悬浮于页面顶部，极简风格 */
+        /* Flash消息容器：右侧弹出，平滑动画 */
         .flash-messages {
             position: fixed;
             top: 90px;
-            left: 0;
-            width: 100vw;
+            right: 20px;
+            width: 350px;
             z-index: 2000;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-end;
             pointer-events: none;
         }
         .flash-messages .container {
@@ -146,11 +146,11 @@
             flex-direction: column;
             align-items: center;
         }
-        /* 单条Flash消息极简样式 */
+        /* 单条Flash消息样式 - 右侧弹出动画 */
         .flash-message {
-            min-width: 220px;
+            width: 100%;
             max-width: 350px;
-            margin: 0.5rem auto;
+            margin: 0.5rem 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -159,13 +159,38 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.10);
             font-size: 1.12rem;
             font-weight: 500;
-            opacity: 1;
-            transform: translateY(0);
-            transition: opacity 0.4s, transform 0.4s;
             pointer-events: auto;
             position: relative;
             color: #fff;
             letter-spacing: 0.01em;
+            /* 右侧滑入动画 */
+            transform: translateX(100%);
+            opacity: 0;
+            animation: slideInFromRight 0.5s ease-out forwards;
+        }
+
+        /* 右侧滑入动画 */
+        @keyframes slideInFromRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 右侧滑出动画 */
+        @keyframes slideOutToRight {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
         }
         /* 成功消息：半透明蓝色 */
         .flash-message.success {
@@ -246,6 +271,7 @@
                         </a>
                     </div>
                 </div>
+                <!-- 登录用户专用功能按钮 -->
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('siliconflow.chat') }}">
                     <i class="fas fa-robot"></i> SiliconFlow LLM
@@ -254,13 +280,16 @@
                     <i class="fas fa-cogs"></i> Program
                 </a>
                 {% endif %}
+
+                <!-- 管理员专用按钮 -->
                 {% if current_user.is_authenticated and current_user.is_admin() %}
                 <a href="{{ url_for('views.add') }}">
                     <i class="fas fa-plus"></i> Add
                 </a>
-                {% elif current_user.is_authenticated %}
-                <!-- 移除Logout按钮 -->
-                {% else %}
+                {% endif %}
+
+                <!-- 未登录用户显示登录按钮 -->
+                {% if not current_user.is_authenticated %}
                 <a href="{{ url_for('views.login') }}">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </a>
@@ -271,14 +300,12 @@
                         <span class="user-avatar admin user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
                         <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
                         <div class="user-dropdown-menu">
-                            <a href="{{ url_for('views.settings') }}"><i class="fas fa-cogs"></i> Settings</a>
                             <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
                         </div>
                     {% elif current_user.is_authenticated %}
                         <span class="user-avatar user user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
                         <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
                         <div class="user-dropdown-menu">
-                            <a href="{{ url_for('views.settings') }}"><i class="fas fa-user-cog"></i> User Settings</a>
                             <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
                         </div>
                     {% else %}
@@ -644,16 +671,16 @@
                 });
             });
 
-            // 自动关闭Flash消息（3秒后渐变消失）
+            // 自动关闭Flash消息（3秒后右侧滑出）
             setTimeout(() => {
                 document.querySelectorAll('.flash-message').forEach(message => {
                     if (message) {
-                        message.classList.add('hide');
+                        message.style.animation = 'slideOutToRight 0.5s ease-in forwards';
                         setTimeout(() => {
                             if (message.parentElement) {
                                 message.remove();
                             }
-                        }, 400);
+                        }, 500);
                     }
                 });
             }, 3000);

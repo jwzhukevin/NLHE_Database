@@ -8,7 +8,7 @@ import json
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 from .material_importer import extract_chemical_formula_from_cif
-from .band_gap_calculator import band_gap_calculator
+from .band_analyzer import band_analyzer
 import functools
 
 # 独立定义命令蓝图 - 用于API路由而非CLI命令
@@ -225,13 +225,32 @@ def register_commands(app):
             db.session.commit()
             click.echo(f"Data import completed: successfully imported {import_count} materials, failed {error_count}")
 
-            # 自动计算所有导入材料的Band Gap
-            click.echo("Starting automatic Band Gap calculation for imported materials...")
+            # 自动分析所有导入材料的能带数据
+            click.echo("Starting automatic band structure analysis for imported materials...")
             try:
-                stats = band_gap_calculator.calculate_all_band_gaps(force_recalculate=False)
-                click.echo(f"Band Gap calculation completed: {stats['calculated']} calculated, {stats['cached']} cached, {stats['failed']} failed")
+                # 获取所有材料进行批量分析
+                materials = Material.query.all()
+                analyzed = 0
+                failed = 0
+
+                for material in materials:
+                    try:
+                        material_path = f"app/static/materials/{material.formatted_id}/band"
+                        result = band_analyzer.analyze_material(material_path)
+                        if result['band_gap'] is not None:
+                            material.band_gap = result['band_gap']
+                            material.materials_type = result['materials_type']
+                            analyzed += 1
+                        else:
+                            failed += 1
+                    except Exception as e:
+                        click.echo(f"Warning: Failed to analyze {material.formatted_id}: {e}")
+                        failed += 1
+
+                db.session.commit()
+                click.echo(f"Band analysis completed: {analyzed} analyzed, {failed} failed")
             except Exception as e:
-                click.echo(f"Warning: Band Gap calculation failed: {str(e)}")
+                click.echo(f"Warning: Band analysis failed: {str(e)}")
 
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -373,19 +392,9 @@ def register_commands(app):
                             name=material_name,
                             status="done",
                             structure_file=file_name,
-                            total_energy=-20.0 - import_count,  # 示例值
-                            formation_energy=-2.0 - (import_count * 0.1),  # 示例值
                             fermi_level=0.5,
-                            vacuum_level=4.5,
-                            workfunction=5.0,
-                            # metal_type="metal" if import_count % 2 == 0 else "semiconductor",  # 字段已移除
-                            gap=0.0 if import_count % 2 == 0 else 1.5,
-                            vbm_energy=-1.0,
-                            cbm_energy=0.5,
-                            vbm_coordi="[0, 0, 0]",
-                            cbm_coordi="[0.5, 0.5, 0]",
-                            vbm_index=10,
-                            cbm_index=11
+                            band_gap=0.0 if import_count % 2 == 0 else 1.5,
+                            materials_type="metal" if import_count % 2 == 0 else "semiconductor"
                         )
                         
                         # 添加到数据库并立即提交
@@ -473,19 +482,9 @@ def register_commands(app):
                         name=material_data['name'],
                         status=material_data['status'],
                         structure_file=material_data['structure_file'],
-                        total_energy=material_data['total_energy'],
-                        formation_energy=material_data['formation_energy'],
-                        fermi_level=material_data['fermi_level'],
-                        vacuum_level=material_data['vacuum_level'],
-                        workfunction=material_data['workfunction'],
-                        # metal_type=material_data['metal_type'],  # 字段已移除
-                        gap=material_data['gap'],
-                        vbm_energy=material_data['vbm_energy'],
-                        cbm_energy=material_data['cbm_energy'],
-                        vbm_coordi=material_data['vbm_coordi'],
-                        cbm_coordi=material_data['cbm_coordi'],
-                        vbm_index=material_data['vbm_index'],
-                        cbm_index=material_data['cbm_index']
+                        fermi_level=material_data.get('fermi_level', 0.0),
+                        band_gap=material_data.get('band_gap', None),
+                        materials_type=material_data.get('materials_type', 'unknown')
                     )
                     db.session.add(new_material)
                     click.echo(f"Added material: {material_id} - {material_data['name']}")
@@ -506,13 +505,32 @@ def register_commands(app):
             db.session.commit()
             click.echo(f"Data import completed: successfully imported {import_count} materials, failed {error_count}")
 
-            # 自动计算所有导入材料的Band Gap
-            click.echo("Starting automatic Band Gap calculation for imported materials...")
+            # 自动分析所有导入材料的能带数据
+            click.echo("Starting automatic band structure analysis for imported materials...")
             try:
-                stats = band_gap_calculator.calculate_all_band_gaps(force_recalculate=False)
-                click.echo(f"Band Gap calculation completed: {stats['calculated']} calculated, {stats['cached']} cached, {stats['failed']} failed")
+                # 获取所有材料进行批量分析
+                materials = Material.query.all()
+                analyzed = 0
+                failed = 0
+
+                for material in materials:
+                    try:
+                        material_path = f"app/static/materials/{material.formatted_id}/band"
+                        result = band_analyzer.analyze_material(material_path)
+                        if result['band_gap'] is not None:
+                            material.band_gap = result['band_gap']
+                            material.materials_type = result['materials_type']
+                            analyzed += 1
+                        else:
+                            failed += 1
+                    except Exception as e:
+                        click.echo(f"Warning: Failed to analyze {material.formatted_id}: {e}")
+                        failed += 1
+
+                db.session.commit()
+                click.echo(f"Band analysis completed: {analyzed} analyzed, {failed} failed")
             except Exception as e:
-                click.echo(f"Warning: Band Gap calculation failed: {str(e)}")
+                click.echo(f"Warning: Band analysis failed: {str(e)}")
 
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -567,12 +585,19 @@ def register_commands(app):
                     columns = [col['name'] for col in inspector.get_columns('user')]
                     click.echo(f"User table fields: {', '.join(columns)}")
 
-                    required_fields = ['id', 'username', 'email', 'password_hash']
-                    missing_fields = [field for field in required_fields if field not in columns]
-                    if missing_fields:
-                        click.echo(f"⚠ Missing fields: {', '.join(missing_fields)}")
+                    required_fields = ['id', 'username', 'email', 'password_hash', 'role']
+                    optional_fields = ['last_login_ip', 'last_login_time']
+
+                    missing_required = [field for field in required_fields if field not in columns]
+                    missing_optional = [field for field in optional_fields if field not in columns]
+
+                    if missing_required:
+                        click.echo(f"❌ Missing required fields: {', '.join(missing_required)}")
+                    elif missing_optional:
+                        click.echo(f"⚠ Missing optional fields: {', '.join(missing_optional)}")
+                        click.echo("✓ User table basic structure is normal")
                     else:
-                        click.echo("✓ User table structure is normal")
+                        click.echo("✅ User table structure is complete")
                 else:
                     click.echo("⚠ User table does not exist")
 

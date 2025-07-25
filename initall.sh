@@ -80,15 +80,71 @@ else
     exit 1
 fi
 
-# 4. 用户管理提示（使用新的安全工具）
-echo -e "\033[36m[3/4] User management information...\033[0m"
+# 4. 能带数据分析
+echo -e "\033[36m[3/5] Analyzing band structure data...\033[0m"
+echo -e "\033[32m[Info] Starting batch analysis of material band structures...\033[0m"
+
+# 执行能带分析
+python -c "
+from app import create_app
+from app.band_analyzer import band_analyzer
+from app.models import Material, db
+import os
+
+app = create_app()
+with app.app_context():
+    materials = Material.query.all()
+    total = len(materials)
+    analyzed = 0
+    failed = 0
+
+    print(f'Found {total} materials to analyze...')
+
+    for i, material in enumerate(materials, 1):
+        try:
+            material_path = f'app/static/materials/{material.formatted_id}/band'
+            if os.path.exists(material_path):
+                result = band_analyzer.analyze_material(material_path)
+                if result['band_gap'] is not None:
+                    material.band_gap = result['band_gap']
+                    material.materials_type = result['materials_type']
+                    analyzed += 1
+                    print(f'[{i}/{total}] ✓ {material.formatted_id}: {result[\"materials_type\"]} (gap: {result[\"band_gap\"]:.4f} eV)')
+                else:
+                    material.band_gap = None
+                    material.materials_type = 'unknown'
+                    failed += 1
+                    print(f'[{i}/{total}] ✗ {material.formatted_id}: Analysis failed')
+            else:
+                material.band_gap = None
+                material.materials_type = 'unknown'
+                failed += 1
+                print(f'[{i}/{total}] ✗ {material.formatted_id}: No band data found')
+        except Exception as e:
+            material.band_gap = None
+            material.materials_type = 'unknown'
+            failed += 1
+            print(f'[{i}/{total}] ✗ {material.formatted_id}: Error - {e}')
+
+    db.session.commit()
+    print(f'Band analysis completed: {analyzed} analyzed, {failed} failed')
+"
+
+if [ $? -eq 0 ]; then
+    echo -e "\033[32m[Success] Band structure analysis completed.\033[0m"
+else
+    echo -e "\033[33m[Warning] Band structure analysis completed with errors.\033[0m"
+fi
+
+# 5. 用户管理提示（使用新的安全工具）
+echo -e "\033[36m[4/5] User management information...\033[0m"
 echo -e "\033[32m[Security] User management has been upgraded for enhanced security.\033[0m"
 echo -e "\033[32m[Info] All user data is now stored securely in the database with bcrypt encryption.\033[0m"
 echo -e "\033[33m[Note] To add or manage users after initialization, use: python user_management.py\033[0m"
 echo -e "\033[32m[Success] Security-enhanced user management ready.\033[0m"
 
-# 5. 成员信息导入
-echo -e "\033[36m[4/4] Importing member information (executing ./import_members.sh)...\033[0m"
+# 6. 成员信息导入
+echo -e "\033[36m[5/5] Importing member information (executing ./import_members.sh)...\033[0m"
 if [ -f "./import_members.sh" ]; then
     ./import_members.sh
     if [ $? -eq 0 ]; then

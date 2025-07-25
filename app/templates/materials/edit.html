@@ -245,120 +245,42 @@
             <h3>Energy Properties (eV)</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Total Energy</label>
-                    <input type="number" step="0.000001" 
-                           name="total_energy" 
-                           value="{{ material.total_energy }}">
-                </div>
-                <div class="form-group">
-                    <label>Formation Energy</label>
-                    <input type="number" step="0.000001" 
-                           name="formation_energy" 
-                           value="{{ material.formation_energy }}">
-                </div>
-                <div class="form-group">
-                    <label>Fermi Level (efermi)</label>
-                    <input type="number" step="0.00000001" 
-                           name="efermi" 
+                    <label>Fermi Level</label>
+                    <input type="number" step="0.00000001"
+                           name="fermi_level"
                            value="{{ material.fermi_level }}">
+                    <small class="help-text">Fermi energy level in eV</small>
                 </div>
             </div>
         </div>
 
-        <!-- Surface Properties -->
+        <!-- Electronic Properties -->
         <div class="form-section">
-            <h3>Surface Properties</h3>
+            <h3>Electronic Properties</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Vacuum Level</label>
-                    <input type="number" step="0.0001" 
-                           name="vacuum_level" 
-                           value="{{ material.vacuum_level }}">
+                    <label>Band Gap (eV)</label>
+                    <input type="number" step="0.0001"
+                           name="band_gap"
+                           value="{{ material.band_gap }}">
+                    <small class="help-text">Automatically calculated from band data</small>
                 </div>
                 <div class="form-group">
-                    <label>Work Function</label>
-                    <input type="number" step="0.0001" 
-                           name="workfunction" 
-                           value="{{ material.workfunction }}">
-                </div>
-                <div class="form-group">
-                    <label>Metal Type</label>
-                    <select name="metal_type">
+                    <label>Materials Type</label>
+                    <select name="materials_type">
                         <option value="">Select Type</option>
-                        <option value="metal" {% if material.metal_type == 'metal' %}selected{% endif %}>Metal</option>
-                        <option value="semiconductor" {% if material.metal_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
-                        <option value="insulator" {% if material.metal_type == 'insulator' %}selected{% endif %}>Insulator</option>
-                        <option value="semimetallic" {% if material.metal_type == 'semimetallic' %}selected{% endif %}>Semimetallic</option>
-                        <option value="Unknown" {% if material.metal_type == 'Unknown' %}selected{% endif %}>Unknown</option>
+                        <option value="metal" {% if material.materials_type == 'metal' %}selected{% endif %}>Metal</option>
+                        <option value="semimetal" {% if material.materials_type == 'semimetal' %}selected{% endif %}>Semimetal</option>
+                        <option value="semiconductor" {% if material.materials_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
+                        <option value="insulator" {% if material.materials_type == 'insulator' %}selected{% endif %}>Insulator</option>
+                        <option value="unknown" {% if material.materials_type == 'unknown' %}selected{% endif %}>Unknown</option>
                     </select>
+                    <small class="help-text">Automatically determined from band gap</small>
                 </div>
             </div>
         </div>
 
-        <!-- Band Properties -->
-        <div class="form-section">
-            <h3>Band Structure</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Band Gap (gap)</label>
-                    <input type="number" step="0.0001" 
-                           name="gap" 
-                           value="{{ material.gap }}">
-                </div>
-                <div class="form-group">
-                    <label>VBM Energy</label>
-                    <input type="number" step="0.0001" 
-                           name="vbm_energy" 
-                           value="{{ material.vbm_energy }}">
-                </div>
-                <div class="form-group">
-                    <label>CBM Energy</label>
-                    <input type="number" step="0.0001" 
-                           name="cbm_energy" 
-                           value="{{ material.cbm_energy }}">
-                </div>
-            </div>
-        </div>
-
-        <!-- Coordinate Properties -->
-        <div class="form-section">
-            <h3>Coordinates</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>VBM Coordinates</label>
-                    <input type="text" 
-                           name="vbm_coordi" 
-                           value="{{ material.vbm_coordi }}"
-                           placeholder="Format example: ['0.333','0.333','0.000']">
-                </div>
-                <div class="form-group">
-                    <label>CBM Coordinates</label>
-                    <input type="text" 
-                           name="cbm_coordi" 
-                           value="{{ material.cbm_coordi }}"
-                           placeholder="Format example: ['0.000','0.000','0.000']">
-                </div>
-            </div>
-        </div>
-
-        <!-- Index Properties -->
-        <div class="form-section">
-            <h3>Band Indexes</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>VBM Index</label>
-                    <input type="number" 
-                           name="vbm_index" 
-                           value="{{ material.vbm_index }}">
-                </div>
-                <div class="form-group">
-                    <label>CBM Index</label>
-                    <input type="number" 
-                           name="cbm_index" 
-                           value="{{ material.cbm_index }}">
-                </div>
-            </div>
-        </div>
+        <!-- VBM/CBM 和 Band Indexes 相关字段已删除，这些字段在数据库中不存在 -->
 
         <!-- Form Action Buttons -->
         <div class="form-actions">

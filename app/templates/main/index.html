@@ -1691,13 +1691,14 @@
                 <div class="search-row">
                     <!-- 材料类型下拉框 -->
                     <div class="filter-group">
-                        <label for="metal_type">Materials Type</label>
-                        <select name="metal_type" id="metal_type">
+                        <label for="materials_type">Materials Type</label>
+                        <select name="materials_type" id="materials_type">
                             <option value="">All</option>
-                            <option value="Unknown" {% if search_params.metal_type == 'Unknown' %}selected{% endif %}>Unknown</option>
-                            <option value="metal" {% if search_params.metal_type == 'metal' %}selected{% endif %}>Metal</option>
-                            <option value="semiconductor" {% if search_params.metal_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
-                            <option value="insulator" {% if search_params.metal_type == 'insulator' %}selected{% endif %}>Insulator</option>
+                            <option value="unknown" {% if search_params.materials_type == 'unknown' %}selected{% endif %}>Unknown</option>
+                            <option value="metal" {% if search_params.materials_type == 'metal' %}selected{% endif %}>Metal</option>
+                            <option value="semimetal" {% if search_params.materials_type == 'semimetal' %}selected{% endif %}>Semimetal</option>
+                            <option value="semiconductor" {% if search_params.materials_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
+                            <option value="insulator" {% if search_params.materials_type == 'insulator' %}selected{% endif %}>Insulator</option>
                         </select>
                     </div>
 

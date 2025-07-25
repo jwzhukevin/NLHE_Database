@@ -91,6 +91,11 @@ def create_app():
     migrate = Migrate(app, db)  # 初始化数据库迁移工具（生成迁移脚本）
     login_manager.init_app(app)  # 绑定登录管理到应用
 
+    # 配置Flask-Login
+    login_manager.login_view = 'views.login'  # 未登录时重定向的视图
+    login_manager.login_message = 'Please log in to access this page.'
+    login_manager.login_message_category = 'info'
+
     # 初始化安全扩展
     global csrf, limiter
 
@@ -141,6 +146,26 @@ def create_app():
         from .models import User  # 延迟导入避免循环依赖
         return User.query.get(int(user_id))  # 查询数据库并返回用户实例
 
+    # --- 会话状态检查和消息处理中间件 ---
+    @app.before_request
+    def check_session_and_messages():
+        """检查会话状态一致性并处理登录/登出消息"""
+        from flask import request
+        from flask_login import current_user
+        from .auth_manager import LoginStateManager
+
+        # 跳过静态文件和API路由
+        if request.endpoint and (request.endpoint.startswith('static') or
+                                request.endpoint.startswith('api') or
+                                request.endpoint in ['views.logout', 'views.login']):
+            return
+
+        # 验证登录状态一致性
+        LoginStateManager.verify_state_consistency()
+
+        # 消息处理已移至登录/登出路由中直接处理，避免重复显示
+        # 这里不再处理消息显示逻辑
+
     # --- 安全头部处理器 ---
     @app.after_request
     def add_security_headers(response):
@@ -151,20 +176,29 @@ def create_app():
     # --- 模板上下文处理器 ---
     # 向所有模板注入全局变量，避免在每个视图函数中重复传递
     @app.context_processor
-    def inject_user():
+    def inject_global_vars():
         """
-        向所有模板注入全局变量（例如当前用户）
+        向所有模板注入全局变量
+
+        注意：current_user 由 Flask-Login 自动注入，这里不需要重复处理
 
         返回:
             字典，包含要注入模板的全局变量
         """
         try:
-            from .models import User
-            user = User.query.first()  # 示例：注入第一个用户（可替换为实际逻辑）
-            return dict(user=user)  # 模板中可通过 {{ user }} 访问
+            # 注入一些全局配置或统计信息
+            from .models import Material
+            total_materials = Material.query.count()
+            return dict(
+                total_materials=total_materials,
+                app_name="NLHE Database"
+            )
         except Exception as e:
-            app.logger.warning(f"无法查询用户表: {str(e)}")
-            return dict(user=None)  # 返回空用户，避免模板错误
+            app.logger.warning(f"无法查询统计信息: {str(e)}")
+            return dict(
+                total_materials=0,
+                app_name="NLHE Database"
+            )
 
     # --- 初始化格式化ID ---
     def init_formatted_ids():
@@ -330,11 +364,13 @@ def create_app():
 
                     try:
                         # 分析能带数据
-                        result = band_analyzer.analyze_material_band(material.id)
+                        material_path = f"app/static/materials/{material.formatted_id}/band"
+                        result = band_analyzer.analyze_material(material_path)
 
-                        if result:
+                        if result and result['band_gap'] is not None:
                             # 更新数据库中的band_gap字段
                             material.band_gap = result['band_gap']
+                            material.materials_type = result['materials_type']
                             analyzed_count += 1
                             print(f"  ✅ 成功: 带隙 = {result['band_gap']:.4f} eV, 类型 = {result['materials_type']}")
                         else:

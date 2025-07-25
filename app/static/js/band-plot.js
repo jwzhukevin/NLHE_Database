@@ -128,9 +128,9 @@ function analyzeBandStructure(bands) {
         return null;
     }
 
-    // 找到费米能级附近的能带（假设费米能级为0）
-    const fermiLevel = 0;
-    const tolerance = 0.1; // 容差值，用于判断能带是否跨越费米能级
+    // 使用统一配置或默认值
+    const fermiLevel = window.bandConfig?.fermiLevel || 0;
+    const tolerance = window.bandConfig?.tolerance || 0.1;
 
     // 分离价带和导带
     const valenceBands = [];
@@ -156,7 +156,7 @@ function analyzeBandStructure(bands) {
         globalMinEnergy = Math.min(globalMinEnergy, minEnergy);
         globalMaxEnergy = Math.max(globalMaxEnergy, maxEnergy);
 
-        if (maxEnergy < fermiLevel - tolerance) {
+        if (maxEnergy <= fermiLevel - tolerance) {
             // 完全在费米能级以下的能带 - 价带
             valenceBands.push({ index: bandIndex, energies: band });
         } else if (minEnergy > fermiLevel + tolerance) {
@@ -213,11 +213,17 @@ function analyzeBandStructure(bands) {
         vbmCoordinates = `k-point ${vbmKIndex}`;
         cbmCoordinates = `k-point ${cbmKIndex}`;
 
-        // 判断材料类型
-        if (bandGap > 3.0) {
+        // 判断材料类型 - 使用统一配置
+        const semiconductorThreshold = window.bandConfig?.semiconductorThreshold || 3.0;
+        const semimetalThreshold = window.bandConfig?.semimetalThreshold || 0.1;
+        const metalThreshold = window.bandConfig?.metalThreshold || 0.0;
+
+        if (bandGap > semiconductorThreshold) {
             materialType = "Insulator";
-        } else if (bandGap > 0.1) {
+        } else if (bandGap > semimetalThreshold) {
             materialType = "Semiconductor";
+        } else if (bandGap > metalThreshold) {
+            materialType = "Semimetal";
         } else {
             materialType = "Metal";
         }
@@ -229,10 +235,6 @@ function analyzeBandStructure(bands) {
 
     return {
         bandGap: bandGap,
-        vbmEnergy: vbmEnergy,
-        cbmEnergy: cbmEnergy,
-        vbmCoordinates: vbmCoordinates,
-        cbmCoordinates: cbmCoordinates,
         materialType: materialType,
         valenceBandCount: valenceBands.length,
         conductionBandCount: conductionBands.length
@@ -578,42 +580,27 @@ function updateBandStructureInfo(bandAnalysis) {
             }
         }
 
-        // 更新VBM能量
-        const vbmEnergyElement = document.querySelector('#vbm-energy .property-value');
-        if (vbmEnergyElement) {
-            if (bandAnalysis.vbmEnergy !== null && bandAnalysis.vbmEnergy !== undefined) {
-                vbmEnergyElement.textContent = `${bandAnalysis.vbmEnergy.toFixed(4)} eV`;
-            } else {
-                vbmEnergyElement.textContent = 'N/A';
-            }
-        }
+        // VBM/CBM 相关显示已删除
 
-        // 更新CBM能量
-        const cbmEnergyElement = document.querySelector('#cbm-energy .property-value');
-        if (cbmEnergyElement) {
-            if (bandAnalysis.cbmEnergy !== null && bandAnalysis.cbmEnergy !== undefined) {
-                cbmEnergyElement.textContent = `${bandAnalysis.cbmEnergy.toFixed(4)} eV`;
-            } else {
-                cbmEnergyElement.textContent = 'N/A';
-            }
-        }
-
-        // 更新VBM坐标
-        const vbmCoordElement = document.querySelector('#vbm-coordinates .property-value');
-        if (vbmCoordElement) {
-            vbmCoordElement.textContent = bandAnalysis.vbmCoordinates || 'Not available';
-        }
-
-        // 更新CBM坐标
-        const cbmCoordElement = document.querySelector('#cbm-coordinates .property-value');
-        if (cbmCoordElement) {
-            cbmCoordElement.textContent = bandAnalysis.cbmCoordinates || 'Not available';
-        }
-
-        // 更新材料类型（Materials Type字段）
+        // 更新材料类型
         const materialTypeElement = document.querySelector('#material-type .property-value');
         if (materialTypeElement) {
-            materialTypeElement.textContent = bandAnalysis.materialType || 'Unknown';
+            const materialType = bandAnalysis.materialType || 'Unknown';
+            const oldValue = materialTypeElement.textContent;
+
+            if (oldValue !== materialType) {
+                materialTypeElement.textContent = materialType;
+
+                // 添加更新动画效果
+                materialTypeElement.style.backgroundColor = '#e8f5e8';
+                materialTypeElement.style.transition = 'background-color 0.5s';
+
+                setTimeout(() => {
+                    materialTypeElement.style.backgroundColor = '';
+                }, 2000);
+
+                console.log(`Material Type updated from "${oldValue}" to "${materialType}"`);
+            }
         }
 
         // 材料类型现在从band.json文件中读取，不再需要更新数据库

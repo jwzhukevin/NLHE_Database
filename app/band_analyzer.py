@@ -1,162 +1,258 @@
 #!/usr/bin/env python3
 """
-能带数据分析器
+能带分析器 - 合并版本
 
-从band.dat文件中分析并提取：
-1. Band Gap (带隙值)
-2. Materials Type (材料类型：metal, semiconductor, insulator, semimetal)
+用于分析材料的能带结构，计算带隙和确定材料类型
+专门用于材料导入时的自动分析，只输出带隙和材料类型
+合并了原 band_analyzer.py、band_config.py、band_gap_calculator.py 的功能
 
-生成band.json文件保存分析结果
+主要功能：
+1. 从 band.dat 文件分析能带数据
+2. 计算材料带隙
+3. 确定材料类型（metal/semimetal/semiconductor/insulator）
+4. 生成简化的 band.json 文件
+5. 支持批量处理和进度显示
 """
 
 import os
 import json
 import numpy as np
 from flask import current_app
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
+import logging
+
+
+class BandAnalysisConfig:
+    """能带分析配置类 - 统一参数定义"""
+    
+    # 费米能级相关参数
+    DEFAULT_FERMI_LEVEL = 0.0  # 默认费米能级
+    FERMI_TOLERANCE = 0.1      # 费米能级容差
+    
+    # 材料分类阈值 (eV)
+    METAL_THRESHOLD = 0.0           # 金属：带隙 = 0
+    SEMIMETAL_THRESHOLD = 0.1       # 半金属：0 < 带隙 <= 0.1
+    SEMICONDUCTOR_THRESHOLD = 3.0   # 半导体：0.1 < 带隙 <= 3.0
+    # 绝缘体：带隙 > 3.0
+    
+    # 数值计算精度
+    ENERGY_PRECISION = 1e-6
+    
+    @classmethod
+    def classify_material(cls, band_gap: float) -> str:
+        """根据带隙值分类材料类型"""
+        if band_gap is None or band_gap < 0:
+            return "unknown"
+        elif band_gap <= cls.METAL_THRESHOLD:
+            return "metal"
+        elif band_gap <= cls.SEMIMETAL_THRESHOLD:
+            return "semimetal"
+        elif band_gap <= cls.SEMICONDUCTOR_THRESHOLD:
+            return "semiconductor"
+        else:
+            return "insulator"
+
 
 class BandAnalyzer:
-    """能带数据分析器"""
+    """能带分析器类 - 简化版本，只计算带隙和材料类型"""
     
     def __init__(self):
-        self.band_gap_threshold = {
-            'metal': 0.0,           # 带隙 = 0，金属
-            'semimetal': 0.1,       # 带隙 0-0.1 eV，半金属
-            'semiconductor': 3.0,   # 带隙 0.1-3.0 eV，半导体
-            'insulator': float('inf')  # 带隙 > 3.0 eV，绝缘体
-        }
+        self.config = BandAnalysisConfig()
+        self.fermi_tolerance = self.config.FERMI_TOLERANCE
+        self.logger = logging.getLogger(__name__)
     
-    def analyze_band_file(self, band_file_path):
+    def analyze_material(self, material_path: str) -> Dict[str, Union[float, str]]:
         """
-        分析band.dat文件
+        分析单个材料的能带数据
         
-        参数:
-            band_file_path: band.dat文件的完整路径
+        Args:
+            material_path: 材料数据目录路径
             
-        返回:
-            dict: 包含band_gap和materials_type的字典
+        Returns:
+            包含 band_gap 和 materials_type 的字典
         """
         try:
-            if not os.path.exists(band_file_path):
-                current_app.logger.error(f"Band file not found: {band_file_path}")
-                return None
+            # 查找能带数据文件
+            band_file = self._find_band_file(material_path)
+            if not band_file:
+                self.logger.warning(f"No band data file found in {material_path}")
+                return self._get_default_result()
             
-            # 读取能带数据
-            band_data = self._read_band_data(band_file_path)
-            if band_data is None:
-                return None
+            # 解析能带数据
+            band_data = self._parse_band_file(band_file)
+            if not band_data:
+                self.logger.warning(f"Failed to parse band data from {band_file}")
+                return self._get_default_result()
             
             # 计算带隙
             band_gap = self._calculate_band_gap(band_data)
             
             # 确定材料类型
-            materials_type = self._determine_materials_type(band_gap)
+            materials_type = self.config.classify_material(band_gap)
             
             result = {
-                'band_gap': round(band_gap, 6),
-                'materials_type': materials_type,
-                'analysis_info': {
-                    'total_kpoints': len(band_data['kpoints']),
-                    'total_bands': len(band_data['eigenvalues'][0]) if band_data['eigenvalues'] else 0,
-                    'fermi_level': band_data.get('fermi_level', 0.0)
-                }
+                'band_gap': band_gap,
+                'materials_type': materials_type
             }
             
-            current_app.logger.info(f"Band analysis completed: {result}")
+            # 保存结果到 band.json
+            self._save_band_json(material_path, result)
+            
             return result
             
         except Exception as e:
-            current_app.logger.error(f"Error analyzing band file {band_file_path}: {str(e)}")
+            self.logger.error(f"Error analyzing material {material_path}: {e}")
+            return self._get_default_result()
+    
+    def _find_band_file(self, material_path: str) -> Optional[str]:
+        """查找能带数据文件"""
+        possible_files = ['band.dat', 'EIGENVAL', 'eigenvalues.dat']
+        
+        for filename in possible_files:
+            filepath = os.path.join(material_path, filename)
+            if os.path.exists(filepath):
+                return filepath
+        
+        return None
+    
+    def _parse_band_file(self, band_file: str) -> Optional[Dict]:
+        """解析能带数据文件"""
+        try:
+            if band_file.endswith('band.dat'):
+                return self._parse_band_dat(band_file)
+            elif 'EIGENVAL' in band_file:
+                return self._parse_eigenval(band_file)
+            else:
+                return self._parse_generic_band_file(band_file)
+        except Exception as e:
+            self.logger.error(f"Error parsing band file {band_file}: {e}")
             return None
     
-    def _read_band_data(self, band_file_path):
-        """读取band.dat文件数据"""
+    def _parse_band_dat(self, filepath: str) -> Optional[Dict]:
+        """解析 band.dat 格式文件"""
         try:
-            with open(band_file_path, 'r') as f:
+            with open(filepath, 'r') as f:
                 lines = f.readlines()
-
-            if not lines:
-                return None
-
-            # 解析能带数据格式
-            # 第1行：k点路径标签 (如 'Γ X M R X|M')
-            # 第2行：k点坐标
-            # 第3行开始：每行第一个值是k点索引，后面是所有能级值
-
-            if len(lines) < 3:
-                current_app.logger.error("Band file has insufficient lines")
-                return None
-
-            # 跳过第一行的k点标签
-            # 第二行是k点坐标
-            kpoint_line = lines[1].strip()
-            kpoint_coords = [float(x) for x in kpoint_line.split()]
-
-            # 从第三行开始读取能级数据
+            
             eigenvalues = []
-
-            for i, line in enumerate(lines[2:], start=2):
+            current_kpoint = []
+            
+            for line in lines:
                 line = line.strip()
                 if not line or line.startswith('#'):
                     continue
-
-                parts = line.split()
-                if len(parts) < 2:  # 至少需要k点索引 + 1个能级
+                
+                try:
+                    # 尝试解析能量值
+                    values = [float(x) for x in line.split()]
+                    if len(values) >= 2:  # k点坐标 + 能量值
+                        current_kpoint.extend(values[1:])  # 跳过k点坐标
+                    elif len(values) == 1:  # 只有能量值
+                        current_kpoint.append(values[0])
+                    
+                    # 检查是否是新的k点（通过空行或特定标记）
+                    if len(current_kpoint) > 0:
+                        eigenvalues.append(current_kpoint[:])
+                        current_kpoint = []
+                        
+                except ValueError:
                     continue
-
-                # 第一个值是k点索引，跳过
-                # 剩余的值是能级值
-                eigenvals = [float(x) for x in parts[1:]]
-                eigenvalues.append(eigenvals)
-
-            # 生成k点列表（简化处理，使用索引作为k点坐标）
-            kpoints = []
-            for i in range(len(eigenvalues)):
-                if i < len(kpoint_coords):
-                    # 使用实际的k点坐标
-                    kpoints.append([kpoint_coords[i], 0.0, 0.0])
-                else:
-                    # 如果k点坐标不够，使用索引
-                    kpoints.append([float(i), 0.0, 0.0])
-
-            current_app.logger.info(f"Read band data: {len(kpoints)} k-points, {len(eigenvalues[0]) if eigenvalues else 0} bands")
-
+            
+            if current_kpoint:
+                eigenvalues.append(current_kpoint)
+            
             return {
-                'kpoints': kpoints,
                 'eigenvalues': eigenvalues,
-                'fermi_level': 0.0  # 默认费米能级为0
+                'fermi_level': 0.0  # 默认费米能级
             }
-
+            
         except Exception as e:
-            current_app.logger.error(f"Error reading band data: {str(e)}")
+            self.logger.error(f"Error parsing band.dat file: {e}")
             return None
     
-    def _calculate_band_gap(self, band_data):
+    def _parse_eigenval(self, filepath: str) -> Optional[Dict]:
+        """解析 VASP EIGENVAL 格式文件"""
+        try:
+            with open(filepath, 'r') as f:
+                lines = f.readlines()
+            
+            # 跳过头部信息
+            eigenvalues = []
+            i = 0
+            while i < len(lines):
+                line = lines[i].strip()
+                if not line:
+                    i += 1
+                    continue
+                
+                try:
+                    # 查找能量数据
+                    values = [float(x) for x in line.split()]
+                    if len(values) >= 1:
+                        eigenvalues.append(values)
+                except ValueError:
+                    pass
+                
+                i += 1
+            
+            return {
+                'eigenvalues': eigenvalues,
+                'fermi_level': 0.0
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing EIGENVAL file: {e}")
+            return None
+    
+    def _parse_generic_band_file(self, filepath: str) -> Optional[Dict]:
+        """解析通用能带数据文件"""
+        try:
+            data = np.loadtxt(filepath)
+            if data.ndim == 1:
+                eigenvalues = [data.tolist()]
+            else:
+                eigenvalues = data.tolist()
+            
+            return {
+                'eigenvalues': eigenvalues,
+                'fermi_level': 0.0
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error parsing generic band file: {e}")
+            return None
+    
+    def _calculate_band_gap(self, band_data: Dict) -> Optional[float]:
         """计算带隙"""
         try:
             eigenvalues = band_data['eigenvalues']
             fermi_level = band_data.get('fermi_level', 0.0)
             
-            if not eigenvalues:
-                return 0.0
-            
-            # 将所有能级相对于费米能级进行调整
+            # 收集所有本征值
             all_eigenvalues = []
             for kpoint_eigenvals in eigenvalues:
-                for eigenval in kpoint_eigenvals:
-                    all_eigenvalues.append(eigenval - fermi_level)
+                if isinstance(kpoint_eigenvals, list):
+                    for eigenval in kpoint_eigenvals:
+                        all_eigenvalues.append(eigenval - fermi_level)
+                else:
+                    all_eigenvalues.append(kpoint_eigenvals - fermi_level)
+            
+            if not all_eigenvalues:
+                return None
             
             all_eigenvalues = np.array(all_eigenvalues)
             
             # 找到价带顶 (VBM) 和导带底 (CBM)
-            occupied_states = all_eigenvalues[all_eigenvalues <= 0]  # 费米能级以下
-            unoccupied_states = all_eigenvalues[all_eigenvalues > 0]  # 费米能级以上
+            occupied_states = all_eigenvalues[all_eigenvalues <= -self.fermi_tolerance]
+            unoccupied_states = all_eigenvalues[all_eigenvalues > self.fermi_tolerance]
             
             if len(occupied_states) == 0 or len(unoccupied_states) == 0:
-                # 如果没有明确的价带或导带分离，可能是金属
+                # 可能是金属
                 return 0.0
             
-            vbm = np.max(occupied_states)  # 价带顶
-            cbm = np.min(unoccupied_states)  # 导带底
+            vbm = np.max(occupied_states)
+            cbm = np.min(unoccupied_states)
             
             band_gap = cbm - vbm
             
@@ -164,70 +260,85 @@ class BandAnalyzer:
             return max(0.0, band_gap)
             
         except Exception as e:
-            current_app.logger.error(f"Error calculating band gap: {str(e)}")
-            return 0.0
-    
-    def _determine_materials_type(self, band_gap):
-        """根据带隙确定材料类型"""
-        if band_gap <= self.band_gap_threshold['metal']:
-            return 'metal'
-        elif band_gap <= self.band_gap_threshold['semimetal']:
-            return 'semimetal'
-        elif band_gap <= self.band_gap_threshold['semiconductor']:
-            return 'semiconductor'
-        else:
-            return 'insulator'
-    
-    def save_analysis_to_json(self, analysis_result, json_file_path):
-        """将分析结果保存到band.json文件"""
-        try:
-            # 确保目录存在
-            os.makedirs(os.path.dirname(json_file_path), exist_ok=True)
-            
-            # 添加时间戳
-            analysis_result['analyzed_at'] = __import__('datetime').datetime.now().isoformat()
-            
-            # 保存到JSON文件
-            with open(json_file_path, 'w', encoding='utf-8') as f:
-                json.dump(analysis_result, f, indent=2, ensure_ascii=False)
-            
-            current_app.logger.info(f"Band analysis saved to: {json_file_path}")
-            return True
-            
-        except Exception as e:
-            current_app.logger.error(f"Error saving analysis to {json_file_path}: {str(e)}")
-            return False
-    
-    def analyze_material_band(self, material_id):
-        """
-        分析指定材料的能带数据
-        
-        参数:
-            material_id: 材料ID
-            
-        返回:
-            dict: 分析结果，如果失败返回None
-        """
-        try:
-            # 构建文件路径
-            material_dir = f"app/static/materials/IMR-{material_id}"
-            band_file = os.path.join(material_dir, "band", "band.dat")
-            json_file = os.path.join(material_dir, "band", "band.json")
-            
-            # 分析能带数据
-            analysis_result = self.analyze_band_file(band_file)
-            if analysis_result is None:
-                return None
-            
-            # 保存分析结果
-            if self.save_analysis_to_json(analysis_result, json_file):
-                return analysis_result
-            else:
-                return None
-                
-        except Exception as e:
-            current_app.logger.error(f"Error analyzing material {material_id}: {str(e)}")
+            self.logger.error(f"Error calculating band gap: {e}")
             return None
+    
+    def _save_band_json(self, material_path: str, result: Dict):
+        """保存分析结果到 band.json"""
+        try:
+            band_json_path = os.path.join(material_path, 'band.json')
+            with open(band_json_path, 'w') as f:
+                json.dump(result, f, indent=2)
+            
+            self.logger.debug(f"Saved band analysis to {band_json_path}")
+            
+        except Exception as e:
+            self.logger.error(f"Error saving band.json: {e}")
+    
+    def _get_default_result(self) -> Dict[str, Union[float, str]]:
+        """获取默认结果（分析失败时使用）"""
+        return {
+            'band_gap': None,
+            'materials_type': 'unknown'
+        }
+    
+    def batch_analyze(self, materials_paths: List[str], 
+                     progress_callback=None) -> Dict[str, Dict]:
+        """
+        批量分析材料
+        
+        Args:
+            materials_paths: 材料路径列表
+            progress_callback: 进度回调函数
+            
+        Returns:
+            分析结果字典
+        """
+        results = {}
+        total = len(materials_paths)
+        
+        for i, material_path in enumerate(materials_paths):
+            try:
+                result = self.analyze_material(material_path)
+                results[material_path] = result
+                
+                if progress_callback:
+                    progress_callback(i + 1, total, material_path)
+                    
+            except Exception as e:
+                self.logger.error(f"Error in batch analysis for {material_path}: {e}")
+                results[material_path] = self._get_default_result()
+        
+        return results
 
-# 全局分析器实例
+
+# 全局实例
 band_analyzer = BandAnalyzer()
+
+
+def analyze_material_bands(material_path: str) -> Dict[str, Union[float, str]]:
+    """
+    分析单个材料的能带数据（便捷函数）
+    
+    Args:
+        material_path: 材料数据目录路径
+        
+    Returns:
+        包含 band_gap 和 materials_type 的字典
+    """
+    return band_analyzer.analyze_material(material_path)
+
+
+def batch_analyze_materials(materials_paths: List[str], 
+                          progress_callback=None) -> Dict[str, Dict]:
+    """
+    批量分析材料能带数据（便捷函数）
+    
+    Args:
+        materials_paths: 材料路径列表
+        progress_callback: 进度回调函数
+        
+    Returns:
+        分析结果字典
+    """
+    return band_analyzer.batch_analyze(materials_paths, progress_callback)

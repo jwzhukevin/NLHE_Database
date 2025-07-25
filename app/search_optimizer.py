@@ -32,21 +32,26 @@ class SearchCache:
         self.max_cache_size = 1000  # 最大缓存条目数
         self.cache_ttl = 300  # 缓存生存时间（秒）
     
-    def _generate_cache_key(self, search_params: Dict) -> str:
-        """生成搜索参数的缓存键"""
+    def _generate_cache_key(self, search_params: Dict, user_context: str = None) -> str:
+        """生成搜索参数的缓存键，包含用户上下文"""
+        # 添加用户上下文到缓存键中
+        cache_data = {
+            'search_params': search_params,
+            'user_context': user_context or 'anonymous'
+        }
         # 排序参数以确保一致性
-        sorted_params = json.dumps(search_params, sort_keys=True)
-        return hashlib.md5(sorted_params.encode()).hexdigest()
+        sorted_data = json.dumps(cache_data, sort_keys=True)
+        return hashlib.md5(sorted_data.encode()).hexdigest()
     
-    def get(self, search_params: Dict) -> Optional[Dict]:
+    def get(self, search_params: Dict, user_context: str = None) -> Optional[Dict]:
         """从缓存获取搜索结果"""
         self.cache_stats['total_requests'] += 1
-        
-        cache_key = self._generate_cache_key(search_params)
-        
+
+        cache_key = self._generate_cache_key(search_params, user_context)
+
         if cache_key in self.cache:
             cached_item = self.cache[cache_key]
-            
+
             # 检查是否过期
             if time.time() - cached_item['timestamp'] < self.cache_ttl:
                 self.cache_stats['hits'] += 1
@@ -54,20 +59,20 @@ class SearchCache:
             else:
                 # 删除过期项
                 del self.cache[cache_key]
-        
+
         self.cache_stats['misses'] += 1
         return None
-    
-    def set(self, search_params: Dict, result_data: Dict):
+
+    def set(self, search_params: Dict, result_data: Dict, user_context: str = None):
         """将搜索结果存入缓存"""
-        cache_key = self._generate_cache_key(search_params)
-        
+        cache_key = self._generate_cache_key(search_params, user_context)
+
         # 如果缓存已满，删除最旧的项
         if len(self.cache) >= self.max_cache_size:
-            oldest_key = min(self.cache.keys(), 
+            oldest_key = min(self.cache.keys(),
                            key=lambda k: self.cache[k]['timestamp'])
             del self.cache[oldest_key]
-        
+
         self.cache[cache_key] = {
             'data': result_data,
             'timestamp': time.time()
@@ -140,9 +145,9 @@ class QueryOptimizer:
         if search_params.get('status'):
             filters.append(Material.status == search_params['status'])
         
-        # 金属类型过滤（使用索引）
-        if search_params.get('metal_type'):
-            filters.append(Material.metal_type == search_params['metal_type'])
+        # 材料类型过滤（使用索引）
+        if search_params.get('materials_type'):
+            filters.append(Material.materials_type == search_params['materials_type'])
         
         # 数值范围过滤（优化版本）
         numeric_filters = QueryOptimizer._build_numeric_filters(search_params)
@@ -284,31 +289,40 @@ def performance_monitor(func):
 def cached_search(cache_enabled=True):
     """
     搜索结果缓存装饰器
+
+    使用用户感知的缓存，避免不同用户看到错误的登录状态
     """
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not cache_enabled:
                 return func(*args, **kwargs)
-            
-            # 从请求参数生成缓存键
+
+            # 生成用户上下文标识
+            from flask_login import current_user
+            if current_user.is_authenticated:
+                user_context = f"user_{current_user.get_id()}_{current_user.role}"
+            else:
+                user_context = "anonymous"
+
+            # 从请求参数生成缓存键（包含用户上下文）
             search_params = dict(request.args)
-            
+
             # 尝试从缓存获取结果
-            cached_result = search_cache.get(search_params)
+            cached_result = search_cache.get(search_params, user_context)
             if cached_result:
-                current_app.logger.info("Search result served from cache")
+                current_app.logger.info(f"Search result served from cache for {user_context}")
                 return cached_result
-            
+
             # 执行搜索并缓存结果
             result = func(*args, **kwargs)
-            
+
             # 只缓存成功的结果
             if result and not isinstance(result, tuple):  # 不是错误响应
-                search_cache.set(search_params, result)
-                current_app.logger.info("Search result cached")
-            
+                search_cache.set(search_params, result, user_context)
+                current_app.logger.info(f"Search result cached for {user_context}")
+
             return result
-        
+
         return wrapper
     return decorator

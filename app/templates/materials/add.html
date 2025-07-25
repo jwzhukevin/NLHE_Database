@@ -210,96 +210,38 @@
             <h3>Energy Properties (eV)</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Total Energy</label>
-                    <input type="number" step="0.000001" name="total_energy">
-                </div>
-                <div class="form-group">
-                    <label>Formation Energy</label>
-                    <input type="number" step="0.000001" name="formation_energy">
-                </div>
-                <div class="form-group">
-                    <label>Fermi Level (efermi)</label>
-                    <input type="number" step="0.00000001" name="efermi">
+                    <label>Fermi Level</label>
+                    <input type="number" step="0.00000001" name="fermi_level">
+                    <small class="help-text">Fermi energy level in eV</small>
                 </div>
             </div>
         </div>
 
-        <!-- Surface Properties -->
+        <!-- Electronic Properties -->
         <div class="form-section">
-            <h3>Surface Properties</h3>
+            <h3>Electronic Properties</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Vacuum Level</label>
-                    <input type="number" step="0.0001" name="vacuum_level">
+                    <label>Band Gap (eV)</label>
+                    <input type="number" step="0.0001" name="band_gap" readonly>
+                    <small class="help-text">Will be automatically calculated from band data</small>
                 </div>
                 <div class="form-group">
-                    <label>Work Function</label>
-                    <input type="number" step="0.0001" name="workfunction">
-                </div>
-                <div class="form-group">
-                    <label>Metal Type</label>
-                    <select name="metal_type">
-                        <option value="">Select Type</option>
+                    <label>Materials Type</label>
+                    <select name="materials_type" disabled>
+                        <option value="">Will be determined automatically</option>
                         <option value="metal">Metal</option>
+                        <option value="semimetal">Semimetal</option>
                         <option value="semiconductor">Semiconductor</option>
                         <option value="insulator">Insulator</option>
-                        <option value="semimetallic">Semimetallic</option>
-                        <option value="Unknown">Unknown</option>
+                        <option value="unknown">Unknown</option>
                     </select>
+                    <small class="help-text">Will be automatically determined from band gap</small>
                 </div>
             </div>
         </div>
 
-        <!-- Band Properties -->
-        <div class="form-section">
-            <h3>Band Structure</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Band Gap (gap)</label>
-                    <input type="number" step="0.0001" name="gap">
-                </div>
-                <div class="form-group">
-                    <label>VBM Energy</label>
-                    <input type="number" step="0.0001" name="vbm_energy">
-                </div>
-                <div class="form-group">
-                    <label>CBM Energy</label>
-                    <input type="number" step="0.0001" name="cbm_energy">
-                </div>
-            </div>
-        </div>
-
-        <!-- Coordinate Properties -->
-        <div class="form-section">
-            <h3>Coordinates</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>VBM Coordinates</label>
-                    <input type="text" name="vbm_coordi" 
-                           placeholder="Format example: ['0.333','0.333','0.000']">
-                </div>
-                <div class="form-group">
-                    <label>CBM Coordinates</label>
-                    <input type="text" name="cbm_coordi"
-                           placeholder="Format example: ['0.000','0.000','0.000']">
-                </div>
-            </div>
-        </div>
-
-        <!-- Index Properties -->
-        <div class="form-section">
-            <h3>Band Indexes</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>VBM Index</label>
-                    <input type="number" name="vbm_index">
-                </div>
-                <div class="form-group">
-                    <label>CBM Index</label>
-                    <input type="number" name="cbm_index">
-                </div>
-            </div>
-        </div>
+        <!-- VBM/CBM 相关字段已删除，带隙和材料类型将自动分析 -->
 
         <!-- Form Action Buttons -->
         <div class="form-actions">

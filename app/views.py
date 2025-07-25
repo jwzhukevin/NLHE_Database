@@ -13,13 +13,14 @@ import functools  # For decorators
 from .material_importer import extract_chemical_formula_from_cif  # Material data import module
 from .chemical_parser import chemical_parser  # 智能化学式解析器
 from .search_optimizer import search_cache, QueryOptimizer, performance_monitor, cached_search  # 搜索性能优化
-from .band_gap_calculator import band_gap_calculator  # Band Gap计算器
+from .band_analyzer import band_analyzer  # 合并后的能带分析器
 import os
 import re
 from werkzeug.utils import secure_filename
 from PIL import Image, ImageDraw, ImageFont
 import random, string, io
 from .security_utils import log_security_event, sanitize_input, regenerate_session, check_rate_limit
+from .auth_manager import LoginStateManager, LoginErrorHandler
 
 # 尝试导入CSRF豁免装饰器
 try:
@@ -75,7 +76,6 @@ def index():
         q: Search keywords
         status: Material status filter
         materials_type: Materials type filter (从band.json读取)
-        formation_energy_min/max: Formation energy range filter
         fermi_level_min/max: Fermi level range filter
         page: Current page number
     """
@@ -239,19 +239,9 @@ def add():
                 'structure_file': structure_filename,  # 仅作记录，实际读取时遍历目录
                 'properties_json': properties_json.filename if properties_json and properties_json.filename else None,
                 'sc_structure_file': sc_structure_file.filename if sc_structure_file and sc_structure_file.filename else None,
-                'total_energy': safe_float(request.form.get('total_energy')),
-                'formation_energy': safe_float(request.form.get('formation_energy')),
-                'fermi_level': safe_float(request.form.get('efermi')),
-                'vacuum_level': safe_float(request.form.get('vacuum_level')),
-                'workfunction': safe_float(request.form.get('workfunction')),
-                'metal_type': request.form.get('metal_type'),
-                'gap': safe_float(request.form.get('gap')),
-                'vbm_energy': safe_float(request.form.get('vbm_energy')),
-                'cbm_energy': safe_float(request.form.get('cbm_energy')),
-                'vbm_coordi': request.form.get('vbm_coordi'),
-                'cbm_coordi': request.form.get('cbm_coordi'),
-                'vbm_index': safe_int(request.form.get('vbm_index')),
-                'cbm_index': safe_int(request.form.get('cbm_index'))
+                'fermi_level': safe_float(request.form.get('fermi_level')),
+                'band_gap': safe_float(request.form.get('band_gap')),
+                'materials_type': request.form.get('materials_type')
             }
 
             material = Material(**material_data)
@@ -426,19 +416,10 @@ def edit(material_id):
                 flash('Material name cannot be empty!', 'error')
                 return redirect(url_for('views.edit', material_id=material_id))
             material.status = request.form.get('status')
-            material.total_energy = safe_float(request.form.get('total_energy'))
-            material.formation_energy = safe_float(request.form.get('formation_energy'))
-            material.fermi_level = safe_float(request.form.get('efermi'))
-            material.vacuum_level = safe_float(request.form.get('vacuum_level'))
-            material.workfunction = safe_float(request.form.get('workfunction'))
-            material.metal_type = request.form.get('metal_type')
-            material.gap = safe_float(request.form.get('gap'))
-            material.vbm_energy = safe_float(request.form.get('vbm_energy'))
-            material.cbm_energy = safe_float(request.form.get('cbm_energy'))
-            material.vbm_coordi = request.form.get('vbm_coordi')
-            material.cbm_coordi = request.form.get('cbm_coordi')
-            material.vbm_index = safe_int(request.form.get('vbm_index'))
-            material.cbm_index = safe_int(request.form.get('cbm_index'))
+            material.fermi_level = safe_float(request.form.get('fermi_level'))
+            # 电子性质参数 - 只保留带隙和材料类型
+            material.band_gap = safe_float(request.form.get('band_gap'))
+            material.materials_type = request.form.get('materials_type')
             db.session.commit()
             flash('Material information updated successfully.', 'success')
             return redirect(url_for('views.detail', material_id=material_id))
@@ -493,13 +474,18 @@ def detail(material_id):
         return render_template('404.html'), 404
     material = Material.query.get_or_404(numeric_id)
 
-    # 自动计算Band Gap（如果尚未计算）
+    # 自动分析能带数据（如果尚未分析）
     try:
-        if material.band_gap is None:
-            current_app.logger.info(f"Auto-calculating band gap for {material.formatted_id}")
-            band_gap_calculator.calculate_band_gap(material)
+        if material.band_gap is None or material.materials_type is None:
+            current_app.logger.info(f"Auto-analyzing band data for {material.formatted_id}")
+            material_path = f"app/static/materials/{material.formatted_id}/band"
+            result = band_analyzer.analyze_material(material_path)
+            if result['band_gap'] is not None:
+                material.band_gap = result['band_gap']
+                material.materials_type = result['materials_type']
+                db.session.commit()
     except Exception as e:
-        current_app.logger.error(f"Failed to auto-calculate band gap for {material.formatted_id}: {e}")
+        current_app.logger.error(f"Failed to auto-analyze band data for {material.formatted_id}: {e}")
     import glob
     material_dir = get_material_dir(material.id)
     structure_dir = os.path.join(material_dir, 'structure')
@@ -629,22 +615,33 @@ def check_ip_blocked(view_func):
     
     return wrapped_view
 
-# User login route
+# User login route - 重构版本
 @bp.route('/login', methods=['GET', 'POST'])
 @check_ip_blocked
 def login():
     """
-    User login page and processing logic
-    
-    GET request: Display login form
-    POST request: Validate user credentials and process login
+    用户登录页面和处理逻辑 - 重构版本
+
+    使用统一的登录状态管理，确保状态一致性和安全性
+
+    GET request: 显示登录表单
+    POST request: 验证用户凭据并处理登录
     """
-    # If user is already logged in, redirect to homepage
-    # 不显示任何Flash消息，避免重复显示登录成功消息
+    # 如果用户已登录，重定向到首页（不显示消息）
     if current_user.is_authenticated:
         return redirect(url_for('views.index'))
-    
+
     if request.method == 'POST':
+        # 检查CSRF令牌（如果启用了CSRF保护）
+        try:
+            from flask_wtf.csrf import validate_csrf
+            validate_csrf(request.form.get('csrf_token'))
+        except Exception as e:
+            # CSRF验证失败，可能是令牌过期或无效
+            flash('Security token expired or invalid. Please try again.', 'error')
+            current_app.logger.warning(f"CSRF validation failed for login: {str(e)}")
+            return render_template('auth/login.html')
+
         email = request.form.get('email')
         username = request.form.get('username')
         captcha_input = request.form.get('captcha', '').upper()
@@ -748,128 +745,134 @@ def login():
             flash(f'Incorrect password. You have {remaining_attempts} attempts remaining.', 'error')
             return render_template('auth/login.html')
         
-        # Login successful, clear failure count
+        # 登录成功，清除失败计数
         session.pop(failed_key, None)
 
-        # 重新生成session ID防止会话固定攻击
-        regenerate_session()
+        # 使用统一的登录状态管理器处理登录
+        try:
+            success, message, redirect_url = LoginStateManager.login_user(user_by_email)
 
-        login_user(user_by_email, remember=remember)
+            if success:
+                # 登录成功，重定向到目标页面
+                next_page = request.args.get('next')
+                if next_page:
+                    return redirect(next_page)
+                return redirect(url_for('views.index'))
+            else:
+                # 登录失败（系统错误）
+                flash(message, 'error')
+                return render_template('auth/login.html')
 
-        # 记录成功登录
-        log_security_event("LOGIN_SUCCESS", f"User: {user_by_email.username}", ip)
-
-        # Show welcome message with username (only once per login session)
-        # 使用session标记防止重复显示登录成功消息
-        if not session.get('login_message_shown'):
-            flash(f'Welcome back, {user_by_email.username}!', 'success')
-            session['login_message_shown'] = True
-
-        next_page = request.args.get('next')
-        if next_page:
-            return redirect(next_page)
-        return redirect(url_for('views.index'))
+        except Exception as e:
+            current_app.logger.error(f"Login system error: {e}")
+            error_msg = LoginErrorHandler.handle_login_error('system_error')
+            flash(error_msg, 'error')
+            return render_template('auth/login.html')
         
     return render_template('auth/login.html')
 
-# User logout route
-@bp.route('/logout')
-@login_required  # Login protection decorator, ensuring only logged-in users can logout
+# User logout route - 重构版本
+@bp.route('/logout', methods=['GET', 'POST'])
 def logout():
     """
-    Handle user logout
+    用户登出处理 - 重构版本
 
-    Perform logout operation and redirect to homepage
+    使用统一的登录状态管理，确保：
+    1. 用户身份正确恢复为游客状态
+    2. 会话数据完全清理和会话ID重新生成
+    3. 只显示一次登出消息
+    4. 多标签页状态同步
     """
-    # 记录登出事件
-    if current_user.is_authenticated:
-        log_security_event("LOGOUT", f"User: {current_user.username}")
+    try:
+        # 使用统一的登出状态管理器
+        success, message = LoginStateManager.logout_user()
 
-    logout_user()  # Flask-Login logout method, clear user session
-    # 清除登录消息显示标记，以便下次登录时可以正常显示欢迎消息
-    session.pop('login_message_shown', None)
-    flash('Goodbye.', 'info')  # Display information message
-    return redirect(url_for('views.index'))  # Redirect to homepage
-
-# User settings route
-@bp.route('/settings', methods=['GET', 'POST'])
-@login_required  # Login protection decorator
-def settings():
-    """
-    User settings page and processing logic
-    
-    GET request: Display settings form
-    POST request: Update user settings
-    """
-    if request.method == 'POST':
-        username = request.form['username'].strip()
-        current_password = request.form.get('current_password', '')
-        new_password = request.form.get('new_password', '')
-        confirm_password = request.form.get('confirm_password', '')
-        
-        # Store original values for comparison
-        original_username = current_user.username
-        has_password_change = bool(new_password)
-        
-        # Validate inputs
-        if not username:
-            flash('Username is required.', 'error')
-            return redirect(url_for('views.settings'))
-        
-        if len(username) > 20:
-            flash('Username must be 20 characters or less.', 'error')
-            return redirect(url_for('views.settings'))
-        
-        # Check if another user already has this username (except current user)
-        if username != original_username:
-            existing_user = User.query.filter(User.username == username, User.email != current_user.email).first()
-            if existing_user:
-                flash('This username is already taken. Please choose another.', 'error')
-                return redirect(url_for('views.settings'))
-        
-        # Password change logic
-        if has_password_change:
-            # Verify current password
-            if not current_user.validate_password(current_password):
-                flash('Current password is incorrect.', 'error')
-                return redirect(url_for('views.settings'))
-            
-            # Validate new password
-            if len(new_password) < 8:
-                flash('New password must be at least 8 characters long.', 'error')
-                return redirect(url_for('views.settings'))
-            
-            if new_password != confirm_password:
-                flash('New passwords do not match.', 'error')
-                return redirect(url_for('views.settings'))
-        
-        try:
-            # 安全改进：直接更新数据库，不再使用users.dat文件
-            current_user.username = username
-
-            # Set new password if provided
-            if has_password_change:
-                current_user.set_password(new_password)
-
-            # 提交数据库更改
-            db.session.commit()
-
-            # 记录安全事件
-            log_security_event("SETTINGS_UPDATE", f"User {current_user.email} updated settings")
-            
-            if has_password_change:
-                flash('Settings updated successfully. Your password has been changed.', 'success')
-            else:
-                flash('Settings updated successfully.', 'success')
-                
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error updating user settings: {str(e)}")
-            flash(f'An error occurred while saving your settings: {str(e)}', 'error')
-            
+        # 重定向到首页（数据库页面）
         return redirect(url_for('views.index'))
-    
-    return render_template('auth/settings.html', user=current_user)
+
+    except Exception as e:
+        # 发生错误时的兜底处理
+        current_app.logger.error(f"Logout system error: {e}")
+        try:
+            from flask_login import logout_user as flask_logout_user
+            flask_logout_user()
+            session.clear()
+            regenerate_session()
+        except:
+            pass
+        flash('Logout completed.', 'info')
+        return redirect(url_for('views.index'))
+
+# 调试路由：检查用户状态
+@bp.route('/debug/user-status')
+def debug_user_status():
+    """调试用户登录状态和导航栏显示逻辑"""
+    if not current_app.debug:
+        return "Debug mode only", 403
+
+    # 收集系统状态信息（不显示用户个人信息）
+    status = {
+        'is_authenticated': current_user.is_authenticated,
+        'user_role_type': 'admin' if current_user.is_authenticated and current_user.is_admin() else 'user' if current_user.is_authenticated else 'guest',
+        'session_keys_count': len(session.keys()),
+        'remote_addr': request.remote_addr,
+        'user_agent_browser': request.headers.get('User-Agent', 'N/A')[:50] + '...' if len(request.headers.get('User-Agent', '')) > 50 else request.headers.get('User-Agent', 'N/A')
+    }
+
+    # 生成HTML调试页面
+    html = f"""
+    <html>
+    <head><title>用户状态调试</title></head>
+    <body>
+        <h1>🔍 用户状态调试信息</h1>
+        <h2>基本状态</h2>
+        <table border="1" style="border-collapse: collapse;">
+            <tr><th>属性</th><th>值</th></tr>
+            {''.join(f'<tr><td>{k}</td><td>{v}</td></tr>' for k, v in status.items())}
+        </table>
+
+        <h2>导航栏显示逻辑测试</h2>
+        <ul>
+            <li>显示SiliconFlow按钮: {'是' if current_user.is_authenticated else '否'}</li>
+            <li>显示Program按钮: {'是' if current_user.is_authenticated else '否'}</li>
+            <li>显示Add按钮: {'是' if current_user.is_authenticated and current_user.is_admin() else '否'}</li>
+            <li>显示Login按钮: {'是' if not current_user.is_authenticated else '否'}</li>
+            <li>用户类型: {status['user_role_type']}</li>
+        </ul>
+
+        <h2>系统状态信息</h2>
+        <ul>
+            <li>会话键数量: {status['session_keys_count']}</li>
+            <li>用户设置功能: 已禁用（安全考虑）</li>
+        </ul>
+
+        <h3>消息系统状态:</h3>
+        <p>✅ 消息现在在登录/登出时立即显示，不再使用会话标记</p>
+
+        <h2>快速操作</h2>
+        <a href="/logout">登出</a> |
+        <a href="/login">登录</a> |
+        <a href="/database">返回首页</a> |
+        <a href="/debug/clear-session">清理会话</a>
+    </body>
+    </html>
+    """
+
+    return html
+
+# 调试路由：清理会话
+@bp.route('/debug/clear-session')
+def debug_clear_session():
+    """清理所有会话数据（调试用）"""
+    if not current_app.debug:
+        return "Debug mode only", 403
+
+    session.clear()
+    flash('Session cleared successfully.', 'info')
+    return redirect(url_for('views.index'))
+
+# 用户设置功能已删除，为了安全考虑，用户无法在网页上修改个人信息
+# 如需管理用户，请使用 user_management.py 脚本或管理员命令
 
 # 注意：旧的users.dat文件管理函数已被移除
 # 现在所有用户数据都安全地存储在数据库中，使用bcrypt加密
@@ -1311,23 +1314,74 @@ def update_band_gap():
 
 # update_metal_type API端点已移除 - 现在材料类型从band.json文件中读取
 
-@bp.route('/admin/calculate-band-gaps')
+@bp.route('/admin/analyze-bands')
 @login_required
 @admin_required
-def admin_calculate_band_gaps():
-    """管理员批量计算Band Gap功能"""
+def admin_analyze_bands():
+    """管理员批量分析能带数据功能"""
     force_recalculate = request.args.get('force', 'false').lower() == 'true'
 
     try:
-        stats = band_gap_calculator.calculate_all_band_gaps(force_recalculate)
+        # 获取所有材料
+        materials = Material.query.all()
+        material_paths = []
 
-        flash(f'Band Gap calculation completed! '
-              f'Calculated: {stats["calculated"]}, '
-              f'Cached: {stats["cached"]}, '
-              f'Failed: {stats["failed"]}', 'success')
+        for material in materials:
+            if force_recalculate or material.band_gap is None or material.materials_type is None:
+                material_path = f"app/static/materials/{material.formatted_id}/band"
+                material_paths.append((material_path, material))
+
+        # 批量分析
+        analyzed = 0
+        failed = 0
+        cached = len(materials) - len(material_paths)
+
+        for material_path, material in material_paths:
+            try:
+                result = band_analyzer.analyze_material(material_path)
+                if result['band_gap'] is not None:
+                    material.band_gap = result['band_gap']
+                    material.materials_type = result['materials_type']
+                    analyzed += 1
+                else:
+                    failed += 1
+            except Exception as e:
+                current_app.logger.error(f"Failed to analyze {material.formatted_id}: {e}")
+                failed += 1
+
+        db.session.commit()
+
+        flash(f'Band analysis completed! '
+              f'Analyzed: {analyzed}, '
+              f'Cached: {cached}, '
+              f'Failed: {failed}', 'success')
 
     except Exception as e:
-        current_app.logger.error(f"Error in batch band gap calculation: {e}")
-        flash(f'Batch calculation failed: {str(e)}', 'error')
+        current_app.logger.error(f"Error in batch band analysis: {e}")
+        flash(f'Batch analysis failed: {str(e)}', 'error')
 
     return redirect(url_for('views.index'))
+
+@bp.route('/api/band-config')
+def get_band_config():
+    """获取能带分析配置，供前端使用"""
+    try:
+        from .band_analyzer import BandAnalysisConfig
+        config = {
+            'fermiLevel': BandAnalysisConfig.DEFAULT_FERMI_LEVEL,
+            'tolerance': BandAnalysisConfig.FERMI_TOLERANCE,
+            'metalThreshold': BandAnalysisConfig.METAL_THRESHOLD,
+            'semimetalThreshold': BandAnalysisConfig.SEMIMETAL_THRESHOLD,
+            'semiconductorThreshold': BandAnalysisConfig.SEMICONDUCTOR_THRESHOLD,
+            'energyPrecision': BandAnalysisConfig.ENERGY_PRECISION
+        }
+        return jsonify({
+            'success': True,
+            'config': config
+        })
+    except Exception as e:
+        current_app.logger.error(f"Failed to get band config: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

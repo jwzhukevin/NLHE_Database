@@ -38,6 +38,38 @@ setTimeout(function() {
 <!-- 自定义晶体查看器脚本：实现晶体结构的交互式展示 -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/crystal-viewer.js') }}"></script>
 
+<!-- 加载能带分析配置 -->
+<script>
+// 加载统一的能带分析配置
+fetch('/api/band-config')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.bandConfig = data.config;
+            console.log('✅ 能带分析配置已加载:', window.bandConfig);
+        } else {
+            console.warn('⚠️ 能带分析配置加载失败，使用默认值');
+            window.bandConfig = {
+                fermiLevel: 0,
+                tolerance: 0.1,
+                metalThreshold: 0.0,
+                semimetalThreshold: 0.1,
+                semiconductorThreshold: 3.0
+            };
+        }
+    })
+    .catch(error => {
+        console.warn('⚠️ 能带分析配置加载失败，使用默认值:', error);
+        window.bandConfig = {
+            fermiLevel: 0,
+            tolerance: 0.1,
+            metalThreshold: 0.0,
+            semimetalThreshold: 0.1,
+            semiconductorThreshold: 3.0
+        };
+    });
+</script>
+
 <!-- 能带结构脚本：用于绘制和交互式显示材料的电子能带结构 -->
 <script type="text/javascript" src="{{ url_for('static', filename='js/band-plot.js') }}"></script>
 
@@ -540,6 +572,22 @@ setTimeout(function() {
     /* 窄列样式 - 用于辅助内容展示（占40%宽度） */
     .column-40 {
         flex: 4; /* 在弹性分配中占4份，实际效果约为40%宽度 */
+        display: flex; /* 使用弹性布局 */
+        flex-direction: column; /* 垂直排列子元素 */
+        height: 100%; /* 确保列高度一致 */
+    }
+
+    /* SC部分专用：70%宽度列 */
+    .column-70 {
+        flex: 7; /* 在弹性分配中占7份，实际效果约为70%宽度 */
+        display: flex; /* 使用弹性布局 */
+        flex-direction: column; /* 垂直排列子元素 */
+        height: 100%; /* 确保列高度一致 */
+    }
+
+    /* SC部分专用：30%宽度列 */
+    .column-30 {
+        flex: 3; /* 在弹性分配中占3份，实际效果约为30%宽度 */
         display: flex; /* 使用弹性布局 */
         flex-direction: column; /* 垂直排列子元素 */
         height: 100%; /* 确保列高度一致 */
@@ -1770,15 +1818,19 @@ setTimeout(function() {
                                     {% if material.band_gap is not none %}
                                         {{ "%.4f"|format(material.band_gap) }} eV
                                     {% else %}
-                                        Calculating...
+                                        Analyzing...
                                     {% endif %}
                                 </span>
                             </li>
-                            <li id="vbm-energy"><span class="property-label">VBM Energy:</span> <span class="property-value">Loading...</span></li>
-                            <li id="cbm-energy"><span class="property-label">CBM Energy:</span> <span class="property-value">Loading...</span></li>
-                            <li id="vbm-coordinates"><span class="property-label">VBM Coordinates:</span> <span class="property-value">Loading...</span></li>
-                            <li id="cbm-coordinates"><span class="property-label">CBM Coordinates:</span> <span class="property-value">Loading...</span></li>
-                            <li id="material-type"><span class="property-label">Materials Type:</span> <span class="property-value">{{ material.metal_type if material.metal_type else 'Loading...' }}</span></li>
+                            <li id="material-type"><span class="property-label">Materials Type:</span>
+                                <span class="property-value">
+                                    {% if material.materials_type %}
+                                        {{ material.materials_type|title }}
+                                    {% else %}
+                                        Analyzing...
+                                    {% endif %}
+                                </span>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -1788,9 +1840,9 @@ setTimeout(function() {
     
     <!-- ====================== SC部分：SC结构图 ====================== -->
     <div id="sc-section" class="content-section">
-        <div class="three-column-layout">
-            <!-- 左侧：SC图 (60%) -->
-            <div class="column-60">
+        <div class="two-column-layout">
+            <!-- 左侧：SC图 (70%) -->
+            <div class="column-70">
                 <div class="viewer-container">
                     <div class="card-header collapsed">
                         <h3>Shift Current
@@ -1808,16 +1860,63 @@ setTimeout(function() {
                 </div>
             </div>
 
-            <!-- 中间：Element Relations (20%) -->
-            <div class="column-20">
-                <div class="detail-card" id="sc-properties">
+            <!-- 右侧：Element Relations & Shift Current Properties (30%) -->
+            <div class="column-30">
+                <div class="detail-card" id="sc-properties-combined">
                     <div class="card-header collapsed">
-                        <h3>Element Relations</h3>
+                        <div class="tab-header">
+                            <button class="tab-button active" data-tab="element-relations">Element Relations</button>
+                            <button class="tab-button" data-tab="shift-current">Shift Current Properties</button>
+                        </div>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
-                    <div class="card-content collapsed" id="element-relations-content">
+                    <div class="card-content collapsed">
+                        <!-- Element Relations Tab Content -->
+                        <div class="tab-content active" id="element-relations-content">
                         <!-- 元素关系表格在此显示 -->
                         <style>
+                            /* 标签页样式 */
+                            .tab-header {
+                                display: flex;
+                                border-bottom: 2px solid #e5e7eb;
+                                margin-bottom: 15px;
+                                gap: 0;
+                            }
+                            .tab-button {
+                                flex: 1;
+                                padding: 12px 16px;
+                                background: #f8fafc;
+                                border: none;
+                                border-bottom: 3px solid transparent;
+                                cursor: pointer;
+                                font-size: 16px;
+                                font-weight: 500;
+                                color: #64748b;
+                                transition: all 0.3s ease;
+                                border-radius: 6px 6px 0 0;
+                                margin-bottom: -2px;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            .tab-button:hover {
+                                background: #f1f5f9;
+                                color: #475569;
+                            }
+                            .tab-button.active {
+                                background: #ffffff;
+                                color: #1e293b;
+                                border-bottom-color: #3b82f6;
+                                font-weight: 600;
+                            }
+                            .tab-content {
+                                display: none;
+                            }
+                            .tab-content.active {
+                                display: block;
+                            }
+
+                            /* Element Relations 表格样式 */
                             .relations-table {
                                 font-size: 14px;
                             }
@@ -1902,46 +2001,39 @@ setTimeout(function() {
                             </ul>
                         </div>
                         
-                        <div id="relations-table-container">
-                            <div class="loading-message">
-                                Loading element relations...
+                            <div id="relations-table-container">
+                                <div class="loading-message">
+                                    Loading element relations...
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- 右侧：Shift Current Properties (20%) -->
-            <div class="column-20">
-                <div class="detail-card" id="shift-current-properties">
-                    <div class="card-header collapsed">
-                        <h3>Shift Current Properties</h3>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div class="card-content collapsed">
-                        <ul>
-                            <li><span class="property-label">Max SC:</span>
-                                <span class="property-value">
-                                    {% if material.max_sc is not none %}
-                                        {{ "%.4f"|format(material.max_sc) }} μA/V²
-                                    {% else %}
-                                        Unknown
-                                    {% endif %}
-                                </span>
-                            </li>
-                            <li><span class="property-label">Max Photon Energy:</span>
-                                <span class="property-value">
-                                    {% if material.max_photon_energy is not none %}
-                                        {{ "%.4f"|format(material.max_photon_energy) }} eV
-                                    {% else %}
-                                        Unknown
-                                    {% endif %}
-                                </span>
-                            </li>
-                            <li><span class="property-label">Max Tensor Type:</span>
-                                <span class="property-value">{{ material.max_tensor_type if material.max_tensor_type else 'Unknown' }}</span>
-                            </li>
-                        </ul>
+                        <!-- Shift Current Properties Tab Content -->
+                        <div class="tab-content" id="shift-current-content">
+                            <ul>
+                                <li><span class="property-label">Max SC:</span>
+                                    <span class="property-value">
+                                        {% if material.max_sc is not none %}
+                                            {{ "%.4f"|format(material.max_sc) }} μA/V²
+                                        {% else %}
+                                            Unknown
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                <li><span class="property-label">Max Photon Energy:</span>
+                                    <span class="property-value">
+                                        {% if material.max_photon_energy is not none %}
+                                            {{ "%.4f"|format(material.max_photon_energy) }} eV
+                                        {% else %}
+                                            Unknown
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                <li><span class="property-label">Max Tensor Type:</span>
+                                    <span class="property-value">{{ material.max_tensor_type if material.max_tensor_type else 'Unknown' }}</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1962,8 +2054,6 @@ setTimeout(function() {
                         <ul>
                             <li><span class="property-label">ID:</span> <span class="property-value">{{ material.formatted_id }}</span></li>
                             <li><span class="property-label">Status:</span> <span class="property-value">{{ material.status or 'Not available yet' }}</span></li>
-                            <li><span class="property-label">Total Energy:</span> <span class="property-value">{{ material.total_energy ~ ' eV' if material.total_energy is not none else 'Not available yet' }}</span></li>
-                            <li><span class="property-label">Formation Energy:</span> <span class="property-value">{{ material.formation_energy ~ ' eV' if material.formation_energy is not none else 'Not available yet' }}</span></li>
                             <li><span class="property-label">Fermi Level:</span> <span class="property-value">{{ material.fermi_level ~ ' eV' if material.fermi_level is not none else 'Not available yet' }}</span></li>
                         </ul>
                     </div>
@@ -1992,6 +2082,35 @@ setTimeout(function() {
 <!-- JavaScript区域 -->
 <!-- 引入材料详情页面的JavaScript文件 -->
 <script src="{{ url_for('static', filename='js/material-detail.js') }}"></script>
+
+<!-- 标签页切换功能 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 标签页切换功能
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+
+            // 移除所有活动状态
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // 激活当前标签页
+            this.classList.add('active');
+
+            // 显示对应内容
+            if (targetTab === 'element-relations') {
+                document.getElementById('element-relations-content').classList.add('active');
+            } else if (targetTab === 'shift-current') {
+                document.getElementById('shift-current-content').classList.add('active');
+            }
+        });
+    });
+});
+</script>
 
 <!-- 使用JSON script标签安全地传递材料数据到前端 -->
 <!-- 这种方法避免了在JavaScript代码中使用Jinja2语法，IDE不会报错 -->

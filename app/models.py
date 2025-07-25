@@ -26,6 +26,10 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))     # 存储加密后的密码哈希值（不直接存储明文密码）
     role = db.Column(db.String(10), default='user')  # 用户角色：admin, user, guest
 
+    # 登录记录字段
+    last_login_ip = db.Column(db.String(45))  # 最后登录IP地址（支持IPv6）
+    last_login_time = db.Column(db.DateTime)  # 最后登录时间
+
     # 密码加密方法
     def set_password(self, password):
         """
@@ -117,7 +121,8 @@ class Material(db.Model):
     max_tensor_type = db.Column(db.String(10))  # 最大张量类型（如yyy、xxx等）
 
     # 电子性质参数
-    band_gap = db.Column(db.Float)  # 带隙（eV，从band_data或计算得出）
+    band_gap = db.Column(db.Float)  # 带隙（eV，从能带分析计算得出）
+    materials_type = db.Column(db.String(20))  # 材料类型（metal/semimetal/semiconductor/insulator/unknown）
 
     # 数据验证方法
     def validate(self):
