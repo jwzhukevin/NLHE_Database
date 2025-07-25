@@ -22,10 +22,15 @@ except ImportError:
 
 try:
     from flask_limiter import Limiter  # 速率限制
-    from flask_limiter.util import get_remote_address
+    from flask_limiter.util import get_remote_address  # 获取客户端IP地址的工具函数
     limiter_available = True
 except ImportError:
+    # 如果 Flask-Limiter 未安装，定义一个默认的地址获取函数
     limiter_available = False
+    def get_remote_address():
+        """备用的IP地址获取函数，当Flask-Limiter不可用时使用"""
+        from flask import request
+        return request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
 
 # 初始化全局扩展对象（此时未绑定应用实例）
 # 使用延迟绑定模式，支持应用工厂模式
@@ -113,7 +118,7 @@ def create_app():
         try:
             limiter = Limiter(
                 key_func=get_remote_address,
-                default_limits=["200 per day", "50 per hour"],
+                default_limits=["50 per minute", "250 per 5 minutes"],
                 storage_uri=app.config['RATELIMIT_STORAGE_URL']
             )
             limiter.init_app(app)
@@ -123,7 +128,7 @@ def create_app():
             app.logger.warning(f"Valkey connection failed, falling back to memory storage: {e}")
             limiter = Limiter(
                 key_func=get_remote_address,
-                default_limits=["200 per day", "50 per hour"]
+                default_limits=["50 per minute", "250 per 5 minutes"]
             )
             limiter.init_app(app)
             app.logger.info("Rate limiting enabled with memory storage (Valkey fallback)")
