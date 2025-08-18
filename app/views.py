@@ -930,6 +930,12 @@ def generate_captcha_image(text, width=140, height=50, scale_factor=2):
     # 使用FontManager获取最佳字体
     font = FontManager.get_captcha_font(font_size)
     
+    # 检查是否需要使用嵌入式字体
+    if hasattr(font, '_use_embedded') and font._use_embedded:
+        from .embedded_font import EmbeddedFont
+        current_app.logger.info("使用嵌入式字体生成验证码")
+        return EmbeddedFont.generate_embedded_captcha(text, width, height)
+    
     # 记录字体加载状态
     current_app.logger.info(f"验证码字体大小: {font_size}, 缩放因子: {scale_factor}")
 

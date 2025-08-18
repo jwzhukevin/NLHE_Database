@@ -14,10 +14,15 @@ import time
 class FontManager:
     """字体管理器"""
     
+    # 字体缓存
+    _font_cache = {}
+    _download_attempted = False
+    _download_failed = False
+    
     @staticmethod
     def get_fonts_dir():
         """获取字体目录路径"""
-        return os.path.join(current_app.root_path, 'app', 'static', 'fonts')
+        return os.path.join(current_app.root_path, 'static', 'fonts')
     
     @staticmethod
     def ensure_fonts_dir():
@@ -48,7 +53,7 @@ class FontManager:
             'https://fonts.gstatic.com/s/liberationsans/v15/LiberationSans-Bold.ttf'
         ]
         
-        # 尝试从多个源下载字体
+        # 尝试从多个源下载字体（快速失败模式）
         for i, font_url in enumerate(font_urls):
             try:
                 current_app.logger.info(f"正在从源 {i+1}/{len(font_urls)} 下载字体文件...")
@@ -62,7 +67,8 @@ class FontManager:
                     }
                 )
                 
-                with urllib.request.urlopen(request, timeout=30) as response:
+                # 缩短超时时间，避免阻塞
+                with urllib.request.urlopen(request, timeout=5) as response:
                     with open(font_path, 'wb') as f:
                         f.write(response.read())
                 
@@ -70,6 +76,7 @@ class FontManager:
                 file_size = os.path.getsize(font_path)
                 if file_size > 50000:  # 至少50KB
                     current_app.logger.info(f"✅ 字体文件下载成功: {font_path} ({file_size:,} bytes)")
+                    FontManager._download_attempted = True
                     return font_path
                 else:
                     current_app.logger.warning(f"下载的文件过小: {file_size} bytes，尝试下一个源")
@@ -82,95 +89,118 @@ class FontManager:
                 continue
         
         current_app.logger.error(f"❌ 所有字体下载源都失败")
+        FontManager._download_attempted = True
+        FontManager._download_failed = True
         return None
     
     @staticmethod
     def get_captcha_font(font_size=28):
         """
-        获取验证码字体
+        获取验证码字体（优化版本，避免请求阻塞）
         
         参数:
             font_size: 字体大小
             
         返回:
-            PIL ImageFont 对象
+            PIL.ImageFont对象
         """
-        fonts_dir = FontManager.get_fonts_dir()
+        start_time = time.time()
         
-        # 字体候选列表 - 按优先级排序
-        font_candidates = [
-            # 1. 项目内置字体（最高优先级）
-            os.path.join(fonts_dir, 'DejaVuSans-Bold.ttf'),
-            os.path.join(fonts_dir, 'DejaVuSans.ttf'),
-            os.path.join(fonts_dir, 'arial.ttf'),
-            
-            # 2. 系统字体路径
-            "arial.ttf",                    # Windows
-            "Arial.ttf",                    # macOS
-            "DejaVuSans-Bold.ttf",         # Linux
-            "calibri.ttf",                  # Windows备选
-            "Helvetica.ttc",               # macOS备选
-            "/System/Library/Fonts/Arial.ttf",  # macOS系统路径
-            "C:/Windows/Fonts/arial.ttf",  # Windows系统路径
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Ubuntu/Debian
-            "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",  # Arch Linux
-        ]
+        # 检查字体缓存
+        cache_key = f"font_{font_size}"
+        if cache_key in FontManager._font_cache:
+            current_app.logger.info(f"✅ 使用缓存字体: {cache_key}")
+            return FontManager._font_cache[cache_key]
+        
+        # 记录字体加载开始
+        CaptchaLogger.log_font_loading("开始加载", font_size, success=None)
         
         font = None
         loaded_font_path = None
-        
-        # 尝试加载字体
         attempted_fonts = []
-        for font_path in font_candidates:
-            if not font_path:  # 跳过空路径
-                continue
-                
-            attempted_fonts.append(font_path)
+        
+        # 预设字体路径列表（按优先级排序）
+        font_paths = [
+            # 项目字体目录
+            os.path.join(FontManager.get_fonts_dir(), 'DejaVuSans-Bold.ttf'),
+            os.path.join(FontManager.get_fonts_dir(), 'DejaVuSans.ttf'),
+            os.path.join(FontManager.get_fonts_dir(), 'arial.ttf'),
+            
+            # 相对路径字体
+            'arial.ttf',
+            'Arial.ttf', 
+            'DejaVuSans-Bold.ttf',
+            'calibri.ttf',
+            'Helvetica.ttc',
+            
+            # 系统字体路径
+            '/System/Library/Fonts/Arial.ttf',  # macOS
+            'C:/Windows/Fonts/arial.ttf',       # Windows
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',  # Ubuntu/Debian
+            '/usr/share/fonts/TTF/DejaVuSans-Bold.ttf',  # Arch Linux
+        ]
+        
+        # 尝试加载预设字体
+        for font_path in font_paths:
             try:
+                attempted_fonts.append(font_path)
                 font = ImageFont.truetype(font_path, font_size)
                 loaded_font_path = font_path
-                CaptchaLogger.log_font_loading(font_path, font_size, success=True)
-                current_app.logger.info(f"✅ 成功加载字体: {font_path} (大小: {font_size})")
+                current_app.logger.info(f"✅ 成功加载字体: {font_path}")
                 break
-            except (OSError, IOError) as e:
+            except Exception as e:
                 CaptchaLogger.log_font_loading(font_path, font_size, success=False, error=str(e))
-                current_app.logger.debug(f"字体加载失败: {font_path} - {e}")
                 continue
         
-        # 如果所有字体都加载失败，尝试下载默认字体
-        if font is None:
-            current_app.logger.warning("所有预设字体加载失败，尝试下载默认字体...")
-            default_font_path = FontManager.download_default_font()
-            
-            if default_font_path:
-                try:
+        # 如果所有预设字体都失败，且未尝试过下载，则快速尝试下载
+        if font is None and not FontManager._download_attempted:
+            current_app.logger.warning("所有预设字体加载失败，快速尝试下载默认字体...")
+            try:
+                # 设置较短的超时时间，避免阻塞
+                default_font_path = FontManager.download_default_font()
+                if default_font_path:
                     font = ImageFont.truetype(default_font_path, font_size)
                     loaded_font_path = default_font_path
                     current_app.logger.info(f"✅ 成功加载下载的字体: {default_font_path}")
-                except Exception as e:
-                    current_app.logger.error(f"下载的字体也无法加载: {e}")
+            except Exception as e:
+                current_app.logger.error(f"快速下载字体失败: {e}")
+                FontManager._download_failed = True
         
-        # 最后的备选方案：使用默认字体但记录警告
+        # 最后的备选方案：使用默认字体或嵌入式字体
         if font is None:
-            current_app.logger.error("❌ 所有字体加载失败，使用系统默认字体（可能很小）")
-            font = ImageFont.load_default()
-            loaded_font_path = "系统默认字体"
-            CaptchaLogger.log_font_fallback(attempted_fonts, loaded_font_path)
+            current_app.logger.error("❌ 所有字体加载失败，使用备选方案")
             
-            # 检查默认字体是否过小
-            try:
-                test_image = Image.new('RGB', (100, 50), color=(255, 255, 255))
-                test_draw = ImageDraw.Draw(test_image)
-                bbox = test_draw.textbbox((0, 0), "TEST", font=font)
-                text_height = bbox[3] - bbox[1]
+            # 如果下载失败，直接使用嵌入式字体避免阻塞
+            if FontManager._download_failed:
+                current_app.logger.warning("⚡ 使用嵌入式字体避免请求阻塞")
+                font = ImageFont.load_default()
+                font._use_embedded = True
+                loaded_font_path = "嵌入式字体"
+            else:
+                font = ImageFont.load_default()
+                loaded_font_path = "系统默认字体"
                 
-                if text_height < 15:  # 如果字体高度小于15像素，标记为需要嵌入式字体
-                    current_app.logger.warning(f"默认字体过小 (高度: {text_height}px)，建议使用嵌入式字体")
-                    font._is_too_small = True
+                # 检查默认字体是否过小
+                try:
+                    from PIL import Image, ImageDraw
+                    test_image = Image.new('RGB', (100, 50), color=(255, 255, 255))
+                    test_draw = ImageDraw.Draw(test_image)
+                    bbox = test_draw.textbbox((0, 0), "TEST", font=font)
+                    text_height = bbox[3] - bbox[1]
                     
-            except Exception:
-                # 如果测试失败，也标记为需要嵌入式字体
-                font._is_too_small = True
+                    if text_height < 15:  # 如果字体高度小于15像素，标记为需要嵌入式字体
+                        current_app.logger.warning(f"默认字体过小 (高度: {text_height}px)，使用嵌入式字体")
+                        font._use_embedded = True
+                        
+                except Exception:
+                    # 如果测试失败，也标记为需要嵌入式字体
+                    font._use_embedded = True
+            
+            CaptchaLogger.log_font_fallback(attempted_fonts, loaded_font_path)
+        
+        # 缓存字体对象，避免重复加载
+        if font:
+            FontManager._font_cache[cache_key] = font
         
         # 记录最终使用的字体
         current_app.logger.info(f"验证码使用字体: {loaded_font_path}")
