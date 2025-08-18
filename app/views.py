@@ -14,11 +14,14 @@ from .material_importer import extract_chemical_formula_from_cif  # Material dat
 from .chemical_parser import chemical_parser  # 智能化学式解析器
 from .search_optimizer import search_cache, QueryOptimizer, performance_monitor, cached_search  # 搜索性能优化
 from .band_analyzer import band_analyzer  # 合并后的能带分析器
+from .font_manager import FontManager  # 字体管理器
+from .captcha_logger import CaptchaLogger  # 验证码日志记录器
 import os
 import re
 from werkzeug.utils import secure_filename
 from PIL import Image, ImageDraw, ImageFont
 import random, string, io
+import time
 from .security_utils import log_security_event, sanitize_input, regenerate_session, check_rate_limit
 from .auth_manager import LoginStateManager, LoginErrorHandler
 
@@ -920,32 +923,15 @@ def generate_captcha_image(text, width=140, height=50, scale_factor=2):
         b = int(THEME_COLORS['light_bg'][2] + (THEME_COLORS['nav_bg'][2] - THEME_COLORS['light_bg'][2]) * ratio * 0.3)
         draw.line([(0, y), (render_width, y)], fill=(r, g, b))
 
-    # 智能字体加载 - 根据缩放因子调整字体大小
-    base_font_size = 28
+    # 使用字体管理器加载字体 - 根据缩放因子调整字体大小
+    base_font_size = 32  # 增大基础字体大小
     font_size = int(base_font_size * scale_factor)
-
-    # 按优先级尝试加载字体，确保跨平台兼容性
-    font_candidates = [
-        "arial.ttf",                    # Windows
-        "Arial.ttf",                    # macOS
-        "DejaVuSans-Bold.ttf",         # Linux
-        "calibri.ttf",                  # Windows备选
-        "Helvetica.ttc",               # macOS备选
-        "/System/Library/Fonts/Arial.ttf",  # macOS系统路径
-        "C:/Windows/Fonts/arial.ttf",  # Windows系统路径
-    ]
-
-    font = None
-    for font_name in font_candidates:
-        try:
-            font = ImageFont.truetype(font_name, font_size)
-            break
-        except (OSError, IOError):
-            continue
-
-    # 如果所有字体都加载失败，使用默认字体
-    if font is None:
-        font = ImageFont.load_default()
+    
+    # 使用FontManager获取最佳字体
+    font = FontManager.get_captcha_font(font_size)
+    
+    # 记录字体加载状态
+    current_app.logger.info(f"验证码字体大小: {font_size}, 缩放因子: {scale_factor}")
 
     # 添加精致的背景装饰点（适应高分辨率）
     dot_count = int(30 * scale_factor)
@@ -1032,6 +1018,7 @@ def captcha():
     返回:
         PNG格式的验证码图片，带有适当的缓存控制头
     """
+    start_time = time.time()
     try:
         # 生成5位随机验证码（大写字母和数字，排除容易混淆的字符）
         # 排除 0, O, 1, I, l 等容易混淆的字符
@@ -1044,6 +1031,16 @@ def captcha():
 
         # 生成验证码图片 - 使用2倍缩放提高清晰度
         img_buffer = generate_captcha_image(captcha_text, scale_factor=2)
+        
+        generation_time = time.time() - start_time
+        
+        # 记录验证码生成成功
+        CaptchaLogger.log_captcha_generation(
+            text_length=len(captcha_text),
+            image_size='140x50',
+            generation_time=generation_time,
+            success=True
+        )
 
         # 创建响应并设置缓存控制头
         response = send_file(
@@ -1061,6 +1058,15 @@ def captcha():
         return response
 
     except Exception as e:
+        # 记录验证码生成失败
+        CaptchaLogger.log_captcha_generation(
+            text_length=5,
+            image_size='140x50',
+            generation_time=time.time() - start_time,
+            success=False,
+            error=str(e)
+        )
+        
         # 如果生成验证码失败，返回一个简单的错误图片
         current_app.logger.error(f"Error generating captcha: {str(e)}")
 
