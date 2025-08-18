@@ -6,6 +6,7 @@
 # 导入系统模块（处理路径和操作系统检测）
 import os  # 用于操作系统路径处理（如拼接数据库路径）
 import sys  # 用于检测操作系统平台（Windows/Linux）
+import threading  # 用于后台非阻塞预热字体
 
 # 导入 Flask 核心模块和扩展库
 from flask import Flask  # Flask 应用核心类
@@ -80,6 +81,18 @@ def create_app():
 
     # 向后兼容Redis配置
     app.config['REDIS_URL'] = app.config['VALKEY_URL']
+
+    # --- 字体与验证码相关默认配置（可在环境或实例配置中覆盖） ---
+    app.config.setdefault('FONT_DIR', os.path.join(app.root_path, 'static', 'fonts'))
+    app.config.setdefault('ENABLE_FONT_DOWNLOAD', True)
+    app.config.setdefault('FONT_PRELOAD_SIZES', [28, 32, 36])
+    app.config.setdefault('FONT_DOWNLOAD_TIMEOUT', 5)
+    app.config.setdefault('FONT_CACHE_MAX_ITEMS', 32)
+    app.config.setdefault('CAPTCHA_FONT_SOURCES', [
+        'https://github.com/dejavu-fonts/dejavu-fonts/raw/main/ttf/DejaVuSans-Bold.ttf',
+        'https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans-Bold.ttf',
+        'https://fonts.gstatic.com/s/liberationsans/v15/LiberationSans-Bold.ttf'
+    ])
 
     # 安全配置
     from .security_config import SecurityConfig
@@ -177,6 +190,38 @@ def create_app():
         """为所有响应添加安全头部"""
         from .security_utils import add_security_headers
         return add_security_headers(response)
+
+    # --- 非阻塞字体预热（首次请求后启动，避免阻塞应用启动与preload_app阶段） ---
+    @app.before_first_request
+    def preload_captcha_fonts_async():
+        try:
+            sizes = app.config.get('FONT_PRELOAD_SIZES') or []
+            if not sizes:
+                return
+
+            def _worker():
+                try:
+                    from .font_manager import FontManager
+                    # 确保字体目录存在
+                    try:
+                        FontManager.ensure_fonts_dir()
+                    except Exception as e:
+                        app.logger.warning(f"创建字体目录失败: {e}")
+                    # 逐个尺寸预热，不抛出异常
+                    for s in sizes:
+                        try:
+                            FontManager.get_captcha_font(s)
+                        except Exception as e:
+                            app.logger.warning(f"字体预热失败 size={s}: {e}")
+                    app.logger.info(f"字体预热完成: {sizes}")
+                except Exception as e:
+                    app.logger.warning(f"字体预热线程内部错误: {e}")
+
+            t = threading.Thread(target=_worker, name='captcha-font-preload', daemon=True)
+            t.start()
+            app.logger.info(f"已启动字体预热线程（非阻塞）: {sizes}")
+        except Exception as e:
+            app.logger.warning(f"启动字体预热线程失败: {e}")
 
     # --- 模板上下文处理器 ---
     # 向所有模板注入全局变量，避免在每个视图函数中重复传递

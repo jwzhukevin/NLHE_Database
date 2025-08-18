@@ -22,6 +22,9 @@ class FontManager:
     @staticmethod
     def get_fonts_dir():
         """获取字体目录路径"""
+        cfg_dir = current_app.config.get('FONT_DIR')
+        if cfg_dir:
+            return cfg_dir
         return os.path.join(current_app.root_path, 'static', 'fonts')
     
     @staticmethod
@@ -41,17 +44,18 @@ class FontManager:
             current_app.logger.info(f"字体文件已存在: {font_path}")
             return font_path
         
-        # 尝试多个可靠的字体下载源
-        font_urls = [
-            # GitHub官方仓库（主分支）
+        # 读取配置的下载源与开关
+        if not current_app.config.get('ENABLE_FONT_DOWNLOAD', True):
+            current_app.logger.info("字体下载被禁用，跳过下载步骤")
+            return None
+
+        # 尝试多个可靠的字体下载源（从配置读取）
+        font_urls = current_app.config.get('CAPTCHA_FONT_SOURCES') or [
             'https://github.com/dejavu-fonts/dejavu-fonts/raw/main/ttf/DejaVuSans-Bold.ttf',
-            # 备用GitHub链接
             'https://github.com/dejavu-fonts/dejavu-fonts/raw/master/ttf/DejaVuSans-Bold.ttf',
-            # SourceForge镜像
-            'https://sourceforge.net/projects/dejavu/files/dejavu/2.37/dejavu-fonts-ttf-2.37.tar.bz2/download',
-            # Google Fonts API（Liberation Sans作为备选）
             'https://fonts.gstatic.com/s/liberationsans/v15/LiberationSans-Bold.ttf'
         ]
+        timeout = int(current_app.config.get('FONT_DOWNLOAD_TIMEOUT', 5))
         
         # 尝试从多个源下载字体（快速失败模式）
         for i, font_url in enumerate(font_urls):
@@ -67,8 +71,8 @@ class FontManager:
                     }
                 )
                 
-                # 缩短超时时间，避免阻塞
-                with urllib.request.urlopen(request, timeout=5) as response:
+                # 使用配置的超时时间，避免阻塞
+                with urllib.request.urlopen(request, timeout=timeout) as response:
                     with open(font_path, 'wb') as f:
                         f.write(response.read())
                 
@@ -198,8 +202,16 @@ class FontManager:
             
             CaptchaLogger.log_font_fallback(attempted_fonts, loaded_font_path)
         
-        # 缓存字体对象，避免重复加载
+        # 缓存字体对象，避免重复加载（遵循简单容量限制）
         if font:
+            max_items = int(current_app.config.get('FONT_CACHE_MAX_ITEMS', 32))
+            if len(FontManager._font_cache) >= max_items:
+                try:
+                    # 简单策略：清空缓存以释放内存（避免引入复杂LRU依赖）
+                    FontManager._font_cache.clear()
+                    current_app.logger.info(f"字体缓存已达上限，执行清空：max_items={max_items}")
+                except Exception:
+                    pass
             FontManager._font_cache[cache_key] = font
         
         # 记录最终使用的字体
