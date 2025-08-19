@@ -4,6 +4,7 @@
 专门用于监控验证码生成和字体加载状态
 """
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 from datetime import datetime
 from flask import current_app
@@ -25,9 +26,16 @@ class CaptchaLogger:
         log_dir = os.path.join(current_app.root_path, '..', 'logs')
         os.makedirs(log_dir, exist_ok=True)
         
-        # 创建文件处理器
+        # 创建轮转文件处理器（按大小）
         log_file = os.path.join(log_dir, 'captcha.log')
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        file_handler = RotatingFileHandler(
+            filename=log_file,
+            mode='a',
+            maxBytes=5 * 1024 * 1024,  # 5MB
+            backupCount=5,
+            encoding='utf-8',
+            delay=True
+        )
         file_handler.setLevel(logging.INFO)
         
         # 创建控制台处理器
@@ -36,7 +44,7 @@ class CaptchaLogger:
         
         # 创建格式化器
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            '%(asctime)s %(levelname)s pid=%(process)d %(name)s - %(message)s'
         )
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)

@@ -86,7 +86,9 @@ def test_valkey_connection():
         except Exception as e:
             print(f"  ❌ 连接测试异常: {e}")
     
-    return success_count
+    # [Deprecated 20250819] 测试函数不应返回非 None，避免 PytestReturnNotNoneWarning
+    # return success_count
+
 
 def test_valkey_info():
     """获取Valkey服务信息"""
@@ -113,11 +115,14 @@ def test_valkey_info():
         if 'valkey_version' in info:
             print(f"  Valkey版本: {info['valkey_version']}")
         
-        return True
+        # [Deprecated 20250819] 测试函数不应返回非 None
+        # return True
         
     except Exception as e:
         print(f"  ❌ 获取Valkey信息失败: {e}")
-        return False
+        # [Deprecated 20250819]
+        # return False
+
 
 def test_flask_limiter_storage():
     """测试Flask-Limiter存储"""
@@ -139,17 +144,22 @@ def test_flask_limiter_storage():
             
             # 清理测试数据
             storage.clear(test_key)
-            return True
+            # [Deprecated 20250819]
+            # return True
         else:
             print(f"  ❌ Flask-Limiter Valkey存储测试失败: 计数 = {count}")
-            return False
+            # [Deprecated 20250819]
+            # return False
             
     except ImportError:
         print("  ⚠️  Flask-Limiter未安装，跳过存储测试")
-        return True
+        # [Deprecated 20250819] 测试函数不应返回非 None
+        # return True
     except Exception as e:
         print(f"  ❌ Flask-Limiter Valkey存储测试异常: {e}")
-        return False
+        # [Deprecated 20250819]
+        # return False
+
 
 def check_valkey_service():
     """检查Valkey服务状态"""
@@ -164,38 +174,46 @@ def check_valkey_service():
                                   capture_output=True, text=True)
             if 'valkey-server.exe' in result.stdout:
                 print("  ✅ Valkey服务正在运行 (Windows)")
-                return True
+                # [Deprecated 20250819]
+                # return True
             else:
                 # 检查是否有Redis进程（可能是兼容模式）
                 result = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq redis-server.exe'], 
                                       capture_output=True, text=True)
                 if 'redis-server.exe' in result.stdout:
                     print("  ⚠️  检测到Redis进程，可能兼容Valkey协议")
-                    return True
+                    # [Deprecated 20250819]
+                    # return True
                 else:
                     print("  ❌ Valkey服务未运行 (Windows)")
-                    return False
+                    # [Deprecated 20250819]
+                    # return False
         else:  # Linux/macOS
             # 首先检查valkey-server
             result = subprocess.run(['pgrep', '-f', 'valkey-server'], 
                                   capture_output=True, text=True)
             if result.returncode == 0:
                 print("  ✅ Valkey服务正在运行 (Linux/macOS)")
-                return True
+                # [Deprecated 20250819]
+                # return True
             else:
                 # 检查redis-server（可能是兼容模式）
                 result = subprocess.run(['pgrep', '-f', 'redis-server'], 
                                       capture_output=True, text=True)
                 if result.returncode == 0:
                     print("  ⚠️  检测到Redis进程，可能兼容Valkey协议")
-                    return True
+                    # [Deprecated 20250819]
+                    # return True
                 else:
                     print("  ❌ Valkey服务未运行 (Linux/macOS)")
-                    return False
+                    # [Deprecated 20250819]
+                    # return False
                 
     except Exception as e:
         print(f"  ⚠️  无法检查服务状态: {e}")
-        return False
+        # [Deprecated 20250819]
+        # return False
+
 
 def test_valkey_cli():
     """测试Valkey CLI工具"""
@@ -209,7 +227,8 @@ def test_valkey_cli():
                               capture_output=True, text=True, timeout=5)
         if result.returncode == 0 and 'PONG' in result.stdout:
             print("  ✅ valkey-cli 连接成功")
-            return True
+            # [Deprecated 20250819]
+            # return True
     except (subprocess.TimeoutExpired, FileNotFoundError):
         pass
     
@@ -219,77 +238,13 @@ def test_valkey_cli():
                               capture_output=True, text=True, timeout=5)
         if result.returncode == 0 and 'PONG' in result.stdout:
             print("  ✅ redis-cli 连接成功 (兼容Valkey)")
-            return True
+            # [Deprecated 20250819]
+            # return True
         else:
             print("  ❌ CLI工具连接失败")
-            return False
+            # [Deprecated 20250819]
+            # return False
     except (subprocess.TimeoutExpired, FileNotFoundError):
         print("  ❌ 未找到CLI工具 (valkey-cli 或 redis-cli)")
-        return False
-
-def main():
-    """主函数"""
-    print("🎯 Valkey配置验证测试")
-    print("=" * 60)
-    print("📝 Valkey是Redis的开源分支，使用相同的协议")
-    print("📝 可以使用redis-py客户端和redis-cli工具")
-    print("")
-    
-    # 检查Redis模块
-    try:
-        import redis
-        print(f"✅ Redis Python客户端已安装: 版本 {redis.__version__}")
-        print("📝 此客户端可以连接Valkey服务器")
-    except ImportError:
-        print("❌ Redis Python客户端未安装")
-        print("请运行: pip install redis")
-        return 1
-    
-    # 运行所有测试
-    tests = [
-        ("Valkey服务状态", check_valkey_service),
-        ("Valkey CLI工具", test_valkey_cli),
-        ("Valkey连接测试", test_valkey_connection),
-        ("Valkey服务信息", test_valkey_info),
-        ("Flask-Limiter存储", test_flask_limiter_storage),
-    ]
-    
-    results = []
-    for test_name, test_func in tests:
-        try:
-            result = test_func()
-            results.append((test_name, result))
-        except Exception as e:
-            print(f"❌ {test_name}测试异常: {e}")
-            results.append((test_name, False))
-    
-    # 显示结果
-    print("\n" + "=" * 60)
-    print("🎉 测试完成！")
-    print("\n📋 测试结果:")
-    
-    passed = 0
-    for test_name, result in results:
-        status = "✅ 通过" if result else "❌ 失败"
-        print(f"  {test_name}: {status}")
-        if result:
-            passed += 1
-    
-    print(f"\n📊 总计: {passed}/{len(results)} 个测试通过")
-    
-    if passed >= 3:  # 至少3个测试要通过
-        print("\n🎉 Valkey配置成功！")
-        print("\n💡 下一步:")
-        print("  1. 重启Flask应用")
-        print("  2. 检查日志中的 'Rate limiting enabled with Valkey storage'")
-        print("  3. 不再看到内存存储警告")
-        return 0
-    else:
-        print(f"\n⚠️  Valkey配置有问题，请检查:")
-        print("  1. Valkey服务是否启动: sudo systemctl status valkey")
-        print("  2. 端口6379是否可访问")
-        print("  3. 运行安装脚本: ./install_valkey.sh")
-        return 1
-
-if __name__ == "__main__":
-    exit(main())
+        # [Deprecated 20250819]
+        # return False

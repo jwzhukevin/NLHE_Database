@@ -10,6 +10,7 @@ import tempfile
 from .captcha_logger import CaptchaLogger
 from .embedded_font import EmbeddedFont
 import time
+import threading  # 并发安全：保护缓存和下载标志
 
 class FontManager:
     """字体管理器"""
@@ -18,6 +19,7 @@ class FontManager:
     _font_cache = {}
     _download_attempted = False
     _download_failed = False
+    _lock = threading.RLock()  # 保护缓存与下载标志的并发访问
     
     @staticmethod
     def get_fonts_dir():
@@ -71,30 +73,41 @@ class FontManager:
                     }
                 )
                 
-                # 使用配置的超时时间，避免阻塞
+                # 使用配置的超时时间，避免阻塞（原子下载至临时文件，再替换）
                 with urllib.request.urlopen(request, timeout=timeout) as response:
-                    with open(font_path, 'wb') as f:
-                        f.write(response.read())
+                    fd, tmp_path = tempfile.mkstemp(dir=fonts_dir, suffix='.tmp')
+                    try:
+                        with os.fdopen(fd, 'wb') as f:
+                            f.write(response.read())
+                        # 验证下载的文件大小
+                        file_size = os.path.getsize(tmp_path)
+                        if file_size > 50000:  # 至少50KB
+                            current_app.logger.info(f"✅ 字体文件下载成功: {tmp_path} ({file_size:,} bytes)")
+                            # 原子替换，避免部分写入文件被读取
+                            os.replace(tmp_path, font_path)
+                            with FontManager._lock:
+                                FontManager._download_attempted = True
+                            return font_path
+                        else:
+                            current_app.logger.warning(f"下载的文件过小: {file_size} bytes，尝试下一个源")
+                            os.remove(tmp_path)
+                    except Exception:
+                        # 异常时确保清理临时文件
+                        try:
+                            if os.path.exists(tmp_path):
+                                os.remove(tmp_path)
+                        except Exception:
+                            pass
+                        raise
                 
-                # 验证下载的文件大小
-                file_size = os.path.getsize(font_path)
-                if file_size > 50000:  # 至少50KB
-                    current_app.logger.info(f"✅ 字体文件下载成功: {font_path} ({file_size:,} bytes)")
-                    FontManager._download_attempted = True
-                    return font_path
-                else:
-                    current_app.logger.warning(f"下载的文件过小: {file_size} bytes，尝试下一个源")
-                    os.remove(font_path)
-                    
             except Exception as e:
                 current_app.logger.warning(f"从源 {i+1} 下载失败: {e}")
-                if os.path.exists(font_path):
-                    os.remove(font_path)
                 continue
         
         current_app.logger.error(f"❌ 所有字体下载源都失败")
-        FontManager._download_attempted = True
-        FontManager._download_failed = True
+        with FontManager._lock:
+            FontManager._download_attempted = True
+            FontManager._download_failed = True
         return None
     
     @staticmethod
@@ -112,9 +125,10 @@ class FontManager:
         
         # 检查字体缓存
         cache_key = f"font_{font_size}"
-        if cache_key in FontManager._font_cache:
-            current_app.logger.info(f"✅ 使用缓存字体: {cache_key}")
-            return FontManager._font_cache[cache_key]
+        with FontManager._lock:
+            if cache_key in FontManager._font_cache:
+                current_app.logger.info(f"✅ 使用缓存字体: {cache_key}")
+                return FontManager._font_cache[cache_key]
         
         # 记录字体加载开始
         CaptchaLogger.log_font_loading("开始加载", font_size, success=None)
@@ -157,7 +171,9 @@ class FontManager:
                 continue
         
         # 如果所有预设字体都失败，且未尝试过下载，则快速尝试下载
-        if font is None and not FontManager._download_attempted:
+        with FontManager._lock:
+            download_attempted = FontManager._download_attempted
+        if font is None and not download_attempted:
             current_app.logger.warning("所有预设字体加载失败，快速尝试下载默认字体...")
             try:
                 # 设置较短的超时时间，避免阻塞
@@ -168,7 +184,8 @@ class FontManager:
                     current_app.logger.info(f"✅ 成功加载下载的字体: {default_font_path}")
             except Exception as e:
                 current_app.logger.error(f"快速下载字体失败: {e}")
-                FontManager._download_failed = True
+                with FontManager._lock:
+                    FontManager._download_failed = True
         
         # 最后的备选方案：使用默认字体或嵌入式字体
         if font is None:
@@ -205,14 +222,15 @@ class FontManager:
         # 缓存字体对象，避免重复加载（遵循简单容量限制）
         if font:
             max_items = int(current_app.config.get('FONT_CACHE_MAX_ITEMS', 32))
-            if len(FontManager._font_cache) >= max_items:
-                try:
-                    # 简单策略：清空缓存以释放内存（避免引入复杂LRU依赖）
-                    FontManager._font_cache.clear()
-                    current_app.logger.info(f"字体缓存已达上限，执行清空：max_items={max_items}")
-                except Exception:
-                    pass
-            FontManager._font_cache[cache_key] = font
+            with FontManager._lock:
+                if len(FontManager._font_cache) >= max_items:
+                    try:
+                        # 简单策略：清空缓存以释放内存（避免引入复杂LRU依赖）
+                        FontManager._font_cache.clear()
+                        current_app.logger.info(f"字体缓存已达上限，执行清空：max_items={max_items}")
+                    except Exception:
+                        pass
+                FontManager._font_cache[cache_key] = font
         
         # 记录最终使用的字体
         current_app.logger.info(f"验证码使用字体: {loaded_font_path}")
