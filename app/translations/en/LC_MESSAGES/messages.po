@@ -1,0 +1,1468 @@
+# English translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-20 11:19+0800\n"
+"PO-Revision-Date: 2025-08-19 17:01+0800\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/auth_manager.py:68 app/auth_manager.py:92
+#, python-format
+msgid "Welcome back, %(username)s!"
+msgstr ""
+
+#: app/auth_manager.py:97
+msgid "Login failed due to system error. Please try again."
+msgstr ""
+
+#: app/auth_manager.py:135 app/auth_manager.py:145
+msgid "You have been logged out successfully."
+msgstr ""
+
+#: app/auth_manager.py:166 app/views.py:863
+msgid "Logout completed."
+msgstr ""
+
+#: app/views.py:186
+msgid "Access denied. This feature requires administrator privileges."
+msgstr ""
+
+#: app/views.py:290
+#, python-format
+msgid "Shift Current file %(filename)s uploaded successfully"
+msgstr ""
+
+#: app/views.py:298
+msgid "Shift Current file renamed to sc.dat"
+msgstr ""
+
+#: app/views.py:303
+#, python-format
+msgid "Material %(name)s added successfully!"
+msgstr ""
+
+#: app/views.py:307 app/views.py:487
+#, python-format
+msgid "Invalid data: %(error)s"
+msgstr ""
+
+#: app/views.py:310 app/views.py:491
+#, python-format
+msgid "An error occurred: %(error)s"
+msgstr ""
+
+#: app/views.py:328
+msgid "Unsupported language."
+msgstr ""
+
+#: app/views.py:432
+msgid "Please upload a .cif format structure file!"
+msgstr ""
+
+#: app/views.py:446
+#, python-format
+msgid "Material name \"%(chemical_name)s\" already exists, please change CIF file"
+msgstr ""
+
+#: app/views.py:449
+#, python-format
+msgid "Material name updated from CIF file: %(chemical_name)s"
+msgstr ""
+
+#: app/views.py:476
+msgid "Material name cannot be empty!"
+msgstr ""
+
+#: app/views.py:484
+msgid "Material information updated successfully."
+msgstr ""
+
+#: app/views.py:508
+msgid ""
+"Warning: Multiple CIF files found in structure directory. Please keep "
+"only one!"
+msgstr ""
+
+#: app/views.py:514
+msgid ""
+"Warning: Multiple band .dat files found in band directory. Please keep "
+"only one!"
+msgstr ""
+
+#: app/views.py:522
+msgid "Warning: Multiple SC files found in sc directory. Please keep only one!"
+msgstr ""
+
+#: app/views.py:559
+msgid ""
+"Error: Multiple CIF files found in structure directory. Please keep only "
+"one!"
+msgstr ""
+
+#: app/views.py:568
+msgid ""
+"Error: Multiple band .dat files found in band directory. Please keep only"
+" one!"
+msgstr ""
+
+#: app/views.py:577
+msgid "Error: Multiple SC files found in sc directory. Please keep only one!"
+msgstr ""
+
+#: app/views.py:641
+#, python-format
+msgid ""
+"Material \"%(name)s\" and all related files have been successfully "
+"deleted."
+msgstr ""
+
+#: app/views.py:671
+msgid ""
+"Access denied. Your IP has been blocked due to multiple failed login "
+"attempts."
+msgstr ""
+
+#: app/views.py:701
+msgid "Security token expired or invalid. Please try again."
+msgstr ""
+
+#: app/views.py:710
+msgid "Invalid captcha code, please try again"
+msgstr ""
+
+#: app/views.py:719
+msgid "All fields are required."
+msgstr ""
+
+#: app/views.py:745 app/views.py:764 app/views.py:802
+msgid "Your IP has been blocked due to too many failed login attempts."
+msgstr ""
+
+#: app/views.py:748
+#, python-format
+msgid ""
+"Email not found. Please check your email address. You have %(n)d attempts"
+" remaining."
+msgstr ""
+
+#: app/views.py:767
+#, python-format
+msgid ""
+"Username does not match this email address. You have %(n)d attempts "
+"remaining."
+msgstr ""
+
+#: app/views.py:783
+msgid ""
+"Your IP has been blocked due to too many unauthorized admin login "
+"attempts."
+msgstr ""
+
+#: app/views.py:786
+#, python-format
+msgid ""
+"This account does not have administrator privileges. You have %(n)d "
+"attempts remaining."
+msgstr ""
+
+#: app/views.py:805
+#, python-format
+msgid "Incorrect password. You have %(n)d attempts remaining."
+msgstr ""
+
+#: app/views.py:931
+msgid "Session cleared successfully."
+msgstr ""
+
+#: app/views.py:1486
+#, python-format
+msgid ""
+"Band analysis completed! Analyzed: %(analyzed)d, Cached: %(cached)d, "
+"Failed: %(failed)d"
+msgstr ""
+
+#: app/views.py:1490
+#, python-format
+msgid "Batch analysis failed: %(error)s"
+msgstr ""
+
+#: app/templates/base.html:6
+msgid "NLHE Database - Nonlinear Hall Effect Materials Database"
+msgstr ""
+
+#: app/templates/base.html:250 app/templates/base.html:253
+#: app/templates/base.html:568
+msgid "Database"
+msgstr ""
+
+#: app/templates/articles/view.html:10 app/templates/articles/view.html:417
+#: app/templates/base.html:256
+msgid "Contents"
+msgstr ""
+
+#: app/templates/base.html:260
+msgid "Tools"
+msgstr ""
+
+#: app/templates/base.html:264
+msgid "MP Machine Learning"
+msgstr ""
+
+#: app/templates/base.html:267
+msgid "Materials Cloud Tools"
+msgstr ""
+
+#: app/templates/base.html:270
+msgid "NOMAD Laboratory"
+msgstr ""
+
+#: app/templates/base.html:277
+msgid "SiliconFlow LLM"
+msgstr ""
+
+#: app/templates/base.html:280
+msgid "Program"
+msgstr ""
+
+#: app/templates/base.html:287
+msgid "Add"
+msgstr ""
+
+#: app/templates/base.html:294
+msgid "Login"
+msgstr ""
+
+#: app/templates/base.html:303 app/templates/base.html:309
+msgid "Logout"
+msgstr ""
+
+#: app/templates/base.html:313
+msgid "Guest"
+msgstr ""
+
+#: app/templates/base.html:321
+msgid "Language"
+msgstr ""
+
+#: app/templates/base.html:324
+msgid "English"
+msgstr ""
+
+#: app/templates/base.html:325
+msgid "中文"
+msgstr ""
+
+#: app/templates/base.html:569 app/templates/main/landing.html:7
+msgid "Materials Database"
+msgstr ""
+
+#: app/templates/base.html:570
+msgid "Explore and discover novel materials"
+msgstr ""
+
+#: app/templates/base.html:573
+msgid "We"
+msgstr ""
+
+#: app/templates/base.html:575 app/templates/members/index.html:6
+msgid "Research Team"
+msgstr ""
+
+#: app/templates/base.html:576
+msgid "Publications"
+msgstr ""
+
+#: app/templates/base.html:577
+msgid "Achievements"
+msgstr ""
+
+#: app/templates/base.html:578
+msgid "Join Us"
+msgstr ""
+
+#: app/templates/base.html:582
+msgid "Related Links"
+msgstr ""
+
+#: app/templates/base.html:584
+msgid "IMR Graduate School, CAS"
+msgstr ""
+
+#: app/templates/base.html:585
+msgid "Institute of Metal Research, CAS"
+msgstr ""
+
+#: app/templates/base.html:586
+msgid "Chinese Academy of Sciences"
+msgstr ""
+
+#: app/templates/base.html:590
+msgid "Contact Us"
+msgstr ""
+
+#: app/templates/base.html:591
+msgid "Address: 72 Wenhua Road, Shenhe District, Shenyang"
+msgstr ""
+
+#: app/templates/base.html:592
+msgid "Postal Code: 110016"
+msgstr ""
+
+#: app/templates/base.html:593
+msgid "Email: contact@nlhe-database.org"
+msgstr ""
+
+#: app/templates/articles/listing.html:6
+msgid "Documentation & Contents"
+msgstr ""
+
+#: app/templates/articles/listing.html:11
+msgid "Search contents..."
+msgstr ""
+
+#: app/templates/articles/listing.html:21
+msgid "All"
+msgstr ""
+
+#: app/templates/articles/listing.html:22
+msgid "Articles"
+msgstr ""
+
+#: app/templates/articles/listing.html:23
+msgid "Instructions"
+msgstr ""
+
+#: app/templates/articles/listing.html:24
+msgid "Changelog"
+msgstr ""
+
+#: app/templates/articles/listing.html:39
+msgid "Read More"
+msgstr ""
+
+#: app/templates/articles/listing.html:46
+msgid "No content found"
+msgstr ""
+
+#: app/templates/articles/listing.html:48
+#, python-format
+msgid ""
+"No results found for \"%(query)s\". Try different keywords or browse by "
+"category."
+msgstr ""
+
+#: app/templates/articles/listing.html:50
+msgid "There is no content in this category yet."
+msgstr ""
+
+#: app/templates/articles/view.html:6
+msgid "Table of contents"
+msgstr ""
+
+#: app/templates/articles/view.html:36
+msgid "Back to Contents"
+msgstr ""
+
+#: app/templates/auth/login.html:12
+msgid "User"
+msgstr ""
+
+#: app/templates/auth/login.html:16
+msgid "Administrator"
+msgstr ""
+
+#: app/templates/auth/login.html:22 app/templates/auth/login.html:99
+#: app/templates/auth/login.html:119 app/templates/auth/login.html:126
+msgid "Sign In"
+msgstr ""
+
+#: app/templates/auth/login.html:33
+msgid "Email"
+msgstr ""
+
+#: app/templates/auth/login.html:35
+msgid "Enter your email address"
+msgstr ""
+
+#: app/templates/auth/login.html:41
+msgid "Username"
+msgstr ""
+
+#: app/templates/auth/login.html:43
+msgid "Enter your username"
+msgstr ""
+
+#: app/templates/auth/login.html:49 app/templates/auth/login.html:54
+msgid "Captcha"
+msgstr ""
+
+#: app/templates/auth/login.html:52
+msgid "Enter the captcha"
+msgstr ""
+
+#: app/templates/auth/login.html:57
+msgid "Click to refresh"
+msgstr ""
+
+#: app/templates/auth/login.html:66
+msgid "Password"
+msgstr ""
+
+#: app/templates/auth/login.html:69
+msgid "Enter your password"
+msgstr ""
+
+#: app/templates/auth/login.html:77 app/templates/auth/login.html:100
+#: app/templates/auth/login.html:120 app/templates/auth/login.html:126
+msgid "Log In"
+msgstr ""
+
+#: app/templates/auth/login.html:78
+msgid "Return to Database"
+msgstr ""
+
+#: app/templates/auth/login.html:88
+msgid ""
+"This area is restricted to administrators only. Unauthorized access "
+"attempts are monitored."
+msgstr ""
+
+#: app/templates/auth/login.html:101 app/templates/auth/login.html:121
+#: app/templates/auth/login.html:126
+msgid "Administrator Sign In"
+msgstr ""
+
+#: app/templates/auth/login.html:102 app/templates/auth/login.html:122
+#: app/templates/auth/login.html:126
+msgid "Log In as Administrator"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:216
+msgid "SiliconFlow LLM Chat"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:219 app/templates/main/index.html:2080
+#: app/templates/materials/detail.html:159
+msgid "Delete"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:220 app/templates/main/index.html:64
+msgid "Clear"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:221
+msgid "New"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:222 app/templates/deepseek/chat.html:244
+msgid "Save"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:223
+msgid "History:"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:225
+msgid "Current Session"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:233 app/templates/deepseek/chat.html:258
+msgid "Rename"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:241
+msgid "Name this session"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:242
+msgid "Session name"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:245 app/templates/deepseek/chat.html:259
+#: app/templates/materials/add.html:255
+msgid "Cancel"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:255
+msgid "Rename this session"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:256
+msgid "New name"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:267 app/templates/deepseek/chat.html:305
+msgid "You"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:271 app/templates/deepseek/chat.html:306
+msgid "AI"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:276 app/templates/deepseek/chat.html:309
+msgid "Save answer"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:280
+msgid "Retry answering"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:284
+msgid "Delete answer"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:294
+msgid "Type your message..."
+msgstr ""
+
+#: app/templates/deepseek/chat.html:295
+msgid "Send"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:307
+msgid "Generating..."
+msgstr ""
+
+#: app/templates/deepseek/chat.html:308
+msgid "Copied!"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:310
+msgid "Copy question"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:311
+msgid "Submit failed:"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:312
+msgid "Are you sure you want to delete this Q&A?"
+msgstr ""
+
+#: app/templates/deepseek/chat.html:313
+msgid "Server error"
+msgstr ""
+
+#: app/templates/errors/404.html:8
+msgid "Page Not Found"
+msgstr ""
+
+#: app/templates/errors/404.html:9
+msgid ""
+"The page you are looking for might have been removed, had its name "
+"changed, or is temporarily unavailable."
+msgstr ""
+
+#: app/templates/errors/404.html:12 app/templates/errors/500.html:12
+msgid "Return Home"
+msgstr ""
+
+#: app/templates/errors/404.html:15 app/templates/errors/500.html:15
+msgid "Go to Database"
+msgstr ""
+
+#: app/templates/errors/500.html:8
+msgid "Internal Server Error"
+msgstr ""
+
+#: app/templates/errors/500.html:9
+msgid ""
+"We're experiencing some technical difficulties with our server. Our team "
+"has been notified and is working to fix the issue as soon as possible."
+msgstr ""
+
+#: app/templates/main/index.html:58
+msgid "Search materials, MP IDs, space groups..."
+msgstr ""
+
+#: app/templates/main/index.html:60 app/templates/main/index.html:65
+msgid "Search"
+msgstr ""
+
+#: app/templates/main/index.html:66
+msgid "Elements"
+msgstr ""
+
+#: app/templates/main/index.html:67
+msgid "Advanced"
+msgstr ""
+
+#: app/templates/main/index.html:274
+msgid "Periodic Table"
+msgstr ""
+
+#: app/templates/main/index.html:275
+msgid "Clear All"
+msgstr ""
+
+#: app/templates/main/index.html:278
+msgid "Click elements to add to search"
+msgstr ""
+
+#: app/templates/main/index.html:279
+msgid "Analyze"
+msgstr ""
+
+#: app/templates/main/index.html:280
+msgid "0 selected"
+msgstr ""
+
+#: app/templates/main/index.html:291 app/templates/main/index.html:302
+#: app/templates/main/index.html:314 app/templates/main/index.html:324
+#: app/templates/main/index.html:335 app/templates/main/index.html:345
+#: app/templates/main/index.html:355 app/templates/main/index.html:365
+#: app/templates/main/index.html:374 app/templates/main/index.html:383
+#: app/templates/main/index.html:394 app/templates/main/index.html:403
+#: app/templates/main/index.html:413 app/templates/main/index.html:422
+#: app/templates/main/index.html:431 app/templates/main/index.html:440
+#: app/templates/main/index.html:449 app/templates/main/index.html:458
+#: app/templates/main/index.html:469 app/templates/main/index.html:478
+#: app/templates/main/index.html:487 app/templates/main/index.html:496
+#: app/templates/main/index.html:505 app/templates/main/index.html:514
+#: app/templates/main/index.html:523 app/templates/main/index.html:532
+#: app/templates/main/index.html:541 app/templates/main/index.html:550
+#: app/templates/main/index.html:559 app/templates/main/index.html:568
+#: app/templates/main/index.html:577 app/templates/main/index.html:586
+#: app/templates/main/index.html:595 app/templates/main/index.html:604
+#: app/templates/main/index.html:613 app/templates/main/index.html:622
+#: app/templates/main/index.html:633 app/templates/main/index.html:642
+#: app/templates/main/index.html:651 app/templates/main/index.html:660
+#: app/templates/main/index.html:669 app/templates/main/index.html:678
+#: app/templates/main/index.html:687 app/templates/main/index.html:696
+#: app/templates/main/index.html:705 app/templates/main/index.html:714
+#: app/templates/main/index.html:723 app/templates/main/index.html:732
+#: app/templates/main/index.html:741 app/templates/main/index.html:750
+#: app/templates/main/index.html:759 app/templates/main/index.html:768
+#: app/templates/main/index.html:777 app/templates/main/index.html:786
+#: app/templates/main/index.html:797 app/templates/main/index.html:806
+#: app/templates/main/index.html:815 app/templates/main/index.html:824
+#: app/templates/main/index.html:833 app/templates/main/index.html:842
+#: app/templates/main/index.html:851 app/templates/main/index.html:860
+#: app/templates/main/index.html:869 app/templates/main/index.html:878
+#: app/templates/main/index.html:887 app/templates/main/index.html:896
+#: app/templates/main/index.html:905 app/templates/main/index.html:914
+#: app/templates/main/index.html:923 app/templates/main/index.html:932
+#: app/templates/main/index.html:941 app/templates/main/index.html:950
+#: app/templates/main/index.html:961 app/templates/main/index.html:970
+#: app/templates/main/index.html:979 app/templates/main/index.html:988
+#: app/templates/main/index.html:997 app/templates/main/index.html:1006
+#: app/templates/main/index.html:1015 app/templates/main/index.html:1024
+#: app/templates/main/index.html:1033 app/templates/main/index.html:1042
+#: app/templates/main/index.html:1051 app/templates/main/index.html:1060
+#: app/templates/main/index.html:1069 app/templates/main/index.html:1078
+#: app/templates/main/index.html:1087 app/templates/main/index.html:1096
+#: app/templates/main/index.html:1105 app/templates/main/index.html:1114
+#: app/templates/main/index.html:1126 app/templates/main/index.html:1135
+#: app/templates/main/index.html:1144 app/templates/main/index.html:1153
+#: app/templates/main/index.html:1162 app/templates/main/index.html:1171
+#: app/templates/main/index.html:1180 app/templates/main/index.html:1189
+#: app/templates/main/index.html:1198 app/templates/main/index.html:1207
+#: app/templates/main/index.html:1216 app/templates/main/index.html:1225
+#: app/templates/main/index.html:1234 app/templates/main/index.html:1243
+#: app/templates/main/index.html:1255 app/templates/main/index.html:1264
+#: app/templates/main/index.html:1273 app/templates/main/index.html:1282
+#: app/templates/main/index.html:1291 app/templates/main/index.html:1300
+#: app/templates/main/index.html:1309 app/templates/main/index.html:1318
+#: app/templates/main/index.html:1327 app/templates/main/index.html:1336
+#: app/templates/main/index.html:1345 app/templates/main/index.html:1354
+#: app/templates/main/index.html:1363 app/templates/main/index.html:1372
+msgid "Atomic No:"
+msgstr ""
+
+#: app/templates/main/index.html:292 app/templates/main/index.html:303
+#: app/templates/main/index.html:315 app/templates/main/index.html:325
+#: app/templates/main/index.html:336 app/templates/main/index.html:346
+#: app/templates/main/index.html:356 app/templates/main/index.html:366
+#: app/templates/main/index.html:375 app/templates/main/index.html:384
+#: app/templates/main/index.html:395 app/templates/main/index.html:404
+#: app/templates/main/index.html:414 app/templates/main/index.html:423
+#: app/templates/main/index.html:432 app/templates/main/index.html:441
+#: app/templates/main/index.html:450 app/templates/main/index.html:459
+#: app/templates/main/index.html:470 app/templates/main/index.html:479
+#: app/templates/main/index.html:488 app/templates/main/index.html:497
+#: app/templates/main/index.html:506 app/templates/main/index.html:515
+#: app/templates/main/index.html:524 app/templates/main/index.html:533
+#: app/templates/main/index.html:542 app/templates/main/index.html:551
+#: app/templates/main/index.html:560 app/templates/main/index.html:569
+#: app/templates/main/index.html:578 app/templates/main/index.html:587
+#: app/templates/main/index.html:596 app/templates/main/index.html:605
+#: app/templates/main/index.html:614 app/templates/main/index.html:623
+#: app/templates/main/index.html:634 app/templates/main/index.html:643
+#: app/templates/main/index.html:652 app/templates/main/index.html:661
+#: app/templates/main/index.html:670 app/templates/main/index.html:679
+#: app/templates/main/index.html:688 app/templates/main/index.html:697
+#: app/templates/main/index.html:706 app/templates/main/index.html:715
+#: app/templates/main/index.html:724 app/templates/main/index.html:733
+#: app/templates/main/index.html:742 app/templates/main/index.html:751
+#: app/templates/main/index.html:760 app/templates/main/index.html:769
+#: app/templates/main/index.html:778 app/templates/main/index.html:787
+#: app/templates/main/index.html:798 app/templates/main/index.html:807
+#: app/templates/main/index.html:816 app/templates/main/index.html:825
+#: app/templates/main/index.html:834 app/templates/main/index.html:843
+#: app/templates/main/index.html:852 app/templates/main/index.html:861
+#: app/templates/main/index.html:870 app/templates/main/index.html:879
+#: app/templates/main/index.html:888 app/templates/main/index.html:897
+#: app/templates/main/index.html:906 app/templates/main/index.html:915
+#: app/templates/main/index.html:924 app/templates/main/index.html:933
+#: app/templates/main/index.html:942 app/templates/main/index.html:951
+#: app/templates/main/index.html:962 app/templates/main/index.html:971
+#: app/templates/main/index.html:980 app/templates/main/index.html:989
+#: app/templates/main/index.html:998 app/templates/main/index.html:1007
+#: app/templates/main/index.html:1016 app/templates/main/index.html:1025
+#: app/templates/main/index.html:1034 app/templates/main/index.html:1043
+#: app/templates/main/index.html:1052 app/templates/main/index.html:1061
+#: app/templates/main/index.html:1070 app/templates/main/index.html:1079
+#: app/templates/main/index.html:1088 app/templates/main/index.html:1097
+#: app/templates/main/index.html:1106 app/templates/main/index.html:1115
+#: app/templates/main/index.html:1127 app/templates/main/index.html:1136
+#: app/templates/main/index.html:1145 app/templates/main/index.html:1154
+#: app/templates/main/index.html:1163 app/templates/main/index.html:1172
+#: app/templates/main/index.html:1181 app/templates/main/index.html:1190
+#: app/templates/main/index.html:1199 app/templates/main/index.html:1208
+#: app/templates/main/index.html:1217 app/templates/main/index.html:1226
+#: app/templates/main/index.html:1235 app/templates/main/index.html:1244
+#: app/templates/main/index.html:1256 app/templates/main/index.html:1265
+#: app/templates/main/index.html:1274 app/templates/main/index.html:1283
+#: app/templates/main/index.html:1292 app/templates/main/index.html:1301
+#: app/templates/main/index.html:1310 app/templates/main/index.html:1319
+#: app/templates/main/index.html:1328 app/templates/main/index.html:1337
+#: app/templates/main/index.html:1346 app/templates/main/index.html:1355
+#: app/templates/main/index.html:1364 app/templates/main/index.html:1373
+msgid "Mass:"
+msgstr ""
+
+#: app/templates/main/index.html:293 app/templates/main/index.html:304
+#: app/templates/main/index.html:316 app/templates/main/index.html:326
+#: app/templates/main/index.html:337 app/templates/main/index.html:347
+#: app/templates/main/index.html:357 app/templates/main/index.html:367
+#: app/templates/main/index.html:376 app/templates/main/index.html:385
+#: app/templates/main/index.html:396 app/templates/main/index.html:405
+#: app/templates/main/index.html:415 app/templates/main/index.html:424
+#: app/templates/main/index.html:433 app/templates/main/index.html:442
+#: app/templates/main/index.html:451 app/templates/main/index.html:460
+#: app/templates/main/index.html:471 app/templates/main/index.html:480
+#: app/templates/main/index.html:489 app/templates/main/index.html:498
+#: app/templates/main/index.html:507 app/templates/main/index.html:516
+#: app/templates/main/index.html:525 app/templates/main/index.html:534
+#: app/templates/main/index.html:543 app/templates/main/index.html:552
+#: app/templates/main/index.html:561 app/templates/main/index.html:570
+#: app/templates/main/index.html:579 app/templates/main/index.html:588
+#: app/templates/main/index.html:597 app/templates/main/index.html:606
+#: app/templates/main/index.html:615 app/templates/main/index.html:624
+#: app/templates/main/index.html:635 app/templates/main/index.html:644
+#: app/templates/main/index.html:653 app/templates/main/index.html:662
+#: app/templates/main/index.html:671 app/templates/main/index.html:680
+#: app/templates/main/index.html:689 app/templates/main/index.html:698
+#: app/templates/main/index.html:707 app/templates/main/index.html:716
+#: app/templates/main/index.html:725 app/templates/main/index.html:734
+#: app/templates/main/index.html:743 app/templates/main/index.html:752
+#: app/templates/main/index.html:761 app/templates/main/index.html:770
+#: app/templates/main/index.html:779 app/templates/main/index.html:788
+#: app/templates/main/index.html:799 app/templates/main/index.html:808
+#: app/templates/main/index.html:817 app/templates/main/index.html:826
+#: app/templates/main/index.html:835 app/templates/main/index.html:844
+#: app/templates/main/index.html:853 app/templates/main/index.html:862
+#: app/templates/main/index.html:871 app/templates/main/index.html:880
+#: app/templates/main/index.html:889 app/templates/main/index.html:898
+#: app/templates/main/index.html:907 app/templates/main/index.html:916
+#: app/templates/main/index.html:925 app/templates/main/index.html:934
+#: app/templates/main/index.html:943 app/templates/main/index.html:952
+#: app/templates/main/index.html:963 app/templates/main/index.html:972
+#: app/templates/main/index.html:981 app/templates/main/index.html:990
+#: app/templates/main/index.html:999 app/templates/main/index.html:1008
+#: app/templates/main/index.html:1017 app/templates/main/index.html:1026
+#: app/templates/main/index.html:1035 app/templates/main/index.html:1044
+#: app/templates/main/index.html:1053 app/templates/main/index.html:1062
+#: app/templates/main/index.html:1071 app/templates/main/index.html:1080
+#: app/templates/main/index.html:1089 app/templates/main/index.html:1098
+#: app/templates/main/index.html:1107 app/templates/main/index.html:1116
+#: app/templates/main/index.html:1128 app/templates/main/index.html:1137
+#: app/templates/main/index.html:1146 app/templates/main/index.html:1155
+#: app/templates/main/index.html:1164 app/templates/main/index.html:1173
+#: app/templates/main/index.html:1182 app/templates/main/index.html:1191
+#: app/templates/main/index.html:1200 app/templates/main/index.html:1209
+#: app/templates/main/index.html:1218 app/templates/main/index.html:1227
+#: app/templates/main/index.html:1236 app/templates/main/index.html:1245
+#: app/templates/main/index.html:1257 app/templates/main/index.html:1266
+#: app/templates/main/index.html:1275 app/templates/main/index.html:1284
+#: app/templates/main/index.html:1293 app/templates/main/index.html:1302
+#: app/templates/main/index.html:1311 app/templates/main/index.html:1320
+#: app/templates/main/index.html:1329 app/templates/main/index.html:1338
+#: app/templates/main/index.html:1347 app/templates/main/index.html:1356
+#: app/templates/main/index.html:1365 app/templates/main/index.html:1374
+msgid "Electron:"
+msgstr ""
+
+#: app/templates/main/index.html:1386
+msgid "Alkali Metals"
+msgstr ""
+
+#: app/templates/main/index.html:1390
+msgid "Alkaline Earth Metals"
+msgstr ""
+
+#: app/templates/main/index.html:1394
+msgid "Transition Metals"
+msgstr ""
+
+#: app/templates/main/index.html:1398
+msgid "Post-transition Metals"
+msgstr ""
+
+#: app/templates/main/index.html:1402
+msgid "Metalloids"
+msgstr ""
+
+#: app/templates/main/index.html:1406
+msgid "Nonmetals"
+msgstr ""
+
+#: app/templates/main/index.html:1410
+msgid "Halogens"
+msgstr ""
+
+#: app/templates/main/index.html:1414
+msgid "Noble Gases"
+msgstr ""
+
+#: app/templates/main/index.html:1418
+msgid "Lanthanides"
+msgstr ""
+
+#: app/templates/main/index.html:1422
+msgid "Actinides"
+msgstr ""
+
+#: app/templates/main/index.html:1984
+#, python-format
+msgid ""
+"\n"
+"            Total %(count)s material on this page\n"
+"            "
+msgid_plural ""
+"\n"
+"            Total %(count)s materials on this page\n"
+"            "
+msgstr[0] ""
+msgstr[1] ""
+
+#: app/templates/main/index.html:2026
+msgid "ID"
+msgstr ""
+
+#: app/templates/main/index.html:2027
+msgid "MP-ID"
+msgstr ""
+
+#: app/templates/main/index.html:2028 app/templates/materials/edit.html:29
+msgid "Material Name"
+msgstr ""
+
+#: app/templates/main/index.html:2029
+msgid "Space Group"
+msgstr ""
+
+#: app/templates/main/index.html:2030
+msgid "Fermi Level (eV)"
+msgstr ""
+
+#: app/templates/main/index.html:2031 app/templates/materials/add.html:225
+#: app/templates/materials/edit.html:265
+msgid "Band Gap (eV)"
+msgstr ""
+
+#: app/templates/main/index.html:2032
+msgid "Max SC (μA/V²)"
+msgstr ""
+
+#: app/templates/main/index.html:2033
+msgid "Actions"
+msgstr ""
+
+#: app/templates/main/index.html:2040 app/templates/main/index.html:2046
+#: app/templates/materials/add.html:237
+#: app/templates/materials/detail.html:1764
+#: app/templates/materials/detail.html:2019
+#: app/templates/materials/detail.html:2028
+#: app/templates/materials/detail.html:2033
+#: app/templates/materials/detail.html:2123
+#: app/templates/materials/detail.html:2124
+#: app/templates/materials/edit.html:279
+msgid "Unknown"
+msgstr ""
+
+#: app/templates/main/index.html:2046 app/templates/main/index.html:2047
+#: app/templates/main/index.html:2052
+msgid "N/A"
+msgstr ""
+
+#: app/templates/main/index.html:2059 app/templates/materials/detail.html:1729
+#: app/templates/materials/detail.html:1730
+#: app/templates/materials/detail.html:1731
+#: app/templates/materials/detail.html:1732
+#: app/templates/materials/detail.html:1733
+#: app/templates/materials/detail.html:1734
+#: app/templates/materials/detail.html:1735
+#: app/templates/materials/detail.html:1736
+#: app/templates/materials/detail.html:1756
+#: app/templates/materials/detail.html:1761
+msgid "Loading..."
+msgstr ""
+
+#: app/templates/main/index.html:2067
+msgid "View in MP"
+msgstr ""
+
+#: app/templates/main/index.html:2073 app/templates/materials/detail.html:152
+msgid "Edit"
+msgstr ""
+
+#: app/templates/main/index.html:2079 app/templates/materials/detail.html:156
+msgid "Delete permanently?"
+msgstr ""
+
+#: app/templates/main/index.html:2211
+msgid "Previous"
+msgstr ""
+
+#: app/templates/main/index.html:2226
+msgid "Next"
+msgstr ""
+
+#: app/templates/main/landing.html:8
+msgid ""
+"Explore and discover materials, accelerating materials science research "
+"and innovation. Our database provides comprehensive material properties, "
+"crystal structures, and band analysis tools."
+msgstr ""
+
+#: app/templates/main/landing.html:9
+msgid "Start Exploring"
+msgstr ""
+
+#: app/templates/main/landing.html:63
+msgid "Comprehensive Material Data"
+msgstr ""
+
+#: app/templates/main/landing.html:64
+msgid ""
+"Providing detailed material properties, crystal structures, and "
+"electronic structure data to support in-depth materials research."
+msgstr ""
+
+#: app/templates/main/landing.html:68
+msgid "3D Crystal Structure Visualization"
+msgstr ""
+
+#: app/templates/main/landing.html:69
+msgid ""
+"Using advanced three-dimensional visualization technology to intuitively "
+"display material crystal structures."
+msgstr ""
+
+#: app/templates/main/landing.html:73
+msgid "Band Structure Analysis"
+msgstr ""
+
+#: app/templates/main/landing.html:74
+msgid ""
+"Providing detailed band structure analysis tools to help understand "
+"material electronic properties."
+msgstr ""
+
+#: app/templates/main/landing.html:78
+msgid "Advanced Search Features"
+msgstr ""
+
+#: app/templates/main/landing.html:79
+msgid ""
+"Powerful search and filtering capabilities to quickly find the required "
+"material data."
+msgstr ""
+
+#: app/templates/main/landing.html:130
+msgid "Material Data"
+msgstr ""
+
+#: app/templates/main/landing.html:134
+msgid "Physical Properties"
+msgstr ""
+
+#: app/templates/main/landing.html:138
+msgid "Online Service"
+msgstr ""
+
+#: app/templates/materials/add.html:18
+msgid "Add New Material"
+msgstr ""
+
+#: app/templates/materials/add.html:23 app/templates/materials/edit.html:26
+msgid "Core Properties"
+msgstr ""
+
+#: app/templates/materials/add.html:26
+msgid "Material Name (From CIF)"
+msgstr ""
+
+#: app/templates/materials/add.html:27
+msgid "Will be extracted from CIF file"
+msgstr ""
+
+#: app/templates/materials/add.html:28
+msgid "Name will be automatically extracted from the CIF file"
+msgstr ""
+
+#: app/templates/materials/add.html:31 app/templates/materials/edit.html:37
+msgid "Status"
+msgstr ""
+
+#: app/templates/materials/add.html:33 app/templates/materials/edit.html:39
+msgid "Done"
+msgstr ""
+
+#: app/templates/materials/add.html:34 app/templates/materials/edit.html:40
+msgid "Unconverged"
+msgstr ""
+
+#: app/templates/materials/add.html:35 app/templates/materials/edit.html:41
+msgid "Error"
+msgstr ""
+
+#: app/templates/materials/add.html:39 app/templates/materials/edit.html:45
+msgid "Structure File (CIF)"
+msgstr ""
+
+#: app/templates/materials/add.html:41
+msgid "Required. CIF structure file for crystal visualization"
+msgstr ""
+
+#: app/templates/materials/add.html:42 app/templates/materials/add.html:48
+#: app/templates/materials/add.html:61 app/templates/materials/add.html:68
+#: app/templates/materials/edit.html:6 app/templates/materials/edit.html:58
+#: app/templates/materials/edit.html:74 app/templates/materials/edit.html:90
+msgid "No file selected"
+msgstr ""
+
+#: app/templates/materials/add.html:45
+msgid "Band Structure File (DAT)"
+msgstr ""
+
+#: app/templates/materials/add.html:47
+msgid "Optional. For band structure visualization"
+msgstr ""
+
+#: app/templates/materials/add.html:55 app/templates/materials/edit.html:81
+msgid "Additional Files"
+msgstr ""
+
+#: app/templates/materials/add.html:58 app/templates/materials/edit.html:84
+msgid "Material Properties (JSON)"
+msgstr ""
+
+#: app/templates/materials/add.html:60
+msgid "Optional. JSON file with material properties"
+msgstr ""
+
+#: app/templates/materials/add.html:64 app/templates/materials/edit.html:93
+msgid "Shift Current File (DAT)"
+msgstr ""
+
+#: app/templates/materials/add.html:67
+msgid "Optional. DAT file for Shift Current visualization"
+msgstr ""
+
+#: app/templates/materials/add.html:164 app/templates/materials/add.html:186
+msgid "Browse"
+msgstr ""
+
+#: app/templates/materials/add.html:210 app/templates/materials/edit.html:248
+msgid "Energy Properties (eV)"
+msgstr ""
+
+#: app/templates/materials/add.html:213 app/templates/materials/edit.html:251
+msgid "Fermi Level"
+msgstr ""
+
+#: app/templates/materials/add.html:215 app/templates/materials/edit.html:255
+msgid "Fermi energy level in eV"
+msgstr ""
+
+#: app/templates/materials/add.html:222 app/templates/materials/edit.html:262
+msgid "Electronic Properties"
+msgstr ""
+
+#: app/templates/materials/add.html:227
+msgid "Will be automatically calculated from band data"
+msgstr ""
+
+#: app/templates/materials/add.html:230 app/templates/materials/edit.html:272
+msgid "Materials Type"
+msgstr ""
+
+#: app/templates/materials/add.html:232
+msgid "Will be determined automatically"
+msgstr ""
+
+#: app/templates/materials/add.html:233 app/templates/materials/edit.html:275
+msgid "Metal"
+msgstr ""
+
+#: app/templates/materials/add.html:234 app/templates/materials/edit.html:276
+msgid "Semimetal"
+msgstr ""
+
+#: app/templates/materials/add.html:235 app/templates/materials/edit.html:277
+msgid "Semiconductor"
+msgstr ""
+
+#: app/templates/materials/add.html:236 app/templates/materials/edit.html:278
+msgid "Insulator"
+msgstr ""
+
+#: app/templates/materials/add.html:239
+msgid "Will be automatically determined from band gap"
+msgstr ""
+
+#: app/templates/materials/add.html:249 app/templates/materials/edit.html:291
+msgid "Confirm Save?"
+msgstr ""
+
+#: app/templates/materials/add.html:251
+msgid "Create Material"
+msgstr ""
+
+#: app/templates/materials/add.html:261 app/templates/materials/edit.html:302
+msgid "Data Synchronization Feature"
+msgstr ""
+
+#: app/templates/materials/add.html:262 app/templates/materials/edit.html:303
+msgid ""
+"After submitting the material, the system will automatically create the "
+"following directory structure:"
+msgstr ""
+
+#: app/templates/materials/add.html:273
+msgid ""
+"All uploaded files will be automatically organized into appropriate "
+"locations for further processing and analysis."
+msgstr ""
+
+#: app/templates/materials/add.html:391 app/templates/materials/edit.html:7
+msgid "File:"
+msgstr ""
+
+#: app/templates/materials/add.html:392
+msgid "Required name:"
+msgstr ""
+
+#: app/templates/materials/add.html:393
+msgid "Target path:"
+msgstr ""
+
+#: app/templates/materials/add.html:394 app/templates/materials/edit.html:8
+msgid "Size:"
+msgstr ""
+
+#: app/templates/materials/add.html:398
+msgid "Warning: File name must be"
+msgstr ""
+
+#: app/templates/materials/detail.html:108
+msgid "Home"
+msgstr ""
+
+#: app/templates/materials/detail.html:113
+msgid "Materials"
+msgstr ""
+
+#: app/templates/materials/detail.html:122
+msgid "Structure"
+msgstr ""
+
+#: app/templates/materials/detail.html:123
+msgid "Crystal Data"
+msgstr ""
+
+#: app/templates/materials/detail.html:124
+#: app/templates/materials/detail.html:1792
+#: app/templates/materials/detail.html:1811
+msgid "Band Structure"
+msgstr ""
+
+#: app/templates/materials/detail.html:125
+msgid "SC"
+msgstr ""
+
+#: app/templates/materials/detail.html:126
+msgid "Properties"
+msgstr ""
+
+#: app/templates/materials/detail.html:143
+msgid "Back"
+msgstr ""
+
+#: app/templates/materials/detail.html:1711
+msgid "3D Structure"
+msgstr ""
+
+#: app/templates/materials/detail.html:1724
+msgid "Crystal Structure"
+msgstr ""
+
+#: app/templates/materials/detail.html:1729
+msgid "Lattice a:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1730
+msgid "Lattice b:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1731
+msgid "Lattice c:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1732
+msgid "Alpha:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1733
+msgid "Beta:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1734
+msgid "Gamma:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1735
+msgid "Volume:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1736
+msgid "Density:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1751
+msgid "Crystal Symmetry"
+msgstr ""
+
+#: app/templates/materials/detail.html:1756
+msgid "Crystal System:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1757
+msgid "Space Group:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1764
+msgid "MP-ID:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1774
+msgid "Atomic Coordinates"
+msgstr ""
+
+#: app/templates/materials/detail.html:1778
+msgid "Loading atomic coordinates..."
+msgstr ""
+
+#: app/templates/materials/detail.html:1794
+msgid "Download band data"
+msgstr ""
+
+#: app/templates/materials/detail.html:1816
+msgid "Band Gap:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1821
+#: app/templates/materials/detail.html:1830
+msgid "Analyzing..."
+msgstr ""
+
+#: app/templates/materials/detail.html:1825
+msgid "Materials Type:"
+msgstr ""
+
+#: app/templates/materials/detail.html:1848
+msgid "Shift Current"
+msgstr ""
+
+#: app/templates/materials/detail.html:1850
+msgid "Download Shift Current data"
+msgstr ""
+
+#: app/templates/materials/detail.html:1868
+msgid "Element Relations"
+msgstr ""
+
+#: app/templates/materials/detail.html:1869
+msgid "Shift Current Properties"
+msgstr ""
+
+#: app/templates/materials/detail.html:1998
+msgid "Zero"
+msgstr ""
+
+#: app/templates/materials/detail.html:1999
+msgid "Same"
+msgstr ""
+
+#: app/templates/materials/detail.html:2000
+msgid "Opposite"
+msgstr ""
+
+#: app/templates/materials/detail.html:2006
+msgid "Loading element relations..."
+msgstr ""
+
+#: app/templates/materials/detail.html:2014
+msgid "Max SC:"
+msgstr ""
+
+#: app/templates/materials/detail.html:2023
+msgid "Max Photon Energy:"
+msgstr ""
+
+#: app/templates/materials/detail.html:2032
+msgid "Max Tensor Type:"
+msgstr ""
+
+#: app/templates/materials/detail.html:2050
+msgid "Basic Properties"
+msgstr ""
+
+#: app/templates/materials/detail.html:2056
+msgid "Status:"
+msgstr ""
+
+#: app/templates/materials/detail.html:2056
+#: app/templates/materials/detail.html:2057
+#: app/templates/materials/detail.html:2072
+#: app/templates/materials/detail.html:2073
+msgid "Not available yet"
+msgstr ""
+
+#: app/templates/materials/detail.html:2057
+msgid "Fermi Level:"
+msgstr ""
+
+#: app/templates/materials/detail.html:2067
+msgid "Surface Properties"
+msgstr ""
+
+#: app/templates/materials/detail.html:2072
+msgid "Vacuum Level:"
+msgstr ""
+
+#: app/templates/materials/detail.html:2073
+msgid "Work Function:"
+msgstr ""
+
+#: app/templates/materials/edit.html:21
+#, python-format
+msgid "Editing %(name)s"
+msgstr ""
+
+#: app/templates/materials/edit.html:34
+msgid "2-120 characters"
+msgstr ""
+
+#: app/templates/materials/edit.html:48
+msgid "Current CIF file(s):"
+msgstr ""
+
+#: app/templates/materials/edit.html:50 app/templates/materials/edit.html:67
+#: app/templates/materials/edit.html:88 app/templates/materials/edit.html:101
+msgid "Path:"
+msgstr ""
+
+#: app/templates/materials/edit.html:53
+msgid "Warning: 存在多个.cif文件，请只保留一个！"
+msgstr ""
+
+#: app/templates/materials/edit.html:57
+msgid "支持.cif格式，文件名不限，若有多个.cif文件将报错"
+msgstr ""
+
+#: app/templates/materials/edit.html:61
+msgid "Band Structure File (DAT/JSON)"
+msgstr ""
+
+#: app/templates/materials/edit.html:63
+msgid "支持.dat/.json格式，文件名不限，若有多个同类文件将报错"
+msgstr ""
+
+#: app/templates/materials/edit.html:65
+msgid "Current band file(s):"
+msgstr ""
+
+#: app/templates/materials/edit.html:70
+msgid "Warning: 存在多个能带文件，请只保留一个！"
+msgstr ""
+
+#: app/templates/materials/edit.html:86
+msgid "JSON file with material properties"
+msgstr ""
+
+#: app/templates/materials/edit.html:88
+msgid "Current file:"
+msgstr ""
+
+#: app/templates/materials/edit.html:88
+msgid "Required name: material.json"
+msgstr ""
+
+#: app/templates/materials/edit.html:96
+msgid "支持.dat格式，文件名不限，若有多个同类文件将报错"
+msgstr ""
+
+#: app/templates/materials/edit.html:102
+msgid "删除"
+msgstr ""
+
+#: app/templates/materials/edit.html:105
+msgid "无Shift Current文件"
+msgstr ""
+
+#: app/templates/materials/edit.html:269
+msgid "Automatically calculated from band data"
+msgstr ""
+
+#: app/templates/materials/edit.html:274
+msgid "Select Type"
+msgstr ""
+
+#: app/templates/materials/edit.html:281
+msgid "Automatically determined from band gap"
+msgstr ""
+
+#: app/templates/materials/edit.html:292
+msgid "Update Material"
+msgstr ""
+
+#: app/templates/materials/edit.html:296
+msgid "Discard Changes"
+msgstr ""
+
+#: app/templates/members/index.html:7
+msgid ""
+"Meet our talented researchers dedicated to cutting-edge materials science"
+" and computational design at the Department of Materials Computation and "
+"Design, Institute of Metal Research, Chinese Academy of Sciences."
+msgstr ""
+
+#: app/templates/members/index.html:25
+msgid "Achievements:"
+msgstr ""
+

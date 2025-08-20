@@ -15,57 +15,57 @@
     }
     </style>
 
-    <span class="title2">Add New Material</span>
+    <span class="title2">{{ _('Add New Material') }}</span>
     <form method="post" class="material-form" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <!-- Core Properties -->
         <div class="form-section">
-            <h3>Core Properties</h3>
+            <h3>{{ _('Core Properties') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Material Name (From CIF)</label>
-                    <input type="text" name="name" readonly placeholder="Will be extracted from CIF file">
-                    <small class="help-text">Name will be automatically extracted from the CIF file</small>
+                    <label>{{ _('Material Name (From CIF)') }}</label>
+                    <input type="text" name="name" readonly placeholder="{{ _('Will be extracted from CIF file') }}">
+                    <small class="help-text">{{ _('Name will be automatically extracted from the CIF file') }}</small>
                 </div>
                 <div class="form-group">
-                    <label>Status</label>
+                    <label>{{ _('Status') }}</label>
                     <select name="status">
-                        <option value="done">Done</option>
-                        <option value="unconverged">Unconverged</option>
-                        <option value="error">Error</option>
+                        <option value="done">{{ _('Done') }}</option>
+                        <option value="unconverged">{{ _('Unconverged') }}</option>
+                        <option value="error">{{ _('Error') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Structure File (CIF) <span class="required">*</span></label>
+                    <label>{{ _('Structure File (CIF)') }} <span class="required">*</span></label>
                     <input type="file" name="structure_file" accept=".cif" required class="custom-file-input">
-                    <small class="help-text">Required. CIF structure file for crystal visualization</small>
-                    <span class="file-name">No file selected</span>
+                    <small class="help-text">{{ _('Required. CIF structure file for crystal visualization') }}</small>
+                    <span class="file-name" data-empty="{{ _('No file selected') }}">{{ _('No file selected') }}</span>
                 </div>
                 <div class="form-group">
-                    <label>Band Structure File (DAT)</label>
+                    <label>{{ _('Band Structure File (DAT)') }}</label>
                     <input type="file" name="band_file" accept=".json,.dat" class="custom-file-input">
-                    <small class="help-text">Optional. For band structure visualization</small>
-                    <span class="file-name">No file selected</span>
+                    <small class="help-text">{{ _('Optional. For band structure visualization') }}</small>
+                    <span class="file-name" data-empty="{{ _('No file selected') }}">{{ _('No file selected') }}</span>
                 </div>
             </div>
         </div>
         
         <!-- Additional Files Upload Area -->
         <div class="form-section">
-            <h3>Additional Files</h3>
+            <h3>{{ _('Additional Files') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Material Properties (JSON)</label>
+                    <label>{{ _('Material Properties (JSON)') }}</label>
                     <input type="file" name="properties_json" accept=".json" class="custom-file-input">
-                    <small class="help-text">Optional. JSON file with material properties</small>
-                    <span class="file-name">No file selected</span>
+                    <small class="help-text">{{ _('Optional. JSON file with material properties') }}</small>
+                    <span class="file-name" data-empty="{{ _('No file selected') }}">{{ _('No file selected') }}</span>
                 </div>
                 <div class="form-group">
-                    <label>Shift Current File (DAT)</label>
+                    <label>{{ _('Shift Current File (DAT)') }}</label>
                     <div class="custom-file">
                     <input type="file" name="sc_structure_file" accept=".dat" class="custom-file-input">
-                        <small class="help-text">Optional. DAT file for Shift Current visualization</small>
-                    <span class="file-name">No file selected</span>
+                        <small class="help-text">{{ _('Optional. DAT file for Shift Current visualization') }}</small>
+                    <span class="file-name" data-empty="{{ _('No file selected') }}">{{ _('No file selected') }}</span>
                     </div>
                 </div>
             </div>
@@ -159,9 +159,9 @@
             position: relative;
         }
         
-        /* Change default file input language to English */
+        /* Change default file input label */
         input[type="file"]::file-selector-button {
-            content: "Browse";
+            content: "{{ _('Browse') }}";
             padding: 0.375rem 0.75rem;
             margin-right: 0.5rem;
             border-radius: 0.25rem;
@@ -183,7 +183,7 @@
             }
             
             input[type="file"]::before {
-                content: "Browse";
+                content: "{{ _('Browse') }}";
                 background-color: #f3f4f6;
                 color: #374151;
                 padding: 0.375rem 0.75rem;
@@ -207,36 +207,36 @@
 
         <!-- Energy Properties -->
         <div class="form-section">
-            <h3>Energy Properties (eV)</h3>
+            <h3>{{ _('Energy Properties (eV)') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Fermi Level</label>
+                    <label>{{ _('Fermi Level') }}</label>
                     <input type="number" step="0.00000001" name="fermi_level">
-                    <small class="help-text">Fermi energy level in eV</small>
+                    <small class="help-text">{{ _('Fermi energy level in eV') }}</small>
                 </div>
             </div>
         </div>
 
         <!-- Electronic Properties -->
         <div class="form-section">
-            <h3>Electronic Properties</h3>
+            <h3>{{ _('Electronic Properties') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Band Gap (eV)</label>
+                    <label>{{ _('Band Gap (eV)') }}</label>
                     <input type="number" step="0.0001" name="band_gap" readonly>
-                    <small class="help-text">Will be automatically calculated from band data</small>
+                    <small class="help-text">{{ _('Will be automatically calculated from band data') }}</small>
                 </div>
                 <div class="form-group">
-                    <label>Materials Type</label>
+                    <label>{{ _('Materials Type') }}</label>
                     <select name="materials_type" disabled>
-                        <option value="">Will be determined automatically</option>
-                        <option value="metal">Metal</option>
-                        <option value="semimetal">Semimetal</option>
-                        <option value="semiconductor">Semiconductor</option>
-                        <option value="insulator">Insulator</option>
-                        <option value="unknown">Unknown</option>
+                        <option value="">{{ _('Will be determined automatically') }}</option>
+                        <option value="metal">{{ _('Metal') }}</option>
+                        <option value="semimetal">{{ _('Semimetal') }}</option>
+                        <option value="semiconductor">{{ _('Semiconductor') }}</option>
+                        <option value="insulator">{{ _('Insulator') }}</option>
+                        <option value="unknown">{{ _('Unknown') }}</option>
                     </select>
-                    <small class="help-text">Will be automatically determined from band gap</small>
+                    <small class="help-text">{{ _('Will be automatically determined from band gap') }}</small>
                 </div>
             </div>
         </div>
@@ -246,19 +246,20 @@
         <!-- Form Action Buttons -->
         <div class="form-actions">
             <button type="submit" class="btn btn-save" 
-                    onclick="return confirm('Confirm Save?')">
-                <i class="fas fa-save"></i> Create Material
+                    data-confirm="{{ _('Confirm Save?') }}"
+                    onclick="return confirm(this.getAttribute('data-confirm'))">
+                <i class="fas fa-save"></i> {{ _('Create Material') }}
             </button>
             <a href="{{ url_for('views.index') }}" 
                class="btn btn-cancel">
-                <i class="fas fa-times"></i> Cancel
+                <i class="fas fa-times"></i> {{ _('Cancel') }}
             </a>
         </div>
         
         <!-- Data Synchronization Information -->
         <div class="sync-info">
-            <h4><i class="fas fa-sync"></i> Data Synchronization Feature</h4>
-            <p>After submitting the material, the system will automatically create the following directory structure:</p>
+            <h4><i class="fas fa-sync"></i> {{ _('Data Synchronization Feature') }}</h4>
+            <p>{{ _('After submitting the material, the system will automatically create the following directory structure:') }}</p>
             <pre class="directory-structure">
 static/materials/IMR-XXXXXXXX/
   ├── material.json      # Material properties JSON file (if uploaded, the uploaded file will be used)
@@ -269,7 +270,7 @@ static/materials/IMR-XXXXXXXX/
   └── sc/                # Shift Current directory
       └── sc.dat         # Shift Current data file (optional)
             </pre>
-            <p>All uploaded files will be automatically organized into appropriate locations for further processing and analysis.</p>
+            <p>{{ _('All uploaded files will be automatically organized into appropriate locations for further processing and analysis.') }}</p>
         </div>
         <style>
         /* Button Action Area */
@@ -367,7 +368,7 @@ document.querySelectorAll('input[type="file"]').forEach(function(input) {
         const file = this.files[0];
         const fileNameSpan = this.parentElement.querySelector('.file-name');
         if (!file) {
-            fileNameSpan.textContent = 'No file selected';
+            fileNameSpan.textContent = fileNameSpan.getAttribute('data-empty');
             return;
         }
         // 规范文件名
@@ -387,14 +388,14 @@ document.querySelectorAll('input[type="file"]').forEach(function(input) {
         let sizeStr = size > 1024*1024 ? (size/1024/1024).toFixed(2)+' MB' : (size/1024).toFixed(2)+' KB';
         // 显示信息
         fileNameSpan.innerHTML = `
-            <b>File:</b> ${file.name} <br>
-            <b>Required name:</b> <span style="color:#1976d2">${requiredName}</span> <br>
-            <b>Target path:</b> <span style="color:#888">${path}</span> <br>
-            <b>Size:</b> ${sizeStr}
+            <b>{{ _('File:') }}</b> ${file.name} <br>
+            <b>{{ _('Required name:') }}</b> <span style="color:#1976d2">${requiredName}</span> <br>
+            <b>{{ _('Target path:') }}</b> <span style="color:#888">${path}</span> <br>
+            <b>{{ _('Size:') }}</b> ${sizeStr}
         `;
         // 文件名不一致警告
         if (file.name !== requiredName) {
-            fileNameSpan.innerHTML += `<br><span style="color:#e74c3c;font-weight:bold">Warning: File name must be <u>${requiredName}</u></span>`;
+            fileNameSpan.innerHTML += `<br><span style="color:#e74c3c;font-weight:bold">{{ _('Warning: File name must be') }} <u>${requiredName}</u></span>`;
         }
     });
 });

@@ -5,6 +5,7 @@
 # Import required modules
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file, jsonify  # Flask core modules
 from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
+from flask_babel import _, get_locale  # i18n gettext & current locale
 from sqlalchemy import and_, or_  # Database query condition builders
 from .models import User, Material, BlockedIP, Member  # Custom data models
 from . import db  # Database instance
@@ -17,6 +18,7 @@ from .band_analyzer import band_analyzer  # 合并后的能带分析器
 from .font_manager import FontManager  # 字体管理器
 from .captcha_logger import CaptchaLogger  # 验证码日志记录器
 import os
+import json
 import re
 from werkzeug.utils import secure_filename
 from PIL import Image, ImageDraw, ImageFont
@@ -181,7 +183,7 @@ def admin_required(view_func):
     @functools.wraps(view_func)
     def wrapped_view(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin():
-            flash('Access denied. This feature requires administrator privileges.', 'error')
+            flash(_('Access denied. This feature requires administrator privileges.'), 'error')
             return redirect(url_for('views.login'))
         
         return view_func(*args, **kwargs)
@@ -285,7 +287,7 @@ def add():
                 sc_path = os.path.join(sc_dir, sc_filename)
                 sc_structure_file.save(sc_path)
                 material.sc_structure_file = sc_filename
-                flash(f'Shift Current file {sc_filename} uploaded successfully', 'success')
+                flash(_('Shift Current file %(filename)s uploaded successfully', filename=sc_filename), 'success')
 
                 # 如果是dat文件，尝试重命名为sc.dat
                 if sc_filename.endswith('.dat') and sc_filename != 'sc.dat':
@@ -293,22 +295,211 @@ def add():
                         new_sc_path = os.path.join(sc_dir, 'sc.dat')
                         os.rename(sc_path, new_sc_path)
                         material.sc_structure_file = 'sc.dat'
-                        flash('Shift Current file renamed to sc.dat', 'success')
+                        flash(_('Shift Current file renamed to sc.dat'), 'success')
                     except Exception as e:
                         current_app.logger.warning(f"Failed to rename SC file: {str(e)}")
 
             db.session.commit()
-            flash(f'Material {material.name} added successfully!', 'success')
+            flash(_('Material %(name)s added successfully!', name=material.name), 'success')
             return redirect(url_for('views.detail', material_id=material.id))
 
         except ValueError as e:
-            flash(f'Invalid data: {str(e)}', 'error')
+            flash(_('Invalid data: %(error)s', error=str(e)), 'error')
             return redirect(url_for('views.add'))
         except Exception as e:
-            flash(f'An error occurred: {str(e)}', 'error')
+            flash(_('An error occurred: %(error)s', error=str(e)), 'error')
             return redirect(url_for('views.add'))
 
     return render_template('materials/add.html')
+
+@bp.route('/set-language')
+def set_language():
+    """
+    设置界面语言（国际化）：
+    - 读取查询参数 ?lang=en/zh
+    - 将语言首选项写入 session 与 cookie（30 天）
+    - 重定向回来源页，若无来源则回到落地页
+    """
+    # 读取支持语言
+    supported = current_app.config.get('BABEL_SUPPORTED_LOCALES', ['en', 'zh'])
+    # 获取目标语言
+    lang = (request.args.get('lang') or '').strip()
+    if lang not in supported:
+        flash(_('Unsupported language.'), 'error')
+        return redirect(url_for('views.landing'))
+
+    # 写入 session
+    session['lang'] = lang
+
+    # 构造重定向响应并设置 cookie（30 天）
+    resp = redirect(request.referrer or url_for('views.landing'))
+    resp.set_cookie('lang', lang, max_age=30*24*3600, samesite='Lax')
+    return resp
+
+# i18n 运行时调试路由（只读）
+@bp.route('/i18n-debug')
+def i18n_debug():
+    """
+    返回当前请求的国际化判定信息，便于调试：
+    - current_locale: Flask-Babel 的当前语言
+    - session.lang: 会话中的语言字段
+    - cookie.lang: Cookie 中的语言字段
+    - args.lang: 查询参数中的语言字段
+    - accept_language_raw: 浏览器请求头
+    - best_match: 基于受支持语言的最佳匹配
+    """
+    try:
+        current_locale = str(get_locale()) if get_locale() else None
+    except Exception:
+        current_locale = None
+
+    supported = current_app.config.get('BABEL_SUPPORTED_LOCALES', ['en', 'zh'])
+    best_match = request.accept_languages.best_match(supported)
+
+    data = {
+        'current_locale': current_locale,
+        'session_lang': session.get('lang'),
+        'cookie_lang': request.cookies.get('lang'),
+        'args_lang': request.args.get('lang'),
+        'accept_language_raw': request.headers.get('Accept-Language'),
+        'best_match': best_match,
+        'supported_locales': supported,
+    }
+    return jsonify(data)
+
+# ------------------------- 成员视图支持函数 -------------------------
+def to_slug(name):
+    """将姓名转为 slug：小写并移除空白字符。"""
+    if not name:
+        return ''
+    return re.sub(r'\s+', '', str(name).strip().lower())
+
+
+def read_json(path):
+    """安全读取 JSON 文件，失败返回 None。"""
+    try:
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        current_app.logger.warning(f'read_json failed: {path}: {e}')
+    return None
+
+
+def split_achievements(value):
+    """成就字段规范化为列表：支持字符串按行拆分或原生列表。"""
+    if not value:
+        return []
+    if isinstance(value, list):
+        return [str(x).strip() for x in value if str(x).strip()]
+    return [line.strip() for line in str(value).split('\n') if line.strip()]
+
+
+def load_member_profile(slug):
+    """按优先级读取成员资料：profile.json → info.json。"""
+    base_dir = os.path.join(current_app.root_path, 'static', 'members', slug)
+    profile_path = os.path.join(base_dir, 'profile.json')
+    info_path = os.path.join(base_dir, 'info.json')
+
+    profile = read_json(profile_path)
+    if profile is not None:
+        return profile, 'profile'
+
+    info = read_json(info_path)
+    if info is not None:
+        # 将旧结构 info.json 映射为双语结构（默认当作英文）
+        mapped = {
+            'title_zh': '',
+            'title_en': str(info.get('title', '') or '').strip(),
+            'bio_zh': '',
+            'bio_en': str(info.get('bio', '') or '').strip(),
+            'achievements_zh': [],
+            'achievements_en': split_achievements(info.get('achievements') or []),
+        }
+        return mapped, 'info'
+
+    return None, None
+
+
+def select_by_locale(profile, member, locale):
+    """根据语言选择显示字段，并内置回退到 DB 字段。"""
+    # 当前语言判断
+    lang = str(locale) if locale else 'en'
+    prefer_zh = lang.startswith('zh')
+
+    # 取 DB 作为兜底
+    db_title = (member.title or '').strip() if getattr(member, 'title', None) else ''
+    db_bio = (member.bio or '').strip() if getattr(member, 'bio', None) else ''
+    db_ach = split_achievements(getattr(member, 'achievements', '') or '')
+
+    # 读取 profile 字段
+    title_zh = (profile or {}).get('title_zh') or ''
+    title_en = (profile or {}).get('title_en') or ''
+    bio_zh = (profile or {}).get('bio_zh') or ''
+    bio_en = (profile or {}).get('bio_en') or ''
+    ach_zh = (profile or {}).get('achievements_zh') or []
+    ach_en = (profile or {}).get('achievements_en') or []
+
+    # 选择与回退
+    if prefer_zh:
+        display_title = title_zh or db_title or title_en
+        display_bio = bio_zh or db_bio or bio_en
+        display_achievements = ach_zh or db_ach or ach_en
+    else:
+        display_title = title_en or title_zh or db_title
+        display_bio = bio_en or bio_zh or db_bio
+        display_achievements = ach_en or ach_zh or db_ach
+
+    # 确保类型
+    if not isinstance(display_achievements, list):
+        display_achievements = split_achievements(display_achievements)
+
+    return {
+        'display_title': display_title,
+        'display_bio': display_bio,
+        'display_achievements': display_achievements,
+    }
+
+
+@bp.route('/members')
+def members_index():
+    """成员列表页：读取 profile.json（兼容 info.json）并按语言展示。"""
+    # 解释：查询所有成员并按 slug 读取静态资料
+    members = db.session.query(Member).order_by(Member.name.asc()).all()
+
+    # 获取当前语言
+    try:
+        current_locale = get_locale()
+    except Exception:
+        current_locale = 'en'
+
+    view_models = []
+    for m in members:
+        slug = to_slug(m.name or '')
+        profile, source = load_member_profile(slug)
+        if source is None:
+            current_app.logger.info(
+                f'members: no profile/info for slug={slug}, fallback to DB'
+            )
+        selected = select_by_locale(profile, m, current_locale)
+
+        # 解释：选择头像，优先 DB，其次 info/profile 中的 photo
+        photo = (m.photo or '').strip()
+        if not photo:
+            # 尝试从旧 info.json 读取 photo（若映射不到则忽略）
+            base_dir = os.path.join(current_app.root_path, 'static', 'members', slug)
+            info_json = read_json(os.path.join(base_dir, 'info.json'))
+            if isinstance(info_json, dict):
+                photo = str(info_json.get('photo', '')).strip()
+
+        view_models.append({
+            'slug': slug,
+            'name': m.name,
+            'photo': photo,
+            **selected,
+        })
+
+    return render_template('members/index.html', members=view_models)
 
 # Safe numeric conversion helper functions
 def safe_float(value):
@@ -372,7 +563,7 @@ def edit(material_id):
             # 结构文件上传，直接保存原始文件名
             if structure_file and structure_file.filename:
                 if not structure_file.filename.endswith('.cif'):
-                    flash('Please upload a .cif format structure file!', 'error')
+                    flash(_('Please upload a .cif format structure file!'), 'error')
                     return redirect(url_for('views.edit', material_id=material_id))
                 structure_filename = secure_filename(structure_file.filename)
                 structure_path = os.path.join(structure_dir, structure_filename)
@@ -386,10 +577,10 @@ def edit(material_id):
                         Material.id != numeric_id
                     ).first()
                     if existing_material:
-                        flash(f'Material name "{chemical_name}" already exists, please change CIF file', 'error')
+                        flash(_('Material name "%(chemical_name)s" already exists, please change CIF file', chemical_name=chemical_name), 'error')
                         return redirect(url_for('views.edit', material_id=material_id))
                     material.name = chemical_name
-                    flash(f'Material name updated from CIF file: {chemical_name}', 'info')
+                    flash(_('Material name updated from CIF file: %(chemical_name)s', chemical_name=chemical_name), 'info')
 
             # band文件上传
             if band_file and band_file.filename:
@@ -416,7 +607,7 @@ def edit(material_id):
             if not structure_file or not structure_file.filename or not material.name:
                 material.name = request.form.get('name')
             if not material.name:
-                flash('Material name cannot be empty!', 'error')
+                flash(_('Material name cannot be empty!'), 'error')
                 return redirect(url_for('views.edit', material_id=material_id))
             material.status = request.form.get('status')
             material.fermi_level = safe_float(request.form.get('fermi_level'))
@@ -424,14 +615,14 @@ def edit(material_id):
             material.band_gap = safe_float(request.form.get('band_gap'))
             material.materials_type = request.form.get('materials_type')
             db.session.commit()
-            flash('Material information updated successfully.', 'success')
+            flash(_('Material information updated successfully.'), 'success')
             return redirect(url_for('views.detail', material_id=material_id))
         except ValueError as e:
-            flash(f'Invalid data: {str(e)}', 'error')
+            flash(_('Invalid data: %(error)s', error=str(e)), 'error')
             return redirect(url_for('views.edit', material_id=material_id))
         except Exception as e:
             db.session.rollback()
-            flash(f'An error occurred: {str(e)}', 'error')
+            flash(_('An error occurred: %(error)s', error=str(e)), 'error')
             return redirect(url_for('views.edit', material_id=material_id))
 
     # GET请求，显示所有.cif、band、sc文件
@@ -448,13 +639,13 @@ def edit(material_id):
     if os.path.exists(structure_dir):
         cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
         if len(cif_files) > 1:
-            flash('Warning: Multiple CIF files found in structure directory. Please keep only one!', 'warning')
+            flash(_('Warning: Multiple CIF files found in structure directory. Please keep only one!'), 'warning')
 
     # 检查能带文件（只检查.dat文件，.json是分析结果文件）
     if os.path.exists(band_dir):
         band_dat_files = [f for f in os.listdir(band_dir) if f.endswith('.dat')]
         if len(band_dat_files) > 1:
-            flash('Warning: Multiple band .dat files found in band directory. Please keep only one!', 'warning')
+            flash(_('Warning: Multiple band .dat files found in band directory. Please keep only one!'), 'warning')
         # 获取所有能带相关文件用于显示
         band_files = [f for f in os.listdir(band_dir) if f.endswith('.dat') or f.endswith('.json')]
 
@@ -462,7 +653,7 @@ def edit(material_id):
     if os.path.exists(sc_dir):
         sc_files = [f for f in os.listdir(sc_dir) if f.endswith('.dat')]
         if len(sc_files) > 1:
-            flash('Warning: Multiple SC files found in sc directory. Please keep only one!', 'warning')
+            flash(_('Warning: Multiple SC files found in sc directory. Please keep only one!'), 'warning')
     return render_template('materials/edit.html', material=material, cif_files=cif_files, band_files=band_files, sc_files=sc_files, structure_dir=structure_dir, band_dir=band_dir, sc_dir=sc_dir)
 
 # Material detail page
@@ -499,7 +690,7 @@ def detail(material_id):
     if len(cif_files) == 1:
         structure_file = os.path.relpath(cif_files[0], os.path.join(current_app.root_path, 'static'))
     elif len(cif_files) > 1:
-        flash('Error: Multiple CIF files found in structure directory. Please keep only one!', 'error')
+        flash(_('Error: Multiple CIF files found in structure directory. Please keep only one!'), 'error')
         structure_file = None
     else:
         structure_file = None
@@ -508,7 +699,7 @@ def detail(material_id):
     if len(band_dat_files) == 1:
         band_file = os.path.relpath(band_dat_files[0], os.path.join(current_app.root_path, 'static'))
     elif len(band_dat_files) > 1:
-        flash('Error: Multiple band .dat files found in band directory. Please keep only one!', 'error')
+        flash(_('Error: Multiple band .dat files found in band directory. Please keep only one!'), 'error')
         band_file = None
     else:
         band_file = None
@@ -517,7 +708,7 @@ def detail(material_id):
     if len(sc_files) == 1:
         sc_file = os.path.relpath(sc_files[0], os.path.join(current_app.root_path, 'static'))
     elif len(sc_files) > 1:
-        flash('Error: Multiple SC files found in sc directory. Please keep only one!', 'error')
+        flash(_('Error: Multiple SC files found in sc directory. Please keep only one!'), 'error')
         sc_file = None
     else:
         sc_file = None
@@ -581,7 +772,7 @@ def delete(material_id):
     
     db.session.delete(material)  # Delete record
     db.session.commit()  # Commit transaction
-    flash(f'Material "{material.name}" and all related files have been successfully deleted.', 'success')  # Display success message
+    flash(_('Material "%(name)s" and all related files have been successfully deleted.', name=material.name), 'success')  # Display success message
     return redirect(url_for('views.index'))  # Redirect to homepage
 
 # Helper function to get client IP
@@ -611,7 +802,7 @@ def check_ip_blocked(view_func):
         # Check if IP is in blocked list
         blocked = BlockedIP.query.filter_by(ip_address=client_ip).first()
         if blocked:
-            flash('Access denied. Your IP has been blocked due to multiple failed login attempts.', 'error')
+            flash(_('Access denied. Your IP has been blocked due to multiple failed login attempts.'), 'error')
             return redirect(url_for('views.landing'))
         
         return view_func(*args, **kwargs)
@@ -641,7 +832,7 @@ def login():
             validate_csrf(request.form.get('csrf_token'))
         except Exception as e:
             # CSRF验证失败，可能是令牌过期或无效
-            flash('Security token expired or invalid. Please try again.', 'error')
+            flash(_('Security token expired or invalid. Please try again.'), 'error')
             current_app.logger.warning(f"CSRF validation failed for login: {str(e)}")
             return render_template('auth/login.html')
 
@@ -650,7 +841,7 @@ def login():
         captcha_input = request.form.get('captcha', '').upper()
         real_captcha = session.get('captcha', '')
         if captcha_input != real_captcha:
-            flash('Invalid captcha code, please try again', 'error')
+            flash(_('Invalid captcha code, please try again'), 'error')
             return render_template('auth/login.html')
         password = request.form.get('password')
         remember = 'remember' in request.form
@@ -659,7 +850,7 @@ def login():
         
         # Form validation
         if not email or not username or not password:
-            flash('All fields are required.', 'error')
+            flash(_('All fields are required.'), 'error')
             return render_template('auth/login.html')
         
         # Check login failure count with enhanced security logging
@@ -685,10 +876,10 @@ def login():
                 db.session.add(block_ip)
                 db.session.commit()
                 session.pop(failed_key, None)
-                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                flash(_('Your IP has been blocked due to too many failed login attempts.'), 'error')
                 return redirect(url_for('views.login'))
             
-            flash(f'Email not found. Please check your email address. You have {remaining_attempts} attempts remaining.', 'error')
+            flash(_('Email not found. Please check your email address. You have %(n)d attempts remaining.', n=remaining_attempts), 'error')
             return render_template('auth/login.html')
         
         # Check if username matches the email
@@ -704,10 +895,10 @@ def login():
                 db.session.add(block_ip)
                 db.session.commit()
                 session.pop(failed_key, None)
-                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                flash(_('Your IP has been blocked due to too many failed login attempts.'), 'error')
                 return redirect(url_for('views.login'))
             
-            flash(f'Username does not match this email address. You have {remaining_attempts} attempts remaining.', 'error')
+            flash(_('Username does not match this email address. You have %(n)d attempts remaining.', n=remaining_attempts), 'error')
             return render_template('auth/login.html')
         
         # Distinguish between admin login and regular login
@@ -723,10 +914,10 @@ def login():
                 db.session.add(block_ip)
                 db.session.commit()
                 session.pop(failed_key, None)
-                flash('Your IP has been blocked due to too many unauthorized admin login attempts.', 'error')
+                flash(_('Your IP has been blocked due to too many unauthorized admin login attempts.'), 'error')
                 return redirect(url_for('views.login'))
             
-            flash(f'This account does not have administrator privileges. You have {remaining_attempts} attempts remaining.', 'error')
+            flash(_('This account does not have administrator privileges. You have %(n)d attempts remaining.', n=remaining_attempts), 'error')
             return render_template('auth/login.html')
         
         # Check password
@@ -742,10 +933,10 @@ def login():
                 db.session.add(block_ip)
                 db.session.commit()
                 session.pop(failed_key, None)
-                flash('Your IP has been blocked due to too many failed login attempts.', 'error')
+                flash(_('Your IP has been blocked due to too many failed login attempts.'), 'error')
                 return redirect(url_for('views.login'))
             
-            flash(f'Incorrect password. You have {remaining_attempts} attempts remaining.', 'error')
+            flash(_('Incorrect password. You have %(n)d attempts remaining.', n=remaining_attempts), 'error')
             return render_template('auth/login.html')
         
         # 登录成功，清除失败计数
@@ -803,7 +994,7 @@ def logout():
             regenerate_session()
         except:
             pass
-        flash('Logout completed.', 'info')
+        flash(_('Logout completed.'), 'info')
         return redirect(url_for('views.index'))
 
 # 调试路由：检查用户状态
@@ -871,7 +1062,7 @@ def debug_clear_session():
         return "Debug mode only", 403
 
     session.clear()
-    flash('Session cleared successfully.', 'info')
+    flash(_('Session cleared successfully.'), 'info')
     return redirect(url_for('views.index'))
 
 # 用户设置功能已删除，为了安全考虑，用户无法在网页上修改个人信息
@@ -1090,10 +1281,73 @@ def captcha():
 @bp.route('/members')
 def members():
     """
-    研究部成员展示页面
+    研究部成员展示页面（多语言，方案B：静态JSON）
+
+    逻辑：
+    - 基础信息（name、photo）来自数据库 Member
+    - 文案信息（title/bio/achievements）优先读取 app/static/members/<slug>/profile.json
+    - 根据当前语言(locale)选择 *_<locale> 字段，带回退
+    - 组装 display_* 字段供模板直接渲染
     """
-    members = Member.query.all()  # 查询所有成员
-    return render_template('members/index.html', members=members)
+    db_members = Member.query.all()
+
+    # 获取当前语言（两位，如 'en'/'zh'）
+    try:
+        locale = str(get_locale())[:2] if get_locale() else 'en'
+    except Exception:
+        locale = 'en'
+
+    static_members_dir = os.path.join(current_app.root_path, 'static', 'members')
+
+    display_members = []
+
+    for m in db_members:
+        # 依据 name 生成 slug：小写+去空格，用于目录名
+        base_name = m.name or ''
+        slug = base_name.lower().replace(' ', '')
+        profile_path = os.path.join(static_members_dir, slug, 'profile.json')
+
+        data = {}
+        if os.path.exists(profile_path):
+            try:
+                with open(profile_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except Exception as e:
+                current_app.logger.warning(f"Failed to read member profile.json for {slug}: {e}")
+                data = {}
+
+        # 选择多语言文本，带回退：优先 *_<locale>，其次无后缀字段，再次 DB 字段，最后空串
+        def pick_text(prefix: str, default: str = '') -> str:
+            return (
+                data.get(f'{prefix}_{locale}')
+                or data.get(prefix)
+                or default
+                or ''
+            )
+
+        # 成就：期望列表，兼容字符串（按换行拆分）
+        def pick_achievements():
+            ach = (
+                data.get(f'achievements_{locale}')
+                or data.get('achievements')
+                or (m.achievements or '')
+            )
+            if isinstance(ach, list):
+                return [str(s).strip() for s in ach if str(s).strip()]
+            if isinstance(ach, str):
+                return [line.strip() for line in ach.split('\n') if line.strip()]
+            return []
+
+        display_members.append({
+            'name': base_name,
+            'photo': m.photo or 'photo.jpg',  # 回退一个占位名，防止模板路径拼接失败
+            'slug': slug,
+            'display_title': pick_text('title', m.title or ''),
+            'display_bio': pick_text('bio', m.bio or ''),
+            'display_achievements': pick_achievements(),
+        })
+
+    return render_template('members/index.html', members=display_members)
 
 # ==================== 智能搜索API端点 ====================
 
@@ -1363,14 +1617,11 @@ def admin_analyze_bands():
 
         db.session.commit()
 
-        flash(f'Band analysis completed! '
-              f'Analyzed: {analyzed}, '
-              f'Cached: {cached}, '
-              f'Failed: {failed}', 'success')
+        flash(_('Band analysis completed! Analyzed: %(analyzed)d, Cached: %(cached)d, Failed: %(failed)d', analyzed=analyzed, cached=cached, failed=failed), 'success')
 
     except Exception as e:
         current_app.logger.error(f"Error in batch band analysis: {e}")
-        flash(f'Batch analysis failed: {str(e)}', 'error')
+        flash(_('Batch analysis failed: %(error)s', error=str(e)), 'error')
 
     return redirect(url_for('views.index'))
 

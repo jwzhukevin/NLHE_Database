@@ -9,17 +9,17 @@
             <div class="login-type-selector">
                 <button class="type-btn active" id="user-btn">
                     <i class="fas fa-user"></i>
-                    <span>User</span>
+                    <span>{{ _('User') }}</span>
                 </button>
                 <button class="type-btn" id="admin-btn">
                     <i class="fas fa-user-shield"></i>
-                    <span>Administrator</span>
+                    <span>{{ _('Administrator') }}</span>
                 </button>
             </div>
             
             <!-- Login Form -->
             <div class="login-form-wrapper">
-                <h2 id="form-title">Sign In</h2>
+                <h2 id="form-title">{{ _('Sign In') }}</h2>
                 
                 <form method="post" class="login-form">
                     {% if csrf_token %}
@@ -30,31 +30,31 @@
                     <div class="form-field">
                         <label for="email">
                             <i class="fas fa-envelope"></i>
-                            <span>Email</span>
+                            <span>{{ _('Email') }}</span>
                         </label>
-                        <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                        <input type="email" id="email" name="email" placeholder="{{ _('Enter your email address') }}" required>
                     </div>
                     
                     <div class="form-field">
                         <label for="username">
                             <i class="fas fa-user-circle"></i>
-                            <span>Username</span>
+                            <span>{{ _('Username') }}</span>
                         </label>
-                        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                        <input type="text" id="username" name="username" placeholder="{{ _('Enter your username') }}" required>
                     </div>
                     
                     <div class="form-field">
                         <label for="captcha">
                             <i class="fas fa-shield-alt"></i>
-                            <span>Captcha</span>
+                            <span>{{ _('Captcha') }}</span>
                         </label>
                         <div class="captcha-container">
-                            <input type="text" id="captcha" name="captcha" placeholder="Enter the captcha" maxlength="5" required class="captcha-input" />
+                            <input type="text" id="captcha" name="captcha" placeholder="{{ _('Enter the captcha') }}" maxlength="5" required class="captcha-input" />
                             <div class="captcha-image-wrapper">
-                                <img id="captcha-img" src="{{ url_for('views.captcha') }}" alt="Captcha" class="captcha-image" />
+                                <img id="captcha-img" src="{{ url_for('views.captcha') }}" alt="{{ _('Captcha') }}" class="captcha-image" />
                                 <div class="captcha-refresh-hint">
                                     <i class="fas fa-sync-alt"></i>
-                                    <span>Click to refresh</span>
+                                    <span>{{ _('Click to refresh') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -63,10 +63,10 @@
                     <div class="form-field">
                         <label for="password">
                             <i class="fas fa-lock"></i>
-                            <span>Password</span>
+                            <span>{{ _('Password') }}</span>
                         </label>
                         <div class="password-input-container">
-                            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                            <input type="password" id="password" name="password" placeholder="{{ _('Enter your password') }}" required>
                             <button type="button" class="password-toggle" id="password-toggle">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -74,8 +74,8 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="primary-btn" id="login-button">Log In</button>
-                        <a href="{{ url_for('views.index') }}" class="secondary-btn">Return to Database</a>
+                        <button type="submit" class="primary-btn" id="login-button">{{ _('Log In') }}</button>
+                        <a href="{{ url_for('views.index') }}" class="secondary-btn">{{ _('Return to Database') }}</a>
                     </div>
                 </form>
                 
@@ -85,13 +85,23 @@
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
                     <div class="warning-text">
-                        <p>This area is restricted to administrators only. Unauthorized access attempts are monitored.</p>
+                        <p>{{ _('This area is restricted to administrators only. Unauthorized access attempts are monitored.') }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<!-- i18n texts as JSON to avoid JS parsing issues before template rendering -->
+<script id="i18n-texts" type="application/json">
+{{ {
+  "signIn": _("Sign In"),
+  "logIn": _("Log In"),
+  "adminSignIn": _("Administrator Sign In"),
+  "logInAsAdmin": _("Log In as Administrator")
+} | tojson }}
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -102,6 +112,21 @@
         const formTitle = document.getElementById('form-title');
         const loginTypeInput = document.getElementById('login-type');
         const loginButton = document.getElementById('login-button');
+        
+        // Localized text from backend
+        // [Deprecated 20250820] 旧写法：直接在 JS 字符串中拼接模板变量，可能引号冲突
+        // const i18nTexts = {
+        //     signIn: '{{ _('Sign In') }}',
+        //     logIn: '{{ _('Log In') }}',
+        //     adminSignIn: '{{ _('Administrator Sign In') }}',
+        //     logInAsAdmin: '{{ _('Log In as Administrator') }}'
+        // };
+        // 采用从 <script type="application/json"> 读取的方式，避免未渲染阶段的语法误报
+        // [Deprecated 20250820] 旧方案（已弃用备份）：内联 JSON.parse 包裹模板输出，可能触发 IDE 误报
+        // const i18nTexts = JSON.parse('{{ {"signIn": _("Sign In"), "logIn": _("Log In"), "adminSignIn": _("Administrator Sign In"), "logInAsAdmin": _("Log In as Administrator")} | tojson | replace("'", "\\u0027") }}');
+        const i18nTexts = JSON.parse(
+            document.getElementById('i18n-texts').textContent
+        );
         
         // Password visibility toggle
         const passwordField = document.getElementById('password');
@@ -122,9 +147,9 @@
             userBtn.classList.add('active');
             adminBtn.classList.remove('active');
             adminWarning.classList.remove('visible');
-            formTitle.textContent = 'Sign In';
+            formTitle.textContent = i18nTexts.signIn;
             loginTypeInput.value = 'user';
-            loginButton.textContent = 'Log In';
+            loginButton.textContent = i18nTexts.logIn;
         });
         
         // Admin button click event
@@ -132,9 +157,9 @@
             adminBtn.classList.add('active');
             userBtn.classList.remove('active');
             adminWarning.classList.add('visible');
-            formTitle.textContent = 'Administrator Sign In';
+            formTitle.textContent = i18nTexts.adminSignIn;
             loginTypeInput.value = 'admin';
-            loginButton.textContent = 'Log In as Administrator';
+            loginButton.textContent = i18nTexts.logInAsAdmin;
         });
 
         document.getElementById('captcha-img').onclick = function() {

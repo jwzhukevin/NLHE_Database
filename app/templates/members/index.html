@@ -3,8 +3,8 @@
     <!-- ========== 英雄区域 ========== -->
     <section class="hero">
         <div class="container">
-            <h1>Research Team</h1>
-            <p>Meet our talented researchers dedicated to cutting-edge materials science and computational design at the Department of Materials Computation and Design, Institute of Metal Research, Chinese Academy of Sciences.</p>
+            <h1>{{ _('Research Team') }}</h1>
+            <p>{{ _('Meet our talented researchers dedicated to cutting-edge materials science and computational design at the Department of Materials Computation and Design, Institute of Metal Research, Chinese Academy of Sciences.') }}</p>
         </div>
     </section>
 
@@ -16,15 +16,15 @@
                 {% for member in members %}
                 <div class="member-card">
                     <div class="member-photo-wrapper">
-                        <img src="{{ url_for('static', filename='members/' + member.name|lower|replace(' ', '') + '/' + member.photo) }}" alt="{{ member.name }}" class="member-photo">
+                        <img src="{{ url_for('static', filename='members/' + member.slug + '/' + member.photo) }}" alt="{{ member.name }}" class="member-photo">
                     </div>
                     <h3 class="member-name">{{ member.name }}</h3>
-                    <p class="title">{{ member.title }}</p>
-                    <p class="bio">{{ member.bio }}</p>
+                    <p class="title">{{ member.display_title }}</p>
+                    <p class="bio">{{ member.display_bio }}</p>
                     <div class="achievements">
-                        <strong>Achievements:</strong>
+                        <strong>{{ _('Achievements:') }}</strong>
                         <ul class="achievements-list">
-                            {% for ach in member.achievements.split('\n') if ach.strip() %}
+                            {% for ach in member.display_achievements %}
                             <li>{{ ach }}</li>
                             {% endfor %}
                         </ul>

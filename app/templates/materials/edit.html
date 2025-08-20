@@ -2,7 +2,10 @@
 
 {% block content %}
 <!-- ====================== Main Container ====================== -->
-<div class="full-form-container">
+<div class="full-form-container" 
+     data-no-file="{{ _('No file selected') }}" 
+     data-file-label="{{ _('File:') }}" 
+     data-size-label="{{ _('Size:') }}">
     <style>
     /* Main Container */
     .full-form-container {
@@ -15,91 +18,91 @@
     }
     </style>
 
-    <span class="title2">Editing {{ material.name }}</span>
+    <span class="title2">{{ _('Editing %(name)s', name=material.name) }}</span>
     <form method="post" class="material-form" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <!-- Core Properties -->
         <div class="form-section">
-            <h3>Core Properties</h3>
+            <h3>{{ _('Core Properties') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Material Name <span class="required">*</span></label>
+                    <label>{{ _('Material Name') }} <span class="required">*</span></label>
                     <input type="text" name="name" 
                            value="{{ material.name }}" 
                            required
                            pattern=".{2,120}"
-                           title="2-120 characters">
+                           title="{{ _('2-120 characters') }}">
                 </div>
                 <div class="form-group">
-                    <label>Status</label>
+                    <label>{{ _('Status') }}</label>
                     <select name="status">
-                        <option value="done" {% if material.status == 'done' %}selected{% endif %}>Done</option>
-                        <option value="unconverged" {% if material.status == 'unconverged' %}selected{% endif %}>Unconverged</option>
-                        <option value="error" {% if material.status == 'error' %}selected{% endif %}>Error</option>
+                        <option value="done" {% if material.status == 'done' %}selected{% endif %}>{{ _('Done') }}</option>
+                        <option value="unconverged" {% if material.status == 'unconverged' %}selected{% endif %}>{{ _('Unconverged') }}</option>
+                        <option value="error" {% if material.status == 'error' %}selected{% endif %}>{{ _('Error') }}</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Structure File (CIF)</label>
+                    <label>{{ _('Structure File (CIF)') }}</label>
                     <input type="file" name="structure_file" accept=".cif" class="custom-file-input">
                     {% if cif_files %}
-                    <p class="file-info">Current CIF file(s):<br>
+                    <p class="file-info">{{ _('Current CIF file(s):') }}<br>
                         {% for f in cif_files %}
-                        <b>{{ f }}</b><br><span style="color:#888">Path: {{ structure_dir }}/{{ f }}</span><br>
+                        <b>{{ f }}</b><br><span style="color:#888">{{ _('Path:') }} {{ structure_dir }}/{{ f }}</span><br>
                         {% endfor %}
                         {% if cif_files|length > 1 %}
-                        <span style="color:#e74c3c;font-weight:bold">Warning: 存在多个.cif文件，请只保留一个！</span>
+                        <span style="color:#e74c3c;font-weight:bold">{{ _('Warning: 存在多个.cif文件，请只保留一个！') }}</span>
                         {% endif %}
                     </p>
                     {% endif %}
-                    <small class="help-text">支持.cif格式，文件名不限，若有多个.cif文件将报错</small>
-                    <span class="file-name">No file selected</span>
+                    <small class="help-text">{{ _('支持.cif格式，文件名不限，若有多个.cif文件将报错') }}</small>
+                    <span class="file-name">{{ _('No file selected') }}</span>
                 </div>
                 <div class="form-group">
-                    <label>Band Structure File (DAT/JSON)</label>
+                    <label>{{ _('Band Structure File (DAT/JSON)') }}</label>
                     <input type="file" name="band_file" accept=".json,.dat" class="custom-file-input">
-                    <small class="help-text">支持.dat/.json格式，文件名不限，若有多个同类文件将报错</small>
+                    <small class="help-text">{{ _('支持.dat/.json格式，文件名不限，若有多个同类文件将报错') }}</small>
                     {% if band_files %}
-                    <p class="file-info">Current band file(s):<br>
+                    <p class="file-info">{{ _('Current band file(s):') }}<br>
                         {% for f in band_files %}
-                        <b>{{ f }}</b><br><span style="color:#888">Path: {{ band_dir }}/{{ f }}</span><br>
+                        <b>{{ f }}</b><br><span style="color:#888">{{ _('Path:') }} {{ band_dir }}/{{ f }}</span><br>
                         {% endfor %}
                         {% if band_files|length > 1 %}
-                        <span style="color:#e74c3c;font-weight:bold">Warning: 存在多个能带文件，请只保留一个！</span>
+                        <span style="color:#e74c3c;font-weight:bold">{{ _('Warning: 存在多个能带文件，请只保留一个！') }}</span>
                         {% endif %}
                     </p>
                     {% endif %}
-                    <span class="file-name">No file selected</span>
+                    <span class="file-name">{{ _('No file selected') }}</span>
                 </div>
             </div>
         </div>
         
         <!-- Additional Files Upload Area -->
         <div class="form-section">
-            <h3>Additional Files</h3>
+            <h3>{{ _('Additional Files') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Material Properties (JSON)</label>
+                    <label>{{ _('Material Properties (JSON)') }}</label>
                     <input type="file" name="properties_json" accept=".json" class="custom-file-input">
-                    <small class="help-text">JSON file with material properties</small>
+                    <small class="help-text">{{ _('JSON file with material properties') }}</small>
                     {% if material.properties_json %}
-                    <p class="file-info">Current file: <b>{{ material.properties_json }}</b><br><span style="color:#888">Path: /static/materials/IMR-{{ material.id }}/{{ material.properties_json }}</span><br><span style="color:#1976d2">Required name: material.json</span></p>
+                    <p class="file-info">{{ _('Current file:') }} <b>{{ material.properties_json }}</b><br><span style="color:#888">{{ _('Path:') }} /static/materials/IMR-{{ material.id }}/{{ material.properties_json }}</span><br><span style="color:#1976d2">{{ _('Required name: material.json') }}</span></p>
                     {% endif %}
-                    <span class="file-name">No file selected</span>
+                    <span class="file-name">{{ _('No file selected') }}</span>
                 </div>
                 <div class="form-group">
-                    <label>Shift Current File (DAT)</label>
+                    <label>{{ _('Shift Current File (DAT)') }}</label>
                     <div class="custom-file">
                     <input type="file" name="sc_structure_file" accept=".dat" class="custom-file-input">
-                    <small class="help-text">支持.dat格式，文件名不限，若有多个同类文件将报错</small>
+                    <small class="help-text">{{ _('支持.dat格式，文件名不限，若有多个同类文件将报错') }}</small>
                     </div>
                     <div class="file-list">
                         {% for f in sc_files %}
                         <div class="file-item">
-                            <b>{{ f }}</b><br><span style="color:#888">Path: {{ sc_dir }}/{{ f }}</span><br>
-                            <button type="button" class="btn btn-sm btn-danger delete-file" data-file="{{ sc_dir }}/{{ f }}">删除</button>
+                            <b>{{ f }}</b><br><span style="color:#888">{{ _('Path:') }} {{ sc_dir }}/{{ f }}</span><br>
+                            <button type="button" class="btn btn-sm btn-danger delete-file" data-file="{{ sc_dir }}/{{ f }}">{{ _('删除') }}</button>
                         </div>
                         {% else %}
-                        <div class="no-files">无Shift Current文件</div>
+                        <div class="no-files">{{ _('无Shift Current文件') }}</div>
                         {% endfor %}
                     </div>
                 </div>
@@ -242,40 +245,40 @@
 
         <!-- Energy Properties -->
         <div class="form-section">
-            <h3>Energy Properties (eV)</h3>
+            <h3>{{ _('Energy Properties (eV)') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Fermi Level</label>
+                    <label>{{ _('Fermi Level') }}</label>
                     <input type="number" step="0.00000001"
                            name="fermi_level"
                            value="{{ material.fermi_level }}">
-                    <small class="help-text">Fermi energy level in eV</small>
+                    <small class="help-text">{{ _('Fermi energy level in eV') }}</small>
                 </div>
             </div>
         </div>
 
         <!-- Electronic Properties -->
         <div class="form-section">
-            <h3>Electronic Properties</h3>
+            <h3>{{ _('Electronic Properties') }}</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Band Gap (eV)</label>
+                    <label>{{ _('Band Gap (eV)') }}</label>
                     <input type="number" step="0.0001"
                            name="band_gap"
                            value="{{ material.band_gap }}">
-                    <small class="help-text">Automatically calculated from band data</small>
+                    <small class="help-text">{{ _('Automatically calculated from band data') }}</small>
                 </div>
                 <div class="form-group">
-                    <label>Materials Type</label>
+                    <label>{{ _('Materials Type') }}</label>
                     <select name="materials_type">
-                        <option value="">Select Type</option>
-                        <option value="metal" {% if material.materials_type == 'metal' %}selected{% endif %}>Metal</option>
-                        <option value="semimetal" {% if material.materials_type == 'semimetal' %}selected{% endif %}>Semimetal</option>
-                        <option value="semiconductor" {% if material.materials_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
-                        <option value="insulator" {% if material.materials_type == 'insulator' %}selected{% endif %}>Insulator</option>
-                        <option value="unknown" {% if material.materials_type == 'unknown' %}selected{% endif %}>Unknown</option>
+                        <option value="">{{ _('Select Type') }}</option>
+                        <option value="metal" {% if material.materials_type == 'metal' %}selected{% endif %}>{{ _('Metal') }}</option>
+                        <option value="semimetal" {% if material.materials_type == 'semimetal' %}selected{% endif %}>{{ _('Semimetal') }}</option>
+                        <option value="semiconductor" {% if material.materials_type == 'semiconductor' %}selected{% endif %}>{{ _('Semiconductor') }}</option>
+                        <option value="insulator" {% if material.materials_type == 'insulator' %}selected{% endif %}>{{ _('Insulator') }}</option>
+                        <option value="unknown" {% if material.materials_type == 'unknown' %}selected{% endif %}>{{ _('Unknown') }}</option>
                     </select>
-                    <small class="help-text">Automatically determined from band gap</small>
+                    <small class="help-text">{{ _('Automatically determined from band gap') }}</small>
                 </div>
             </div>
         </div>
@@ -285,19 +288,19 @@
         <!-- Form Action Buttons -->
         <div class="form-actions">
             <button type="submit" class="btn btn-save" 
-			        onclick="return confirm('Confirm Save?')">
-                <i class="fas fa-save"></i> Update Material
+                    data-confirm="{{ _('Confirm Save?') }}">
+                <i class="fas fa-save"></i> {{ _('Update Material') }}
             </button>
             <a href="{{ url_for('views.detail', material_id=material.id) }}" 
                class="btn btn-cancel">
-                <i class="fas fa-times"></i> Discard Changes
+                <i class="fas fa-times"></i> {{ _('Discard Changes') }}
             </a>
         </div>
         
         <!-- Data Synchronization Information -->
         <div class="sync-info">
-            <h4><i class="fas fa-sync"></i> Data Synchronization Feature</h4>
-            <p>After submitting the material, the system will automatically create the following directory structure:</p>
+            <h4><i class="fas fa-sync"></i> {{ _('Data Synchronization Feature') }}</h4>
+            <p>{{ _('After submitting the material, the system will automatically create the following directory structure:') }}</p>
             <div class="directory-structure">
                 <pre>
 材料目录结构:
@@ -402,19 +405,38 @@ IMR-[id]/
 
 <!-- File Input Event Handler -->
 <script>
-document.querySelectorAll('input[type="file"]').forEach(function(input) {
-    input.addEventListener('change', function(e) {
-        const file = this.files[0];
-        const fileNameSpan = this.parentElement.querySelector('.file-name');
-        if (!file) {
-            fileNameSpan.textContent = 'No file selected';
-            return;
-        }
-        // 只显示文件名和大小，不再校验文件名
-        let size = file.size;
-        let sizeStr = size > 1024*1024 ? (size/1024/1024).toFixed(2)+' MB' : (size/1024).toFixed(2)+' KB';
-        fileNameSpan.innerHTML = `<b>File:</b> ${file.name} <br><b>Size:</b> ${sizeStr}`;
+(function(){
+  const container = document.querySelector('.full-form-container');
+  if (!container) return;
+  const noFileText = container.dataset.noFile || 'No file selected';
+  const fileLabel = container.dataset.fileLabel || 'File:';
+  const sizeLabel = container.dataset.sizeLabel || 'Size:';
+
+  // 文件选择文本更新
+  document.querySelectorAll('input[type="file"]').forEach(function(input) {
+    input.addEventListener('change', function() {
+      const file = this.files[0];
+      const fileNameSpan = this.parentElement.querySelector('.file-name');
+      if (!file) {
+        fileNameSpan.textContent = noFileText;
+        return;
+      }
+      let size = file.size;
+      let sizeStr = size > 1024*1024 ? (size/1024/1024).toFixed(2)+' MB' : (size/1024).toFixed(2)+' KB';
+      fileNameSpan.innerHTML = `<b>${fileLabel}</b> ${file.name} <br><b>${sizeLabel}</b> ${sizeStr}`;
     });
-});
+  });
+
+  // 保存按钮确认弹窗
+  const saveBtn = document.querySelector('.btn-save');
+  if (saveBtn) {
+    const confirmText = saveBtn.dataset.confirm || 'Confirm Save?';
+    saveBtn.addEventListener('click', function(ev){
+      if (!confirm(confirmText)) {
+        ev.preventDefault();
+      }
+    });
+  }
+})();
 </script>
 {% endblock %}

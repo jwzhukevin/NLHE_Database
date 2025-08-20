@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ current_locale or 'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NLHE Database - Nonlinear Hall Effect Materials Database</title>
+    <title>{{ _('NLHE Database - Nonlinear Hall Effect Materials Database') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -247,51 +247,51 @@
     <!-- ========== 导航栏 ========== -->
     <nav class="navbar">
         <div class="container nav-content">
-            <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> Database</a>
+            <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> {{ _('Database') }}</a>
             <div class="nav-links">
                 <a href="{{ url_for('views.index') }}">
-                    <i class="fas fa-table"></i> Database
+                    <i class="fas fa-table"></i> {{ _('Database') }}
                 </a>
                 <a href="{{ url_for('articles.listing') }}">
-                    <i class="fas fa-book"></i> Contents
+                    <i class="fas fa-book"></i> {{ _('Contents') }}
                 </a>
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle" id="tools-dropdown">
-                        <i class="fas fa-tools"></i> Tools <i class="fas fa-caret-down"></i>
+                        <i class="fas fa-tools"></i> {{ _('Tools') }} <i class="fas fa-caret-down"></i>
                     </a>
                     <div class="dropdown-menu" id="tools-menu">
                         <a href="https://materialsproject.org/ml" target="_blank">
-                            <i class="fas fa-brain"></i> MP Machine Learning
+                            <i class="fas fa-brain"></i> {{ _('MP Machine Learning') }}
                         </a>
                         <a href="https://www.materialscloud.org/work/tools" target="_blank">
-                            <i class="fas fa-cloud"></i> Materials Cloud Tools
+                            <i class="fas fa-cloud"></i> {{ _('Materials Cloud Tools') }}
                         </a>
                         <a href="https://nomad-lab.eu/nomad-lab/" target="_blank">
-                            <i class="fas fa-atom"></i> NOMAD Laboratory
+                            <i class="fas fa-atom"></i> {{ _('NOMAD Laboratory') }}
                         </a>
                     </div>
                 </div>
                 <!-- 登录用户专用功能按钮 -->
                 {% if current_user.is_authenticated %}
                 <a href="{{ url_for('siliconflow.chat') }}">
-                    <i class="fas fa-robot"></i> SiliconFlow LLM
+                    <i class="fas fa-robot"></i> {{ _('SiliconFlow LLM') }}
                 </a>
                 <a href="{{ url_for('program.index') }}">
-                    <i class="fas fa-cogs"></i> Program
+                    <i class="fas fa-cogs"></i> {{ _('Program') }}
                 </a>
                 {% endif %}
 
                 <!-- 管理员专用按钮 -->
                 {% if current_user.is_authenticated and current_user.is_admin() %}
                 <a href="{{ url_for('views.add') }}">
-                    <i class="fas fa-plus"></i> Add
+                    <i class="fas fa-plus"></i> {{ _('Add') }}
                 </a>
                 {% endif %}
 
                 <!-- 未登录用户显示登录按钮 -->
                 {% if not current_user.is_authenticated %}
                 <a href="{{ url_for('views.login') }}">
-                    <i class="fas fa-sign-in-alt"></i> Login
+                    <i class="fas fa-sign-in-alt"></i> {{ _('Login') }}
                 </a>
                 {% endif %}
                 <!-- 用户类型提示区域，头像+用户名+下拉菜单 -->
@@ -300,20 +300,31 @@
                         <span class="user-avatar admin user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
                         <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
                         <div class="user-dropdown-menu">
-                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}</a>
                         </div>
                     {% elif current_user.is_authenticated %}
                         <span class="user-avatar user user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
                         <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
                         <div class="user-dropdown-menu">
-                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}</a>
                         </div>
                     {% else %}
                         <span class="user-avatar guest"><i class="fas fa-user-circle"></i></span>
-                        <span class="user-name">Guest</span>
+                        <span class="user-name">{{ _('Guest') }}</span>
                     {% endif %}
                 </div>
                 <!-- 结束 -->
+
+                <!-- 语言切换下拉 -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" id="lang-dropdown">
+                        <i class="fas fa-language"></i> {{ _('Language') }} <i class="fas fa-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu" id="lang-menu">
+                        <a href="{{ url_for('views.set_language', lang='en') }}" hreflang="en">{{ _('English') }}</a>
+                        <a href="{{ url_for('views.set_language', lang='zh') }}" hreflang="zh">{{ _('中文') }}</a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -554,32 +565,32 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>Database</h3>
-                    <p>Materials Database</p>
-                    <p>Explore and discover novel materials</p>
+                    <h3>{{ _('Database') }}</h3>
+                    <p>{{ _('Materials Database') }}</p>
+                    <p>{{ _('Explore and discover novel materials') }}</p>
                 </div>
                 <div class="footer-section">
-                    <h3>We</h3>
+                    <h3>{{ _('We') }}</h3>
                     <ul>
-                        <li><a href="{{ url_for('views.members') }}">Research Team</a></li>
-                        <li><a href="#">Publications</a></li>
-                        <li><a href="#">Achievements</a></li>
-                        <li><a href="#">Join Us</a></li>
+                        <li><a href="{{ url_for('views.members') }}">{{ _('Research Team') }}</a></li>
+                        <li><a href="#">{{ _('Publications') }}</a></li>
+                        <li><a href="#">{{ _('Achievements') }}</a></li>
+                        <li><a href="#">{{ _('Join Us') }}</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Related Links</h3>
+                    <h3>{{ _('Related Links') }}</h3>
                     <ul>
-                        <li><a href="https://gs.imr.ac.cn/" target="_blank">IMR Graduate School, CAS</a></li>
-                        <li><a href="http://www.imr.cas.cn/" target="_blank">Institute of Metal Research, CAS</a></li>
-                        <li><a href="https://www.cas.cn/" target="_blank">Chinese Academy of Sciences</a></li>
+                        <li><a href="https://gs.imr.ac.cn/" target="_blank">{{ _('IMR Graduate School, CAS') }}</a></li>
+                        <li><a href="http://www.imr.cas.cn/" target="_blank">{{ _('Institute of Metal Research, CAS') }}</a></li>
+                        <li><a href="https://www.cas.cn/" target="_blank">{{ _('Chinese Academy of Sciences') }}</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Contact Us</h3>
-                    <p>Address: 72 Wenhua Road, Shenhe District, Shenyang</p>
-                    <p>Postal Code: 110016</p>
-                    <p>Email: contact@nlhe-database.org</p>
+                    <h3>{{ _('Contact Us') }}</h3>
+                    <p>{{ _('Address: 72 Wenhua Road, Shenhe District, Shenyang') }}</p>
+                    <p>{{ _('Postal Code: 110016') }}</p>
+                    <p>{{ _('Email: contact@nlhe-database.org') }}</p>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -660,6 +671,21 @@
                 }
             });
 
+            // 语言下拉菜单交互
+            const langDropdown = document.getElementById('lang-dropdown');
+            const langMenu = document.getElementById('lang-menu');
+            if (langDropdown && langMenu) {
+                langDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    langMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!langDropdown.contains(e.target) && !langMenu.contains(e.target)) {
+                        langMenu.classList.remove('show');
+                    }
+                });
+            }
+
             // 处理Flash消息关闭按钮的点击事件
             document.querySelectorAll('.close-flash').forEach(button => {
                 button.addEventListener('click', function() {
@@ -706,4 +732,3 @@
     </script>
 </body>
 </html>
-

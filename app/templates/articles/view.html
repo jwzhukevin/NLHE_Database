@@ -3,11 +3,11 @@
 {% block content %}
 <div class="article-layout-wide">
     <!-- 目录区域，主容器外部 -->
-    <nav id="article-toc" class="article-toc"></nav>
+    <nav id="article-toc" class="article-toc" aria-label="{{ _('Table of contents') }}"></nav>
 <div class="article-container">
     <!-- Breadcrumbs Navigation -->
     <div class="breadcrumbs">
-        <a href="{{ url_for('articles.listing') }}">Contents</a>
+        <a href="{{ url_for('articles.listing') }}">{{ _('Contents') }}</a>
         <span class="separator">&gt;</span>
         <a href="{{ url_for('articles.listing', category=category) }}">{{ category|title }}</a>
         <span class="separator">&gt;</span>
@@ -16,7 +16,7 @@
         <div class="article-main-content">
     <!-- Article Header -->
     <header class="article-header">
-        <div class="article-category {{ category }}">{{ category|title }}</div>
+        <div class="article-category {{ category|lower }}">{{ category|title }}</div>
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-meta">
             {% if article.date %}
@@ -33,7 +33,7 @@
     <!-- Article Footer -->
     <div class="article-footer">
         <a href="{{ url_for('articles.listing') }}" class="back-button">
-            <i class="fas fa-arrow-left"></i> Back to Contents
+            <i class="fas fa-arrow-left"></i> {{ _('Back to Contents') }}
         </a>
             </div>
         </div>
@@ -411,12 +411,20 @@
         scroll-margin-top: 120px; /* 距离顶部120px，可根据导航栏高度调整 */
     }
 </style>
+<!-- i18n 文案以 JSON 注入供脚本安全读取 -->
+<script type="application/json" id="articles-i18n">
+  {{ {
+    'tocTitle': _('Contents')
+  } | tojson }}
+</script>
 <script>
 // 自动生成目录（TOC）脚本，适合新手理解
 window.addEventListener('DOMContentLoaded', function() {
     const content = document.querySelector('.article-content');
     const toc = document.getElementById('article-toc');
     if (!content || !toc) return;
+    // 解析 i18n JSON
+    const i18n = JSON.parse(document.getElementById('articles-i18n').textContent);
     // 查找所有h1~h3标题
     const headings = content.querySelectorAll('h1, h2, h3');
     if (headings.length < 2) {
@@ -424,7 +432,7 @@ window.addEventListener('DOMContentLoaded', function() {
         return;
     }
     // 生成锚点id并构建目录树
-    let tocHtml = '<div class="toc-title">Contents</div><ul>';
+    let tocHtml = '<div class="toc-title">' + i18n.tocTitle + '</div><ul>';
     headings.forEach(function(h, idx) {
         // 生成唯一id
         if (!h.id) h.id = 'toc-h-' + idx;

@@ -5,14 +5,14 @@
     <div class="container">
         <div class="error-content">
             <div class="error-code">500</div>
-            <h1>Internal Server Error</h1>
-            <p>We're experiencing some technical difficulties with our server. Our team has been notified and is working to fix the issue as soon as possible.</p>
+            <h1>{{ _('Internal Server Error') }}</h1>
+            <p>{{ _("We're experiencing some technical difficulties with our server. Our team has been notified and is working to fix the issue as soon as possible.") }}</p>
             <div class="error-actions">
                 <a href="{{ url_for('views.landing') }}" class="cta-button">
-                    <i class="fas fa-home"></i> Return Home
+                    <i class="fas fa-home"></i> {{ _('Return Home') }}
                 </a>
                 <a href="{{ url_for('views.index') }}" class="cta-button secondary">
-                    <i class="fas fa-database"></i> Go to Database
+                    <i class="fas fa-database"></i> {{ _('Go to Database') }}
                 </a>
             </div>
         </div>

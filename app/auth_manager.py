@@ -7,6 +7,7 @@
 
 from datetime import datetime, timezone, timezone
 from flask import session, request, current_app, flash
+from flask_babel import _
 from flask_login import login_user as flask_login_user, logout_user as flask_logout_user, current_user
 from .security_utils import log_security_event, regenerate_session
 from .models import db
@@ -64,7 +65,7 @@ class LoginStateManager:
 
             # 5. 只有在状态真正发生变化时才显示登录消息（游客 → 登录用户）
             if not was_authenticated_before:
-                flash(f'Welcome back, {user.username}!', 'success')
+                flash(_('Welcome back, %(username)s!', username=user.username), 'success')
                 current_app.logger.info(f"Login status changed: Guest → {user.role} user, showing welcome message")
             else:
                 current_app.logger.info(f"User was already authenticated, no welcome message shown")
@@ -88,12 +89,12 @@ class LoginStateManager:
             
             current_app.logger.info(f"User {user.username} logged in successfully from {ip_address}")
             
-            return True, f"Welcome back, {user.username}!", None
+            return True, _("Welcome back, %(username)s!", username=user.username), None
             
         except Exception as e:
             current_app.logger.error(f"Login error for user {user.username}: {e}")
             log_security_event("LOGIN_ERROR", f"User: {user.username}, Error: {str(e)}", request.remote_addr)
-            return False, "Login failed due to system error. Please try again.", None
+            return False, _("Login failed due to system error. Please try again."), None
     
     @staticmethod
     def logout_user():
@@ -131,7 +132,7 @@ class LoginStateManager:
                 flask_logout_user()
 
                 # 4. 只有在状态真正发生变化时才显示登出消息（登录用户 → 游客）
-                flash('You have been logged out successfully.', 'info')
+                flash(_('You have been logged out successfully.'), 'info')
                 current_app.logger.info(f"Logout status changed: {username} → Guest, showing logout message")
 
                 # 5. 完全清理会话
@@ -141,7 +142,7 @@ class LoginStateManager:
                 regenerate_session()
 
                 current_app.logger.info(f"User {username} logged out successfully from {ip_address}")
-                return True, "You have been logged out successfully."
+                return True, _("You have been logged out successfully.")
 
             else:
                 # 用户未登录，静默处理（不显示消息，因为状态没有变化）
@@ -162,7 +163,7 @@ class LoginStateManager:
             except:
                 pass
                 
-            return True, "Logout completed."
+            return True, _("Logout completed.")
     
     @staticmethod
     def _cleanup_old_session():
@@ -251,5 +252,6 @@ class LoginErrorHandler:
             ip_address
         )
         
-        # 返回用户友好的错误消息
-        return LoginErrorHandler.ERROR_MESSAGES.get(error_type, 'Login failed. Please try again.')
+        # 返回用户友好的错误消息（在返回时进行翻译，避免导入时求值）
+        msg = LoginErrorHandler.ERROR_MESSAGES.get(error_type, 'Login failed. Please try again.')
+        return _(msg)

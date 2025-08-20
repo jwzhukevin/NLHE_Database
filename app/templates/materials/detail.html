@@ -105,12 +105,12 @@ setTimeout(function() {
                 <!-- 面包屑导航 -->
                 <div class="breadcrumb-nav">
                     <a href="{{ url_for('views.landing') }}" class="breadcrumb-link">
-                        <i class="fas fa-home"></i> Home
+                        <i class="fas fa-home"></i> {{ _('Home') }}
                     </a>
                     <span class="breadcrumb-separator">
                         <i class="fas fa-chevron-right"></i>
                     </span>
-                    <a href="{{ url_for('views.index') }}" class="breadcrumb-link">Materials</a>
+                    <a href="{{ url_for('views.index') }}" class="breadcrumb-link">{{ _('Materials') }}</a>
                     <span class="breadcrumb-separator">
                         <i class="fas fa-chevron-right"></i>
                     </span>
@@ -119,11 +119,11 @@ setTimeout(function() {
 
                 <!-- 属性导航链接 -->
                 <div class="nav-properties">
-                    <a href="#first-section" class="nav-property-link active">Structure</a>
-                    <a href="#second-section" class="nav-property-link">Crystal Data</a>
-                    <a href="#third-section" class="nav-property-link">Band Structure</a>
-                    <a href="#sc-section" class="nav-property-link">SC</a>
-                    <a href="#fourth-section" class="nav-property-link">Properties</a>
+                    <a href="#first-section" class="nav-property-link active">{{ _('Structure') }}</a>
+                    <a href="#second-section" class="nav-property-link">{{ _('Crystal Data') }}</a>
+                    <a href="#third-section" class="nav-property-link">{{ _('Band Structure') }}</a>
+                    <a href="#sc-section" class="nav-property-link">{{ _('SC') }}</a>
+                    <a href="#fourth-section" class="nav-property-link">{{ _('Properties') }}</a>
                 </div>
             </div>
 
@@ -140,7 +140,7 @@ setTimeout(function() {
                 {% if request.referrer and 'q=' in request.referrer %}
                 <a href="{{ request.referrer }}" class="action-btn back-btn">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Back</span>
+                    <span>{{ _('Back') }}</span>
                 </a>
                 {% endif %}
 
@@ -149,14 +149,14 @@ setTimeout(function() {
                 <a href="{{ url_for('views.edit', material_id=material.id) }}"
                    class="action-btn edit-btn">
                     <i class="fas fa-edit"></i>
-                    <span>Edit</span>
+                    <span>{{ _('Edit') }}</span>
                 </a>
 
                 <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}"
-                   type="submit" onclick="return confirm('Delete permanently?')"
+                   type="submit" data-confirm="{{ _('Delete permanently?') }}" onclick="return confirm(this.dataset.confirm)"
                    class="action-btn delete-btn">
                     <i class="fas fa-trash-alt"></i>
-                    <span>Delete</span>
+                    <span>{{ _('Delete') }}</span>
                 </a>
                 {% endif %}
             </div>
@@ -1708,7 +1708,7 @@ setTimeout(function() {
             <div class="column-60">
                 <div class="viewer-container">
                     <div class="card-header">
-        <h3>3D Structure</h3>
+        <h3>{{ _('3D Structure') }}</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="viewer-content">
@@ -1721,19 +1721,19 @@ setTimeout(function() {
             <div class="column-40">
                 <div class="detail-card" id="crystal-structure">
                     <div class="card-header">
-                        <h3>Crystal Structure</h3>
+                        <h3>{{ _('Crystal Structure') }}</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="card-content">
                         <ul>
-                            <li><span class="property-label">Lattice a:</span> <span class="property-value" id="lattice-a">Loading...</span></li>
-                            <li><span class="property-label">Lattice b:</span> <span class="property-value" id="lattice-b">Loading...</span></li>
-                            <li><span class="property-label">Lattice c:</span> <span class="property-value" id="lattice-c">Loading...</span></li>
-                            <li><span class="property-label">α:</span> <span class="property-value" id="lattice-alpha">Loading...</span></li>
-                            <li><span class="property-label">β:</span> <span class="property-value" id="lattice-beta">Loading...</span></li>
-                            <li><span class="property-label">γ:</span> <span class="property-value" id="lattice-gamma">Loading...</span></li>
-                            <li><span class="property-label">Volume:</span> <span class="property-value" id="lattice-volume">Loading...</span></li>
-                            <li><span class="property-label">Density:</span> <span class="property-value" id="structure-density">Loading...</span></li>
+                            <li><span class="property-label">{{ _('Lattice a:') }}</span> <span class="property-value" id="lattice-a">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Lattice b:') }}</span> <span class="property-value" id="lattice-b">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Lattice c:') }}</span> <span class="property-value" id="lattice-c">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Alpha:') }}</span> <span class="property-value" id="lattice-alpha">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Beta:') }}</span> <span class="property-value" id="lattice-beta">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Gamma:') }}</span> <span class="property-value" id="lattice-gamma">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Volume:') }}</span> <span class="property-value" id="lattice-volume">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Density:') }}</span> <span class="property-value" id="structure-density">{{ _('Loading...') }}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -1748,20 +1748,20 @@ setTimeout(function() {
             <div class="column-40">
                 <div class="detail-card" id="crystal-symmetry">
                     <div class="card-header collapsed">
-                        <h3>Crystal Symmetry</h3>
+                        <h3>{{ _('Crystal Symmetry') }}</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="card-content collapsed">
                         <ul>
-                            <li><span class="property-label">Crystal System:</span> <span class="property-value" id="crystal-system">Loading...</span></li>
-                            <li><span class="property-label">Space Group:</span> <span class="property-value" id="space-group">
+                            <li><span class="property-label">{{ _('Crystal System:') }}</span> <span class="property-value" id="crystal-system">{{ _('Loading...') }}</span></li>
+                            <li><span class="property-label">{{ _('Space Group:') }}</span> <span class="property-value" id="space-group">
                                 {% if material.sg_name and material.sg_num %}
                                     {{ material.sg_name }} ({{ material.sg_num }})
                                 {% else %}
-                                    Loading...
+                                    {{ _('Loading...') }}
                                 {% endif %}
                             </span></li>
-                            <li><span class="property-label">MP-ID:</span> <span class="property-value">{{ material.mp_id if material.mp_id else 'Unknown' }}</span></li>
+                            <li><span class="property-label">{{ _('MP-ID:') }}</span> <span class="property-value">{{ material.mp_id if material.mp_id else _('Unknown') }}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -1771,11 +1771,11 @@ setTimeout(function() {
             <div class="column-60">
                 <div class="detail-card" id="atomic-coordinates">
                     <div class="card-header collapsed">
-                        <h3>Atomic Coordinates</h3>
+                        <h3>{{ _('Atomic Coordinates') }}</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="card-content collapsed">
-                        <div id="atom-list">Loading atomic coordinates...</div>
+                        <div id="atom-list">{{ _('Loading atomic coordinates...') }}</div>
                     </div>
                 </div>
             </div>
@@ -1789,9 +1789,9 @@ setTimeout(function() {
             <div class="column-60">
                 <div class="viewer-container">
                     <div class="card-header collapsed">
-        <h3>Band Structure
+        <h3>{{ _('Band Structure') }}
             {% if current_user.is_authenticated %}
-            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/band/band.dat') }}" download class="download-btn" title="Download band data">
+            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/band/band.dat') }}" download class="download-btn" title="{{ _('Download band data') }}">
                 <i class="fas fa-download"></i>
             </a>
             {% endif %}
@@ -1808,26 +1808,26 @@ setTimeout(function() {
             <div class="column-40">
                 <div class="detail-card" id="band-structure">
                     <div class="card-header collapsed">
-                        <h3>Band Structure</h3>
+                        <h3>{{ _('Band Structure') }}</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="card-content collapsed">
                         <ul>
-                            <li id="band-gap"><span class="property-label">Band Gap:</span>
+                            <li id="band-gap"><span class="property-label">{{ _('Band Gap:') }}</span>
                                 <span class="property-value">
                                     {% if material.band_gap is not none %}
                                         {{ "%.4f"|format(material.band_gap) }} eV
                                     {% else %}
-                                        Analyzing...
+                                        {{ _('Analyzing...') }}
                                     {% endif %}
                                 </span>
                             </li>
-                            <li id="material-type"><span class="property-label">Materials Type:</span>
+                            <li id="material-type"><span class="property-label">{{ _('Materials Type:') }}</span>
                                 <span class="property-value">
                                     {% if material.materials_type %}
                                         {{ material.materials_type|title }}
                                     {% else %}
-                                        Analyzing...
+                                        {{ _('Analyzing...') }}
                                     {% endif %}
                                 </span>
                             </li>
@@ -1845,9 +1845,9 @@ setTimeout(function() {
             <div class="column-70">
                 <div class="viewer-container">
                     <div class="card-header collapsed">
-                        <h3>Shift Current
+                        <h3>{{ _('Shift Current') }}
                             {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/sc/sc.dat') }}" download class="download-btn" title="Download Shift Current data">
+                            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/sc/sc.dat') }}" download class="download-btn" title="{{ _('Download Shift Current data') }}">
                                 <i class="fas fa-download"></i>
                             </a>
                             {% endif %}
@@ -1865,8 +1865,8 @@ setTimeout(function() {
                 <div class="detail-card" id="sc-properties-combined">
                     <div class="card-header collapsed">
                         <div class="tab-header">
-                            <button class="tab-button active" data-tab="element-relations">Element Relations</button>
-                            <button class="tab-button" data-tab="shift-current">Shift Current Properties</button>
+                            <button class="tab-button active" data-tab="element-relations">{{ _('Element Relations') }}</button>
+                            <button class="tab-button" data-tab="shift-current">{{ _('Shift Current Properties') }}</button>
                         </div>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
@@ -1995,15 +1995,15 @@ setTimeout(function() {
                         
                         <div class="relations-header">
                             <ul class="relations-legend">
-                                <li><span class="zero-indicator">●</span> Zero</li>
-                                <li><span class="same-indicator">●</span> Same</li>
-                                <li><span class="opposite-indicator">●</span> Opposite</li>
+                                <li><span class="zero-indicator">●</span> {{ _('Zero') }}</li>
+                                <li><span class="same-indicator">●</span> {{ _('Same') }}</li>
+                                <li><span class="opposite-indicator">●</span> {{ _('Opposite') }}</li>
                             </ul>
                         </div>
                         
                             <div id="relations-table-container">
                                 <div class="loading-message">
-                                    Loading element relations...
+                                    {{ _('Loading element relations...') }}
                                 </div>
                             </div>
                         </div>
@@ -2011,26 +2011,26 @@ setTimeout(function() {
                         <!-- Shift Current Properties Tab Content -->
                         <div class="tab-content" id="shift-current-content">
                             <ul>
-                                <li><span class="property-label">Max SC:</span>
+                                <li><span class="property-label">{{ _('Max SC:') }}</span>
                                     <span class="property-value">
                                         {% if material.max_sc is not none %}
                                             {{ "%.4f"|format(material.max_sc) }} μA/V²
                                         {% else %}
-                                            Unknown
+                                            {{ _('Unknown') }}
                                         {% endif %}
                                     </span>
                                 </li>
-                                <li><span class="property-label">Max Photon Energy:</span>
+                                <li><span class="property-label">{{ _('Max Photon Energy:') }}</span>
                                     <span class="property-value">
                                         {% if material.max_photon_energy is not none %}
                                             {{ "%.4f"|format(material.max_photon_energy) }} eV
                                         {% else %}
-                                            Unknown
+                                            {{ _('Unknown') }}
                                         {% endif %}
                                     </span>
                                 </li>
-                                <li><span class="property-label">Max Tensor Type:</span>
-                                    <span class="property-value">{{ material.max_tensor_type if material.max_tensor_type else 'Unknown' }}</span>
+                                <li><span class="property-label">{{ _('Max Tensor Type:') }}</span>
+                                    <span class="property-value">{{ material.max_tensor_type if material.max_tensor_type else _('Unknown') }}</span>
                                 </li>
                             </ul>
                         </div>
@@ -2047,14 +2047,14 @@ setTimeout(function() {
             <div class="column-40">
                 <div class="detail-card" id="basic-properties">
                     <div class="card-header collapsed">
-                        <h3>Basic Properties</h3>
+                        <h3>{{ _('Basic Properties') }}</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="card-content collapsed">
                         <ul>
                             <li><span class="property-label">ID:</span> <span class="property-value">{{ material.formatted_id }}</span></li>
-                            <li><span class="property-label">Status:</span> <span class="property-value">{{ material.status or 'Not available yet' }}</span></li>
-                            <li><span class="property-label">Fermi Level:</span> <span class="property-value">{{ material.fermi_level ~ ' eV' if material.fermi_level is not none else 'Not available yet' }}</span></li>
+                            <li><span class="property-label">{{ _('Status:') }}</span> <span class="property-value">{{ material.status or _('Not available yet') }}</span></li>
+                            <li><span class="property-label">{{ _('Fermi Level:') }}</span> <span class="property-value">{{ material.fermi_level ~ ' eV' if material.fermi_level is not none else _('Not available yet') }}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -2064,13 +2064,13 @@ setTimeout(function() {
             <div class="column-40">
                 <div class="detail-card" id="surface-properties">
                     <div class="card-header collapsed">
-                        <h3>Surface Properties</h3>
+                        <h3>{{ _('Surface Properties') }}</h3>
                         <i class="fas fa-chevron-down toggle-icon"></i>
                     </div>
                     <div class="card-content collapsed">
                         <ul>
-                            <li><span class="property-label">Vacuum Level:</span> <span class="property-value">Not available yet</span></li>
-                            <li><span class="property-label">Work Function:</span> <span class="property-value">Not available yet</span></li>
+                            <li><span class="property-label">{{ _('Vacuum Level:') }}</span> <span class="property-value">{{ _('Not available yet') }}</span></li>
+                            <li><span class="property-label">{{ _('Work Function:') }}</span> <span class="property-value">{{ _('Not available yet') }}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -2120,8 +2120,8 @@ document.addEventListener('DOMContentLoaded', function() {
     "name": {{ material.name|tojson }},
     "max_sc": {{ material.max_sc if material.max_sc is not none else 'null' }},
     "max_photon_energy": {{ material.max_photon_energy if material.max_photon_energy is not none else 'null' }},
-    "max_tensor_type": {{ (material.max_tensor_type if material.max_tensor_type else 'Unknown')|tojson }},
-    "materials_type": "Unknown",
+    "max_tensor_type": {{ (material.max_tensor_type if material.max_tensor_type else _('Unknown'))|tojson }},
+    "materials_type": {{ _('Unknown')|tojson }},
     "band_data_path": "/static/materials/{{ material.formatted_id }}/band/band.dat",
     "sc_data_path": "/static/materials/{{ material.formatted_id }}/sc/sc.dat"
 }

@@ -8,6 +8,7 @@ import time
 from functools import wraps
 from typing import Dict, List, Any, Optional
 from flask import current_app, request
+from flask_babel import get_locale
 from sqlalchemy import text
 from . import db
 from .models import Material
@@ -304,6 +305,16 @@ def cached_search(cache_enabled=True):
                 user_context = f"user_{current_user.get_id()}_{current_user.role}"
             else:
                 user_context = "anonymous"
+
+            # 追加当前语言到上下文，避免不同语言混用缓存
+            try:
+                locale = str(get_locale()) if get_locale() else None
+            except Exception:
+                locale = None
+            if not locale:
+                # 兜底：优先 cookie.lang，再退回默认 en
+                locale = request.cookies.get('lang') or 'en'
+            user_context = f"{user_context}_locale_{locale}"
 
             # 从请求参数生成缓存键（包含用户上下文）
             search_params = dict(request.args)

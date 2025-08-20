@@ -188,3 +188,31 @@ NLHE_Database/
 - 项目采用MIT许可证
 - 欢迎通过Issue和Pull Request参与贡献
 - 开发前请先阅读贡献指南 
+
+## 国际化（i18n）工作流
+
+为保持清晰、专业的目录结构，项目采用以下约定：
+
+- `config/i18n/babel.cfg`：Babel 抽取配置文件
+- `i18n/messages.pot`：主翻译模板文件（不要直接编辑 `app/translations/` 下的语言文件结构）
+- `app/translations/`：各语言目录，存放 `.po`（可编辑）与 `.mo`（编译产物）
+
+常用命令：
+
+```bash
+# 1) 抽取模板（扫描源码与模板）
+pybabel extract -F config/i18n/babel.cfg -o i18n/messages.pot .
+
+# 2) 更新现有语言（示例：中文 zh）
+pybabel update -i i18n/messages.pot -d app/translations -l zh
+
+# 3) 编译翻译（生成 .mo 文件）
+pybabel compile -d app/translations
+# 开发调试可允许 fuzzy：
+# pybabel compile -d app/translations --use-fuzzy
+```
+
+说明：
+
+- 请优先维护 `i18n/messages.pot` 为模板单一来源；根目录旧文件已标记为 Deprecated。
+- 若有脚本/CI 仍引用旧路径，请同步更新以避免双源。

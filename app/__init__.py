@@ -9,10 +9,11 @@ import sys  # 用于检测操作系统平台（Windows/Linux）
 import threading  # 用于后台非阻塞预热字体
 
 # 导入 Flask 核心模块和扩展库
-from flask import Flask  # Flask 应用核心类
+from flask import Flask, request, g  # Flask 应用核心类与请求上下文
 from flask_sqlalchemy import SQLAlchemy  # ORM 数据库扩展
 from flask_login import LoginManager  # 用户登录管理扩展
 from flask_migrate import Migrate  # 数据库迁移工具
+from flask_babel import Babel, get_locale, _  # 国际化支持
 
 # 导入安全相关扩展
 try:
@@ -37,6 +38,7 @@ except ImportError:
 # 使用延迟绑定模式，支持应用工厂模式
 db = SQLAlchemy()  # 创建 SQLAlchemy 实例，后续通过 init_app() 绑定应用
 login_manager = LoginManager()  # 创建登录管理实例，支持多应用实例场景
+babel = Babel()  # 创建 Babel 实例，延迟绑定
 
 # 初始化安全扩展
 csrf = None
@@ -109,6 +111,54 @@ def create_app():
     migrate = Migrate(app, db)  # 初始化数据库迁移工具（生成迁移脚本）
     login_manager.init_app(app)  # 绑定登录管理到应用
 
+    # --- 国际化（i18n）配置 ---
+    # 默认语言与受支持语言，可通过实例配置/环境覆盖
+    app.config.setdefault('BABEL_DEFAULT_LOCALE', 'en')
+    app.config.setdefault('BABEL_SUPPORTED_LOCALES', ['en', 'zh'])
+    app.config.setdefault('BABEL_DEFAULT_TIMEZONE', 'UTC')
+
+    # 语言选择器：优先级 query -> session -> cookie -> 浏览器首选
+    def select_locale():
+        try:
+            supported = app.config.get('BABEL_SUPPORTED_LOCALES', ['en', 'zh'])
+            # 从查询参数读取
+            lang = (request.args.get('lang') or None)
+            app.logger.info(f"i18n.select_locale: args.lang={lang}, supported={supported}")
+            if not lang:
+                # 从 session 读取
+                try:
+                    from flask import session as flask_session
+                    lang = flask_session.get('lang')
+                    app.logger.info(f"i18n.select_locale: session.lang={lang}")
+                except Exception:
+                    lang = None
+            if not lang:
+                # 从 cookie 读取
+                lang = request.cookies.get('lang')
+                app.logger.info(f"i18n.select_locale: cookie.lang={lang}")
+            if lang and lang in supported:
+                g.current_locale = lang
+                app.logger.info(f"i18n.select_locale: use_explicit lang={lang}")
+                return lang
+            # 按浏览器首选匹配
+            best = request.accept_languages.best_match(supported)
+            app.logger.info(
+                f"i18n.select_locale: accept_language_raw={request.headers.get('Accept-Language')}, best_match={best}"
+            )
+            g.current_locale = best or app.config.get('BABEL_DEFAULT_LOCALE', 'en')
+            app.logger.info(f"i18n.select_locale: final_locale={g.current_locale}")
+            return g.current_locale
+        except Exception:
+            # 任何异常时回退默认语言
+            g.current_locale = app.config.get('BABEL_DEFAULT_LOCALE', 'en')
+            app.logger.warning("i18n.select_locale: exception occurred, fallback to default")
+            return g.current_locale
+
+    # 初始化 Babel，并注册语言选择器
+    babel.init_app(app, locale_selector=select_locale)
+    # 将 `_` 注册为 Jinja 全局，供模板中直接使用
+    app.jinja_env.globals.update(_=_)
+
     # 配置Flask-Login
     login_manager.login_view = 'views.login'  # 未登录时重定向的视图
     login_manager.login_message = 'Please log in to access this page.'
@@ -147,6 +197,23 @@ def create_app():
             app.logger.info("Rate limiting enabled with memory storage (Valkey fallback)")
     else:
         app.logger.warning("Flask-Limiter not available, rate limiting disabled")
+
+    # 向模板注入当前语言与支持的语言列表
+    @app.context_processor
+    def inject_i18n_context():
+        """
+        注入 i18n 相关变量：
+        - current_locale: 当前生效语言
+        - supported_locales: 支持的语言列表
+        """
+        try:
+            current = str(get_locale()) if get_locale() else app.config.get('BABEL_DEFAULT_LOCALE', 'en')
+        except Exception:
+            current = app.config.get('BABEL_DEFAULT_LOCALE', 'en')
+        return dict(
+            current_locale=current,
+            supported_locales=app.config.get('BABEL_SUPPORTED_LOCALES', ['en', 'zh'])
+        )
     
     # --- 用户加载器（必须实现） ---
     # Flask-Login要求实现的回调函数，用于从会话cookie恢复用户
