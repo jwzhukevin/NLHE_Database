@@ -137,11 +137,19 @@ class FontManager:
         loaded_font_path = None
         attempted_fonts = []
         
+        # [用户规则] 首选项目目录的固定字体文件
+        # 记录项目字体目录与期望文件列表，用于后续比对与告警
+        fonts_dir = FontManager.get_fonts_dir()
+        required_local_fonts = [
+            os.path.join(fonts_dir, 'DejaVuSans-Bold.ttf'),
+            os.path.join(fonts_dir, 'DejaVuSans.ttf'),
+        ]
+        
         # 预设字体路径列表（按优先级排序）
         font_paths = [
             # 项目字体目录
-            os.path.join(FontManager.get_fonts_dir(), 'DejaVuSans-Bold.ttf'),
-            os.path.join(FontManager.get_fonts_dir(), 'DejaVuSans.ttf'),
+            os.path.join(fonts_dir, 'DejaVuSans-Bold.ttf'),
+            os.path.join(fonts_dir, 'DejaVuSans.ttf'),
             os.path.join(FontManager.get_fonts_dir(), 'arial.ttf'),
             
             # 相对路径字体
@@ -169,6 +177,20 @@ class FontManager:
             except Exception as e:
                 CaptchaLogger.log_font_loading(font_path, font_size, success=False, error=str(e))
                 continue
+        
+        # 如果成功加载但并非来自项目目录的期望文件，提示目标目录字体缺失或无效
+        if font is not None and loaded_font_path not in required_local_fonts:
+            missing = [p for p in required_local_fonts if not os.path.exists(p)]
+            if missing:
+                current_app.logger.warning(
+                    f"目标目录缺少验证码字体文件: {missing}；当前 FONT_DIR={fonts_dir}。"
+                    f"已使用系统/其它来源字体。若要求固定字体，请将缺失文件放入该目录。"
+                )
+            else:
+                current_app.logger.warning(
+                    "项目目录中的字体文件存在但可能无效或不可用，已使用系统/其它来源字体。"
+                    f" 尝试路径={required_local_fonts}"
+                )
         
         # 如果所有预设字体都失败，且未尝试过下载，则快速尝试下载
         with FontManager._lock:

@@ -216,3 +216,81 @@ pybabel compile -d app/translations
 
 - 请优先维护 `i18n/messages.pot` 为模板单一来源；根目录旧文件已标记为 Deprecated。
 - 若有脚本/CI 仍引用旧路径，请同步更新以避免双源。
+
+## 验证码字体下载与校验
+
+- __放置目录__：`app/static/fonts/`
+- __脚本下载（推荐）__：
+  ```bash
+  python scripts/download_fonts.py
+  ```
+- __手动下载（可选）__：
+  - DejaVuSans-Bold.ttf
+    https://github.com/dejavu-fonts/dejavu-fonts/raw/main/ttf/DejaVuSans-Bold.ttf
+  - DejaVuSans.ttf
+    https://github.com/dejavu-fonts/dejavu-fonts/raw/main/ttf/DejaVuSans.ttf
+  下载后将文件放入 `app/static/fonts/`。
+
+- __快速校验__：确保文件不是 HTML，并能被 Pillow 读取
+  ```bash
+  # 文件头不应出现 <!DO...（应显示 TrueType 头部）
+  head -c 16 app/static/fonts/DejaVuSans-Bold.ttf | hexdump -C
+  head -c 16 app/static/fonts/DejaVuSans.ttf       | hexdump -C
+
+  # 类型应为 TrueType/二进制
+  file app/static/fonts/DejaVuSans-Bold.ttf
+  file app/static/fonts/DejaVuSans.ttf
+
+  # Pillow 实载测试（应从项目目录加载）
+  python - <<'PY'
+  import os
+  from PIL import ImageFont
+  d = os.path.realpath(os.path.join('app','static','fonts'))
+  for n in ['DejaVuSans-Bold.ttf','DejaVuSans.ttf']:
+      p = os.path.join(d,n)
+      f = ImageFont.truetype(p,28)
+      print('OK:', p, 'loaded_from:', getattr(f,'path',None))
+  PY
+  ```
+
+说明：验证码优先使用项目目录下的字体文件；如缺失或无效，将尝试系统字体；仍失败时才会触发网络下载。为确保部署可复现，建议随项目一并提供上述 TTF 文件。
+
+## 部署要求（重要）
+
+- __必须随包附带验证码字体文件__（避免依赖系统字体或网络）：
+  - `app/static/fonts/DejaVuSans-Bold.ttf`
+  - `app/static/fonts/DejaVuSans.ttf`
+
+- __生产环境建议__：
+  - 将上述 TTF 文件打包进发布产物或容器镜像（示例 Dockerfile 片段）：
+    ```dockerfile
+    # 将项目字体复制到镜像内（按你的工作目录调整目标路径）
+    COPY app/static/fonts/ /app/app/static/fonts/
+    ```
+  - 如需严格禁止网络回退，可在环境或实例配置中设置 `ENABLE_FONT_DOWNLOAD=False`，以便缺失字体立即暴露。
+
+- __启动前自检（任选其一）__：
+  - 文件类型与文件头应为 TrueType：
+    ```bash
+    file app/static/fonts/DejaVuSans-Bold.ttf
+    head -c 16 app/static/fonts/DejaVuSans-Bold.ttf | hexdump -C  # 应显示 TTF 头部而非 <!DO...
+    ```
+  - Pillow 实载路径应指向项目目录：
+    ```bash
+    python - <<'PY'
+    import os
+    from PIL import ImageFont
+    d = os.path.realpath(os.path.join('app','static','fonts'))
+    for n in ['DejaVuSans-Bold.ttf','DejaVuSans.ttf']:
+        p = os.path.join(d,n)
+        f = ImageFont.truetype(p,28)
+        print('OK:', p, 'loaded_from:', getattr(f,'path',None))
+    PY
+    ```
+
+- __CI/CD 建议__：
+  - 在流水线中新增检查步骤，缺少上述字体文件时直接失败。
+  - 在容器构建阶段完成字体校验，防止运行时回退到系统字体或触发网络下载。
+
+- __运行日志提示__：
+  - 若最终未从项目目录加载字体，运行日志会出现“目标目录缺少或无效”的警告。请在部署前修复并重新打包。
