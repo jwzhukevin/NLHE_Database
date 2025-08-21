@@ -294,3 +294,8 @@ pybabel compile -d app/translations
 
 - __运行日志提示__：
   - 若最终未从项目目录加载字体，运行日志会出现“目标目录缺少或无效”的警告。请在部署前修复并重新打包。
+
+- __Valkey 安装/验证脚本__：
+  - [scripts/setup_valkey.sh](scripts/setup_valkey.sh)
+  - [scripts/setup_redis_complete.py](scripts/setup_redis_complete.py)
+  - [scripts/install_valkey.sh](scripts/install_valkey.sh)
