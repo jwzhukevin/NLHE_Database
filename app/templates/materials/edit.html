@@ -34,14 +34,6 @@
                            title="{{ _('2-120 characters') }}">
                 </div>
                 <div class="form-group">
-                    <label>{{ _('Status') }}</label>
-                    <select name="status">
-                        <option value="done" {% if material.status == 'done' %}selected{% endif %}>{{ _('Done') }}</option>
-                        <option value="unconverged" {% if material.status == 'unconverged' %}selected{% endif %}>{{ _('Unconverged') }}</option>
-                        <option value="error" {% if material.status == 'error' %}selected{% endif %}>{{ _('Error') }}</option>
-                    </select>
-                </div>
-                <div class="form-group">
                     <label>{{ _('Structure File (CIF)') }}</label>
                     <input type="file" name="structure_file" accept=".cif" class="custom-file-input">
                     {% if cif_files %}

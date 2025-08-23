@@ -330,6 +330,11 @@ function analyzeCurveRelationships(data, traceNames) {
 // 生成元素关系的HTML表格
 function generateRelationsTable(groups) {
     let html = `
+        <div class="relations-legend" style="display:flex; gap:12px; align-items:center; margin:8px 8px 6px;">
+            <span class="same-relation"><span style="font-weight:700">●</span> Same sign</span>
+            <span class="opposite-relation"><span style="font-weight:700">●</span> Opposite sign</span>
+            <span class="zero-group"><span style="font-weight:700">●</span> Zero group</span>
+        </div>
         <div class="relations-table">
             <table>
                 <thead>
@@ -350,7 +355,8 @@ function generateRelationsTable(groups) {
             styleClass = 'zero-group';
             iconClass = 'zero-indicator';
         } else if (group.relation.includes('-')) {
-            styleClass = 'mixed-relation';
+            // 相反关系统一使用红色样式（opposite-relation）
+            styleClass = 'opposite-relation';
             iconClass = 'opposite-indicator';
         } else {
             styleClass = 'same-relation';
@@ -923,8 +929,9 @@ function parseAndPlotSCData(dataText, container) {
         }
         window.addEventListener('resize', handleResize);
 
-        // 卡片展开/折叠时也触发
-        const cardHeader = container.closest('.viewer-container').querySelector('.card-header');
+        // 卡片展开/折叠时也触发（重构后不再有 .viewer-container，改为定位最近的 #sc-card / .detail-card）
+        const cardRoot = container.closest('#sc-card') || container.closest('.detail-card');
+        const cardHeader = cardRoot ? cardRoot.querySelector('.card-header') : null;
         if (cardHeader) {
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {

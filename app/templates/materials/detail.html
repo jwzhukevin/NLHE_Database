@@ -114,7 +114,9 @@ setTimeout(function() {
                     <span class="breadcrumb-separator">
                         <i class="fas fa-chevron-right"></i>
                     </span>
-                    <span class="breadcrumb-current">{{ material.name }} ({{ material.formatted_id }})</span>
+                    <span class="breadcrumb-current">
+                        {{ material.name }} ({{ material.formatted_id }}{% if material.mp_id %} · {{ material.mp_id }}{% endif %})
+                    </span>
                 </div>
 
                 <!-- 属性导航链接 -->
@@ -130,7 +132,8 @@ setTimeout(function() {
             <!-- 右侧：功能按钮 -->
             <div class="nav-actions">
                 <!-- Materials Project外部链接 -->
-                <a href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" target="_blank"
+                <a href="{% if material.mp_id %}https://next-gen.materialsproject.org/materials/{{ material.mp_id }}{% else %}https://next-gen.materialsproject.org/materials?formula={{ material.name }}{% endif %}"
+                   target="_blank"
                    class="action-btn mp-btn">
                     <i class="fas fa-external-link-alt"></i>
                     <span>MP</span>
@@ -1840,178 +1843,190 @@ setTimeout(function() {
     
     <!-- ====================== SC部分：SC结构图 ====================== -->
     <div id="sc-section" class="content-section">
-        <div class="two-column-layout">
-            <!-- 左侧：SC图 (70%) -->
-            <div class="column-70">
-                <div class="viewer-container">
-                    <div class="card-header collapsed">
-                        <h3>{{ _('Shift Current') }}
-                            {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/sc/sc.dat') }}" download class="download-btn" title="{{ _('Download Shift Current data') }}">
-                                <i class="fas fa-download"></i>
-                            </a>
-                            {% endif %}
-                        </h3>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div class="viewer-content card-content collapsed">
-                        <div id="scStructure"></div>
-                    </div>
+        <div class="detail-card" id="sc-card">
+            <div class="card-header">
+                <h3>{{ _('Shift Current') }}</h3>
+                <!-- 内联 Tab 按钮，与标题同级以减少垂直空间 -->
+                <div class="tab-header inline" role="tablist" aria-label="{{ _('SC Tabs') }}">
+                    <button id="tab-sc-overview" class="tab-button active" role="tab" aria-selected="true" aria-controls="panel-sc-overview" data-tab="overview">{{ _('Relations') }}</button>
+                    <button id="tab-sc-prop" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-sc-prop" data-tab="properties">{{ _('Properties') }}</button>
                 </div>
             </div>
 
-            <!-- 右侧：Element Relations & Shift Current Properties (30%) -->
-            <div class="column-30">
-                <div class="detail-card" id="sc-properties-combined">
-                    <div class="card-header collapsed">
-                        <div class="tab-header">
-                            <button class="tab-button active" data-tab="element-relations">{{ _('Element Relations') }}</button>
-                            <button class="tab-button" data-tab="shift-current">{{ _('Shift Current Properties') }}</button>
-                        </div>
-                        <i class="fas fa-chevron-down toggle-icon"></i>
+            <!-- 保留隐藏占位，保障折叠逻辑跳过Tab卡片 -->
+            <div class="tab-header" role="presentation" aria-hidden="true" style="display:none"></div>
+
+            <!-- 局部样式：Tab 按钮与响应式布局（仅作用于 #sc-card） -->
+            <style>
+            #sc-card .card-header {
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                gap: 12px;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 6px;
+            }
+            #sc-card .tab-header {
+                display: flex;
+                gap: 0;
+                overflow-x: auto;
+                scrollbar-width: thin;
+            }
+            #sc-card .tab-header.inline { border-bottom: none; }
+            #sc-card .tab-button {
+                appearance: none;
+                background: transparent;
+                border: none;
+                padding: 0 10px;
+                margin-right: 6px;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: color .2s ease, border-color .2s ease;
+
+                /* 与标题一致的排版（可根据站点h3精确值微调） */
+                color: #0f172a;
+                font-weight: 600;
+                font-size: 1.25rem; /* 约20px */
+                line-height: 1.2;
+
+                /* 用底边表示状态 */
+                border-bottom: 2px solid transparent;
+                border-radius: 0;
+            }
+            #sc-card .tab-button:hover {
+                color: #1f2937;
+                border-bottom-color: #e5e7eb;
+            }
+            #sc-card .tab-button.active {
+                color: #0f172a;
+                border-bottom-color: #3b82f6;
+                box-shadow: none;
+            }
+            #sc-card .tab-button:focus-visible {
+                outline: 2px solid #3b82f6;
+                outline-offset: 2px;
+            }
+            #sc-card .tab-content { padding-top: 8px; }
+            #sc-card .two-column-layout { display: flex; gap: 16px; padding-right: 64px; }
+            #sc-card .column-70 { flex: 0 0 70%; }
+            #sc-card .column-30 { flex: 0 0 30%; }
+            /* Group & Relations 简约表格样式 */
+            /* 统一三类卡片的盒模型与内外边距 */
+            #sc-card .sc-plot-panel,
+            #sc-card .relations-table-scroll,
+            #sc-card .properties-panel {
+                box-sizing: border-box;
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px; /* 与 detail-card 一致 */
+                padding: 32px;       /* 统一内边距 16px */
+                margin: 0;           /* 外距由列 gap 与 tab-content padding 提供距离感 */
+            }
+            #sc-card .relations-table-scroll {
+                padding: 32px; /* 与 properties-panel 保持一致的内边距 */
+                overflow: auto;
+            }
+            /* 仅为 Relations 与 Properties 两卡片增加右侧外/内边距覆盖 */
+            #sc-card .relations-table-scroll {
+                margin-right: 0;           /* 由容器提供右侧留白，避免叠加 */
+                padding-right: 32px;       /* 卡片内部保持 32px 呼吸感 */
+            }
+            #sc-card .properties-panel {
+                margin-right: 0;           /* 由容器提供右侧留白，避免叠加 */
+                padding-right: 32px;       /* 卡片内部保持 32px 呼吸感 */
+            }
+            /* 方案B：提升边框对比度，仅作用于 Relations 与 Properties */
+            #sc-card .relations-table-scroll,
+            #sc-card .properties-panel {
+                border-color: #d1d5db;
+            }
+            #sc-card .sc-plot-panel { min-height: 320px; }
+            #sc-card .relations-legend {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                margin-bottom: 12px; /* 与表格拉开适中间距 */
+                color: #475569; /* 与表格文字风格一致的中性灰 */
+                font-size: 14px;
+                line-height: 1.4;
+            }
+            #sc-card .relations-table-scroll table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+            }
+            #sc-card .relations-table-scroll th,
+            #sc-card .relations-table-scroll td {
+                padding: 10px 12px;
+                text-align: left;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            #sc-card .relations-table-scroll th {
+                background-color: #f1f5f9; /* 轻浅灰蓝背景 */
+                color: #334155;
+                font-weight: 600;
+            }
+            #sc-card .relations-table-scroll tr:hover {
+                background-color: #f8fafc; /* 轻微悬停高亮 */
+            }
+            /* 与 Atomic Coordinates 一致的条纹与悬停配色 */
+            #sc-card .relations-table-scroll tbody tr:nth-child(odd) {
+                background-color: #f8fafc;
+            }
+            #sc-card .relations-table-scroll tbody tr:hover {
+                background-color: #EFF6FF;
+            }
+            /* 状态色延用 */
+            #sc-card .zero-group { color: #6B7280; font-style: italic; }
+            #sc-card .same-relation { color: #0047AB; font-weight: 500; }
+            #sc-card .opposite-relation { color: #B91C1C; font-weight: 500; }
+            #sc-card .mixed-relation { color: #7E22CE; font-weight: 500; }
+            /* Properties 面板样式 */
+            #sc-card .properties-panel {
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 12px;
+            }
+            #sc-card .properties-list { list-style: none; margin: 0; padding: 0; }
+            #sc-card .properties-list li {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            #sc-card .properties-list li:last-child { border-bottom: none; }
+            #sc-card .property-label { color: #475569; font-weight: 500; }
+            #sc-card .property-value { color: #0f172a; }
+            @media (max-width: 768px) {
+                #sc-card .two-column-layout { display: block; }
+                #sc-card .column-70, #sc-card .column-30 { width: 100%; flex: 0 0 100%; }
+                #sc-card .column-30 { margin-top: 12px; }
+            }
+            </style>
+
+            <!-- 固定两列布局：左侧始终显示绘图，右侧在 Overview/Properties 间切换 -->
+            <div class="two-column-layout sc-combined-layout">
+                <div class="column-70">
+                    <div class="sc-plot-panel">
+                        <div id="scStructure"></div>
                     </div>
-                    <div class="card-content collapsed">
-                        <!-- Element Relations Tab Content -->
-                        <div class="tab-content active" id="element-relations-content">
-                        <!-- 元素关系表格在此显示 -->
-                        <style>
-                            /* 标签页样式 */
-                            .tab-header {
-                                display: flex;
-                                border-bottom: 2px solid #e5e7eb;
-                                margin-bottom: 15px;
-                                gap: 0;
-                            }
-                            .tab-button {
-                                flex: 1;
-                                padding: 12px 16px;
-                                background: #f8fafc;
-                                border: none;
-                                border-bottom: 3px solid transparent;
-                                cursor: pointer;
-                                font-size: 16px;
-                                font-weight: 500;
-                                color: #64748b;
-                                transition: all 0.3s ease;
-                                border-radius: 6px 6px 0 0;
-                                margin-bottom: -2px;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                            }
-                            .tab-button:hover {
-                                background: #f1f5f9;
-                                color: #475569;
-                            }
-                            .tab-button.active {
-                                background: #ffffff;
-                                color: #1e293b;
-                                border-bottom-color: #3b82f6;
-                                font-weight: 600;
-                            }
-                            .tab-content {
-                                display: none;
-                            }
-                            .tab-content.active {
-                                display: block;
-                            }
-
-                            /* Element Relations 表格样式 */
-                            .relations-table {
-                                font-size: 14px;
-                            }
-                            .relations-table table {
-                                width: 100%;
-                                border-collapse: collapse;
-                            }
-                            .relations-table th,
-                            .relations-table td {
-                                padding: 8px;
-                                text-align: left;
-                                border-bottom: 1px solid #e5e7eb;
-                            }
-                            .relations-table th {
-                                background-color: #f1f5f9;
-                                font-weight: 600;
-                                color: #334155;
-                            }
-                            .relations-table tr:hover {
-                                background-color: #f8fafc;
-                            }
-                            .zero-group {
-                                color: #6B7280;
-                                font-style: italic;
-                            }
-                            .same-relation {
-                                color: #0047AB;
-                                font-weight: 500;
-                            }
-                            .opposite-relation {
-                                color: #B91C1C;
-                                font-weight: 500;
-                            }
-                            .mixed-relation {
-                                color: #7E22CE;
-                                font-weight: 500;
-                            }
-                            .single-curve {
-                                color: #4B5563;
-                            }
-                            .relations-header {
-                                margin-bottom: 15px;
-                                border-bottom: 1px solid #e5e7eb;
-                                padding-bottom: 10px;
-                            }
-                            .relations-legend {
-                                list-style: none;
-                                padding: 0;
-                                margin: 0;
-                                display: flex;
-                                gap: 15px;
-                                justify-content: center;
-                            }
-                            .relations-legend li {
-                                display: flex;
-                                align-items: center;
-                                font-size: 12px;
-                                color: #4B5563;
-                            }
-                            .zero-indicator {
-                                color: #6B7280;
-                                font-size: 16px;
-                                margin-right: 5px;
-                            }
-                            .same-indicator {
-                                color: #0047AB;
-                                font-size: 16px;
-                                margin-right: 5px;
-                            }
-                            .opposite-indicator {
-                                color: #B91C1C;
-                                font-size: 16px;
-                                margin-right: 5px;
-                            }
-                        </style>
-                        
-                        <div class="relations-header">
-                            <ul class="relations-legend">
-                                <li><span class="zero-indicator">●</span> {{ _('Zero') }}</li>
-                                <li><span class="same-indicator">●</span> {{ _('Same') }}</li>
-                                <li><span class="opposite-indicator">●</span> {{ _('Opposite') }}</li>
-                            </ul>
+                </div>
+                <div class="column-30">
+                    <!-- 右侧：Relations（元素关系）作为一个 Tab 面板 -->
+                    <div id="panel-sc-overview" class="tab-content active" role="tabpanel" aria-labelledby="tab-sc-overview">
+                        <div id="relations-table-container" class="relations-table-scroll">
+                            <div class="loading-message">{{ _('Loading element relations...') }}</div>
                         </div>
-                        
-                            <div id="relations-table-container">
-                                <div class="loading-message">
-                                    {{ _('Loading element relations...') }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Shift Current Properties Tab Content -->
-                        <div class="tab-content" id="shift-current-content">
-                            <ul>
-                                <li><span class="property-label">{{ _('Max SC:') }}</span>
+                    </div>
+                    <!-- 右侧：Properties 作为另一个 Tab 面板 -->
+                    <div id="panel-sc-prop" class="tab-content" role="tabpanel" aria-labelledby="tab-sc-prop" hidden>
+                        <div class="properties-panel">
+                            <ul class="properties-list">
+                                <li>
+                                    <span class="property-label">{{ _('Max SC') }}</span>
                                     <span class="property-value">
                                         {% if material.max_sc is not none %}
                                             {{ "%.4f"|format(material.max_sc) }} μA/V²
@@ -2020,7 +2035,8 @@ setTimeout(function() {
                                         {% endif %}
                                     </span>
                                 </li>
-                                <li><span class="property-label">{{ _('Max Photon Energy:') }}</span>
+                                <li>
+                                    <span class="property-label">{{ _('Max Photon Energy') }}</span>
                                     <span class="property-value">
                                         {% if material.max_photon_energy is not none %}
                                             {{ "%.4f"|format(material.max_photon_energy) }} eV
@@ -2029,7 +2045,8 @@ setTimeout(function() {
                                         {% endif %}
                                     </span>
                                 </li>
-                                <li><span class="property-label">{{ _('Max Tensor Type:') }}</span>
+                                <li>
+                                    <span class="property-label">{{ _('Max Tensor Type') }}</span>
                                     <span class="property-value">{{ material.max_tensor_type if material.max_tensor_type else _('Unknown') }}</span>
                                 </li>
                             </ul>
@@ -2037,9 +2054,12 @@ setTimeout(function() {
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
+        <!-- 旧位置的 Properties 面板已并入右侧列 -->
+
+        <!-- [Deprecated 20250822] 旧结构备份已移除：原双列布局（左图右详情）。如需回滚，请参照Git历史。 -->
+    </div><!-- /#sc-section -->
+ 
     <!-- ====================== 第四栏：基本信息和表面属性 ====================== -->
     <div id="fourth-section" class="content-section">
         <div class="two-column-layout">
@@ -2053,7 +2073,6 @@ setTimeout(function() {
                     <div class="card-content collapsed">
                         <ul>
                             <li><span class="property-label">ID:</span> <span class="property-value">{{ material.formatted_id }}</span></li>
-                            <li><span class="property-label">{{ _('Status:') }}</span> <span class="property-value">{{ material.status or _('Not available yet') }}</span></li>
                             <li><span class="property-label">{{ _('Fermi Level:') }}</span> <span class="property-value">{{ material.fermi_level ~ ' eV' if material.fermi_level is not none else _('Not available yet') }}</span></li>
                         </ul>
                     </div>
@@ -2083,35 +2102,7 @@ setTimeout(function() {
 <!-- 引入材料详情页面的JavaScript文件 -->
 <script src="{{ url_for('static', filename='js/material-detail.js') }}"></script>
 
-<!-- 标签页切换功能 -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 标签页切换功能
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
-
-            // 移除所有活动状态
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
-
-            // 激活当前标签页
-            this.classList.add('active');
-
-            // 显示对应内容
-            if (targetTab === 'element-relations') {
-                document.getElementById('element-relations-content').classList.add('active');
-            } else if (targetTab === 'shift-current') {
-                document.getElementById('shift-current-content').classList.add('active');
-            }
-        });
-    });
-});
-</script>
-
+<!-- [Deprecated 20250822] 已移除旧的 SC 右侧合并卡片内联 Tab 脚本，逻辑由 material-detail.js 的 setup_tabs 接管 -->
 <!-- 使用JSON script标签安全地传递材料数据到前端 -->
 <!-- 这种方法避免了在JavaScript代码中使用Jinja2语法，IDE不会报错 -->
 <script id="material-data" type="application/json">

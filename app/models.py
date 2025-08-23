@@ -98,7 +98,7 @@ class Material(db.Model):
     id = db.Column(db.Integer, primary_key=True)  # 主键ID（用于唯一标识材料）
     formatted_id = db.Column(db.String(20), unique=True)  # 格式化ID（如IMR-00000001）
     name = db.Column(db.String(120), nullable=False)  # 材料名称（从CIF文件提取，formula作为备用）
-    status = db.Column(db.String(20))  # 材料状态（如"done"、"processing"等）
+    # [Deprecated 20250822] 旧逻辑：status 字段已移除
     structure_file = db.Column(db.String(255))  # 结构文件路径（存储CIF文件的相对路径）
     properties_json = db.Column(db.String(255))  # 材料属性JSON文件路径（保留用于向后兼容）
     sc_structure_file = db.Column(db.String(255))  # SC结构DAT文件路径

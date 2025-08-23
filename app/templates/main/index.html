@@ -267,6 +267,11 @@
         }
         </style>
 
+        {% from 'components/periodic_table.html' import periodic_table with context %}
+        {{ periodic_table(elements_value=search_params.elements, show_analyze_btn=True, default_visible=False) }}
+
+        <!-- [Deprecated 20250823] 旧逻辑：内联周期表 HTML/CSS 作为备份保留，不再渲染 -->
+        {% if false %}
         <!-- 元素周期表组件 -->
         <div class="periodic-table-wrapper" id="periodicTableWrapper" style="display: none;">
             <div class="elements-header">
@@ -1684,6 +1689,8 @@
         }
         </style>
 
+        {% endif %}
+
         <!-- 高级搜索 -->
         <div class="advanced-search" id="advancedSearch" style="display: none;">
             <div class="search-group">
@@ -2023,13 +2030,14 @@
     <table class="material-data-table">
         <thead>
             <tr>
-                <th>{{ _('ID') }}</th>
-                <th>{{ _('MP-ID') }}</th>
-                <th>{{ _('Material Name') }}</th>
-                <th>{{ _('Space Group') }}</th>
-                <th>{{ _('Fermi Level (eV)') }}</th>
-                <th>{{ _('Band Gap (eV)') }}</th>
-                <th>{{ _('Max SC (μA/V²)') }}</th>
+                <!-- 前端排序：点击表头切换升/降序 -->
+                <th class="sortable" data-sort-key="id" aria-sort="none">{{ _('ID') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="mp_id" aria-sort="none">{{ _('MP-ID') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="name" aria-sort="none">{{ _('Material Name') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="space_group" aria-sort="none">{{ _('Space Group') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="fermi" aria-sort="none">{{ _('Fermi Level (eV)') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="band_gap" aria-sort="none">{{ _('Band Gap (eV)') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="max_sc" aria-sort="none">{{ _('Max SC (μA/V²)') }} <span class="sort-indicator"></span></th>
                 <th>{{ _('Actions') }}</th>
             </tr>
         </thead>
@@ -2104,6 +2112,24 @@
         background: #f8f9fa;
         border-bottom: 2px solid #dee2e6;
     }
+
+    /* 可排序表头样式与指示箭头 */
+    .material-data-table th.sortable {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+    .material-data-table th .sort-indicator {
+        display: inline-block;
+        width: 1em;
+        text-align: center;
+        margin-left: 4px;
+        color: #64748b;
+        font-size: 0.85em;
+    }
+    .material-data-table th[aria-sort='asc'] .sort-indicator::after { content: '▲'; }
+    .material-data-table th[aria-sort='desc'] .sort-indicator::after { content: '▼'; }
+    .material-data-table th[aria-sort='none'] .sort-indicator::after { content: ''; }
 
     .material-data-table td {
         padding: 1rem;
@@ -2957,6 +2983,135 @@ function validateSearch() {
                 console.error('Error processing updated material data:', error);
             }
         }
+    });
+
+    // 表头点击排序功能（仅对当前页进行前端排序）
+    document.addEventListener('DOMContentLoaded', function() {
+        // 解释：获取表格与可排序表头
+        const table = document.querySelector('.material-data-table');
+        if (!table) return;
+        const thead = table.querySelector('thead');
+        const tbody = table.querySelector('tbody');
+        if (!thead || !tbody) return;
+
+        const sortableHeaders = thead.querySelectorAll('th.sortable');
+
+        // 解释：工具函数—将单元格文本转为可比较的值
+        function parseNumberOrNull(text) {
+            const t = (text || '').trim();
+            if (!t || /^(N\/A|Unknown|Loading\.\.\.)$/i.test(t)) return null;
+            const v = parseFloat(t.replace(/[,\s]+/g, ''));
+            return Number.isNaN(v) ? null : v;
+        }
+
+        function extractMpIdNumber(text) {
+            const m = (text || '').match(/(\d+(?:\.\d+)?)/);
+            return m ? parseFloat(m[1]) : null;
+        }
+
+        function extractTrailingNumberAfterHyphen(text) {
+            // 解释：取最后一个连字符后的连续数字，例如 IMR-000123 → 123
+            const s = (text || '').trim();
+            const idx = s.lastIndexOf('-');
+            if (idx === -1) return null;
+            const tail = s.slice(idx + 1).match(/\d+/);
+            return tail ? parseInt(tail[0], 10) : null;
+        }
+
+        function extractSpaceGroupNumber(text) {
+            // 示例："P6_3/mmc (194)" → 194
+            const m = (text || '').match(/\((\d+)\)/);
+            return m ? parseInt(m[1], 10) : null;
+        }
+
+        function getComparableValue(td, key) {
+            const raw = td ? td.textContent : '';
+            switch (key) {
+                case 'id': {
+                    // IMR-ID：按连字符后数字大小排序
+                    const num = extractTrailingNumberAfterHyphen(raw);
+                    return num !== null ? { type: 'num', v: num } : { type: 'str', v: raw.trim() };
+                }
+                case 'mp_id': {
+                    const num = extractMpIdNumber(raw);
+                    return num !== null ? { type: 'num', v: num } : { type: 'str', v: raw.trim() };
+                }
+                case 'name': {
+                    const link = td.querySelector('a');
+                    const text = link ? link.textContent.trim() : raw.trim();
+                    return { type: 'str', v: text };
+                }
+                case 'space_group': {
+                    const num = extractSpaceGroupNumber(raw);
+                    if (num !== null) return { type: 'num', v: num };
+                    return { type: 'str', v: raw.trim() };
+                }
+                case 'fermi':
+                case 'band_gap':
+                case 'max_sc': {
+                    const num = parseNumberOrNull(raw);
+                    return num !== null ? { type: 'num', v: num } : { type: 'null', v: null };
+                }
+                default:
+                    return { type: 'str', v: raw.trim() };
+            }
+        }
+
+        function compareValues(a, b, direction) {
+            // 解释：空值总在末尾
+            if (a.type === 'null' && b.type === 'null') return 0;
+            if (a.type === 'null') return 1;
+            if (b.type === 'null') return -1;
+
+            // 解释：数字优先按数值比较，字符串按本地化比较
+            if (a.type === 'num' && b.type === 'num') {
+                return direction * (a.v - b.v);
+            }
+            const as = ('' + a.v).toLocaleLowerCase();
+            const bs = ('' + b.v).toLocaleLowerCase();
+            if (as === bs) return 0;
+            return direction * (as < bs ? -1 : 1);
+        }
+
+        function clearOtherHeaders(current) {
+            sortableHeaders.forEach(h => {
+                if (h !== current) h.setAttribute('aria-sort', 'none');
+            });
+        }
+
+        sortableHeaders.forEach(th => {
+            th.addEventListener('click', function() {
+                // 解释：切换当前列排序状态
+                const current = this.getAttribute('aria-sort') || 'none';
+                const next = current === 'asc' ? 'desc' : 'asc';
+                this.setAttribute('aria-sort', next);
+                clearOtherHeaders(this);
+
+                // 解释：获取列索引与排序键
+                const colIndex = this.cellIndex;
+                const key = this.dataset.sortKey || 'str';
+                const direction = next === 'asc' ? 1 : -1;
+
+                // 解释：将行映射为可比较对象，保证稳定排序
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                const mapped = rows.map((row, idx) => {
+                    const td = row.children[colIndex];
+                    const val = getComparableValue(td, key);
+                    return { row, val, idx };
+                });
+
+                mapped.sort((r1, r2) => {
+                    const c = compareValues(r1.val, r2.val, direction);
+                    if (c !== 0) return c;
+                    return r1.idx - r2.idx; // 稳定排序
+                });
+
+                // 解释：按新顺序重新附加行
+                const frag = document.createDocumentFragment();
+                mapped.forEach(m => frag.appendChild(m.row));
+                tbody.appendChild(frag);
+            });
+        });
     });
 </script>
 

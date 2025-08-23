@@ -142,10 +142,6 @@ class QueryOptimizer:
                 )
             )
         
-        # 状态过滤（使用索引）
-        if search_params.get('status'):
-            filters.append(Material.status == search_params['status'])
-        
         # 材料类型过滤（使用索引）
         if search_params.get('materials_type'):
             filters.append(Material.materials_type == search_params['materials_type'])
@@ -231,7 +227,6 @@ class QueryOptimizer:
                     # 基本搜索索引
                     "CREATE INDEX IF NOT EXISTS idx_material_name ON material (name)",
                     "CREATE INDEX IF NOT EXISTS idx_material_mp_id ON material (mp_id)",
-                    "CREATE INDEX IF NOT EXISTS idx_material_status ON material (status)",
                     "CREATE INDEX IF NOT EXISTS idx_material_metal_type ON material (metal_type)",
                     
                     # 数值范围搜索索引
@@ -241,7 +236,7 @@ class QueryOptimizer:
                     "CREATE INDEX IF NOT EXISTS idx_material_sg_num ON material (sg_num)",
                     
                     # 复合索引
-                    "CREATE INDEX IF NOT EXISTS idx_material_search_combo ON material (name, status, metal_type)",
+                    "CREATE INDEX IF NOT EXISTS idx_material_search_combo ON material (name, metal_type)",
                     "CREATE INDEX IF NOT EXISTS idx_material_properties ON material (fermi_level, max_sc)",
                 ]
                 

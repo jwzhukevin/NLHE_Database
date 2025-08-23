@@ -26,7 +26,6 @@ function loadMaterialDataFromPage() {
             console.error('未找到材料数据script标签');
             return null;
         }
-
         // 解析JSON数据
         const materialData = JSON.parse(dataScript.textContent);
         console.log('材料数据已从页面加载:', materialData);
@@ -36,6 +35,193 @@ function loadMaterialDataFromPage() {
         return null;
     }
 }
+
+/**
+ * 通用顶部 Tabs 组件
+ * container_selector: 包含 .tab-header 与多个 .tab-content 的容器选择器
+ * storage_key: localStorage 记忆当前激活 tab 的 key（可为空）
+ */
+function setup_tabs(container_selector, storage_key) {
+    const root = document.querySelector(container_selector);
+    if (!root) return;
+
+    const btns = root.querySelectorAll('.tab-header [role="tab"]');
+    const panels = root.querySelectorAll('.tab-content[role="tabpanel"], .tab-content');
+    if (!btns.length || !panels.length) return;
+
+    const tabByBtn = new Map();
+    btns.forEach(btn => tabByBtn.set(btn, btn.getAttribute('data-tab')));
+
+    const panelByKey = {};
+    panels.forEach(p => {
+        // 面板 id 形如 panel-xxx 或自定义，优先通过 data-tab 映射
+        const labelled = p.getAttribute('aria-labelledby');
+        if (labelled) {
+            const btn = root.querySelector(`#${labelled}`);
+            if (btn) {
+                const key = btn.getAttribute('data-tab');
+                if (key) panelByKey[key] = p;
+            }
+        }
+    });
+
+    function activate(key, remember) {
+        btns.forEach(btn => {
+            const k = tabByBtn.get(btn);
+            const isActive = k === key;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            btn.setAttribute('tabindex', isActive ? '0' : '-1');
+        });
+
+        Object.entries(panelByKey).forEach(([k, panel]) => {
+            const isActive = k === key;
+            if (isActive) {
+                panel.classList.add('active');
+                panel.removeAttribute('hidden');
+            } else {
+                panel.classList.remove('active');
+                panel.setAttribute('hidden', '');
+            }
+        });
+
+        // SC 情况：当前左侧绘图固定显示，但右侧面板切换可能影响整体宽度/滚动条，适当触发自适应
+        if ((key === 'overview' || key === 'properties' || key === 'plot') && window.Plotly && document.getElementById('sc-plot')) {
+            setTimeout(() => Plotly.relayout('sc-plot', { autosize: true }), 150);
+        }
+
+        if (remember && storage_key) {
+            localStorage.setItem(storage_key, key);
+        }
+    }
+
+    // 初始激活
+    const saved = storage_key ? (localStorage.getItem(storage_key) || '') : '';
+    const defaultKey = saved || (btns[0] && btns[0].getAttribute('data-tab')) || '';
+    if (defaultKey) activate(defaultKey, false);
+
+    // 事件绑定
+    btns.forEach((btn, idx) => {
+        btn.addEventListener('click', () => activate(tabByBtn.get(btn), true));
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const next = (idx + (e.key === 'ArrowRight' ? 1 : -1) + btns.length) % btns.length;
+                btns[next].focus();
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                activate(tabByBtn.get(btn), true);
+            }
+        });
+    });
+}
+
+/**
+ * 绑定 SC/Relations 标签切换后的行为
+ * 1) 懒加载：首次激活 'shift-current' 时绘制 SC 图
+ * 2) 自适应：切换/展开后对 SC 图进行重绘，避免隐藏容器导致的尺寸异常
+ */
+function setupSCTabBehavior() {
+    // 获取右侧综合卡片容器
+    const scPropsCombined = document.getElementById('sc-properties-combined');
+    if (!scPropsCombined) return;
+
+    const buttons = scPropsCombined.querySelectorAll('.tab-button');
+    if (!buttons || buttons.length === 0) return;
+
+    // 内部工具：当目标标签为 shift-current 时，执行绘制或重绘
+    function ensureSCPlottedAndRelayout() {
+        const scPlotEl = document.getElementById('sc-plot');
+        // 首次绘制
+        if (!window._scPlotted) {
+            const container = document.getElementById('scStructure');
+            if (container) {
+                // 延迟少许，确保容器完成显示
+                setTimeout(() => {
+                    try {
+                        if (typeof plotSCStructure === 'function') {
+                            plotSCStructure('scStructure', window._scDataPath);
+                            window._scPlotted = true;
+                        }
+                        // 绘制完成后自适应一次
+                        if (window.Plotly && document.getElementById('sc-plot')) {
+                            setTimeout(() => Plotly.relayout('sc-plot', { autosize: true }), 150);
+                        }
+                    } catch (e) {
+                        console.error('绘制SC结构图失败:', e);
+                    }
+                }, 150);
+            }
+        } else if (window.Plotly && scPlotEl) {
+            // 已绘制则重绘
+            setTimeout(() => Plotly.relayout('sc-plot', { autosize: true }), 150);
+        }
+    }
+
+    // 绑定事件：点击与键盘激活
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-tab');
+            if (tab === 'shift-current') ensureSCPlottedAndRelayout();
+        });
+        btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const tab = btn.getAttribute('data-tab');
+                if (tab === 'shift-current') ensureSCPlottedAndRelayout();
+            }
+        });
+    });
+
+    // 页面初始：若默认即为 shift-current，则执行一次
+    const saved = localStorage.getItem('scActiveTab') || 'element-relations';
+    if (saved === 'shift-current') {
+        ensureSCPlottedAndRelayout();
+    }
+}
+
+// [Deprecated 20250822] 导出SC图为PNG功能已下线
+// 原函数 exportSCToPNG 及 window.exportSCToPNG 已移除
+// 原因：页面已无入口按钮，避免冗余代码与维护成本
+
+// [Deprecated 20250822] 导出元素关系表为 CSV 的功能已下线
+// 原函数 exportRelationsToCSV 与 window.exportRelationsToCSV 已移除
+// 原因：模板中已移除入口按钮，避免冗余代码与维护成本
+
+/**
+ * 打印当前激活标签内容
+ * 使用方式：onclick="printActiveTab()"
+ */
+function printActiveTab() {
+    // 找到当前激活的 .tab-content.active，将其内容放入新窗口进行打印
+    const active = document.querySelector('#sc-properties-combined .tab-content.active');
+    if (!active) {
+        console.warn('未找到激活的标签内容，无法打印');
+        return;
+    }
+
+    const win = window.open('', '_blank');
+    if (!win) {
+        console.warn('浏览器阻止了弹窗，无法打印');
+        return;
+    }
+
+    // 简单的打印文档，保留基础样式继承
+    win.document.write(`<!DOCTYPE html><html><head><title>Print</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/static/css/style.css" />
+    </head><body>
+        <div class="print-container">${active.innerHTML}</div>
+    </body></html>`);
+    win.document.close();
+    // 等待内容渲染稳定后再调用打印
+    win.onload = function() {
+        win.focus();
+        win.print();
+        win.close();
+    };
+}
+window.printActiveTab = printActiveTab;
 
 /**
  * 页面加载完成后的初始化函数
@@ -71,14 +257,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // 调用绘图函数，传入容器ID和数据路径
     plotBandStructure('bandStructure', bandDataPath);
 
-    // 初始化SC结构图（自相关性结构图）
-    // 使用从模板传递的完整路径，确保路径正确性
-    const scDataPath = window.materialData.sc_data_path || `/static/materials/IMR-${window.materialData.id}/sc/sc.dat`;
-    console.log('SC数据路径:', scDataPath);
-    // 直接调用绘图函数，不再兜底加载示例文件
-    plotSCStructure('scStructure', scDataPath);
+    // 初始化SC结构图（Shift Current）- 立即绘制
+    window._scDataPath = window.materialData.sc_data_path || `/static/materials/IMR-${window.materialData.id}/sc/sc.dat`;
+    console.log('SC数据路径:', window._scDataPath);
+    try {
+        if (typeof plotSCStructure === 'function') {
+            plotSCStructure('scStructure', window._scDataPath);
+            window._scPlotted = true;
+            // 绘制后短延时自适应一次
+            if (window.Plotly && document.getElementById('sc-plot')) {
+                setTimeout(() => Plotly.relayout('sc-plot', { autosize: true }), 200);
+            }
+        }
+    } catch (e) {
+        console.error('绘制SC结构图失败:', e);
+    }
     
-    // 初始化卡片折叠功能
+    // 初始化卡片折叠功能（对“非 Tab 卡片”生效）
     initializeCollapsibleCards();
     
     // 获取所有导航链接
@@ -132,6 +327,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 加载晶体结构数据
     loadCrystalStructureData();
+
+    // 顶部 Tabs：接管 SC 卡片 tab 切换（记忆 key: scTabsActive）
+    setup_tabs('#sc-card', 'scTabsActive');
 });
 
 /**
@@ -142,6 +340,11 @@ function initializeCollapsibleCards() {
     const cardHeaders = document.querySelectorAll('.card-header');
     
     cardHeaders.forEach(header => {
+        // 若是“Tab 卡片”，即 header 后紧邻 .tab-header，则跳过折叠逻辑
+        const next = header.nextElementSibling;
+        if (next && next.classList.contains('tab-header')) {
+            return;
+        }
         // 绑定点击事件切换折叠状态
         header.addEventListener('click', function() {
             this.classList.toggle('collapsed');
@@ -189,6 +392,9 @@ function initializeCollapsibleCards() {
     // 默认展开所有卡片
     const allCards = document.querySelectorAll('.card-header');
     allCards.forEach(header => {
+        // Tab 卡片不做默认展开/折叠处理
+        const next = header.nextElementSibling;
+        if (next && next.classList.contains('tab-header')) return;
         header.classList.remove('collapsed');
         
         // 获取相邻的内容区域

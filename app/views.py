@@ -26,6 +26,8 @@ import random, string, io
 import time
 from .security_utils import log_security_event, sanitize_input, regenerate_session, check_rate_limit
 from .auth_manager import LoginStateManager, LoginErrorHandler
+from pymatgen.core import Structure
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 # 尝试导入CSRF豁免装饰器
 try:
@@ -79,7 +81,6 @@ def index():
 
     Supported GET parameters:
         q: Search keywords
-        status: Material status filter
         materials_type: Materials type filter (从band.json读取)
         fermi_level_min/max: Fermi level range filter
         page: Current page number
@@ -98,7 +99,24 @@ def index():
             'band_gap_max': request.args.get('band_gap_max', '').strip(),  # Band gap maximum
         }
 
-        # 使用优化的查询器
+        # 优先处理 MP 编号直达查询（形如 mp-xxxxx）
+        mp_query = search_params['q']
+        if mp_query and re.match(r'^mp-\w+$', mp_query):
+            query = db.session.query(Material).filter(Material.mp_id == mp_query)
+            # 直接分页返回
+            page = request.args.get('page', 1, type=int)
+            per_page = 10
+            pagination = query.order_by(Material.name.asc()).paginate(
+                page=page,
+                per_page=per_page,
+                error_out=False
+            )
+            return render_template('main/index.html',
+                                 materials=pagination.items,
+                                 pagination=pagination,
+                                 search_params=search_params)
+
+        # 使用优化的查询器（常规路径）
         optimization_result = QueryOptimizer.optimize_material_search(search_params)
         query = optimization_result['query']
 
@@ -190,20 +208,14 @@ def admin_required(view_func):
     
     return wrapped_view
 
-# 工具函数：根据材料ID获取材料目录，自动兼容新旧格式
+# 工具函数：根据材料ID获取材料目录，仅使用新格式 IMR-{id}
 def get_material_dir(material_id):
     """
-    根据材料ID返回材料目录路径，优先新格式IMR-{id}，找不到则兼容旧格式IMR-00000001。
+    根据材料ID返回材料目录路径（统一为 IMR-{id}，不再兼容 IMR-00000001 旧格式）。
     """
     base_dir = os.path.join(current_app.root_path, 'static', 'materials')
     new_dir = os.path.join(base_dir, f'IMR-{material_id}')
-    if os.path.exists(new_dir):
-        return new_dir
-    # 兼容旧格式
-    old_dir = os.path.join(base_dir, f'IMR-{int(material_id):08d}')
-    if os.path.exists(old_dir):
-        return old_dir
-    return new_dir  # 默认返回新格式路径
+    return new_dir
 
 # Material add route (admin required)
 @bp.route('/add', methods=['GET', 'POST'])
@@ -236,17 +248,28 @@ def add():
                 structure_file.save(temp_structure_path)
                 # 尝试提取化学式
                 chemical_name = extract_chemical_formula_from_cif(temp_structure_path)
+                # 解释：仅从 CIF 解析空间群；失败则 Unknown/None
+                sg_name_from_cif = 'Unknown'
+                sg_num_from_cif = None
+                try:
+                    _structure = Structure.from_file(temp_structure_path)
+                    _analyzer = SpacegroupAnalyzer(_structure)
+                    sg_name_from_cif = _analyzer.get_space_group_symbol() or 'Unknown'
+                    sg_num_from_cif = _analyzer.get_space_group_number() or None
+                except Exception as e:
+                    current_app.logger.warning(f"CIF symmetry parse failed in add(): {e}")
 
             # 材料名优先用CIF解析结果，否则用Material+ID
             material_data = {
                 'name': chemical_name if chemical_name else None,
-                'status': request.form.get('status'),
                 'structure_file': structure_filename,  # 仅作记录，实际读取时遍历目录
                 'properties_json': properties_json.filename if properties_json and properties_json.filename else None,
                 'sc_structure_file': sc_structure_file.filename if sc_structure_file and sc_structure_file.filename else None,
                 'fermi_level': safe_float(request.form.get('fermi_level')),
                 'band_gap': safe_float(request.form.get('band_gap')),
-                'materials_type': request.form.get('materials_type')
+                'materials_type': request.form.get('materials_type'),
+                'sg_name': sg_name_from_cif if 'sg_name_from_cif' in locals() else 'Unknown',
+                'sg_num': sg_num_from_cif if 'sg_num_from_cif' in locals() else None
             }
 
             material = Material(**material_data)
@@ -581,6 +604,16 @@ def edit(material_id):
                         return redirect(url_for('views.edit', material_id=material_id))
                     material.name = chemical_name
                     flash(_('Material name updated from CIF file: %(chemical_name)s', chemical_name=chemical_name), 'info')
+                # 解释：仅从 CIF 解析空间群；失败则 Unknown/None
+                try:
+                    _structure = Structure.from_file(structure_path)
+                    _analyzer = SpacegroupAnalyzer(_structure)
+                    material.sg_name = _analyzer.get_space_group_symbol() or 'Unknown'
+                    material.sg_num = _analyzer.get_space_group_number() or None
+                except Exception as e:
+                    current_app.logger.warning(f"CIF symmetry parse failed in edit(): {e}")
+                    material.sg_name = 'Unknown'
+                    material.sg_num = None
 
             # band文件上传
             if band_file and band_file.filename:
@@ -609,7 +642,7 @@ def edit(material_id):
             if not material.name:
                 flash(_('Material name cannot be empty!'), 'error')
                 return redirect(url_for('views.edit', material_id=material_id))
-            material.status = request.form.get('status')
+            # [Deprecated 20250822] status 字段已移除
             material.fermi_level = safe_float(request.form.get('fermi_level'))
             # 电子性质参数 - 只保留带隙和材料类型
             material.band_gap = safe_float(request.form.get('band_gap'))
@@ -713,6 +746,22 @@ def detail(material_id):
     else:
         sc_file = None
     return render_template('materials/detail.html', material=material, structure_file=structure_file, band_file=band_file, sc_file=sc_file)
+
+# 通过 MP 编号跳转到 IMR 详情
+@bp.route('/materials/by-mp/<string:mp_id>')
+def material_by_mp(mp_id):
+    """
+    通过 Materials Project 编号（mp-xxxxx）查找材料，并跳转到 IMR 详情页。
+    """
+    try:
+        material = db.session.query(Material).filter(Material.mp_id == mp_id).first()
+        if not material:
+            flash(_('Material with MP ID %(mp_id)s not found.', mp_id=mp_id), 'error')
+            return render_template('404.html'), 404
+        return redirect(url_for('views.detail', material_id=material.id))
+    except Exception as e:
+        current_app.logger.error(f"material_by_mp error: {e}")
+        return render_template('500.html'), 500
 
 # Material delete route (admin required)
 @bp.route('/materials/delete/IMR-<string:material_id>', methods=['POST'])

@@ -8,6 +8,8 @@ import json
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 from .material_importer import extract_chemical_formula_from_cif
+from pymatgen.core import Structure
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from .band_analyzer import band_analyzer
 import functools
 
@@ -150,6 +152,21 @@ def register_commands(app):
                         if chemical_formula:
                             material_name = chemical_formula
 
+                # 解释：仅从 CIF 解析空间群；解析失败则设为 Unknown/None（不回退 JSON）
+                sg_name_from_cif = 'Unknown'
+                sg_num_from_cif = None
+                try:
+                    if os.path.exists(structure_dir):
+                        cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
+                        if cif_files:
+                            cif_file_path = os.path.join(structure_dir, cif_files[0])
+                            _structure = Structure.from_file(cif_file_path)
+                            _analyzer = SpacegroupAnalyzer(_structure)
+                            sg_name_from_cif = _analyzer.get_space_group_symbol() or 'Unknown'
+                            sg_num_from_cif = _analyzer.get_space_group_number() or None
+                except Exception as e:
+                    click.echo(f"Warning: CIF symmetry parse failed for {material_id}: {e}")
+
                 # 如果CIF文件没有提供名称，使用sc_data中的formula
                 if not material_name and sc_data and 'formula' in sc_data:
                     material_name = sc_data['formula']
@@ -161,11 +178,11 @@ def register_commands(app):
                 # 准备材料数据
                 material_data = {
                     'name': material_name,
-                    'status': 'done' if sc_data else 'unknown',
+                    # [Deprecated 20250822] status 字段已移除
                     'structure_file': None,  # 将在后面设置
                     'mp_id': sc_data.get('mp_id', 'Unknown') if sc_data else 'Unknown',
-                    'sg_name': sc_data.get('sg_name', 'Unknown') if sc_data else 'Unknown',
-                    'sg_num': sc_data.get('sg_num', None) if sc_data else None,
+                    'sg_name': sg_name_from_cif,
+                    'sg_num': sg_num_from_cif,
                     'fermi_level': sc_data.get('Energy', None) if sc_data else None,
                     # 'metal_type': 'Unknown',  # 字段已移除 - 现在从band.json读取materials_type
                     'max_sc': sc_data.get('max_sc', None) if sc_data else None,
@@ -180,7 +197,7 @@ def register_commands(app):
                 if existing_material:
                     # 更新现有材料
                     existing_material.name = material_data['name']
-                    existing_material.status = material_data['status']
+                    # [Deprecated 20250822] status 字段已移除
                     existing_material.mp_id = material_data['mp_id']
                     existing_material.sg_name = material_data['sg_name']
                     existing_material.sg_num = material_data['sg_num']
@@ -195,7 +212,7 @@ def register_commands(app):
                     new_material = Material(
                         id=id_number,
                         name=material_data['name'],
-                        status=material_data['status'],
+                        # [Deprecated 20250822] status 字段已移除
                         structure_file=material_data['structure_file'],
                         mp_id=material_data['mp_id'],
                         sg_name=material_data['sg_name'],
@@ -390,7 +407,7 @@ def register_commands(app):
                         material = Material(
                             id=material_id,
                             name=material_name,
-                            status="done",
+                            # [Deprecated 20250822] status 字段已移除
                             structure_file=file_name,
                             fermi_level=0.5,
                             band_gap=0.0 if import_count % 2 == 0 else 1.5,
@@ -480,7 +497,7 @@ def register_commands(app):
                     new_material = Material(
                         id=material_id,
                         name=material_data['name'],
-                        status=material_data['status'],
+                        # [Deprecated 20250822] status 字段已移除
                         structure_file=material_data['structure_file'],
                         fermi_level=material_data.get('fermi_level', 0.0),
                         band_gap=material_data.get('band_gap', None),
