@@ -3,13 +3,14 @@
 # Includes homepage, material details page, add/edit materials, user authentication, etc.
 
 # Import required modules
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file, jsonify  # Flask core modules
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file, jsonify, abort  # Flask core modules
 from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
 from flask_babel import _, get_locale  # i18n gettext & current locale
 from sqlalchemy import and_, or_  # Database query condition builders
 from .models import User, Material, BlockedIP, Member  # Custom data models
-from . import db  # Database instance
+from . import db, csrf  # Database instance and CSRF protect instance
 import datetime  # Processing dates and times
+import time  # Used for 429 enforcement timing
 import functools  # For decorators
 from .material_importer import extract_chemical_formula_from_cif  # Material data import module
 from .chemical_parser import chemical_parser  # 智能化学式解析器
@@ -28,6 +29,7 @@ from .security_utils import log_security_event, sanitize_input, regenerate_sessi
 from .auth_manager import LoginStateManager, LoginErrorHandler
 from pymatgen.core import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+import math
 
 # 尝试导入CSRF豁免装饰器
 try:
@@ -40,6 +42,46 @@ except ImportError:
 
 # Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
+
+# 全局拦截：未完成429挑战（等待+验证码）禁止访问除错误页/验证码外的路由
+@bp.before_app_request
+def enforce_429_challenge():
+    try:
+        endpoint = (request.endpoint or '')
+        # 放行静态资源、错误页、验证码相关端点，避免循环
+        if endpoint.startswith('static') or endpoint.startswith('errors.'):
+            return
+        if endpoint in {'views.captcha429', 'views.verify_captcha_429', 'views.rate_limited'}:
+            return
+        # 路径级白名单，避免端点名因装饰器导致不匹配
+        path = request.path or ''
+        if path in {'/captcha429', '/verify_captcha_429', '/rate-limited'}:
+            return
+
+        verified = bool(session.get('rl_verified', False))
+        if verified:
+            return
+        # 未验证的任何访问：重置等待窗口为60秒并重定向到固定的限流页面
+        now = int(time.time())
+        session['rl_locked_until'] = now + 60
+        from flask import redirect
+        return redirect(url_for('views.rate_limited'))
+    except Exception:
+        # 拦截器出错时不阻断正常流程
+        return
+
+@bp.route('/rate-limited')
+def rate_limited():
+    """固定的限流页面：进入即重置60秒，并渲染429模板。"""
+    now = int(time.time())
+    session['rl_locked_until'] = now + 60
+    session['rl_verified'] = False
+    # 尽量提供用户对象（可选）
+    try:
+        user = User.query.first()
+    except Exception:
+        user = None
+    return render_template('errors/429.html', user=user, retry_after=60), 429
 
 # Register template filters
 @bp.app_template_filter('any')
@@ -97,6 +139,8 @@ def index():
             'max_sc_max': request.args.get('max_sc_max', '').strip(),  # Max SC maximum
             'band_gap_min': request.args.get('band_gap_min', '').strip(),  # Band gap minimum
             'band_gap_max': request.args.get('band_gap_max', '').strip(),  # Band gap maximum
+            'mp_id': request.args.get('mp_id', '').strip(),  # MP-ID filter (supports exact or partial)
+            'space_group': request.args.get('space_group', '').strip(),  # Space group filter (name or number)
         }
 
         # 优先处理 MP 编号直达查询（形如 mp-xxxxx）
@@ -105,7 +149,25 @@ def index():
             query = db.session.query(Material).filter(Material.mp_id == mp_query)
             # 直接分页返回
             page = request.args.get('page', 1, type=int)
-            per_page = 10
+            # 优先读取 URL 参数并写入 session，否则回退到 session
+            per_page_arg = request.args.get('per_page', type=int)
+            if per_page_arg in {10, 15, 20, 25, 30}:
+                per_page = per_page_arg
+                session['per_page'] = per_page
+            else:
+                per_page = session.get('per_page', 10)
+                try:
+                    per_page = int(per_page)
+                except Exception:
+                    per_page = 10
+                if per_page not in {10, 15, 20, 25, 30}:
+                    per_page = 10
+            # 校验页码有效性：若当前页超过总页数，则回到第 1 页（MP 直达场景通常只有 0 或 1 页）
+            total_results = query.count()
+            total_pages = math.ceil(total_results / per_page) if per_page > 0 else 0
+            if total_pages > 0 and page > total_pages:
+                page = 1
+
             pagination = query.order_by(Material.name.asc()).paginate(
                 page=page,
                 per_page=per_page,
@@ -114,7 +176,8 @@ def index():
             return render_template('main/index.html',
                                  materials=pagination.items,
                                  pagination=pagination,
-                                 search_params=search_params)
+                                 # per_page 仅用于显示，不参与搜索参数
+                                 search_params={**search_params})
 
         # 使用优化的查询器（常规路径）
         optimization_result = QueryOptimizer.optimize_material_search(search_params)
@@ -157,6 +220,36 @@ def index():
                     if element_filters:
                         additional_filters.append(or_(*element_filters))
 
+        # MP-ID 过滤：形如 mp-xxxxx 则精确匹配，否则模糊匹配（包含）
+        if search_params['mp_id']:
+            mp_val = search_params['mp_id']
+            try:
+                # 安全清洗输入
+                mp_val = sanitize_input(mp_val)
+            except Exception:
+                mp_val = mp_val
+            if re.match(r'^mp-\w+$', mp_val):
+                additional_filters.append(Material.mp_id == mp_val)
+            else:
+                additional_filters.append(Material.mp_id.ilike(f'%{mp_val}%'))
+
+        # 空间群过滤：纯数字 → 按编号；否则按名称模糊匹配
+        if search_params['space_group']:
+            sg_val = search_params['space_group']
+            try:
+                sg_val = sanitize_input(sg_val)
+            except Exception:
+                sg_val = sg_val
+            if re.fullmatch(r'\d+', sg_val):
+                # 数字编号
+                try:
+                    sg_num = int(sg_val)
+                    additional_filters.append(Material.sg_num == sg_num)
+                except ValueError:
+                    pass
+            else:
+                additional_filters.append(Material.sg_name.ilike(f'%{sg_val}%'))
+
         # 应用额外的过滤条件（主要是元素搜索）
         if additional_filters:
             query = query.filter(and_(*additional_filters))
@@ -165,9 +258,26 @@ def index():
         total_results = query.count()
         current_app.logger.info(f"Search query returned {total_results} results with search params: {search_params}")
 
-        # Pagination configuration (10 records per page)
-        page = request.args.get('page', 1, type=int)  # Get current page number, default is page 1
-        per_page = 10  # Items per page
+        # Pagination configuration
+        page = request.args.get('page', 1, type=int)  # 当前页码，默认第1页
+        # 优先读取 URL 参数并写入 session，否则回退到 session
+        per_page_arg = request.args.get('per_page', type=int)
+        if per_page_arg in {10, 15, 20, 25, 30}:
+            per_page = per_page_arg
+            session['per_page'] = per_page
+        else:
+            per_page = session.get('per_page', 10)
+            try:
+                per_page = int(per_page)
+            except Exception:
+                per_page = 10
+            if per_page not in {10, 15, 20, 25, 30}:
+                per_page = 10
+        # 校验页码有效性：若当前页超过总页数，则回到第 1 页
+        total_pages = math.ceil(total_results / per_page) if per_page > 0 else 0
+        if total_pages > 0 and page > total_pages:
+            page = 1
+
         pagination = query.order_by(Material.name.asc()).paginate(  # Sort by name in ascending order
             page=page,
             per_page=per_page,
@@ -178,7 +288,8 @@ def index():
         return render_template('main/index.html',
                              materials=pagination.items,  # Current page data
                              pagination=pagination,  # Pagination object (including page number information)
-                             search_params=search_params)  # Search parameters (for form display)
+                             # per_page 仅用于显示，不参与搜索参数
+                             search_params={**search_params})
 
     except Exception as e:
         current_app.logger.error(f"Database query error: {str(e)}")
@@ -1326,6 +1437,81 @@ def captcha():
         error_buffer.seek(0)
 
         return send_file(error_buffer, mimetype='image/png')
+
+@bp.route('/captcha429')
+def captcha429():
+    """为429页面生成验证码（与登录同逻辑，但使用独立会话键）。"""
+    start_time = time.time()
+    try:
+        # 生成5位验证码（排除易混字符）
+        chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+        captcha_text = ''.join(random.choices(chars, k=5))
+
+        # 保存到独立的 session 键，避免与登录互相覆盖
+        session['captcha_429'] = captcha_text
+        session.permanent = True
+
+        # 复用统一的图片生成函数
+        img_buffer = generate_captcha_image(captcha_text, scale_factor=2)
+
+        generation_time = time.time() - start_time
+        # 记录日志（标注来源为429）
+        CaptchaLogger.log_captcha_generation(
+            text_length=len(captcha_text),
+            image_size='140x50',
+            generation_time=generation_time,
+            success=True
+        )
+
+        response = send_file(
+            img_buffer,
+            mimetype='image/png',
+            as_attachment=False,
+            download_name='captcha429.png'
+        )
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
+    except Exception as e:
+        current_app.logger.error(f"Error generating captcha429: {e}")
+        # 返回简单错误图片
+        error_image = Image.new('RGB', (140, 50), color=(245, 248, 255))
+        error_draw = ImageDraw.Draw(error_image)
+        error_draw.text((10, 15), "ERROR", fill=(220, 53, 69))
+        error_buffer = io.BytesIO()
+        error_image.save(error_buffer, format='PNG')
+        error_buffer.seek(0)
+        return send_file(error_buffer, mimetype='image/png')
+
+@bp.route('/verify_captcha_429', methods=['POST'])
+@csrf.exempt
+def verify_captcha_429():
+    """校验429页面验证码，返回JSON。只有'时间到且验证码正确'才解除封禁。"""
+    import time
+    try:
+        data = request.get_json(silent=True) or {}
+        code = str(data.get('captcha', '')).strip().upper()
+        real = str(session.get('captcha_429', '')).strip().upper()
+        ok = bool(code) and code == real
+
+        now = int(time.time())
+        locked_until = int(session.get('rl_locked_until') or 0)
+        remaining = max(0, locked_until - now)
+
+        if ok:
+            if remaining > 0:
+                return jsonify({'ok': False, 'need_wait': True, 'seconds': remaining})
+            # 时间到且验证码正确：解除封禁
+            session.pop('captcha_429', None)
+            session['rl_verified'] = True
+            session.pop('rl_locked_until', None)
+            return jsonify({'ok': True})
+        else:
+            return jsonify({'ok': False})
+    except Exception as e:
+        current_app.logger.error(f"verify_captcha_429 error: {e}")
+        return jsonify({'ok': False})
 
 @bp.route('/members')
 def members():

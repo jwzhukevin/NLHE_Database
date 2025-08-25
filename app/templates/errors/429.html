@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Too Many Requests') }}{% endblock %}
+
+{% block content %}
+<section class="error-hero">
+    <div class="container">
+        <div class="error-content" role="region" aria-labelledby="err429_title">
+            <div class="error-code">429</div>
+            <h1 id="err429_title">{{ _('Too Many Requests') }}</h1>
+            <p class="error-sub">{{ _('You have sent too many requests in a short time.') }}</p>
+
+            <div class="timer" aria-live="polite">
+                <span>{{ _('Please wait') }}</span>
+                <strong id="retrySeconds">{{ retry_after|default(60) }}</strong>
+                <span>{{ _('seconds') }}</span>
+            </div>
+
+            <!-- [Deprecated 20250825] 旧动作按钮区域（Retry Now / Back to Home / Back to Database）已移除。
+                 原因：在严格429限制与全局拦截下无效，改为验证通过后自动跳转首页。 -->
+
+            <!-- 验证码区域（进入页面即显示，倒计时结束后提示用户完成验证） -->
+            <div id="captchaArea" class="captcha-area" aria-hidden="false">
+                <p class="captcha-title">
+                    <i class="fas fa-shield-alt"></i>
+                    {{ _('Human Verification') }}
+                </p>
+                
+
+                <div class="captcha-row">
+                    <img id="captchaImg429" src="{{ url_for('views.captcha429') }}" alt="CAPTCHA" width="140" height="50" />
+                    <button id="refreshCaptcha429" class="captcha-btn" type="button">
+                        <i class="fas fa-sync"></i> {{ _('Refresh') }}
+                    </button>
+                </div>
+
+                <div class="captcha-input">
+                    <input id="captchaInput429" type="text" maxlength="5" inputmode="latin" autocomplete="one-time-code"
+                           placeholder="{{ _('Enter the 5-letter code') }}" aria-label="{{ _('Captcha code') }}" />
+                    <button id="submitCaptcha429" class="captcha-btn primary" type="button">
+                        <i class="fas fa-check-circle"></i> {{ _('Verify') }}
+                    </button>
+                </div>
+
+                <!-- 常驻提示小框：所有提示文案聚合显示于此 -->
+                <div id="captchaTip" class="captcha-tip" role="status" aria-live="polite">
+                    <i class="tip-icon fas fa-info-circle"></i>
+                    <span id="captchaTipText">{{ _('After the countdown ends, please enter the captcha. You will be redirected to the homepage after successful verification.') }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="error-illustration" aria-hidden="true">
+            <i class="fas fa-search fa-pulse"></i>
+        </div>
+    </div>
+</section>
+
+<style>
+    .error-hero {
+        padding: 8rem 0 4rem;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #0047AB, #1E5CB3);
+        color: white;
+    }
+
+    .error-content {
+        max-width: 600px;
+    }
+
+    .error-code {
+        font-size: 8rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.2);
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+
+    .error-hero h1 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .error-hero p {
+        font-size: clamp(1rem, 2vw, 1.25rem);
+        max-width: 800px;
+        margin: 0 0 2rem;
+        opacity: 0.9;
+    }
+
+    .error-illustration {
+        font-size: 10rem;
+        opacity: 0.2;
+        position: absolute;
+        right: 10%;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .fa-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 0.4; }
+    }
+
+    @media (max-width: 768px) {
+        .error-hero { padding: 6rem 0 3rem; text-align: center; }
+        .error-content { margin: 0 auto; }
+        .error-illustration { display: none; }
+    }
+
+    /* 追加：验证码区域（在深色背景上使用白卡片，避免破坏404风格） */
+    /* 追加：验证码区域（在深色背景上使用白卡片，避免破坏404风格） */
+    .captcha-area { background: #fff; border-radius: 12px; padding: 1rem 1rem 0.8rem; color: #0f172a; width: 640px; height: 300px; overflow: hidden; box-sizing: border-box; flex: 0 0 auto; }
+    /* 标题 */
+    .captcha-title { font-weight: 800; color: #0f172a; background: rgba(0,71,171,0.08); padding: .5rem .75rem; border-radius: 10px; display: inline-flex; align-items: center; gap: .5rem; margin: 0 0 .25rem; }
+    /* 图标 */
+    .captcha-title .fa-shield-alt { color: #0047AB; opacity: 1; }
+    /* 描述 */
+    .captcha-desc { color: #334155; margin: .5rem 0 0.75rem; font-size: .95rem; }
+    /* 行 */
+    .captcha-row { display: flex; gap: 0.6rem; align-items: center; margin: .2rem 0; }
+    /* 输入框 */
+    .captcha-input { display: flex; gap: 0.5rem; margin-top: .2rem; }
+    .captcha-input input { padding: 0.75rem 0.9rem; border: 1px solid #cbd5e1; border-radius: 10px; width: 180px; text-transform: uppercase; letter-spacing: 3px; background: #fff; color: #0f172a; outline: none; transition: box-shadow .2s, border-color .2s, background .2s; }
+    /* 占位符样式 */
+    .captcha-input input::placeholder { color: #94a3b8; }
+    /* 聚焦样式 */
+    .captcha-input input:focus { border-color: #0047AB; box-shadow: 0 0 0 3px rgba(0,71,171,0.25), 0 6px 20px rgba(0,0,0,0.12); background: #fff; }
+    /* 按钮 */
+    .captcha-btn { padding: 0.75rem 1.1rem; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #0047AB; font-weight: 800; cursor: pointer; transition: transform .15s ease, box-shadow .2s, background .2s; display: inline-flex; align-items: center; gap: .5rem; }
+    /* 按钮悬停样式 */
+    .captcha-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+    /* 按钮点击样式 */
+    .captcha-btn:active { transform: translateY(0); }
+    /* 主要按钮样式 */
+    .captcha-btn.primary { background: #0047AB; color: #fff; border-color: #0047AB; }
+    /* 主要按钮悬停样式 */
+    .captcha-btn.primary:hover { filter: brightness(1.05); }
+    /* 禁用按钮 */
+    .captcha-btn[disabled] { opacity: .6; cursor: not-allowed; box-shadow: none; }
+    /* 加载中状态 */
+    .captcha-btn.loading i { animation: spin 1s linear infinite; }
+    /* 消息显示 */
+    .captcha-msg { display: none; }
+
+    .captcha-tip { display: flex; align-items: flex-start; gap: .6rem; margin: .9rem 0 0; padding: .75rem .9rem; border-radius: 10px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; }
+    .captcha-tip .tip-icon { margin-top: 2px; color: #1e293b; }
+    .captcha-tip.info { background: #eff6ff; border-color: #bfdbfe; }
+    .captcha-tip.info .tip-icon { color: #1d4ed8; }
+    .captcha-tip.warn { background: #fff7ed; border-color: #fdba74; }
+    .captcha-tip.warn .tip-icon { color: #f59e0b; }
+    .captcha-tip.error { background: #fef2f2; border-color: #fca5a5; }
+    .captcha-tip.error .tip-icon { color: #dc2626; }
+    .captcha-tip.success { background: #ecfdf5; border-color: #86efac; }
+    .captcha-tip.success .tip-icon { color: #16a34a; }
+
+    .shake { animation: shake .35s ease; }
+    .glow { animation: glow 1.2s ease; }
+
+    /* 倒计时在深色背景上保持可读 */
+    .timer { font-size: 1.05rem; margin-bottom: 1rem; }
+
+    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20% { transform: translateX(-4px); }
+        40% { transform: translateX(4px); }
+        60% { transform: translateX(-3px); }
+        80% { transform: translateX(3px); }
+    }
+    @keyframes glow {
+        0% { box-shadow: 0 0 0 0 rgba(25,135,84,0.0); }
+        50% { box-shadow: 0 0 0 6px rgba(25,135,84,0.35); }
+        100% { box-shadow: 0 0 0 0 rgba(25,135,84,0.0); }
+    }
+</style>
+
+<script>
+    // 使用后端传入的 retry_after（默认 60）进行倒计时，并在结束后提示进行验证码验证
+    const retrySecondsEl = document.getElementById('retrySeconds');
+    let seconds = parseInt(retrySecondsEl ? retrySecondsEl.textContent : '60');
+
+    // 验证码相关引用
+    const captchaArea = document.getElementById('captchaArea');
+    const captchaImg429 = document.getElementById('captchaImg429');
+    const refreshCaptcha429 = document.getElementById('refreshCaptcha429');
+    const submitCaptcha429 = document.getElementById('submitCaptcha429');
+    const captchaInput429 = document.getElementById('captchaInput429');
+    const captchaMsg429 = document.getElementById('captchaMsg429');
+    const captchaTip = document.getElementById('captchaTip');
+    const captchaTipText = document.getElementById('captchaTipText');
+    const backUrl = "{{ url_for('views.index') }}";
+
+    let challengePassed = false; // 解释：仅当“时间到且验证码正确”后为 true
+
+    function enableActions() {
+        // 解释：现在页面没有可点按钮，保持标志用于阻止重复提交
+        challengePassed = true;
+    }
+
+    function showCaptchaArea() {
+        if (!captchaArea) return;
+        captchaArea.classList.remove('is-hidden');
+        captchaArea.setAttribute('aria-hidden', 'false');
+        // 解释：倒计时结束后请先完成验证码
+    }
+
+    function refreshCaptcha() {
+        if (captchaImg429) {
+            const base = "{{ url_for('views.captcha429') }}";
+            captchaImg429.src = base + '?ts=' + Date.now();
+        }
+        if (refreshCaptcha429) {
+            refreshCaptcha429.classList.add('loading');
+            setTimeout(() => refreshCaptcha429.classList.remove('loading'), 550);
+        }
+    }
+
+    // 进入页面立即刷新一次验证码，确保每次刷新都有新图
+    refreshCaptcha();
+
+    function tick() {
+        if (isNaN(seconds)) seconds = 60;
+        if (seconds > 0) {
+            seconds -= 1;
+            if (retrySecondsEl) retrySecondsEl.textContent = String(seconds);
+            if (seconds === 0) {
+                // 提示用户进行验证码验证
+                showCaptchaArea();
+                refreshCaptcha();
+                setTip('info', "{{ _('Time is up. Please complete the captcha to continue') }}");
+                setTimeout(() => captchaInput429 && captchaInput429.focus(), 50);
+            }
+        }
+    }
+    const timer = setInterval(tick, 1000);
+
+    // 无需按钮拦截：页面不提供导航按钮，验证通过后自动跳转
+
+    if (refreshCaptcha429) {
+        refreshCaptcha429.addEventListener('click', refreshCaptcha);
+    }
+
+    function setTip(type, text) {
+        if (!captchaTip) return;
+        captchaTip.classList.remove('info','warn','error','success');
+        captchaTip.classList.add(type || 'info');
+        if (captchaTipText) captchaTipText.textContent = text || '';
+    }
+
+    function setLoading(on) {
+        if (!submitCaptcha429) return;
+        submitCaptcha429.disabled = !!on;
+        submitCaptcha429.classList.toggle('loading', !!on);
+    }
+
+    async function verifyCaptcha() {
+        const code = (captchaInput429 && captchaInput429.value || '').trim();
+        if (!code) {
+            setTip('warn', "{{ _('Please enter the captcha code') }}");
+            // 轻微抖动反馈
+            captchaArea && (captchaArea.classList.remove('shake'), captchaArea.offsetHeight, captchaArea.classList.add('shake'));
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const resp = await fetch("{{ url_for('views.verify_captcha_429') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ captcha: code })
+            });
+            if (!resp.ok) throw new Error('network');
+            const data = await resp.json();
+            if (data && data.ok) {
+                setTip('success', "{{ _('Verified. Redirecting...') }}");
+                enableActions();
+                // 成功高亮
+                captchaArea && (captchaArea.classList.add('glow'));
+                setTimeout(() => window.location.assign(backUrl), 200);
+            } else if (data && data.need_wait) {
+                // 服务端告知尚需等待
+                setTip('info', `${data.seconds} {{ _('seconds remaining, please wait') }}`);
+            } else {
+                setTip('error', "{{ _('Invalid captcha, please try again') }}");
+                refreshCaptcha();
+                if (captchaInput429) captchaInput429.focus();
+                // 错误抖动
+                captchaArea && (captchaArea.classList.remove('shake'), captchaArea.offsetHeight, captchaArea.classList.add('shake'));
+            }
+        } catch (err) {
+            // 网络异常时也提示等待以避免误解
+            setTip('warn', "{{ _('Please wait until the countdown finishes, then try again') }}");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    if (submitCaptcha429) {
+        submitCaptcha429.addEventListener('click', verifyCaptcha);
+    }
+
+    if (captchaInput429) {
+        captchaInput429.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyCaptcha();
+            }
+        });
+    }
+
+    // 安全：页面卸载时清理定时器
+    window.addEventListener('beforeunload', function () { clearInterval(timer); });
+</script>
+{% endblock %}

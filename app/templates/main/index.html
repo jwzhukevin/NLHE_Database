@@ -63,8 +63,9 @@
             </div>
             <button type="button" class="btn btn-clear" id="clearSearchBtn">{{ _('Clear') }}</button>
             <button type="submit" class="btn">{{ _('Search') }}</button>
-            <button type="button" class="btn" id="elementsToggleBtn">{{ _('Elements') }}</button>
+            <button type="button" class="btn" id="elementsToggleBtn" aria-controls="periodicTableWrapper" aria-expanded="false">{{ _('Elements') }}</button>
             <button type="button" class="btn" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
+            <input type="hidden" name="per_page" id="per_page" value="">
         </div>
         <style>
         /* 基础搜索区域 */
@@ -1754,6 +1755,23 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 第三行: MP-ID 与空间群 -->
+                <div class="search-row">
+                    <div class="filter-group">
+                        <label for="mp_id">MP-ID</label>
+                        <input type="text" name="mp_id" id="mp_id" 
+                               placeholder="e.g., mp-12345" 
+                               value="{{ search_params.mp_id }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="space_group">Space Group</label>
+                        <input type="text" name="space_group" id="space_group" 
+                               placeholder="e.g., 194 or P6_3/mmc" 
+                               value="{{ search_params.space_group }}">
+                    </div>
+                </div>
             </div>
         </div>
         <style>
@@ -1994,12 +2012,67 @@
             Total {{ count }} materials on this page
             {% endtrans %}
         </span>
+        <div class="table-toolbar">
+            <div class="menu per-page">
+                <button type="button" class="btn small" id="perPageBtn" aria-expanded="false">{{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">({{ pagination.per_page if pagination else 10 }})</span></button>
+                <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
+                    <button type="button" class="menu-item" data-per-page="10">
+                      <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                      <span class="item-text">10</span>
+                    </button>
+                    <button type="button" class="menu-item" data-per-page="15">
+                      <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                      <span class="item-text">15</span>
+                    </button>
+                    <button type="button" class="menu-item" data-per-page="20">
+                      <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                      <span class="item-text">20</span>
+                    </button>
+                    <button type="button" class="menu-item" data-per-page="25">
+                      <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                      <span class="item-text">25</span>
+                    </button>
+                    <button type="button" class="menu-item" data-per-page="30">
+                      <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                      <span class="item-text">30</span>
+                    </button>
+                </div>
+            </div>
+            <div class="menu column-visibility">
+                <button type="button" class="btn small" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
+                <div class="menu-panel is-hidden" id="colMenu" role="menu" aria-labelledby="colToggleBtn">
+                    <div class="menu-title">{{ _('Optional Columns') }}</div>
+                    <label class="menu-check" data-field="fermi_level" title="{{ _('Fermi Level (eV)') }}">
+                      <input type="checkbox" value="fermi_level">
+                      <i class="fas fa-bolt field-icon" aria-hidden="true"></i>
+                      <span class="menu-check-text">{{ _('Fermi Level (eV)') }}</span>
+                      <i class="far fa-eye field-visibility" aria-hidden="true"></i>
+                    </label>
+                    <label class="menu-check" data-field="band_gap" title="{{ _('Band Gap (eV)') }}">
+                      <input type="checkbox" value="band_gap">
+                      <i class="fas fa-wave-square field-icon" aria-hidden="true"></i>
+                      <span class="menu-check-text">{{ _('Band Gap (eV)') }}</span>
+                      <i class="far fa-eye field-visibility" aria-hidden="true"></i>
+                    </label>
+                    <label class="menu-check" data-field="max_sc" title="{{ _('Max SC (μA/V²)') }}">
+                      <input type="checkbox" value="max_sc">
+                      <i class="fas fa-microchip field-icon" aria-hidden="true"></i>
+                      <span class="menu-check-text">{{ _('Max SC (μA/V²)') }}</span>
+                      <i class="far fa-eye field-visibility" aria-hidden="true"></i>
+                    </label>
+                    <div class="menu-actions">
+                        <button type="button" class="btn small" id="applyColsBtn">{{ _('Apply') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <style>
     /* 表格相关样式 */
     .table-title {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       margin: 1.8rem 0 1rem;
       padding-bottom: 0.8rem;
       border-bottom: 1px solid #e2e8f0;
@@ -2024,6 +2097,98 @@
       background-color: var(--primary-color);
       border-radius: 2px;
     }
+
+    .table-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn.small {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(0, 71, 171, 0.25);
+      background: linear-gradient(180deg, #ffffff, #f9fbff);
+      color: var(--primary-color);
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .btn.small:hover {
+      background: linear-gradient(180deg, #f9fbff, #eef4ff);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 71, 171, 0.12);
+    }
+    .btn.small:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 127, 255, 0.25);
+    }
+    .btn.small.active {
+      background: linear-gradient(180deg, #e6f0ff, #dce9ff);
+      border-color: var(--primary-color);
+      color: #093a9c;
+    }
+    .menu {
+      position: relative;
+    }
+    .menu-panel {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 8px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+      min-width: 200px;
+      z-index: 20;
+      transform-origin: top right;
+    }
+    .menu-panel:not(.is-hidden) { animation: menuPop 120ms ease-out; }
+    @keyframes menuPop {
+      from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .menu-item { display: block; width: 100%; text-align: left; padding: 8px 10px; border: none; background: none; cursor: pointer; border-radius: 6px; color: #1f2a44; font-weight: 500; transition: background 0.12s ease, color 0.12s ease; }
+    .menu-item:hover { background: #f2f6ff; color: var(--primary-color); }
+    .menu-item.active { background: rgba(0, 127, 255, 0.08); color: var(--primary-color); position: relative; }
+    .menu-item.active::after { content: '✓'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--primary-color); font-weight: 700; }
+    .menu-title { font-weight: 700; margin: 4px 6px 8px; color: #0f172a; }
+    /* Per Page 面板按内容自适应，设置上下限以保证稳定 */
+    .menu.per-page .menu-panel { width: 100px; min-width: 100px; max-width: 100px; }
+    /* Per Page 条目更紧凑：左图标(18px) + 数字文本，右侧为 ✓ 预留空间 */
+    .menu.per-page .menu-item {
+      display: grid;
+      grid-template-columns: 18px auto;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 22px 6px 8px; /* 右侧为 ✓ 预留约22px */
+    }
+    .menu.per-page .menu-item .item-icon { color: var(--primary-color); opacity: 0.9; }
+    .menu.per-page .menu-item .item-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #1f2a44; font-weight: 600; }
+    /* 扩大 Columns 面板并允许滚动 */
+    .menu.column-visibility .menu-panel { width: 360px; max-height: 360px; overflow-y: auto; overscroll-behavior: contain; }
+    .menu.column-visibility .menu-panel::-webkit-scrollbar { width: 10px; }
+    .menu.column-visibility .menu-panel::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+    .menu.column-visibility .menu-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .menu.column-visibility .menu-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    /* 单项布局：复选框 | 左图标 | 文本 | 右状态图标 */
+    .menu-check { display: grid; grid-template-columns: auto 22px 1fr 22px; align-items: center; gap: 10px; padding: 10px 12px; line-height: 1.2; white-space: nowrap; max-width: 100%; border-radius: 8px; transition: background 0.12s ease; }
+    .menu-check:hover { background: #f2f6ff; }
+    .menu-check input { justify-self: start; }
+    .menu-check .field-icon { color: var(--primary-color); opacity: 0.9; }
+    .menu-check-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #1f2a44; font-weight: 600; }
+    .menu-check .field-visibility { color: #64748b; transition: color 0.12s, transform 0.12s; }
+    .menu-check input:checked ~ .field-visibility { color: var(--primary-color); transform: scale(1.06); }
+    .menu-actions { display: flex; justify-content: flex-end; padding-top: 6px; }
+    .col-remove { margin-left: 6px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 700; }
+    .col-remove:hover { color: #ef4444; }
+    .hidden { display: none !important; }
+    /* 让“Apply”按钮更明显 */
+    #applyColsBtn.btn.small { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+    #applyColsBtn.btn.small:hover { filter: brightness(0.95); }
+    .per-page-current { font-weight: 600; color: #093a9c; margin-left: 2px; }
     </style>
 
     <!-- 表格 -->
@@ -2031,43 +2196,43 @@
         <thead>
             <tr>
                 <!-- 前端排序：点击表头切换升/降序 -->
-                <th class="sortable" data-sort-key="id" aria-sort="none">{{ _('ID') }} <span class="sort-indicator"></span></th>
-                <th class="sortable" data-sort-key="mp_id" aria-sort="none">{{ _('MP-ID') }} <span class="sort-indicator"></span></th>
-                <th class="sortable" data-sort-key="name" aria-sort="none">{{ _('Material Name') }} <span class="sort-indicator"></span></th>
-                <th class="sortable" data-sort-key="space_group" aria-sort="none">{{ _('Space Group') }} <span class="sort-indicator"></span></th>
-                <th class="sortable" data-sort-key="fermi" aria-sort="none">{{ _('Fermi Level (eV)') }} <span class="sort-indicator"></span></th>
-                <th class="sortable" data-sort-key="band_gap" aria-sort="none">{{ _('Band Gap (eV)') }} <span class="sort-indicator"></span></th>
-                <th class="sortable" data-sort-key="max_sc" aria-sort="none">{{ _('Max SC (μA/V²)') }} <span class="sort-indicator"></span></th>
-                <th>{{ _('Actions') }}</th>
+                <th class="sortable" data-sort-key="id" data-col-key="id" aria-sort="none">{{ _('ID') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="mp_id" data-col-key="mp_id" aria-sort="none">{{ _('MP-ID') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="name" data-col-key="name" aria-sort="none">{{ _('Material Name') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="space_group" data-col-key="space_group" aria-sort="none">{{ _('Space Group') }} <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort-key="fermi" data-col-key="fermi_level" aria-sort="none">{{ _('Fermi Level (eV)') }} <span class="sort-indicator"></span><button class="col-remove" data-col-key="fermi_level" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+                <th class="sortable" data-sort-key="band_gap" data-col-key="band_gap" aria-sort="none">{{ _('Band Gap (eV)') }} <span class="sort-indicator"></span><button class="col-remove" data-col-key="band_gap" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+                <th class="sortable" data-sort-key="max_sc" data-col-key="max_sc" aria-sort="none">{{ _('Max SC (μA/V²)') }} <span class="sort-indicator"></span><button class="col-remove" data-col-key="max_sc" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+                <th data-col-key="actions">{{ _('Actions') }}</th>
             </tr>
         </thead>
         <tbody>
             {% for material in materials %}
             <tr>
-                <td>{{ material.formatted_id }}</td>
-                <td>{{ material.mp_id if material.mp_id else _('Unknown') }}</td>
-                <td>
+                <td data-col-key="id">{{ material.formatted_id }}</td>
+                <td data-col-key="mp_id">{{ material.mp_id if material.mp_id else _('Unknown') }}</td>
+                <td data-col-key="name">
                     <a href="{{ url_for('views.detail', material_id=material.id) }}" class="material-link">
                         {{ material.name }}
                     </a>
                 </td>
-                <td>{{ material.sg_name if material.sg_name else _('Unknown') }} ({{ material.sg_num if material.sg_num else _('N/A') }})</td>
-                <td>{{ material.fermi_level if material.fermi_level is not none else _('N/A') }}</td>
-                <td class="band-gap-cell" data-material-id="{{ material.id }}">
+                <td data-col-key="space_group">{{ material.sg_name if material.sg_name else _('Unknown') }} ({{ material.sg_num if material.sg_num else _('N/A') }})</td>
+                <td data-col-key="fermi_level">{{ material.fermi_level if material.fermi_level is not none else _('N/A') }}</td>
+                <td class="band-gap-cell" data-col-key="band_gap" data-material-id="{{ material.id }}">
                     {% if material.band_gap is not none %}
                         {{ "%.4f"|format(material.band_gap) }}
                     {% else %}
                         {{ _('N/A') }}
                     {% endif %}
                 </td>
-                <td class="max-sc-cell" data-material-id="{{ material.id }}">
+                <td class="max-sc-cell" data-col-key="max_sc" data-material-id="{{ material.id }}">
                     {% if material.max_sc is not none %}
                         {{ "%.4f"|format(material.max_sc) }}
                     {% else %}
                         {{ _('Loading...') }}
                     {% endif %}
                 </td>
-                <td>
+                <td data-col-key="actions">
                     <div class="action-buttons">
                         <a class="mp" 
                            href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" 
@@ -2234,12 +2399,12 @@
     {% if pagination.pages > 1 %}
     <div class="pagination">
         {% if pagination.has_prev %}
-		    <a href="{{ url_for('views.index', page=pagination.prev_num, **search_params) }}">« {{ _('Previous') }}</a>
+		    <a href="{{ url_for('views.index', page=pagination.prev_num, per_page=pagination.per_page, **search_params) }}">« {{ _('Previous') }}</a>
         {% endif %}
 
         {% for page_num in pagination.iter_pages() %}
             {% if page_num %}
-			    <a href="{{ url_for('views.index', page=page_num, **search_params) }}" 
+			    <a href="{{ url_for('views.index', page=page_num, per_page=pagination.per_page, **search_params) }}" 
                    class="{% if page_num == pagination.page %}active{% endif %}">
                     {{ page_num }}
                 </a>
@@ -2249,7 +2414,7 @@
         {% endfor %}
 
         {% if pagination.has_next %}
-		    <a href="{{ url_for('views.index', page=pagination.next_num, **search_params) }}">{{ _('Next') }} »</a>
+		    <a href="{{ url_for('views.index', page=pagination.next_num, per_page=pagination.per_page, **search_params) }}">{{ _('Next') }} »</a>
         {% endif %}
     </div>
     {% endif %}
@@ -2316,12 +2481,170 @@ function toggleAdvanced() {
 
 function toggleElements() {
     const periodicTable = document.getElementById('periodicTableWrapper');
-    if (periodicTable.style.display === 'none' || !periodicTable.style.display) {
-        periodicTable.style.display = 'block';
-    } else {
-        periodicTable.style.display = 'none';
+    if (!periodicTable) return;
+    periodicTable.classList.toggle('is-hidden');
+
+    // 同步可访问性状态与焦点
+    const btn = document.getElementById('elementsToggleBtn');
+    if (btn) {
+        const expanded = !periodicTable.classList.contains('is-hidden');
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    }
+    if (!periodicTable.classList.contains('is-hidden')) {
+        const clearBtn = document.getElementById('clearElements');
+        if (clearBtn) clearBtn.focus();
     }
 }
+
+// ===== 分页数量与列显隐控制 =====
+const OPTIONAL_COLUMNS = ['fermi_level', 'band_gap', 'max_sc'];
+
+function getStoredPerPage() {
+  try { return parseInt(localStorage.getItem('per_page') || ''); } catch { return null; }
+}
+
+function setStoredPerPage(n) {
+  try { localStorage.setItem('per_page', String(n)); } catch {}
+}
+
+function updateUrlParams(params) {
+  const url = new URL(window.location.href);
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === null || v === undefined || v === '') url.searchParams.delete(k);
+    else url.searchParams.set(k, v);
+  });
+  window.location.assign(url.toString());
+}
+
+function applyPerPage(n) {
+  setStoredPerPage(n);
+  // 同步隐藏字段，确保表单提交时也保留参数
+  const hidden = document.getElementById('per_page');
+  if (hidden) hidden.value = String(n);
+  // 仅更新 per_page，保持当前页不变；若当前页在新 per_page 下无效，后端会回落到第 1 页
+  updateUrlParams({ per_page: n });
+}
+
+function getStoredVisibleCols() {
+  try {
+    const raw = localStorage.getItem('visible_columns');
+    if (!raw) return null;
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) return new Set(arr);
+  } catch {}
+  return null;
+}
+
+function setStoredVisibleCols(set) {
+  try { localStorage.setItem('visible_columns', JSON.stringify(Array.from(set))); } catch {}
+}
+
+function applyColumnVisibility(visibleSet) {
+  const allKeys = OPTIONAL_COLUMNS;
+  // Update headers and cells
+  allKeys.forEach(key => {
+    const selector = `[data-col-key="${key}"]`;
+    document.querySelectorAll(selector).forEach(el => {
+      if (visibleSet.has(key)) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    });
+  });
+  // Sync checkboxes
+  const menu = document.getElementById('colMenu');
+  if (menu) {
+    menu.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.checked = visibleSet.has(cb.value);
+    });
+  }
+}
+
+function initToolbar() {
+  // Per-page menu
+  const perBtn = document.getElementById('perPageBtn');
+  const perMenu = document.getElementById('perPageMenu');
+  if (perBtn && perMenu) {
+    perBtn.addEventListener('click', () => {
+      perMenu.classList.toggle('is-hidden');
+      const expanded = !perMenu.classList.contains('is-hidden');
+      perBtn.classList.toggle('active', expanded);
+      perBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    });
+    // 高亮当前 per_page，并设置按钮括号显示
+    const currentHidden = document.getElementById('per_page');
+    const currentPP = parseInt((currentHidden && currentHidden.value) || '');
+    const display = document.getElementById('perPageCurrent');
+    if (display && !isNaN(currentPP)) display.textContent = `(${currentPP})`;
+    perMenu.querySelectorAll('[data-per-page]').forEach(item => {
+      const n = parseInt(item.getAttribute('data-per-page'));
+      if (!isNaN(currentPP) && n === currentPP) item.classList.add('active');
+      item.addEventListener('click', () => applyPerPage(n));
+    });
+  }
+
+  // Column menu
+  const colBtn = document.getElementById('colToggleBtn');
+  const colMenu = document.getElementById('colMenu');
+  if (colBtn && colMenu) {
+    colBtn.addEventListener('click', () => {
+      colMenu.classList.toggle('is-hidden');
+      const expanded = !colMenu.classList.contains('is-hidden');
+      colBtn.classList.toggle('active', expanded);
+      colBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    });
+    document.getElementById('applyColsBtn')?.addEventListener('click', () => {
+      const checks = Array.from(colMenu.querySelectorAll('input[type="checkbox"]'));
+      const selected = new Set(checks.filter(cb => cb.checked).map(cb => cb.value));
+      // Default: if none checked, we keep all hidden state
+      applyColumnVisibility(selected);
+      setStoredVisibleCols(selected);
+      colMenu.classList.add('is-hidden');
+      colBtn.classList.remove('active');
+      colBtn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  // Remove buttons on headers
+  document.querySelectorAll('th .col-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.getAttribute('data-col-key');
+      const current = getStoredVisibleCols() || new Set(OPTIONAL_COLUMNS);
+      current.delete(key);
+      setStoredVisibleCols(current);
+      applyColumnVisibility(current);
+    });
+  });
+
+  // Initialize state from storage
+  const storedPP = getStoredPerPage();
+  const url = new URL(window.location.href);
+  // 若URL已有per_page，则同步到隐藏字段；否则尝试用localStorage
+  const hidden = document.getElementById('per_page');
+  const urlPP = parseInt(url.searchParams.get('per_page') || '');
+  if (!isNaN(urlPP) && [10,15,20,25,30].includes(urlPP)) {
+    if (hidden) hidden.value = String(urlPP);
+  } else if (storedPP && [10,15,20,25,30].includes(storedPP)) {
+    if (hidden) hidden.value = String(storedPP);
+  }
+  if (!url.searchParams.get('per_page') && storedPP && [10,15,20,25,30].includes(storedPP)) {
+    // If user has a preference but URL lacks it, set per_page only and keep current page
+    updateUrlParams({ per_page: storedPP });
+    return; // navigation will occur
+  }
+  // 初始化按钮括号显示（若此时已获得隐藏字段值）
+  try {
+    const display = document.getElementById('perPageCurrent');
+    const currentPP = parseInt((hidden && hidden.value) || '');
+    if (display && !isNaN(currentPP)) display.textContent = `(${currentPP})`;
+  } catch {}
+
+  // Columns
+  const storedCols = getStoredVisibleCols();
+  const initialVisible = storedCols || new Set(OPTIONAL_COLUMNS);
+  applyColumnVisibility(initialVisible);
+}
+
+document.addEventListener('DOMContentLoaded', initToolbar);
 
 // 实时搜索建议功能
 class SearchSuggestions {
