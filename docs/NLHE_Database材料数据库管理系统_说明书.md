@@ -223,7 +223,7 @@ class Material(db.Model):
     # 材料属性
     total_energy = db.Column(db.Float)
     formation_energy = db.Column(db.Float)
-    metal_type = db.Column(db.String(64))
+    materials_type = db.Column(db.String(64))
     band_gap = db.Column(db.Float)
     
     # 文件信息
@@ -254,7 +254,7 @@ def index():
     name_filter = request.args.get('name')
     formula_filter = request.args.get('formula')
     status_filter = request.args.get('status')
-    metal_type_filter = request.args.get('metal_type')
+    materials_type_filter = request.args.get('materials_type')
     
     if name_filter:
         query = query.filter(Material.name.contains(name_filter))
@@ -262,8 +262,8 @@ def index():
         query = query.filter(Material.formula.contains(formula_filter))
     if status_filter:
         query = query.filter(Material.status == status_filter)
-    if metal_type_filter:
-        query = query.filter(Material.metal_type == metal_type_filter)
+    if materials_type_filter:
+        query = query.filter(Material.materials_type == materials_type_filter)
     
     # 排序
     sort_by = request.args.get('sort_by', 'id')
@@ -286,7 +286,7 @@ def index():
             'name': name_filter,
             'formula': formula_filter,
             'status': status_filter,
-            'metal_type': metal_type_filter
+            'materials_type': materials_type_filter
         }
     )
 ```
@@ -832,7 +832,7 @@ def register_commands(app):
                     status=data.get('status', 'active'),
                     total_energy=data.get('total_energy'),
                     formation_energy=data.get('formation_energy'),
-                    metal_type=data.get('metal_type'),
+                    materials_type=data.get('materials_type'),
                     band_gap=data.get('gap')
                 )
                 

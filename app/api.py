@@ -500,53 +500,32 @@ def update_material_names():
 @bp.route('/materials/<int:material_id>/update-metal-type', methods=['POST'])
 def update_material_metal_type(material_id):
     """
-    更新材料的金属类型
+    [Deprecated 20250825]
+    旧逻辑：手动更新 metal_type。现已废弃，材料类型改由 band.json
+    自动分析生成并写入模型字段 materials_type，禁止通过此端点修改。
 
     参数:
-        material_id: 材料ID
-
-    请求体:
-        {
-            "metal_type": "metal|semiconductor|insulator"
-        }
+        material_id: 材料ID（为保持向后兼容而保留）
 
     返回:
-        更新结果的JSON响应
+        410 Gone，提示接口已废弃
     """
+    # 说明性日志：提醒调用方迁移到新机制
     try:
-        # 获取材料记录
-        material = Material.query.get_or_404(material_id)
-
-        # 获取请求数据
-        data = request.get_json()
-        if not data or 'metal_type' not in data:
-            return jsonify({"error": "metal_type is required"}), 400
-
-        metal_type = data['metal_type'].strip().lower()
-
-        # 验证metal_type值
-        valid_types = ['metal', 'semiconductor', 'insulator', 'unknown']
-        if metal_type not in valid_types:
-            return jsonify({"error": f"Invalid metal_type. Must be one of: {', '.join(valid_types)}"}), 400
-
-        # 更新材料类型
-        old_type = material.metal_type
-        material.metal_type = metal_type
-
-        # 提交更改
-        db.session.commit()
-
-        current_app.logger.info(f"Updated material {material_id} metal_type from '{old_type}' to '{metal_type}'")
-
+        _ = Material.query.get_or_404(material_id)
+        current_app.logger.warning(
+            "[Deprecated] update-metal-type endpoint called. "
+            "materials_type is derived from band.json and cannot be updated "
+            "via API."
+        )
         return jsonify({
-            "success": True,
-            "message": f"Material type updated to {metal_type}",
-            "old_type": old_type,
-            "new_type": metal_type
-        })
-
+            "success": False,
+            "error": "This endpoint is deprecated. materials_type is derived "
+                      "from band.json and cannot be updated via API.",
+            "status": 410
+        }), 410
     except Exception as e:
-        # 回滚会话并返回错误
-        db.session.rollback()
-        current_app.logger.error(f"Error updating material metal type: {str(e)}")
+        current_app.logger.error(
+            f"Error handling deprecated update-metal-type: {str(e)}"
+        )
         return jsonify({"error": str(e)}), 500

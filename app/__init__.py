@@ -411,6 +411,12 @@ def create_app():
         from .views import bp as views_bp  # 导入主视图蓝图
         from .errors import bp as errors_bp  # 导入错误处理蓝图
         from .commands import bp as commands_bp, register_commands  # 导入 CLI 命令蓝图和注册函数
+        # [新增导入] 注册缓存失效监听与缓存统计访问器
+        from .search_optimizer import (
+            register_material_cache_invalidation,
+            get_search_cache_stats,
+            search_cache,
+        )
 
         # 注册蓝图到应用实例
         app.register_blueprint(views_bp)  # 注册主视图路由
@@ -435,6 +441,13 @@ def create_app():
         # 注册命令行命令
         register_commands(app)
 
+        # [新增调用] 注册 Material 的变更事件监听，自动触发搜索缓存失效
+        try:
+            register_material_cache_invalidation()
+            app.logger.info("已启用材料变更事件监听（触发搜索缓存失效）")
+        except Exception as e:
+            app.logger.warning(f"注册材料变更事件监听失败: {e}")
+
         # 添加手动初始化命令，避免自动初始化导致的问题
         @app.cli.command('init-formatted-ids')
         def init_formatted_ids_command():
@@ -456,6 +469,35 @@ def create_app():
                 print("搜索索引初始化完成")
             except Exception as e:
                 print(f"索引初始化失败: {e}")
+                return 1
+
+        # [新增] 打印搜索缓存指标（命中率、大小等）
+        @app.cli.command('search-cache-stats')
+        def search_cache_stats_command():
+            """
+            打印搜索缓存统计信息。
+            用法: flask search-cache-stats
+            """
+            try:
+                import json
+                stats = get_search_cache_stats()
+                print(json.dumps(stats, ensure_ascii=False, indent=2))
+            except Exception as e:
+                print(f"获取缓存统计失败: {e}")
+                return 1
+
+        # [新增] 手动清空搜索缓存（一般用于紧急回滚或调试）
+        @app.cli.command('clear-search-cache')
+        def clear_search_cache_command():
+            """
+            清空搜索缓存。
+            用法: flask clear-search-cache
+            """
+            try:
+                search_cache.clear()
+                print("搜索缓存已清空")
+            except Exception as e:
+                print(f"清空缓存失败: {e}")
                 return 1
 
         # 添加能带数据分析命令

@@ -70,9 +70,9 @@ Create dashboards for interactive exploration:
 ```python
 import plotly.express as px
 fig = px.scatter_3d(df, x='gap', y='formation_energy', z='workfunction',
-                   color='metal_type', hover_name='name')
+                   color='materials_type', hover_name='name')
 ```
 
 ## Conclusion
 
-Advanced data analysis techniques allow researchers to extract maximum value from the materials database, potentially leading to new discoveries and insights in materials science. 
+Advanced data analysis techniques allow researchers to extract maximum value from the materials database, potentially leading to new discoveries and insights in materials science.

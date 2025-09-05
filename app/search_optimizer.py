@@ -7,9 +7,10 @@ import json
 import time
 from functools import wraps
 from typing import Dict, List, Any, Optional
-from flask import current_app, request
+import threading
+from flask import current_app, request, Response
 from flask_babel import get_locale
-from sqlalchemy import text
+from sqlalchemy import text, and_, or_, event
 from . import db
 from .models import Material
 
@@ -30,6 +31,8 @@ class SearchCache:
             'misses': 0,
             'total_requests': 0
         }
+        # 并发安全：为缓存读写加可重入锁
+        self._lock = threading.RLock()
         self.max_cache_size = 1000  # 最大缓存条目数
         self.cache_ttl = 300  # 缓存生存时间（秒）
     
@@ -46,47 +49,50 @@ class SearchCache:
     
     def get(self, search_params: Dict, user_context: str = None) -> Optional[Dict]:
         """从缓存获取搜索结果"""
-        self.cache_stats['total_requests'] += 1
+        with self._lock:
+            self.cache_stats['total_requests'] += 1
 
-        cache_key = self._generate_cache_key(search_params, user_context)
+            cache_key = self._generate_cache_key(search_params, user_context)
 
-        if cache_key in self.cache:
-            cached_item = self.cache[cache_key]
+            if cache_key in self.cache:
+                cached_item = self.cache[cache_key]
 
-            # 检查是否过期
-            if time.time() - cached_item['timestamp'] < self.cache_ttl:
-                self.cache_stats['hits'] += 1
-                return cached_item['data']
-            else:
-                # 删除过期项
-                del self.cache[cache_key]
+                # 检查是否过期
+                if time.time() - cached_item['timestamp'] < self.cache_ttl:
+                    self.cache_stats['hits'] += 1
+                    return cached_item['data']
+                else:
+                    # 删除过期项
+                    del self.cache[cache_key]
 
-        self.cache_stats['misses'] += 1
-        return None
+            self.cache_stats['misses'] += 1
+            return None
 
     def set(self, search_params: Dict, result_data: Dict, user_context: str = None):
         """将搜索结果存入缓存"""
-        cache_key = self._generate_cache_key(search_params, user_context)
+        with self._lock:
+            cache_key = self._generate_cache_key(search_params, user_context)
 
-        # 如果缓存已满，删除最旧的项
-        if len(self.cache) >= self.max_cache_size:
-            oldest_key = min(self.cache.keys(),
-                           key=lambda k: self.cache[k]['timestamp'])
-            del self.cache[oldest_key]
+            # 如果缓存已满，删除最旧的项
+            if len(self.cache) >= self.max_cache_size:
+                oldest_key = min(self.cache.keys(),
+                                 key=lambda k: self.cache[k]['timestamp'])
+                del self.cache[oldest_key]
 
-        self.cache[cache_key] = {
-            'data': result_data,
-            'timestamp': time.time()
-        }
+            self.cache[cache_key] = {
+                'data': result_data,
+                'timestamp': time.time()
+            }
     
     def clear(self):
         """清空缓存"""
-        self.cache.clear()
-        self.cache_stats = {
-            'hits': 0,
-            'misses': 0,
-            'total_requests': 0
-        }
+        with self._lock:
+            self.cache.clear()
+            self.cache_stats = {
+                'hits': 0,
+                'misses': 0,
+                'total_requests': 0
+            }
     
     def get_stats(self) -> Dict:
         """获取缓存统计信息"""
@@ -134,7 +140,7 @@ class QueryOptimizer:
             search_term = search_params['q']
             # 优先使用精确匹配，然后是前缀匹配，最后是模糊匹配
             filters.append(
-                db.or_(
+                or_(
                     Material.name == search_term,  # 精确匹配（最快）
                     Material.name.like(f'{search_term}%'),  # 前缀匹配（较快）
                     Material.mp_id == search_term,  # MP ID精确匹配
@@ -152,7 +158,7 @@ class QueryOptimizer:
         
         # 应用所有过滤条件
         if filters:
-            query = query.filter(db.and_(*filters))
+            query = query.filter(and_(*filters))
         
         # 执行查询并计算性能
         total_count = query.count()
@@ -223,21 +229,22 @@ class QueryOptimizer:
         try:
             with db.engine.begin() as conn:
                 # 检查并创建索引
+                table = Material.__tablename__
                 indexes_to_create = [
                     # 基本搜索索引
-                    "CREATE INDEX IF NOT EXISTS idx_material_name ON material (name)",
-                    "CREATE INDEX IF NOT EXISTS idx_material_mp_id ON material (mp_id)",
-                    "CREATE INDEX IF NOT EXISTS idx_material_metal_type ON material (metal_type)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_name ON {table} (name)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_mp_id ON {table} (mp_id)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_materials_type ON {table} (materials_type)",
                     
                     # 数值范围搜索索引
-                    "CREATE INDEX IF NOT EXISTS idx_material_fermi_level ON material (fermi_level)",
-                    "CREATE INDEX IF NOT EXISTS idx_material_max_sc ON material (max_sc)",
-                    "CREATE INDEX IF NOT EXISTS idx_material_band_gap ON material (band_gap)",
-                    "CREATE INDEX IF NOT EXISTS idx_material_sg_num ON material (sg_num)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_fermi_level ON {table} (fermi_level)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_max_sc ON {table} (max_sc)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_band_gap ON {table} (band_gap)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_sg_num ON {table} (sg_num)",
                     
                     # 复合索引
-                    "CREATE INDEX IF NOT EXISTS idx_material_search_combo ON material (name, metal_type)",
-                    "CREATE INDEX IF NOT EXISTS idx_material_properties ON material (fermi_level, max_sc)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_search_combo ON {table} (name, materials_type)",
+                    f"CREATE INDEX IF NOT EXISTS idx_material_properties ON {table} (fermi_level, max_sc)",
                 ]
                 
                 for index_sql in indexes_to_create:
@@ -251,6 +258,29 @@ class QueryOptimizer:
                 
         except Exception as e:
             current_app.logger.error(f"Failed to create database indexes: {e}")
+
+def register_material_cache_invalidation():
+    """
+    注册 Material 表的变更事件监听，发生插入/更新/删除时主动失效搜索缓存。
+    """
+    try:
+        def _clear_cache(*args, **kwargs):
+            try:
+                search_cache.clear()
+                current_app.logger.info("Search cache invalidated due to material change")
+            except Exception as e:
+                current_app.logger.warning(f"Failed to clear search cache: {e}")
+
+        event.listen(Material, 'after_insert', _clear_cache)
+        event.listen(Material, 'after_update', _clear_cache)
+        event.listen(Material, 'after_delete', _clear_cache)
+        current_app.logger.info("Registered material change listeners for cache invalidation")
+    except Exception as e:
+        current_app.logger.warning(f"Registering cache invalidation listeners failed: {e}")
+
+def get_search_cache_stats() -> Dict:
+    """获取搜索缓存指标（供外部调用/观测）"""
+    return search_cache.get_stats()
 
 def performance_monitor(func):
     """
@@ -312,7 +342,17 @@ def cached_search(cache_enabled=True):
             user_context = f"{user_context}_locale_{locale}"
 
             # 从请求参数生成缓存键（包含用户上下文）
-            search_params = dict(request.args)
+            # 支持多值参数，并排序以保证键稳定性
+            search_params = {}
+            for k in request.args.keys():
+                vals = request.args.getlist(k)
+                if len(vals) == 0:
+                    search_params[k] = ""
+                elif len(vals) == 1:
+                    search_params[k] = vals[0]
+                else:
+                    # 多值参数按字母序排序，确保生成的键一致
+                    search_params[k] = sorted(vals)
 
             # 尝试从缓存获取结果
             cached_result = search_cache.get(search_params, user_context)
@@ -323,8 +363,20 @@ def cached_search(cache_enabled=True):
             # 执行搜索并缓存结果
             result = func(*args, **kwargs)
 
-            # 只缓存成功的结果
-            if result and not isinstance(result, tuple):  # 不是错误响应
+            # 只缓存成功的结果：精确判断 Response/tuple 场景
+            # [新增逻辑说明] 兼容 Flask Response 对象与 (data, status[, headers]) 返回格式
+            should_cache = False
+            if isinstance(result, Response):
+                should_cache = 200 <= result.status_code < 300
+            elif isinstance(result, tuple):
+                status = None
+                if len(result) >= 2 and isinstance(result[1], int):
+                    status = result[1]
+                should_cache = (status is None) or (200 <= status < 300)
+            else:
+                should_cache = True
+
+            if should_cache:
                 search_cache.set(search_params, result, user_context)
                 current_app.logger.info(f"Search result cached for {user_context}")
 
