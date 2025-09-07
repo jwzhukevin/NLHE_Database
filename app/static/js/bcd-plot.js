@@ -251,7 +251,8 @@
             };
 
             if (traces.length > 0 && window.Plotly) {
-                Plotly.newPlot(plotElement, traces, layout, config);
+                Plotly.newPlot(plotElement, traces, layout, config)
+                  .catch(err => { console.error('BCD 绘制失败:', err); });
 
                 // 状态管理与交互逻辑
                 const curveVisibility = new Array(traces.length).fill(true);

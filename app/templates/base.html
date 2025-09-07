@@ -19,6 +19,7 @@
             --text-color: #333333;        /* Dark gray text */
             --light-bg: #F5F8FF;          /* Very light blue background */
             
+    
             /* Shadows and borders */
             --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
             --input-border: #D9E2F0;
@@ -732,5 +733,24 @@
             })();
         });
     </script>
+
+    <!-- 全局加载遮罩（默认显示，DOMContentLoaded 后自动隐藏） -->
+    <div id="global-loader" aria-live="polite" aria-busy="true" style="display:none;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(255,255,255,0.92);z-index:9999;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:14px;">
+            <!-- 灰色图框容器 -->
+            <div style="background:#f5f5f5;border:1px solid #d1d5db;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);padding:12px;">
+                <!-- 内框线（8px 边距）通过额外容器实现 -->
+                <div style="position:relative;width:960px;height:600px;background:#ffffff;border-radius:10px;">
+                    <canvas id="band-loader-canvas" width="960" height="600" style="display:block;width:960px;height:600px;border-radius:6px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      body.loaded #global-loader { display: none !important; }
+    </style>
+    <script src="{{ url_for('static', filename='js/loader.js') }}"></script>
+
 </body>
 </html>

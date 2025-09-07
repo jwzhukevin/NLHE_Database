@@ -219,7 +219,8 @@
                              toImageButtonOptions: { format: 'png', filename: 'dw_structure', height: 800, width: 1200, scale: 2 } };
 
             if (traces.length > 0 && window.Plotly) {
-                Plotly.newPlot(plotElement, traces, layout, config);
+                Plotly.newPlot(plotElement, traces, layout, config)
+                  .catch(err => { console.error('DW 绘制失败:', err); });
 
                 // 状态管理与交互
                 const curveVisibility = new Array(traces.length).fill(true);

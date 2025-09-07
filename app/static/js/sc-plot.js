@@ -666,9 +666,10 @@ function parseAndPlotSCData(dataText, container) {
             };
         });
         
-        // 绘制图表
+        // 绘制图表（加载页改为全站触发，不在模块内控制）
         console.log(`SC图表: 准备绘制 ${traces.length} 条曲线，实现完整的交互逻辑`);
-        Plotly.newPlot(plotElement, traces, layout, config);
+        Plotly.newPlot(plotElement, traces, layout, config)
+          .catch(err => { console.error('SC 绘制失败:', err); });
 
         // 状态管理变量
         const curveVisibility = new Array(traces.length).fill(true); // 跟踪每条曲线的可见性
