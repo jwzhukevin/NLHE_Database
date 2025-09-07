@@ -8,8 +8,8 @@
   // 基本参数（可调整）
   const LOADER_ID = 'global-loader';
   const BODY_LOADED_CLASS = 'loaded';
-  const DELAY_SHOW_MS = 1;   // 延迟显示（超过此时间才真正显示）
-  const MIN_SHOW_MS = 10000;     // 最小展示时长（一旦显示，至少展示该时长）
+  const DELAY_SHOW_MS = 500;   // 延迟显示（超过此时间才真正显示）
+  const MIN_SHOW_MS = 1000;     // 最小展示时长（一旦显示，至少展示该时长）
   const DEBUG_LOADER = true;   // 调试开关：true 时输出日志
 
   // 状态
