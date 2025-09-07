@@ -280,6 +280,11 @@ msgstr ""
 msgid "Research Team"
 msgstr ""
 
+# 新增：模块重命名为 Team
+#: app/templates/base.html:578 app/templates/members/index.html:6
+msgid "Team"
+msgstr "Team"
+
 #: app/templates/base.html:576
 msgid "Publications"
 msgstr ""
