@@ -24,7 +24,15 @@ import logging
 
 
 class BandAnalysisConfig:
-    """能带分析配置类 - 统一参数定义"""
+    """
+    能带分析配置类 - 统一参数定义
+
+    说明（阈值设计）：
+    - 金属阈值：带隙==0 视为金属（近零值由费米容差控制）；
+    - 半金属阈值：0-0.1 eV 视为半金属，兼顾数值噪声与轻微带隙；
+    - 半导体阈值：0.1-3.0 eV；>3.0 eV 视为绝缘体；
+    - 以上阈值为工程经验值，可按项目需求在不改变算法结构的前提下微调。
+    """
     
     # 费米能级相关参数
     DEFAULT_FERMI_LEVEL = 0.0  # 默认费米能级
@@ -55,7 +63,16 @@ class BandAnalysisConfig:
 
 
 class BandAnalyzer:
-    """能带分析器类 - 简化版本，只计算带隙和材料类型"""
+    """
+    能带分析器类 - 简化版本，只计算带隙和材料类型
+
+    设计说明：
+    - 数据源优先级：band.dat > EIGENVAL > 通用数据文件；
+    - 失败回退：任一步骤失败均返回默认结果（band_gap=None, materials_type='unknown'），
+      避免批处理被单个异常阻断；
+    - 日志粒度：解析失败/计算失败使用 error，文件缺失使用 warning；
+    - 数值安全：使用 fermi_tolerance 控制近零判断，降低数值噪声影响。
+    """
     
     def __init__(self):
         self.config = BandAnalysisConfig()
@@ -224,7 +241,15 @@ class BandAnalyzer:
             return None
     
     def _calculate_band_gap(self, band_data: Dict) -> Optional[float]:
-        """计算带隙"""
+        """
+        计算带隙
+
+        说明：
+        - 将能量按费米能级归一化，收集占据/未占据态；
+        - VBM 取占据态最大值，CBM 取未占据态最小值；
+        - 若任一集合为空，视为金属（返回 0.0）；
+        - 返回非负带隙值。
+        """
         try:
             eigenvalues = band_data['eigenvalues']
             fermi_level = band_data.get('fermi_level', 0.0)

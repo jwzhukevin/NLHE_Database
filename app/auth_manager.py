@@ -5,7 +5,7 @@
 避免与Flask-Login的LoginManager命名冲突
 """
 
-from datetime import datetime, timezone, timezone
+from datetime import datetime, timezone
 from flask import session, request, current_app, flash
 from flask_babel import _
 from flask_login import login_user as flask_login_user, logout_user as flask_logout_user, current_user
@@ -27,6 +27,11 @@ class LoginStateManager:
     def login_user(user, remember=False):
         """
         统一的用户登录处理
+
+        说明：
+        - 仅当“游客 → 登录用户”时弹欢迎提示，避免重复提示影响体验；
+        - 登录前先清理旧会话并重新生成 session ID，防止会话固定攻击；
+        - 成功后尝试记录登录 IP 与时间（字段缺失时不影响登录流程）。
 
         只有当用户从游客状态变为登录状态时才显示欢迎消息，
         避免在已登录状态下重复显示消息。

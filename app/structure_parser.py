@@ -14,7 +14,12 @@ import re
 
 def get_material_dir(material_id):
     """
-    根据材料ID返回材料目录路径，优先新格式IMR-{id}，找不到则兼容旧格式IMR-00000001。
+    根据材料 ID 返回材料目录路径。
+
+    目录策略：
+    - 新标准：`IMR-{id}`（不补零）；
+    - 兼容回退：若新目录不存在，则尝试旧格式 `IMR-{id:08d}`；
+    - 返回值：若两者都不存在，返回新格式路径（调用方可据此创建）。
     """
     base_dir = os.path.join(current_app.root_path, 'static', 'materials')
     new_dir = os.path.join(base_dir, f'IMR-{material_id}')
@@ -29,16 +34,16 @@ def get_material_dir(material_id):
 
 def save_structure_file(file_content, filename, material_id=None, material_name=None):
     """
-    保存上传的CIF文件到材料对应的结构目录，目录格式IMR-{id}，自动兼容。
-    
+    保存上传的 CIF 文件到材料对应的结构目录。
+
     参数:
         file_content: 文件内容（二进制数据）
         filename: 原始文件名
-        material_id: 材料ID，用于标识文件目录
-        material_name: 材料名称（可选），不再用于命名文件
-    
+        material_id: 材料 ID，用于标识文件目录
+        material_name: 材料名称（保留参数，当前不用于命名）
+
     返回:
-        保存的文件相对路径，保存失败则返回None
+        保存的文件相对路径，保存失败则返回 None
     """
     try:
         if not material_id:
@@ -68,14 +73,20 @@ def save_structure_file(file_content, filename, material_id=None, material_name=
 
 def find_structure_file(material_id=None, material_name=None):
     """
-    根据材料ID查找对应的CIF文件，目录格式IMR-{id}，自动兼容。
-    
+    根据材料 ID 查找对应的 CIF 文件。
+
+    策略：
+    - 优先在新目录 `IMR-{id}` 下查找；
+    - 若不存在则回退旧格式 `IMR-{id:08d}`；
+    - 成功返回相对路径，失败返回 None；
+    - 说明：为降低维护成本，回退逻辑集中在本模块，其它模块不再感知旧格式。
+
     参数:
-        material_id: 材料ID，用于构建目录路径
-        material_name: 材料名称，参数保留但不再使用
-    
+        material_id: 材料 ID，用于构建目录路径
+        material_name: 材料名称（保留参数，不再使用）
+
     返回:
-        CIF文件相对路径，未找到则返回None
+        CIF 文件相对路径，未找到则返回 None
     """
     try:
         if material_id is None:
@@ -96,15 +107,15 @@ def find_structure_file(material_id=None, material_name=None):
 
 def parse_cif_file(filename=None, material_id=None, material_name=None):
     """
-    使用pymatgen解析CIF文件，返回结构数据的JSON格式
-    
+    使用 pymatgen 解析 CIF 文件，返回结构数据的 JSON 字符串。
+
     参数:
-        filename: CIF文件相对路径
-        material_id: 材料ID，用于查找文件
+        filename: CIF 文件相对路径
+        material_id: 材料 ID，用于查找文件
         material_name: 材料名称，参数保留但不再使用
-    
+
     返回:
-        包含原子坐标、晶格参数等信息的JSON字符串，解析失败则返回错误JSON
+        JSON 字符串：包含原子坐标、晶格参数与对称信息；解析失败返回错误 JSON。
     """
     try:
         # 参数验证和文件查找

@@ -198,7 +198,9 @@ def update_formatted_id(mapper, connection, target):
     """
     在材料记录插入后更新格式化ID
 
-    这时material.id已经生成，可以使用它来构建格式化ID
+    说明：全局统一命名规范为 IMR-{id}（不补零）。
+    与 app/__init__.py 中的初始化命令保持一致，避免 ID 文本出现多种格式，
+    便于日志、路径与前端展示的一致性与可读性。
     """
     _ = mapper  # 忽略未使用的参数
     # 使用原始SQL更新，避免触发额外的事件

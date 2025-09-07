@@ -4,15 +4,24 @@ import markdown
 from datetime import datetime
 from flask import Blueprint, render_template, request, abort, current_app
 
-# Create a blueprint for content management
+# 内容管理蓝图：用于展示与查看站内文档/教程/更新日志
 articles = Blueprint('articles', __name__)
 
-# Define base path for content files
+# 内容文件的基础目录（相对项目根目录）
 CONTENT_BASE_PATH = os.path.join('app', 'static', 'contents')
 
-# Helper function to extract metadata from markdown content
+# 元数据抽取：从 Markdown 内容中提取标题/日期/摘要
 def extract_metadata(content, filename):
-    """Extract title, date, and summary from markdown content"""
+    """
+    从 Markdown 内容中提取元数据（标题、日期、摘要）。
+
+    参数：
+        content: Markdown 文本内容
+        filename: 文件名（用于在缺失标题时生成默认标题）
+
+    返回：
+        dict，包含 title/date/summary/filename 字段
+    """
     # Default metadata
     metadata = {
         'title': filename.replace('_', ' ').replace('.md', '').title(),
@@ -41,60 +50,60 @@ def extract_metadata(content, filename):
     
     return metadata
 
-# List all articles with optional filtering
+# 列表页：按分类（Articles/Instructions/Changelog）与查询参数展示文章
 @articles.route('/articles')
 @articles.route('/articles/<category>')
 def listing(category=None):
     query = request.args.get('q', '').lower()
     
-    # Default to 'all' if no category is specified
+    # 若未指定分类，默认显示全部分类
     if not category:
         category = 'all'
     
-    # Normalize category name
+    # 归一化分类名（用于目录匹配）
     selected_category = category.lower()
     
-    # Define categories to search based on selected category
+    # 根据分类参数确定要遍历的文件夹集合
     if selected_category == 'all':
         categories = ['Articles', 'Instructions', 'Changelog']
     else:
-        # Map URL parameter to folder name (capitalize first letter)
+        # 将URL参数映射为文件夹名（首字母大写）
         folder_name = selected_category.capitalize()
-        if folder_name == 'Changelog':  # Special case for correct capitalization
+        if folder_name == 'Changelog':  # 特殊大小写
             folder_name = 'Changelog'
         categories = [folder_name]
     
     articles_list = []
     
-    # Search through each category
+    # 遍历分类目录并收集 Markdown 文件
     for cat in categories:
         cat_path = os.path.join(CONTENT_BASE_PATH, cat)
         
-        # Skip if category folder doesn't exist
+        # 分类目录不存在时跳过
         if not os.path.exists(cat_path):
             continue
         
-        # List all markdown files in the category
+        # 列出该分类下的所有 Markdown 文件
         for filename in os.listdir(cat_path):
             if filename.endswith('.md'):
                 file_path = os.path.join(cat_path, filename)
                 
-                # Read file content
+                # 读取文件内容
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
-                # Extract metadata from content first to get the title
+                # 先提取元数据（得到标题等）
                 metadata = extract_metadata(content, filename)
                 metadata['category'] = cat
                 
-                # Skip if search query doesn't match title
+                # 若查询关键字不在标题中则跳过
                 if query and query not in metadata['title'].lower():
                     continue
                 
-                # Add to articles list
+                # 收集文章条目
                 articles_list.append(metadata)
     
-    # Sort articles by date (if available) or title
+    # 排序：优先按日期（有日期在前），其次按标题
     articles_list.sort(key=lambda x: (x['date'] is None, x['date'] if x['date'] else '', x['title']), reverse=True)
     
     return render_template('articles/listing.html', 
@@ -102,30 +111,30 @@ def listing(category=None):
                           selected_category=selected_category,
                           query=query)
 
-# View a specific article
+# 详情页：展示指定分类与文件名的文章内容
 @articles.route('/articles/<category>/<filename>')
 def view(category, filename):
-    # Normalize category name for file system
+    # 为文件系统归一化分类名
     folder_name = category.capitalize()
-    if folder_name == 'Changelog':  # Special case for correct capitalization
+    if folder_name == 'Changelog':  # 特殊大小写
         folder_name = 'Changelog'
     
-    # Construct file path
+    # 构造文件路径
     file_path = os.path.join(CONTENT_BASE_PATH, folder_name, f"{filename}.md")
     
-    # Check if file exists
+    # 文件存在性检查
     if not os.path.exists(file_path):
         abort(404)
     
-    # Read file content
+    # 读取文件内容
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    # Extract metadata
+    # 提取元数据
     metadata = extract_metadata(content, f"{filename}.md")
     metadata['category'] = folder_name
     
-    # Convert markdown to HTML
+    # Markdown 转 HTML（启用常用扩展）
     html_content = markdown.markdown(
         content,
         extensions=['extra', 'codehilite', 'toc', 'fenced_code']

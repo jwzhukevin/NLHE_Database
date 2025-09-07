@@ -1,18 +1,18 @@
 # view.py:
-# View functions module, handling all user interface related routes and requests
-# Includes homepage, material details page, add/edit materials, user authentication, etc.
+# 视图函数模块：处理与用户界面相关的所有路由与请求
+# 覆盖：主页、材料详情、添加/编辑材料、用户认证等
 
-# Import required modules
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file, jsonify, abort  # Flask core modules
-from flask_login import login_user, logout_user, login_required, current_user  # User authentication modules
-from flask_babel import _, get_locale  # i18n gettext & current locale
-from sqlalchemy import and_, or_  # Database query condition builders
-from .models import User, Material, BlockedIP, Member  # Custom data models
-from . import db, csrf  # Database instance and CSRF protect instance
-import datetime  # Processing dates and times
-import time  # Used for 429 enforcement timing
-import functools  # For decorators
-from .material_importer import extract_chemical_formula_from_cif  # Material data import module
+# 导入所需模块
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file, jsonify, abort  # Flask 核心模块
+from flask_login import login_user, logout_user, login_required, current_user  # 用户认证模块
+from flask_babel import _, get_locale  # 国际化：gettext 与当前语言
+from sqlalchemy import and_, or_  # 数据库查询条件构造器
+from .models import User, Material, BlockedIP, Member  # 自定义数据模型
+from . import db, csrf  # 数据库实例与 CSRF 保护实例
+import datetime  # 日期与时间处理
+import time  # 429 限流倒计时用
+import functools  # 装饰器工具
+from .material_importer import extract_chemical_formula_from_cif  # 材料数据导入模块
 from .chemical_parser import chemical_parser  # 智能化学式解析器
 from .search_optimizer import search_cache, QueryOptimizer, performance_monitor, cached_search  # 搜索性能优化
 from .band_analyzer import band_analyzer  # 合并后的能带分析器
@@ -24,7 +24,6 @@ import re
 from werkzeug.utils import secure_filename
 from PIL import Image, ImageDraw, ImageFont
 import random, string, io
-import time
 from .security_utils import log_security_event, sanitize_input, regenerate_session, check_rate_limit
 from .auth_manager import LoginStateManager, LoginErrorHandler
 from pymatgen.core import Structure
@@ -40,7 +39,7 @@ except ImportError:
     def csrf_exempt(f):
         return f  # 如果没有Flask-WTF，返回原函数
 
-# Create a blueprint named 'views' for modular route management
+# 创建名为 'views' 的蓝图，用于模块化管理路由
 bp = Blueprint('views', __name__)
 
 # 全局拦截：仅在“存在未过期锁定窗口且未验证”时拦截到 /rate-limited
@@ -77,75 +76,80 @@ def enforce_429_challenge():
 
 @bp.route('/rate-limited')
 def rate_limited():
-    """固定的限流页面：进入即重置60秒，并渲染429模板。"""
+    """
+    固定的限流页面：进入即重置 60 秒，并渲染 429 模板。
+
+    说明：错误路径应尽量减少副作用，此处不做数据库查询，仅使用 session 记录限制窗口与验证码通过状态。
+    通过验证码后，由业务端将 session['rl_verified'] 置为 True 即可恢复。
+    """
     now = int(time.time())
     session['rl_locked_until'] = now + 60
     session['rl_verified'] = False
-    # 尽量提供用户对象（可选）
-    try:
-        user = User.query.first()
-    except Exception:
-        user = None
-    return render_template('errors/429.html', user=user, retry_after=60), 429
+    return render_template('errors/429.html', retry_after=60), 429
 
-# Register template filters
+# 注册模板过滤器
 @bp.app_template_filter('any')
 def any_filter(d):
-    """Check if a dictionary has at least one non-empty value (for frontend conditional judgment)
-    
-    Parameters:
-        d: Dictionary to check
-    
-    Returns: 
-        Boolean value indicating whether the dictionary has valid data, used to determine whether to display the reset search button, etc.
+    """
+    检查字典是否至少包含一个非空值（用于前端条件渲染）。
+
+    参数：
+        d: 待检查的字典
+
+    返回：
+        布尔值；若存在有效数据，则用于决定是否展示“重置搜索”按钮等。
     """
     return any(v for v in d.values() if v)
 
 @bp.app_template_filter('remove_key')
 def remove_key_filter(d, exclude_key):
-    """Generate a new dictionary excluding the specified key (for cleaning search parameters)
-    
-    Parameters:
-        d: Original dictionary
-        exclude_key: Key to exclude
-    
-    Returns: 
-        Processed new dictionary, used to build URLs that remove a certain filter condition
+    """
+    生成一个不包含指定键的新字典（用于清理搜索参数）。
+
+    参数：
+        d: 原始字典
+        exclude_key: 需要排除的键名
+
+    返回：
+        处理后的新字典，用于拼装去除某个过滤条件的 URL。
     """
     return {k: v for k, v in d.items() if k != exclude_key}
 
-# Landing page route
+# 落地页路由
 @bp.route('/')
 def landing():
-    """Website introduction page - displays website features and functionality overview"""
+    """
+    网站落地页：展示网站特性与功能概览。
+    """
     return render_template('main/landing.html')
 
 @bp.route('/database')
 @performance_monitor
 @cached_search(cache_enabled=True)
 def index():
-    """Material database page - displays material list, supports search, filtering and pagination
+    """
+    材料数据库页：展示材料列表，支持搜索、过滤与分页。
 
-    Supported GET parameters:
-        q: Search keywords
-        materials_type: Materials type filter (从band.json读取)
-        fermi_level_min/max: Fermi level range filter
-        page: Current page number
+    支持的查询参数（GET）：
+        q: 关键字搜索
+        materials_type: 材料类型过滤（从 band.json 读取）
+        fermi_level_min/max: 费米能级范围过滤
+        page: 当前页码
     """
     try:
-        # Get all search parameters (stored in dictionary for unified processing)
+        # 获取所有搜索参数（存储在字典中以便统一处理）
         search_params = {
-            'q': request.args.get('q', '').strip(),  # Text search keywords
-            'materials_type': request.args.get('materials_type', '').strip(),  # Materials type (从band.json读取)
-            'elements': request.args.get('elements', '').strip(),  # Selected elements from periodic table
-            'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # Fermi level minimum
-            'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # Fermi level maximum
-            'max_sc_min': request.args.get('max_sc_min', '').strip(),  # Max SC minimum
-            'max_sc_max': request.args.get('max_sc_max', '').strip(),  # Max SC maximum
-            'band_gap_min': request.args.get('band_gap_min', '').strip(),  # Band gap minimum
-            'band_gap_max': request.args.get('band_gap_max', '').strip(),  # Band gap maximum
-            'mp_id': request.args.get('mp_id', '').strip(),  # MP-ID filter (supports exact or partial)
-            'space_group': request.args.get('space_group', '').strip(),  # Space group filter (name or number)
+            'q': request.args.get('q', '').strip(),                # 文本搜索关键字
+            'materials_type': request.args.get('materials_type', '').strip(),  # 材料类型过滤（从 band.json 读取）
+            'elements': request.args.get('elements', '').strip(),  # 选定元素（来自元素周期表筛选）
+            'fermi_level_min': request.args.get('fermi_level_min', '').strip(),  # 费米能级最小值
+            'fermi_level_max': request.args.get('fermi_level_max', '').strip(),  # 费米能级最大值
+            'max_sc_min': request.args.get('max_sc_min', '').strip(),  # 最大 SC 最小值
+            'max_sc_max': request.args.get('max_sc_max', '').strip(),  # 最大 SC 最大值
+            'band_gap_min': request.args.get('band_gap_min', '').strip(),  # 带隙最小值
+            'band_gap_max': request.args.get('band_gap_max', '').strip(),  # 带隙最大值
+            'mp_id': request.args.get('mp_id', '').strip(),          # MP-ID 过滤（精确或模糊）
+            'space_group': request.args.get('space_group', '').strip(),  # 空间群过滤（名称或编号）
         }
 
         # 优先处理 MP 编号直达查询（形如 mp-xxxxx）
@@ -185,6 +189,7 @@ def index():
                                  search_params={**search_params})
 
         # 使用优化的查询器（常规路径）
+        # 说明：QueryOptimizer 返回已优化的 query 与 total_count，可直接复用，避免重复统计
         optimization_result = QueryOptimizer.optimize_material_search(search_params)
         query = optimization_result['query']
 
@@ -196,34 +201,20 @@ def index():
         )
 
         # 处理元素搜索（QueryOptimizer不处理的特殊逻辑）
+        # 说明：将元素包含匹配下推到 SQL 条件，避免先 query.all() 再 Python 侧过滤导致的
+        #       大量内存消耗与延迟。此处采用 ilike 包含匹配的 OR 组合作为性能友好的近似。
         additional_filters = []
 
         # Element-based search (智能化学式搜索) - 这是QueryOptimizer不处理的特殊逻辑
         if search_params['elements']:
             element_list = [elem.strip() for elem in search_params['elements'].split(',') if elem.strip()]
             if element_list:
-                # 智能元素搜索：支持精确匹配、包含匹配和相似元素建议
                 element_filters = []
-
-                # 优化：只获取当前查询结果中的材料进行元素匹配
-                current_materials = query.all()
-                matching_material_ids = []
-
-                for material in current_materials:
-                    if material.name:
-                        # 使用化学式解析器检查元素匹配
-                        if chemical_parser.contains_elements(material.name, element_list, 'any'):
-                            matching_material_ids.append(material.id)
-
-                # 如果找到匹配的材料，添加到过滤条件
-                if matching_material_ids:
-                    additional_filters.append(Material.id.in_(matching_material_ids))
-                else:
-                    # 如果没有精确匹配，尝试模糊匹配
-                    for element in element_list:
-                        element_filters.append(Material.name.ilike(f'%{element}%'))
-                    if element_filters:
-                        additional_filters.append(or_(*element_filters))
+                for elem in element_list:
+                    like_pat = f"%{elem}%"
+                    element_filters.append(Material.name.ilike(like_pat))
+                if element_filters:
+                    additional_filters.append(or_(*element_filters))
 
         # MP-ID 过滤：形如 mp-xxxxx 则精确匹配，否则模糊匹配（包含）
         if search_params['mp_id']:
@@ -260,7 +251,11 @@ def index():
             query = query.filter(and_(*additional_filters))
 
         # 添加搜索结果验证
-        total_results = query.count()
+        # 说明：避免重复 count()，复用优化器返回的统计值
+        total_results = optimization_result.get('total_count', None)
+        if total_results is None:
+            # 兜底：若优化器未给出统计值，再做一次 count()
+            total_results = query.count()
         current_app.logger.info(f"Search query returned {total_results} results with search params: {search_params}")
 
         # Pagination configuration
@@ -283,22 +278,22 @@ def index():
         if total_pages > 0 and page > total_pages:
             page = 1
 
-        pagination = query.order_by(Material.name.asc()).paginate(  # Sort by name in ascending order
+        pagination = query.order_by(Material.name.asc()).paginate(  # 按名称升序排序
             page=page,
             per_page=per_page,
-            error_out=False  # Disable invalid page number errors, out of range will return empty list
+            error_out=False  # 禁用页码越界报错（越界返回空列表）
         )
 
-        # Render template and pass pagination object and search parameters
+        # 渲染模板并传入分页对象与搜索参数
         return render_template('main/index.html',
-                             materials=pagination.items,  # Current page data
-                             pagination=pagination,  # Pagination object (including page number information)
+                             materials=pagination.items,  # 当前页数据
+                             pagination=pagination,  # 分页对象（含页码信息）
                              # per_page 仅用于显示，不参与搜索参数
                              search_params={**search_params})
 
     except Exception as e:
         current_app.logger.error(f"Database query error: {str(e)}")
-        # Return empty material list and search parameters
+        # 返回空材料列表与空搜索参数
         from flask_sqlalchemy import Pagination
         empty_pagination = Pagination(query=None, page=1, per_page=10, total=0, items=[])
         return render_template('main/index.html',
@@ -307,12 +302,12 @@ def index():
                              search_params={},
                              error_message="Database not initialized, please contact administrator")
 
-# Define an admin check decorator
+# 定义管理员校验装饰器
 def admin_required(view_func):
     """
-    Decorator to restrict route access to admin users only
-    
-    If user is not authenticated or not an admin, redirect to login page
+    路由管理员权限装饰器：仅允许管理员访问。
+
+    若用户未登录或非管理员，则引导至登录页。
     """
     @functools.wraps(view_func)
     def wrapped_view(*args, **kwargs):
@@ -339,7 +334,12 @@ def get_material_dir(material_id):
 @admin_required
 def add():
     """
-    添加新材料，ID目录用IMR-{id}格式，兼容旧格式。
+    添加新材料。
+
+    目录策略说明：
+    - 仅使用新目录 `IMR-{id}`；
+    - 旧目录（`IMR-00000001` 这类补零格式）的回退与兼容由 `structure_parser` 内部集中处理，
+      本视图不直接感知旧格式，避免多处维护导致不一致。
     """
     if request.method == 'POST':
         try:
@@ -640,15 +640,16 @@ def members_index():
 
     return render_template('members/index.html', members=view_models)
 
-# Safe numeric conversion helper functions
+# 数值安全转换的辅助函数
 def safe_float(value):
-    """Safely convert string to float (allows empty values)
-    
-    Parameters:
-        value: Input string
-    
-    Returns: 
-        float or None, returns None if conversion fails or input is empty
+    """
+    安全地将字符串转换为浮点数（允许空值）。
+
+    参数：
+        value: 输入字符串
+
+    返回：
+        float 或 None；转换失败或输入为空时返回 None。
     """
     try:
         return float(value) if value else None
@@ -656,13 +657,14 @@ def safe_float(value):
         return None
 
 def safe_int(value):
-    """Safely convert string to integer (allows empty values)
-    
-    Parameters:
-        value: Input string
-    
-    Returns: 
-        int or None, returns None if conversion fails or input is empty
+    """
+    安全地将字符串转换为整数（允许空值）。
+
+    参数：
+        value: 输入字符串
+
+    返回：
+        int 或 None；转换失败或输入为空时返回 None。
     """
     try:
         return int(value) if value else None

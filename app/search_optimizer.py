@@ -16,12 +16,16 @@ from .models import Material
 
 class SearchCache:
     """
-    搜索结果缓存管理器
-    
-    功能:
-    1. 缓存搜索结果以提高响应速度
-    2. 智能缓存失效策略
-    3. 内存使用优化
+    搜索结果缓存管理器。
+
+    功能：
+    1. 缓存搜索结果以提高响应速度；
+    2. 通过 TTL 与事件触发实现失效；
+    3. 控制内存使用与并发安全（RLock）。
+
+    说明：
+    - 缓存键包含“搜索参数 + 用户上下文”，避免不同用户状态产生交叉污染；
+    - 用户上下文再追加“语言”信息，避免 i18n 内容混用（同查询不同语言应为不同结果）。
     """
     
     def __init__(self):
@@ -37,7 +41,14 @@ class SearchCache:
         self.cache_ttl = 300  # 缓存生存时间（秒）
     
     def _generate_cache_key(self, search_params: Dict, user_context: str = None) -> str:
-        """生成搜索参数的缓存键，包含用户上下文"""
+        """
+        生成缓存键（包含用户上下文）。
+
+        说明：
+        - `search_params` 需可 JSON 序列化且键稳定（已排序）；
+        - `user_context` 为空则视为匿名；
+        - 返回 MD5（足够用于键）。
+        """
         # 添加用户上下文到缓存键中
         cache_data = {
             'search_params': search_params,
@@ -314,9 +325,13 @@ def performance_monitor(func):
 
 def cached_search(cache_enabled=True):
     """
-    搜索结果缓存装饰器
+    搜索结果缓存装饰器。
 
-    使用用户感知的缓存，避免不同用户看到错误的登录状态
+    说明：
+    - 用户感知缓存：键加入登录态与角色信息，避免不同权限/登录状态的结果串用；
+    - 追加语言信息，避免 i18n 内容混用；
+    - 仅缓存成功响应（Response 2xx 或未显式错误），降低缓存污染风险；
+    - 建议日志粒度：命中 cache 用 `info`，异常/失败用 `warning`/`error`，调试细节用 `debug`。
     """
     def decorator(func):
         @wraps(func)

@@ -118,6 +118,10 @@ def create_app():
     app.config.setdefault('BABEL_DEFAULT_TIMEZONE', 'UTC')
 
     # 语言选择器：优先级 query -> session -> cookie -> 浏览器首选
+    # 说明：
+    # - 通过统一入口 select_locale() 判定语言，避免各处自行解析导致行为不一致；
+    # - 记录判定日志便于定位国际化问题（浏览器头/查询参数/会话与 Cookie）；
+    # - 任何异常均回退默认语言，保证服务可用性。
     def select_locale():
         try:
             supported = app.config.get('BABEL_SUPPORTED_LOCALES', ['en', 'zh'])
@@ -254,13 +258,27 @@ def create_app():
     # --- 安全头部处理器 ---
     @app.after_request
     def add_security_headers(response):
-        """为所有响应添加安全头部"""
+        """
+        为所有响应添加安全头部。
+
+        说明：统一在 after_request 注入安全头，避免分散在各视图函数中；
+        头部策略在 security_utils.add_security_headers 中集中维护，
+        便于按环境/需求做放开或收紧（如 CSP 的外部资源白名单）。
+        """
         from .security_utils import add_security_headers
         return add_security_headers(response)
 
-    # --- 非阻塞字体预热（首次请求后启动，避免阻塞应用启动与preload_app阶段） ---
+    # --- 非阻塞字体预热（首次请求后启动，避免阻塞应用启动与 preload_app 阶段） ---
     @app.before_first_request
     def preload_captcha_fonts_async():
+        """
+        验证码字体预热（异步）
+
+        说明：
+        - 仅在首个请求后异步触发，避免应用启动阶段等待网络/IO；
+        - 在独立线程内确保应用上下文，逐尺寸加载字体，失败不影响主流程；
+        - 结合 FontManager 的“快速失败与缓存”机制，进一步降低超时风险。
+        """
         try:
             sizes = app.config.get('FONT_PRELOAD_SIZES') or []
             if not sizes:
@@ -370,8 +388,9 @@ def create_app():
                 materials_to_update = result.fetchall()
 
                 count = 0
+                # 说明：全局标准化为 IMR-{id}（不补零），避免多种显示格式混用
                 for material in materials_to_update:
-                    formatted_id = f"IMR-{material.id:08d}"
+                    formatted_id = f"IMR-{material.id}"
                     conn.execute(text(
                         "UPDATE material SET formatted_id = :formatted_id WHERE id = :id"
                     ), {"formatted_id": formatted_id, "id": material.id})

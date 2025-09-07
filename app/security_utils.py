@@ -104,7 +104,16 @@ def require_admin(f):
     return decorated_function
 
 def add_security_headers(response):
-    """添加安全头部"""
+    """
+    为响应统一添加安全头部。
+
+    说明：
+    - X-Content-Type-Options / X-Frame-Options / X-XSS-Protection：基础安全增强；
+    - Content-Security-Policy（CSP）：按需放开三方资源（js/css/fonts/connect），
+      当前允许 jsdelivr/cdnjs/threejs/plotly、Google Fonts 等；
+      若未来接入新三方资源，应在此处集中放开，避免分散配置导致安全策略不一致；
+    - 严格传输安全（HSTS）在 HTTPS 环境启用，避免本地开发误伤，故保持注释。
+    """
     headers = {
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
@@ -120,7 +129,17 @@ def add_security_headers(response):
     return response
 
 def check_rate_limit(key, limit=5, window=300):
-    """检查速率限制"""
+    """
+    检查速率限制（基于 session 的简易实现）。
+
+    参数：
+        key: 业务键（例如登录/某接口名）；
+        limit: 窗口内允许的最大请求数；
+        window: 时间窗口（秒）。
+
+    返回：
+        bool：是否允许继续。
+    """
     import time
     
     current_time = time.time()
@@ -144,7 +163,13 @@ def check_rate_limit(key, limit=5, window=300):
     return True
 
 def regenerate_session():
-    """重新生成session ID（防止会话固定攻击）"""
+    """
+    重新生成 session ID（防止会话固定攻击）。
+
+    说明：
+    - 保留关键字段（_user_id / csrf_token），其它数据清空；
+    - 在登录/登出等安全敏感操作后调用，降低会话固定风险。
+    """
     # 保存重要的session数据
     user_id = session.get('_user_id')
     csrf_token = session.get('csrf_token')

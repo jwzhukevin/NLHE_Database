@@ -5,8 +5,18 @@ import requests
 
 siliconflow_bp = Blueprint('siliconflow', __name__, url_prefix='/siliconflow')
 
+# 说明：
+# - 安全起见，移除硬编码 API Key；统一从环境变量读取。
 API_URL = 'https://api.siliconflow.cn/v1/chat/completions'
-API_KEY = 'sk-ywrgajeyefkbzukcxouatcqgxtebnbjdhmvrqtrqnvffykpn'
+def _get_api_key():
+    """
+    从环境变量读取 API Key。
+
+    说明：
+    - 读取优先级：SILICONFLOW_API_KEY；
+    - 未配置时返回 None，由调用方优雅降级，避免发起外部请求。
+    """
+    return os.environ.get('SILICONFLOW_API_KEY')
 
 # 工具函数
 
@@ -41,8 +51,19 @@ def save_history(history, filename='history.json'):
         json.dump(history, f, ensure_ascii=False)
 
 def call_siliconflow(messages):
+    """
+    调用 SiliconFlow Chat Completions 接口。
+
+    说明：
+    - 若未配置 API Key，抛出友好异常由上层处理为提示；
+    - 接口异常做统一封装，避免泄漏内部细节；
+    - 超时短路，防止阻塞。
+    """
+    api_key = _get_api_key()
+    if not api_key:
+        raise RuntimeError("未配置 SILICONFLOW_API_KEY，聊天功能暂不可用。")
     headers = {
-        'Authorization': f'Bearer {API_KEY}',
+        'Authorization': f'Bearer {api_key}',
         'Content-Type': 'application/json'
     }
     data = {
@@ -65,12 +86,21 @@ def call_siliconflow(messages):
     except requests.exceptions.Timeout:
         raise RuntimeError("AI接口请求超时，请稍后重试或检查网络/API服务状态。")
     except Exception as e:
-        raise RuntimeError(f"AI接口返回异常：{e}，内容：{getattr(response, 'text', '')}")
+        # 统一异常信息，不暴露内部细节
+        resp_text = getattr(response, 'text', '') if 'response' in locals() else ''
+        raise RuntimeError(f"AI接口返回异常：{e}，内容：{resp_text}")
 
 @siliconflow_bp.route('/', methods=['GET', 'POST'])
 @login_required
 def chat():
     print("[调试] 进入 chat 视图函数")
+    # 若未配置 API Key，直接提示并呈现空会话（不发起网络请求）
+    if not _get_api_key():
+        flash('未配置聊天服务密钥（SILICONFLOW_API_KEY），暂不可用。', 'warning')
+        history_list = list_histories()
+        filename = 'history.json'
+        chat_history = []
+        return render_template('deepseek/chat.html', chat_history=chat_history, history_list=history_list, selected_history=filename)
     # 处理历史会话选择
     selected_history = request.form.get('history_select') or request.args.get('history') or 'current'
     print(f"[调试] selected_history: {selected_history}")

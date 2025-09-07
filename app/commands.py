@@ -229,11 +229,7 @@ def register_commands(app):
                 import_count += 1
 
             except Exception as e:
-                click.echo(f"Error: Failed to process material {material_id}: {str(e)}")
-                error_count += 1
-                continue
-                
-            except Exception as e:
+                # 说明：合并重复异常分支，确保输出一致且不中断批处理
                 click.echo(f"Error: Failed to process material {material_id}: {str(e)}")
                 error_count += 1
                 continue

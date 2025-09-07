@@ -18,13 +18,14 @@ bp = Blueprint('api', __name__, url_prefix='/api')
 @bp.route('/structure/<int:material_id>', methods=['GET'])
 def get_structure(material_id):
     """
-    获取指定材料的结构数据
-    
-    参数:
-        material_id: 材料ID，用于在数据库中查找对应的材料记录
-    
-    返回:
-        包含原子坐标、晶格参数等信息的JSON响应
+    获取指定材料的结构数据（原/常规由 parser 内部按策略处理）。
+
+    参数：
+        material_id: 材料 ID，用于查询材料记录与查找结构文件。
+
+    返回：
+        JSON（字符串或 jsonify 响应）：包含原子坐标、晶格参数与对称信息。
+        当找不到文件或解析失败时，返回 404 或 500 错误信息。
     """
     try:
         # 查询材料记录
@@ -52,20 +53,20 @@ def get_structure(material_id):
 @bp.route('/structure/<int:material_id>/conventional', methods=['GET'])
 def get_conventional_cell(material_id):
     """
-    获取指定材料的传统胞结构数据
-    
-    参数:
-        material_id: 材料ID，用于在数据库中查找对应的材料记录
-    
-    返回:
-        包含传统胞结构数据的JSON响应
+    获取指定材料的传统胞（conventional cell）结构数据。
+
+    参数：
+        material_id: 材料 ID。
+
+    返回：
+        JSON（jsonify）：包含常规胞结构与对称性。
     """
     try:
         # 查询材料记录
         material = Material.query.get_or_404(material_id)
         
-        # 构建材料ID格式化字符串
-        formatted_id = f"IMR-{int(material_id):08d}"
+        # 说明：全局统一 ID 显示为 IMR-{id}（不补零），避免多种格式混用
+        formatted_id = f"IMR-{int(material_id)}"
         
         # 获取结构文件路径
         file_relative_path = find_structure_file(material_id=material_id)
@@ -101,13 +102,13 @@ def get_conventional_cell(material_id):
 @bp.route('/structure/upload/<int:material_id>', methods=['POST'])
 def upload_structure(material_id):
     """
-    上传材料的CIF结构文件
-    
-    参数:
-        material_id: 材料ID，用于关联上传的结构文件
-    
-    返回:
-        上传结果的JSON响应，包含成功信息或错误信息
+    上传材料的 CIF 结构文件（与材料 ID 关联）。
+
+    参数：
+        material_id: 材料 ID。
+
+    返回：
+        JSON：包含保存结果与文件相对路径；失败时返回错误信息。
     """
     try:
         material = Material.query.get_or_404(material_id)
@@ -150,15 +151,15 @@ def upload_structure(material_id):
 @bp.route('/structure/<int:material_id>/supercell', methods=['GET'])
 def get_supercell(material_id):
     """
-    生成并返回扩展的超晶胞结构
-    
-    参数:
-        material_id: 材料ID
-        a, b, c: 沿a, b, c方向的扩展倍数（查询参数）
-        cellType: 晶胞类型，可选 'primitive'或'conventional'（查询参数）
-    
-    返回:
-        包含超晶胞结构数据的JSON响应
+    生成并返回扩展的超晶胞结构。
+
+    参数：
+        material_id: 材料 ID；
+        a, b, c: 查询参数，分别为 a/b/c 方向的扩展倍数（1-5）；
+        cellType: 查询参数，可取 'primitive' 或 'conventional'。
+
+    返回：
+        JSON（字符串或 jsonify）：包含超晶胞结构数据与晶格参数。
     """
     try:
         material = Material.query.get_or_404(material_id)
@@ -203,15 +204,15 @@ def get_supercell(material_id):
 @bp.route('/structure/<int:material_id>/cif', methods=['GET'])
 def download_cif(material_id):
     """
-    获取材料的CIF文件数据，可选择返回超晶胞的CIF
-    
-    参数:
-        material_id: 材料ID
-        a, b, c: 可选，沿a, b, c方向的扩展倍数（查询参数）
-        cellType: 可选，晶胞类型，可选 'primitive'或'conventional'（查询参数）
-    
-    返回:
-        CIF文件内容，带有适当的MIME类型和文件名
+    获取材料的 CIF 文件数据（可选生成超晶胞后导出）。
+
+    参数：
+        material_id: 材料 ID；
+        a, b, c: 查询参数，生成超晶胞的扩展倍数（可选）；
+        cellType: 查询参数，'primitive' 或 'conventional'（可选）。
+
+    返回：
+        Flask Response：`chemical/x-cif` 响应并附下载文件名。
     """
     try:
         # 查询材料记录，如果不存在则返回404
@@ -226,8 +227,8 @@ def download_cif(material_id):
         # 判断是否为普通下载还是超晶胞下载
         is_supercell = all([a, b, c])
         
-        # 构建材料ID格式化字符串
-        formatted_id = f"IMR-{int(material_id):08d}"
+        # 说明：全局统一 ID 文本为 IMR-{id}（不补零），此处不再构造 8 位补零格式
+        # 注意：下载文件名仍以材料 name 为主，ID 文本仅用于显示/日志，不强制需要
         
         # 获取结构文件路径
         file_relative_path = find_structure_file(material_id=material_id)
@@ -300,20 +301,19 @@ def download_cif(material_id):
 @bp.route('/structure/<int:material_id>/primitive', methods=['GET'])
 def get_primitive_cell(material_id):
     """
-    获取指定材料的原始胞结构数据
-    
-    参数:
-        material_id: 材料ID，用于在数据库中查找对应的材料记录
-    
-    返回:
-        包含原始胞结构数据的JSON响应
+    获取指定材料的原始胞（primitive cell）结构数据。
+
+    参数：
+        material_id: 材料 ID。
+
+    返回：
+        JSON（jsonify）：包含原胞结构与对称性。
     """
     try:
         # 查询材料记录
         material = Material.query.get_or_404(material_id)
         
-        # 构建材料ID格式化字符串
-        formatted_id = f"IMR-{int(material_id):08d}"
+        # 说明：全局统一 ID 文本为 IMR-{id}（不补零），此处无需构造补零格式
         
         # 获取结构文件路径
         file_relative_path = find_structure_file(material_id=material_id)
@@ -349,13 +349,13 @@ def get_primitive_cell(material_id):
 @bp.route('/structure', methods=['GET'])
 def get_structure_by_params():
     """
-    通过material_id参数获取结构数据
-    
-    参数:
-        material_id: 材料ID参数
-    
-    返回:
-        包含结构数据的JSON响应
+    通过 `material_id` 查询参数获取结构数据（便于简单前端调用）。
+
+    参数：
+        material_id: 查询字符串参数。
+
+    返回：
+        JSON：结构数据或错误信息；material_id 缺失/无效返回 400。
     """
     try:
         # 获取查询参数
