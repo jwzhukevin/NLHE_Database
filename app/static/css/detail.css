@@ -1,0 +1,686 @@
+/*
+ * detail.css — NLHE Database materials detail page styles
+ * 说明：
+ * - 本文件用于承载“材料详情页（materials/detail.html）”专用样式；
+ * - 后续会逐步将 detail.html 中的内联 <style> 抽离到此，以便复用与维护；
+ * - 加载顺序：在 base.html 中位于 main.css 之后，便于在必要时进行覆盖；
+ * - 请保持选择器语义清晰，避免污染全局（可使用 #sc-section/#bcd-section/#dw-section 等作用域）。
+ *
+ * 注意：当前仅创建文件与加载入口；具体样式将分批迁移。
+ */
+
+/*
+ * ===== 注释导览 / 索引 =====
+ * 1) 内容区域与布局
+ *    - `.content-section`：每个大区块的上下间距
+ *    - `.two-column-layout`：两列布局的间距与拉伸规则
+ *    - `.column-60` / `.column-40` / `.column-70` / `.column-30`：列宽比例
+ *
+ * 2) 卡片组件
+ *    - `.detail-card`：卡片容器外观（圆角、阴影、边框、内外边距）
+ *    - `.card-header` / `.card-header h3`：卡片标题区与标题字体
+ *    - `.card-header-extra`：卡片标题右侧的附加标签（例如 “Eigen Matrix”）
+ *    - `.card-content[.collapsed]`：卡片内容区的展开/折叠动画、内边距
+ *
+ * 3) 绘图控制与增强
+ *    - `.sc-control-panel`：曲线显隐功能按钮所在的面板（靠近绘图）
+ *    - `.sc-control-btn` / `.sc-control-status` / `.sc-control-tip`：按钮、统计与提示
+ *    - Plotly 图例增强：`.js-plotly-plot .legend ...`
+ *
+ * 4) 查看器与绘图容器高度（统一入口）
+ *    - `.crystal-viewer`：3D 结构查看器的高度统一入口
+ *    - `#bandStructure, #scStructure, #bcdStructure, #dwStructure`：SC/BCD/DW 的绘图高度统一入口
+ *    - `.viewer-content`：承载查看器/图表的内容区最小高度
+ *    - 响应式高度：`@media (max-width: 1200px)` 与 `@media (max-width: 768px)`
+ *
+ * 5) SC 模块（Shift Current）专用
+ *    - `#sc-card ...`：Tab、双列布局、右侧属性/关系列表的样式
+ *
+ * 6) 导航与面包屑（材料详情页局部）
+ *    - `.material-detail-container` / `.material-nav` / `.material-nav-wrapper` 等
+ *
+ * 7) 原子信息卡片与表格
+ *    - `.atom-info-card`、`.atom-table`、`.atom-info-section` 等
+ *
+ * 修改建议：
+ * - 想要“按钮区域更贴近图表”：改 `.sc-control-panel` 的 `margin-bottom`（越小越近）
+ * - 想要“增减图表高度”：改 `.crystal-viewer` 和 `#scStructure/#bcdStructure/#dwStructure` 与 `.viewer-content`
+ * - 想要“移动端高度单独调整”：在两个 `@media` 断点内改对应 `height/min-height`
+ * - 想要“Eigen Matrix 标签外观或靠右对齐”：改 `.card-header-extra`（`margin-left: auto` 推到右侧）
+ */
+
+/* 示例占位（请在迁移时删除或替换） */
+/* #bcd-section .sc-properties-panel .prop-table { } */
+
+/* 轻量占位选择器，确保文件为有效 CSS */
+#detail-css-placeholder { display: contents; }
+
+/* ===== 内容区域布局样式（从 materials/detail.html 迁移） ===== */
+/* 内容区块容器 */
+.content-section {
+    margin-bottom: 20px; /* 区块之间添加20px的底部间距，提高可读性 */
+}
+
+/* 两列布局容器 - 用于并排展示相关信息 */
+.two-column-layout {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 20px; /* 与 .content-section 对齐，统一区块垂直间距 */
+    align-items: stretch; /* 确保所有列高度相同 */
+}
+
+/* 宽列样式 - 用于主要内容展示（占60%宽度） */
+.column-60 {
+    flex: 6; /* 约60% */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 窄列样式 - 用于辅助内容展示（占40%宽度） */
+.column-40 {
+    flex: 4; /* 约40% */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 7:3 两列布局（用于 BCD / DW 模块曾使用，当前可能备用） */
+.column-70 {
+    flex: 7; /* 约70% */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* 30% 宽度列（SC 专用） */
+.column-30 {
+    flex: 3; /* 约30% */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* SC 布局的列样式（80/20） */
+.column-80 {
+    flex: 8;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.column-20 {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* ===== 卡片组件样式 ===== */
+.detail-card {
+    background: #fff; /* 纯白色背景，提供干净的视觉效果 */
+    border-radius: 12px; /* 圆角边框，增加现代感 */
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px; /* 轻微阴影，增加层次感 */
+    margin-bottom: 20px; /* 底部间距20px，分隔相邻卡片 */
+    transition: all 0.2s ease; /* 所有属性变化添加平滑过渡 */
+    border: 1px solid #e5e7eb; /* 浅灰色边框，增强边界感 */
+    overflow: hidden; /* 隐藏超出边界的内容，保持整洁 */
+    flex: 1; /* 让卡片在其容器中扩展，占据所有可用空间 */
+    display: flex; /* 使用弹性布局 */
+    flex-direction: column; /* 垂直排列内容 */
+    height: 100%; /* 确保卡片高度填满整个容器 */
+}
+
+/* 查看器容器也应具有相同的伸缩特性 */
+.viewer-container {
+    flex: 1; /* 与detail-card一致，占据所有可用空间 */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 确保查看器容器高度填满整个容器 */
+}
+
+/* 卡片内容应该可以伸缩 */
+.card-content, .viewer-content {
+    flex: 1; /* 允许内容区域伸缩以填充剩余空间 */
+    display: flex; /* 使用弹性布局 */
+    flex-direction: column; /* 垂直排列内容 */
+}
+
+/* 卡片悬停效果 - 增强用户交互反馈 */
+.detail-card:hover {
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 24px; /* 悬停时增强阴影效果 */
+}
+
+/* 卡片头部 - 包含标题和折叠控制按钮 */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to right, #f1f5f9, #f8fafc);
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 20px;
+    cursor: pointer;
+}
+
+/* 卡片标题样式 */
+.card-header h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* 卡片折叠/展开图标 */
+.card-header .toggle-icon {
+    color: #64748b;
+    transition: transform 0.3s ease;
+}
+
+/* 折叠状态下的图标旋转效果 */
+.card-header.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+/* 卡片内容区域
+ * - 作用：承载图表、表格或说明文等主要内容
+ * - 常用调整：`padding`（内边距）、`min-height`（最低可见高度）
+ */
+.card-content {
+    padding: 20px;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 2000px;
+    opacity: 1;
+    overflow: hidden;
+    overflow-y: auto;
+    min-height: 200px;
+}
+
+/* 折叠状态下的内容区域
+ * - 作用：折叠时将高度收起至 0，并去除上下 padding，保留左右 padding
+ */
+.card-content.collapsed {
+    max-height: 0;
+    padding: 0 20px;
+    opacity: 0;
+    min-height: 0;
+}
+
+.card-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.card-content li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.card-content li:last-child {
+    border-bottom: none;
+}
+
+/* 常用属性样式 */
+.property-label {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 1.05rem;
+}
+
+.property-value {
+    color: #0047AB;
+    font-weight: 600;
+    padding: 6px 14px;
+    background: #F5F8FF;
+    border-radius: 6px;
+    font-size: 1.05rem;
+}
+
+/* ===== 原子坐标与控制区样式（从 materials/detail.html 迁移） ===== */
+/* 原子坐标表格样式 */
+.atom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.05rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.atom-table th {
+    background-color: #f1f5f9;
+    color: #334155;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 10px;
+    border-bottom: 2px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.atom-table td {
+    padding: 12px 10px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+.atom-table tbody tr:nth-child(odd) {
+    background-color: #f8fafc;
+}
+
+.atom-table tbody tr:hover {
+    background-color: #EFF6FF;
+}
+
+.atom-coords-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-top: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #94a3b8 #f1f5f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.atom-coords-container::-webkit-scrollbar { width: 8px; }
+.atom-coords-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 6px; }
+.atom-coords-container::-webkit-scrollbar-thumb { background-color: #94a3b8; border-radius: 6px; border: 2px solid #f1f5f9; }
+.atom-coords-container::-webkit-scrollbar-thumb:hover { background-color: #0047AB; }
+
+.atom-info {
+    margin-bottom: 15px;
+    color: #475569;
+    font-size: 1.05rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.atom-info p { margin: 0; line-height: 1.5; }
+
+.coordinates-toggle { display: flex; margin-bottom: 12px; justify-content: flex-start; }
+
+.coordinates-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    margin-top: 6px;
+}
+
+.coords-display-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #475569;
+    padding: 6px 12px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    justify-content: flex-end;
+}
+
+.coords-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to right, #EFF6FF, #DBEAFE);
+    color: #0047AB;
+    border: 1px solid #BFDBFE;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 71, 171, 0.15);
+    position: relative;
+    overflow: hidden;
+    min-width: 150px;
+}
+
+.coords-toggle-btn:hover {
+    background: linear-gradient(to right, #DBEAFE, #BFDBFE);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 71, 171, 0.3);
+}
+
+.coords-toggle-btn:active { transform: translateY(0); box-shadow: 0 2px 3px rgba(0, 71, 171, 0.2); }
+.coords-toggle-btn i { margin-right: 8px; font-size: 0.9rem; transition: all 0.3s ease; }
+.coords-toggle-btn.active { background: linear-gradient(to right, #0047AB, #1E40AF); color: white; }
+.coords-toggle-btn.active i { transform: rotate(180deg); }
+
+.coords-toggle-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.coords-toggle-btn:hover::before { transform: translateX(100%); }
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #64748b;
+    transition: color 0.2s ease;
+}
+
+.toggle-label:hover { color: #0047AB; }
+
+/* ===== SC 模块样式（从 materials/detail.html 迁移） ===== */
+/* SC 控制面板（曲线元素显隐按钮区域）
+ * - 作用：承载“显隐、重置”等按钮、可见曲线数量与提示说明
+ * - 常用调整：`margin-bottom`（与图之间间距）、`padding`（面板内边距）、`gap`（控件间距）
+ * - 影响范围：SC/BCD/DW 三块复用一致风格
+ */
+.sc-control-panel {
+    /* SC 控制面板（曲线元素显隐按钮区域）
+     * - 作用：承载“显隐、重置”等按钮、可见曲线数量与提示说明
+     * - 常用调整：`margin-bottom`（与图之间间距）、`padding`（面板内边距）、`gap`（控件间距）
+     * - 影响范围：SC/BCD/DW 三块复用一致风格
+     */
+    display: flex; /* 使控件水平排列 */
+    justify-content: space-between; /* 两端对齐 */
+    align-items: center; /* 垂直居中 */
+    margin-bottom: 0px; /* 底部与图之间留出 2px 间距 */
+    padding: 8px; /* 控制面板内边距 */
+    background: #f8fafc; /* 背景颜色 */
+    border: 1px solid #e2e8f0; /* 边框颜色 */
+    border-radius: 6px; /* 圆角 */
+    position: relative; /* 相对定位，以便 absolute 位置 */
+    flex-wrap: wrap; /* 自动换行 */
+    gap: 2px; /* 控件之间的间距 */
+}
+
+@media (max-width: 768px) {
+    .sc-control-panel {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .sc-control-status { width: 100%; text-align: left; margin-top: 5px; }
+}
+
+.sc-control-tip { font-size: 14px; color: #4b5563; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 250px; }
+.control-tip-text { font-weight: 500; display: inline-block; border-left: 3px solid #0047AB; padding-left: 8px; line-height: 1.4; }
+.sc-control-tip i { color: #0047AB; font-size: 16px; }
+
+.sc-control-item { display: flex; gap: 10px; }
+.sc-control-btn {
+    padding: 8px 16px;
+    background: #0047AB;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    white-space: nowrap;
+}
+.sc-control-btn:hover { background: #00348F; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.sc-control-btn:active { transform: translateY(0); box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+.sc-control-btn.active { background: #003366; }
+
+.sc-control-status { font-size: 14px; color: #4b5563; font-weight: 500; background: rgba(224, 231, 255, 0.6); padding: 6px 12px; border-radius: 4px; border-left: 3px solid #0047AB; }
+.visible-count-text { white-space: nowrap; }
+
+/* Plotly 图例增强 */
+.js-plotly-plot .legend { border-radius: 8px !important; box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important; scrollbar-width: thin; scrollbar-color: #0047AB #f1f5f9; }
+.js-plotly-plot .legend .traces .legendtoggle { cursor: pointer; transition: all 0.1s ease; border-radius: 4px; }
+.js-plotly-plot .legend .traces .legendtoggle:hover { background-color: rgba(0,71,171,0.15); box-shadow: 0 0 8px rgba(0,71,171,0.3); }
+.js-plotly-plot .legend .traces .legendtext { transition: all 0.2s ease; padding: 4px 8px; border-radius: 5px; font-size: 16px; line-height: 1.4; position: relative; }
+.js-plotly-plot .legend .traces:not([style*="opacity: 0.5"]) .legendtext { font-weight: 600; color: #1f2937 !important; }
+.js-plotly-plot .legend .traces:hover .legendtext { background-color: rgba(0,71,171,0.1); transform: translateX(3px); }
+.js-plotly-plot .legend .traces[style*="opacity: 0.5"] .legendtext { text-decoration: line-through; color: #a0aec0 !important; background-color: rgba(226,232,240,0.5); font-size: 16px !important; }
+.js-plotly-plot .legend .traces[style*="opacity: 0.5"]:hover .legendtext { background-color: rgba(226,232,240,0.8); color: #718096 !important; }
+.js-plotly-plot .legend .traces.active .legendtext { background-color: rgba(0,71,171,0.2); box-shadow: 0 0 8px rgba(0,71,171,0.4); transform: translateX(3px); }
+.js-plotly-plot .legend .traces .legendtext::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(17,24,39,0.9); color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 14px; white-space: nowrap; opacity: 0; visibility: hidden; transition: all 0.3s ease; pointer-events: none; z-index: 10; }
+.js-plotly-plot .legend .traces .legendtext:hover::after { opacity: 1; visibility: visible; bottom: calc(100% + 5px); }
+.js-plotly-plot .legend::-webkit-scrollbar { width: 10px; }
+.js-plotly-plot .legend::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 6px; }
+.js-plotly-plot .legend::-webkit-scrollbar-thumb { background-color: #0047AB; border-radius: 6px; border: 2px solid #f1f5f9; }
+.js-plotly-plot .legend::-webkit-scrollbar-thumb:hover { background-color: #003380; }
+.js-plotly-plot .legend .traces { margin-bottom: 6px !important; padding-bottom: 8px !important; }
+
+/* SC 通知气泡 */
+.sc-notification { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); background-color: #0047AB; color: #fff; padding: 10px 20px; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 100; font-size: 16px; opacity: 1; transition: opacity 0.5s ease; display: flex; align-items: center; gap: 10px; }
+.sc-notification i { color: #ffff00; font-size: 18px; }
+
+/* SC 绘图容器与图例 */
+#sc-plot { width: 100%; height: 100%; min-height: 550px; }
+/* 兜底：仅清理 Plotly 外层容器底部外边距，避免额外空隙；高度交由 Plotly layout 控制 */
+.js-plotly-plot .svg-container { margin: 0 !important; }
+.sc-legend-container { width: 100%; padding: 10px 0; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+.sc-legend-item { display: flex; align-items: center; padding: 4px 8px; border-radius: 6px; background-color: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.2s ease; }
+.sc-legend-item:hover { background-color: #f1f5f9; transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.sc-legend-color { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(0,0,0,0.1); }
+
+/* SC 响应式微调 */
+@media (max-width: 1200px) {
+    #sc-plot { min-height: 400px; }
+}
+@media (max-width: 768px) {
+    #sc-plot { min-height: 300px; }
+    .sc-legend-container { padding: 8px 0; gap: 4px; }
+    .sc-legend-item { padding: 2px 6px; font-size: 10px; }
+    .sc-legend-color { width: 10px; height: 10px; margin-right: 4px; }
+}
+
+/* ===== SC Tab 样式（从 detail.html 迁移） ===== */
+#sc-card .card-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+#sc-card .tab-header { display: flex; gap: 0; overflow-x: auto; scrollbar-width: thin; }
+#sc-card .tab-header.inline { border-bottom: none; }
+#sc-card .tab-button {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0 10px;
+    margin-right: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .2s ease, border-color .2s ease;
+    color: #0f172a;
+    font-weight: 600;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+}
+#sc-card .tab-button:hover { color: #1f2937; border-bottom-color: #e5e7eb; }
+#sc-card .tab-button.active { color: #0f172a; border-bottom-color: #3b82f6; box-shadow: none; }
+#sc-card .tab-button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+#sc-card .tab-content { padding-top: 8px; }
+#sc-card .two-column-layout { display: flex; gap: 16px; padding-right: 64px; }
+#sc-card .column-70 { flex: 0 0 70%; }
+#sc-card .column-30 { flex: 0 0 30%; }
+#sc-card .sc-plot-panel,
+#sc-card .relations-table-scroll,
+#sc-card .properties-panel { box-sizing: border-box; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; margin: 0; }
+#sc-card .relations-table-scroll { padding: 32px; overflow: auto; margin-right: 0; padding-right: 32px; }
+#sc-card .properties-panel { margin-right: 0; padding-right: 32px; }
+/* 限制右侧面板高度，避免首次渲染后因内容膨胀推挤布局造成“回弹” */
+#sc-card .relations-table-scroll { max-height: 680px; overflow: auto; }
+#sc-card .properties-panel { max-height: 680px; overflow: auto; }
+#sc-card .relations-table-scroll,
+#sc-card .properties-panel { border-color: #d1d5db; }
+#sc-card .sc-plot-panel { min-height: 320px; }
+#sc-card .relations-legend { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; color: #475569; font-size: 14px; line-height: 1.4; }
+#sc-card .relations-table-scroll table { width: 100%; border-collapse: collapse; font-size: 14px; }
+#sc-card .relations-table-scroll th,
+#sc-card .relations-table-scroll td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+#sc-card .relations-table-scroll th { background-color: #f1f5f9; color: #334155; font-weight: 600; }
+#sc-card .relations-table-scroll tr:hover { background-color: #f8fafc; }
+#sc-card .relations-table-scroll tbody tr:nth-child(odd) { background-color: #f8fafc; }
+#sc-card .relations-table-scroll tbody tr:hover { background-color: #EFF6FF; }
+#sc-card .zero-group { color: #6B7280; font-style: italic; }
+#sc-card .same-relation { color: #0047AB; font-weight: 500; }
+#sc-card .opposite-relation { color: #B91C1C; font-weight: 500; }
+#sc-card .mixed-relation { color: #7E22CE; font-weight: 500; }
+#sc-card .properties-panel { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+#sc-card .properties-list { list-style: none; margin: 0; padding: 0; }
+#sc-card .properties-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+#sc-card .properties-list li:last-child { border-bottom: none; }
+#sc-card .property-label { color: #475569; font-weight: 500; }
+#sc-card .property-value { color: #0f172a; }
+@media (max-width: 768px) {
+    #sc-card .two-column-layout { display: block; }
+    #sc-card .column-70, #sc-card .column-30 { width: 100%; flex: 0 0 100%; }
+    #sc-card .column-30 { margin-top: 12px; }
+}
+
+/* ===== 详情页导航样式（从 detail.html 迁移） ===== */
+.material-detail-container { max-width: 1600px; margin: 2px auto 0; padding: 16px; background: #f8fafc; }
+.material-nav { background: transparent; border-bottom: none; box-shadow: none; position: sticky; top: 64px; z-index: 100; width: 100%; padding: 16px 0; margin: 0; }
+.material-nav-wrapper { max-width: 1600px; margin: 0 auto; padding: 0 24px; width: 100%; box-sizing: border-box; }
+.nav-main-container { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.nav-left-section { display: flex; align-items: center; gap: 24px; flex: 1; }
+.breadcrumb-nav { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: #64748b; white-space: nowrap; }
+.breadcrumb-link { color: #64748b; text-decoration: none; font-weight: 500; transition: all 0.3s ease; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; background-color: #fff; border: 1px solid #e2e8f0; position: relative; }
+.breadcrumb-link::after { content: ''; position: absolute; bottom: 0; left: 8px; right: 8px; height: 2px; background-color: transparent; transition: background-color 0.3s ease; }
+.breadcrumb-link:hover { color: #0047AB; background-color: #fff; border-color: rgba(0,71,171,0.3); transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,71,171,0.12); }
+.breadcrumb-link:hover::after { background-color: #0047AB; }
+.breadcrumb-separator { color: #cbd5e1; font-size: 0.9rem; margin: 0 2px; }
+.breadcrumb-current { color: #0047AB; font-weight: 700; padding: 4px 8px; background-color: #fff; border-radius: 6px; border: 1px solid rgba(0,71,171,0.2); box-shadow: 0 1px 4px rgba(0,71,171,0.1); }
+.nav-properties { display: flex; align-items: center; gap: 8px; }
+.nav-property-link { padding: 10px 16px; color: #475569; text-decoration: none; font-size: 0.95rem; font-weight: 600; background: #fff; border: 2px solid #e2e8f0; border-radius: 8px; transition: all 0.3s ease; }
+.nav-property-link:hover { color: #0047AB; background-color: #fff; border-color: rgba(0,71,171,0.5); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,71,171,0.15); }
+.nav-property-link.active { color: #fff; background-color: #0047AB; border-color: #0047AB; font-weight: 700; box-shadow: 0 2px 8px rgba(0,71,171,0.3); }
+.nav-actions { display: flex; align-items: center; gap: 8px; }
+.action-btn { display: flex; align-items: center; gap: 6px; padding: 10px 16px; text-decoration: none; font-weight: 600; font-size: 0.9rem; border-radius: 8px; transition: all 0.3s ease; border: 2px solid transparent; }
+.action-btn i { font-size: 0.9rem; }
+.action-btn span { font-weight: 600; }
+.mp-btn { color: #1e40af; background-color: #eff6ff; border-color: #bfdbfe; }
+.mp-btn:hover { color: #fff; background-color: #1e40af; border-color: #1e40af; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(30,64,175,0.3); }
+.back-btn { color: #475569; background-color: #f8fafc; border-color: #e2e8f0; }
+.back-btn:hover { color: #1e293b; background-color: #e2e8f0; border-color: #cbd5e1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(71,85,105,0.2); }
+.edit-btn { color: #059669; background-color: #ecfdf5; border-color: #a7f3d0; }
+.edit-btn:hover { color: #fff; background-color: #059669; border-color: #059669; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
+.delete-btn { color: #dc2626; background-color: #fef2f2; border-color: #fecaca; }
+.delete-btn:hover { color: #fff; background-color: #dc2626; border-color: #dc2626; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
+.action-btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+@media (max-width: 1200px) {
+    .material-nav { padding: 14px 0; }
+    .material-nav-wrapper { padding: 0 20px; }
+    .nav-main-container { flex-direction: column; gap: 16px; align-items: stretch; }
+    .nav-left-section { flex-direction: column; gap: 12px; align-items: flex-start; flex: none; }
+    .breadcrumb-nav { font-size: 1rem; }
+    .nav-properties { gap: 6px; flex-wrap: wrap; justify-content: flex-start; }
+    .nav-property-link { padding: 8px 14px; font-size: 0.9rem; }
+    .nav-actions { gap: 8px; justify-content: flex-start; }
+    .action-btn { padding: 8px 14px; font-size: 0.85rem; }
+}
+@media (max-width: 768px) {
+    .material-nav { padding: 12px 0; }
+    .material-nav-wrapper { padding: 0 16px; }
+    .nav-main-container { gap: 12px; }
+    .nav-left-section { gap: 10px; width: 100%; }
+    .breadcrumb-nav { font-size: 0.95rem; }
+    .breadcrumb-current { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-properties { gap: 4px; width: 100%; }
+    .nav-property-link { padding: 8px 10px; font-size: 0.8rem; flex: 1; text-align: center; min-width: 0; }
+    .nav-actions { gap: 6px; justify-content: flex-start; }
+    .action-btn { padding: 8px 10px; font-size: 0.8rem; }
+    .action-btn span { display: none; }
+    .action-btn i { font-size: 1rem; }
+}
+
+/* ===== 查看器与图表容器（从 detail.html 迁移补充） =====
+ * 统一高度入口（桌面端）：
+ * - `.crystal-viewer`：3D 结构查看器高度
+ * - `#bandStructure, #scStructure, #bcdStructure, #dwStructure`：三块绘图高度
+ * - `.viewer-content`：包含上述容器的内容区最低高度
+ *
+ * 若需统一调高/调低：优先改这三处的 `height / min-height`。
+ */
+.viewer-container:hover { box-shadow: rgba(0,0,0,0.15) 0px 8px 24px; }
+.viewer-content { padding: 0 20px 20px; transition: max-height 0.3s ease, opacity 0.3s ease; max-height: 2000px; opacity: 1; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 700px; }
+.viewer-content.collapsed { max-height: 0; padding: 0 20px; opacity: 0; min-height: 0; }
+.crystal-viewer { width: 100%; height: 700px; border-radius: 8px; background: #f8fafc; border: 2px solid #e2e8f0; overflow: hidden; transition: all 0.3s ease; position: relative; flex: 1; min-height: 700px; }
+.crystal-viewer canvas, .crystal-viewer div { z-index: 10 !important; }
+#bandStructure, #scStructure, #bcdStructure, #dwStructure { width: 100%; flex-grow: 1; min-height: 700px; height: 700px; border-radius: 8px; background: #f8fafc; border: 2px solid #e2e8f0; overflow: hidden; transition: all 0.3s ease; position: relative; }
+.crystal-viewer:hover, #bandStructure:hover, #scStructure:hover, #bcdStructure:hover, #dwStructure:hover { border-color: #0047AB; box-shadow: rgba(0,71,171,0.15) 0 0 0 4px; }
+/* 平板端（≤1200px）高度与布局说明
+ * - 将两列布局堆叠为单列（更易阅读）
+ * - 统一调低高度以适配较小屏幕
+ */
+@media (max-width: 1200px) {
+    .two-column-layout { flex-direction: column; }
+    .column-60, .column-40, .column-70, .column-30 { flex: 1; width: 100%; }
+    .crystal-viewer, #bandStructure, #scStructure, #bcdStructure, #dwStructure, .viewer-content { height: 560px; min-height: 560px; }
+}
+/* 移动端（≤768px）高度与导航说明
+ * - 进一步降低高度，保证内容在手机上不显得拥挤
+ * - 导航区域在移动下方位与内边距也作相应调整
+ */
+@media (max-width: 768px) {
+    .material-detail-container { padding: 16px; margin-top: 200px; }
+    .material-nav { height: auto; flex-direction: column; padding: 15px; top: 56px; }
+    .crystal-viewer, #bandStructure, #scStructure, #bcdStructure, #dwStructure, .viewer-content { height: 420px; min-height: 420px; }
+}
+
+/* ===== 原子信息卡片样式（从 detail.html 迁移） ===== */
+.atom-info-card { background: linear-gradient(to right, #f1f5f9, #f8fafc); border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px; border: 1px solid #e5e7eb; }
+.atom-info-section { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+.atom-count { display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; }
+.atom-count i { color: #0047AB; font-size: 1.3rem; }
+.atom-total { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+.atom-total-label { font-size: 1.1rem; color: #64748b; margin-left: 4px; }
+.atom-composition-container { display: flex; flex-wrap: wrap; gap: 8px; max-width: 70%; }
+.element-chip { display: flex; align-items: center; background: #ffffff; border-radius: 6px; padding: 6px 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.element-chip:hover { transform: translateY(-2px); box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+.element-symbol { font-weight: 600; color: #0047AB; margin-right: 4px; font-size: 0.95rem; }
+.element-count { color: #64748b; font-size: 0.9rem; }
+@media (max-width: 768px) {
+    .atom-info-section { flex-direction: column; align-items: flex-start; }
+    .atom-composition-container { max-width: 100%; }
+    .atom-total { font-size: 1.3rem; }
+}
+
+/* 轻量动画（从 detail.html 迁移） */
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.pulse-animation { animation: pulse 0.5s ease; }
+
+/* 详情页小组件：材料ID徽标（从 detail.html 迁移）
+ * - 小圆角标签，常用于展示材料 ID
+ */
+.material-id {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 卡片标题右侧附加标签（与 h3 标题风格一致）
+ * - 用途：在卡片标题栏右侧展示如 “Eigen Matrix” 等附加信息
+ * - 对齐：`margin-left: auto;` 将其推到标题行最右侧
+ */
+.card-header-extra {
+    margin-left: auto; /* 推到右侧 */
+    color: #1e293b;
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.3;
+}

@@ -43,7 +43,7 @@ except ImportError:
 # Create a blueprint named 'views' for modular route management
 bp = Blueprint('views', __name__)
 
-# 全局拦截：未完成429挑战（等待+验证码）禁止访问除错误页/验证码外的路由
+# 全局拦截：仅在“存在未过期锁定窗口且未验证”时拦截到 /rate-limited
 @bp.before_app_request
 def enforce_429_challenge():
     try:
@@ -61,11 +61,16 @@ def enforce_429_challenge():
         verified = bool(session.get('rl_verified', False))
         if verified:
             return
-        # 未验证的任何访问：重置等待窗口为60秒并重定向到固定的限流页面
+
+        # 仅在存在未过期锁定窗口时拦截
+        locked_until = session.get('rl_locked_until')
         now = int(time.time())
-        session['rl_locked_until'] = now + 60
-        from flask import redirect
-        return redirect(url_for('views.rate_limited'))
+        if isinstance(locked_until, int):
+            if locked_until > now:
+                return redirect(url_for('views.rate_limited'))
+            # 锁定过期则清理标记
+            session.pop('rl_locked_until', None)
+        return
     except Exception:
         # 拦截器出错时不阻断正常流程
         return
@@ -856,7 +861,50 @@ def detail(material_id):
         sc_file = None
     else:
         sc_file = None
-    return render_template('materials/detail.html', material=material, structure_file=structure_file, band_file=band_file, sc_file=sc_file)
+    
+    # ========== 新增：BCD/DW 目录与矩阵探测 ==========
+    # 解释：为前端 BCD/DW 模块提供目录与矩阵文件路径（相对 static/）。
+    # 策略：优先使用材料目录 IMR-{formatted_id}/{bcd|dw}，若不存在则回退到全局 materials/{bcd|dw}。
+    materials_base = os.path.join(current_app.root_path, 'static', 'materials')
+    static_root = os.path.join(current_app.root_path, 'static')
+
+    # BCD 目录优先 IMR-<id>/bcd，其次全局 bcd
+    bcd_dir_abs = os.path.join(materials_base, material.formatted_id, 'bcd')
+    if not os.path.isdir(bcd_dir_abs):
+        global_bcd_abs = os.path.join(materials_base, 'bcd')
+        bcd_dir_abs = global_bcd_abs if os.path.isdir(global_bcd_abs) else None
+    bcd_dir = os.path.relpath(bcd_dir_abs, static_root) if bcd_dir_abs else None
+    bcd_matrix_path = None
+    if bcd_dir_abs:
+        bcd_matrix_abs = os.path.join(bcd_dir_abs, 'matrix.dat')
+        if os.path.isfile(bcd_matrix_abs):
+            bcd_matrix_path = os.path.relpath(bcd_matrix_abs, static_root)
+
+    # DW 目录优先 IMR-<id>/dw，其次全局 dw
+    dw_dir_abs = os.path.join(materials_base, material.formatted_id, 'dw')
+    if not os.path.isdir(dw_dir_abs):
+        global_dw_abs = os.path.join(materials_base, 'dw')
+        dw_dir_abs = global_dw_abs if os.path.isdir(global_dw_abs) else None
+    dw_dir = os.path.relpath(dw_dir_abs, static_root) if dw_dir_abs else None
+    dw_matrix_path = None
+    if dw_dir_abs:
+        dw_matrix_abs = os.path.join(dw_dir_abs, 'matrix.dat')
+        if os.path.isfile(dw_matrix_abs):
+            dw_matrix_path = os.path.relpath(dw_matrix_abs, static_root)
+
+    # ==============================================
+
+    return render_template(
+        'materials/detail.html',
+        material=material,
+        structure_file=structure_file,
+        band_file=band_file,
+        sc_file=sc_file,
+        bcd_dir=bcd_dir,
+        dw_dir=dw_dir,
+        bcd_matrix_path=bcd_matrix_path,
+        dw_matrix_path=dw_matrix_path
+    )
 
 # 通过 MP 编号跳转到 IMR 详情
 @bp.route('/materials/by-mp/<string:mp_id>')

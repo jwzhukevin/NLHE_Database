@@ -4,6 +4,15 @@
 * and complements the base styles defined in the base.html template
 */
 
+/* ========== Global Page Styles ========== */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background: #f8fafc; /* light background */
+    font-family: 'Inter', sans-serif;
+}
+
 /* ========== Search Component Styles ========== */
 
 /* Advanced Search Styles */
@@ -34,3 +43,121 @@
     color: #666;
     font-size: 14px;
 } 
+
+/* ========== Matrix (BCD/DW) visual polish ========== */
+/* 说明：
+   - 仅作用于 BCD 与 DW 的矩阵容器，避免影响其他表格；
+   - 无需改动 JS，renderMatrix() 输出的 .prop-table 与 .property-note 自动套用。 */
+#bcdEigenMatrix .prop-table,
+#dwEigenMatrix .prop-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden; /* 让圆角作用于整体 */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 0.98rem;
+    letter-spacing: 0.2px;
+    font-variant-numeric: tabular-nums; /* 数字等宽，便于对齐 */
+    animation: matrix-fade-in 0.2s ease-out;
+}
+
+#bcdEigenMatrix .prop-table thead th,
+#dwEigenMatrix .prop-table thead th {
+    background: linear-gradient(to bottom, #f7fafc, #f1f5f9);
+    color: #334155;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+#bcdEigenMatrix .prop-table tbody th,
+#dwEigenMatrix .prop-table tbody th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    text-align: center;
+    padding: 10px 12px;
+    border-right: 1px solid #e9edf3;
+    white-space: nowrap;
+}
+
+#bcdEigenMatrix .prop-table td,
+#dwEigenMatrix .prop-table td {
+    text-align: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid #eef2f7;
+    transition: background-color 0.18s ease, transform 0.12s ease;
+    min-width: 88px;
+    color: #1f2937;
+}
+
+/* 斑马纹 */
+#bcdEigenMatrix .prop-table tbody tr:nth-child(odd) td,
+#dwEigenMatrix .prop-table tbody tr:nth-child(odd) td {
+    background-color: #fbfdff;
+}
+
+#bcdEigenMatrix .prop-table tbody tr:hover td,
+#dwEigenMatrix .prop-table tbody tr:hover td {
+    background-color: #f0f6ff; /* 极浅蓝 */
+}
+
+#bcdEigenMatrix .prop-table tbody td:hover,
+#dwEigenMatrix .prop-table tbody td:hover {
+    transform: translateY(-1px);
+    background-color: #e9f2ff;
+}
+
+/* 首尾圆角：基于第一行/最后一行的单元格 */
+#bcdEigenMatrix .prop-table thead tr th:first-child,
+#dwEigenMatrix .prop-table thead tr th:first-child {
+    border-top-left-radius: 10px;
+}
+#bcdEigenMatrix .prop-table thead tr th:last-child,
+#dwEigenMatrix .prop-table thead tr th:last-child {
+    border-top-right-radius: 10px;
+}
+#bcdEigenMatrix .prop-table tbody tr:last-child td:first-child,
+#dwEigenMatrix .prop-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+#bcdEigenMatrix .prop-table tbody tr:last-child td:last-child,
+#dwEigenMatrix .prop-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+/* 注记样式（单位等提示） */
+#bcdEigenMatrix .property-note,
+#dwEigenMatrix .property-note {
+    margin-top: 10px;
+    color: #64748b;
+    font-size: 0.9rem;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-left: 3px solid #3b82f6;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    animation: matrix-fade-in 0.2s ease-out;
+}
+
+/* 容器横向滚动（窄屏保护） */
+#bcdEigenMatrix,
+#dwEigenMatrix {
+    overflow-x: auto;
+}
+
+/* 载入渐显动画 */
+@keyframes matrix-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

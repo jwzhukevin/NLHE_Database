@@ -515,9 +515,14 @@ function parseAndPlotSCData(dataText, container) {
     // 获取动态尺寸
     const plotElement = document.getElementById('sc-plot');
 
-    // === 关键：等DOM渲染完毕后再绘图，确保高度准确 ===
-    setTimeout(() => {
+    // === 关键：等浏览器完成一帧布局后再绘图，确保高度准确，减少回弹 ===
+    requestAnimationFrame(() => {
         const plotSize = getPlotSize();
+        // 明确设置绘图容器尺寸，避免因父容器未定高导致 0 高度
+        if (plotElement && plotSize) {
+            plotElement.style.height = plotSize.height + 'px';
+            plotElement.style.width = plotSize.width + 'px';
+        }
         const layout = {
             // 图表标题配置
             title: {
@@ -681,81 +686,22 @@ function parseAndPlotSCData(dataText, container) {
 
         // 监听图表重新布局事件，确保计数同步
         plotElement.on('plotly_relayout', function() {
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 updateVisibleCount();
-            }, 50);
+            });
         });
         
         // 增大图例中的线条显示
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             const legendLines = document.querySelectorAll('.legendlines path');
             legendLines.forEach(line => {
                 line.setAttribute('stroke-width', '4'); // 增加线宽
-                line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '15.0')); // 增加线长
+                line.setAttribute('d', line.getAttribute('d').replace(/5\.0/g, '15\.0')); // 增加线长
             });
-            
-            // 增强图例滚动交互
-            const legendEl = document.querySelector('.legend');
-            if (legendEl) {
-                // 为图例添加滚动提示
-                const observer = new MutationObserver((_) => {
-                    const legendRect = legendEl.getBoundingClientRect();
-                    const contentHeight = legendEl.scrollHeight;
-                    
-                    // 如果内容高度超过可见高度，添加滚动提示
-                    if (contentHeight > legendRect.height && !legendEl.classList.contains('scrollable')) {
-                        legendEl.classList.add('scrollable');
-                        
-                        // 添加滚动提示样式
-                        const scrollStyle = document.createElement('style');
-                        scrollStyle.textContent = `
-                            .scrollable::after {
-                                content: '';
-                                position: absolute;
-                                bottom: 5px;
-                                left: 50%;
-                                transform: translateX(-50%);
-                                width: 30px;
-                                height: 4px;
-                                background-color: #0047AB;
-                                border-radius: 2px;
-                                opacity: 0.7;
-                                animation: scrollPulse 1.5s infinite;
-                            }
-                            @keyframes scrollPulse {
-                                0% { opacity: 0.7; }
-                                50% { opacity: 0.3; }
-                                100% { opacity: 0.7; }
-                            }
-                        `;
-                        document.head.appendChild(scrollStyle);
-                    }
-                });
-                
-                observer.observe(legendEl, { childList: true, subtree: true });
-            }
+            // 去除图例滚动提示与运行时样式注入，避免布局回弹
         }, 300);
         
-        // 添加自定义样式
-        const style = document.createElement('style');
-        style.textContent = `
-            /* 增强图例项样式 */
-            .js-plotly-plot .legend .traces .legendtext {
-                font-size: 14px !important;
-                font-weight: 500 !important;
-                padding: 4px 8px !important;
-            }
-            
-            .js-plotly-plot .legend .traces .legendtoggle {
-                transform: scale(1.2);
-            }
-            
-            /* 确保图例在底部有足够空间 */
-            .js-plotly-plot .svg-container {
-                margin-bottom: 10px;
-            }
-        `;
-        document.head.appendChild(style);
+        
         
         // 更新可见曲线计数
         function updateVisibleCount() {

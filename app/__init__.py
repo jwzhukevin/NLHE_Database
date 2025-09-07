@@ -267,20 +267,22 @@ def create_app():
                 return
 
             def _worker():
+                # 确保在线程中拥有应用上下文，避免 Working outside of application context 警告
                 try:
                     from .font_manager import FontManager
-                    # 确保字体目录存在
-                    try:
-                        FontManager.ensure_fonts_dir()
-                    except Exception as e:
-                        app.logger.warning(f"创建字体目录失败: {e}")
-                    # 逐个尺寸预热，不抛出异常
-                    for s in sizes:
+                    with app.app_context():
+                        # 确保字体目录存在
                         try:
-                            FontManager.get_captcha_font(s)
+                            FontManager.ensure_fonts_dir()
                         except Exception as e:
-                            app.logger.warning(f"字体预热失败 size={s}: {e}")
-                    app.logger.info(f"字体预热完成: {sizes}")
+                            app.logger.warning(f"创建字体目录失败: {e}")
+                        # 逐个尺寸预热，不抛出异常
+                        for s in sizes:
+                            try:
+                                FontManager.get_captcha_font(s)
+                            except Exception as e:
+                                app.logger.warning(f"字体预热失败 size={s}: {e}")
+                        app.logger.info(f"字体预热完成: {sizes}")
                 except Exception as e:
                     app.logger.warning(f"字体预热线程内部错误: {e}")
 

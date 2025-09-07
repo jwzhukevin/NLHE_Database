@@ -273,6 +273,42 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('绘制SC结构图失败:', e);
     }
     
+    // 初始化 BCD 模块
+    try {
+        const bcdDir = window.materialData.bcd_dir || null;
+        const bcdMatrix = window.materialData.bcd_matrix_path || null;
+        if (bcdDir) {
+            console.log('BCD目录:', bcdDir, '矩阵:', bcdMatrix);
+            if (typeof plotBCD === 'function') {
+                plotBCD('bcdStructure', bcdDir, bcdMatrix);
+            } else {
+                console.warn('plotBCD 函数未加载');
+            }
+        } else {
+            console.info('未提供 BCD 目录，跳过 BCD 绘制');
+        }
+    } catch (e) {
+        console.error('初始化 BCD 模块失败:', e);
+    }
+
+    // 初始化 DW 模块
+    try {
+        const dwDir = window.materialData.dw_dir || null;
+        const dwMatrix = window.materialData.dw_matrix_path || null;
+        if (dwDir) {
+            console.log('DW目录:', dwDir, '矩阵:', dwMatrix);
+            if (typeof plotDW === 'function') {
+                plotDW('dwStructure', dwDir, dwMatrix);
+            } else {
+                console.warn('plotDW 函数未加载');
+            }
+        } else {
+            console.info('未提供 DW 目录，跳过 DW 绘制');
+        }
+    } catch (e) {
+        console.error('初始化 DW 模块失败:', e);
+    }
+    
     // 初始化卡片折叠功能（对“非 Tab 卡片”生效）
     initializeCollapsibleCards();
     
