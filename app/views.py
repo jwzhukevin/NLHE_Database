@@ -42,7 +42,7 @@ except ImportError:
 # 创建名为 'views' 的蓝图，用于模块化管理路由
 bp = Blueprint('views', __name__)
 
-# 全局拦截：仅在“存在未过期锁定窗口且未验证”时拦截到 /rate-limited
+# 全局拦截：若存在限流挑战且未通过验证码，一律拦截到 /rate-limited
 @bp.before_app_request
 def enforce_429_challenge():
     try:
@@ -57,18 +57,14 @@ def enforce_429_challenge():
         if path in {'/captcha429', '/verify_captcha_429', '/rate-limited'}:
             return
 
-        verified = bool(session.get('rl_verified', False))
-        if verified:
+        # 已通过验证码则放行
+        if bool(session.get('rl_verified', False)):
             return
 
-        # 仅在存在未过期锁定窗口时拦截
-        locked_until = session.get('rl_locked_until')
-        now = int(time.time())
-        if isinstance(locked_until, int):
-            if locked_until > now:
-                return redirect(url_for('views.rate_limited'))
-            # 锁定过期则清理标记
-            session.pop('rl_locked_until', None)
+        # 只要存在限流挑战会话标记（无论是否过期），均需在 429 页面完成验证码
+        if 'rl_locked_until' in session:
+            return redirect(url_for('views.rate_limited'))
+
         return
     except Exception:
         # 拦截器出错时不阻断正常流程

@@ -4,54 +4,53 @@
 {% block content %}
 <section class="error-hero">
     <div class="container">
-        <div class="error-content" role="region" aria-labelledby="err429_title">
-            <div class="error-code">429</div>
-            <h1 id="err429_title">{{ _('Too Many Requests') }}</h1>
-            <p class="error-sub">{{ _('You have sent too many requests in a short time.') }}</p>
+        <div class="error-grid">
+            <!-- 左侧：状态与说明 -->
+            <div class="error-left" role="region" aria-labelledby="err429_title">
+                <div class="error-code">429</div>
+                <h1 id="err429_title">{{ _('Too Many Requests') }}</h1>
+                <p class="error-sub">{{ _('You have sent too many requests in a short time.') }}</p>
 
-            <div class="timer" aria-live="polite">
-                <span>{{ _('Please wait') }}</span>
-                <strong id="retrySeconds">{{ retry_after|default(60) }}</strong>
-                <span>{{ _('seconds') }}</span>
-            </div>
-
-            <!-- [Deprecated 20250825] 旧动作按钮区域（Retry Now / Back to Home / Back to Database）已移除。
-                 原因：在严格429限制与全局拦截下无效，改为验证通过后自动跳转首页。 -->
-
-            <!-- 验证码区域（进入页面即显示，倒计时结束后提示用户完成验证） -->
-            <div id="captchaArea" class="captcha-area" aria-hidden="false">
-                <p class="captcha-title">
-                    <i class="fas fa-shield-alt"></i>
-                    {{ _('Human Verification') }}
-                </p>
-                
-
-                <div class="captcha-row">
-                    <img id="captchaImg429" src="{{ url_for('views.captcha429') }}" alt="CAPTCHA" width="140" height="50" />
-                    <button id="refreshCaptcha429" class="captcha-btn" type="button">
-                        <i class="fas fa-sync"></i> {{ _('Refresh') }}
-                    </button>
-                </div>
-
-                <div class="captcha-input">
-                    <input id="captchaInput429" type="text" maxlength="5" inputmode="latin" autocomplete="one-time-code"
-                           placeholder="{{ _('Enter the 5-letter code') }}" aria-label="{{ _('Captcha code') }}" />
-                    <button id="submitCaptcha429" class="captcha-btn primary" type="button">
-                        <i class="fas fa-check-circle"></i> {{ _('Verify') }}
-                    </button>
-                </div>
-
-                <!-- 常驻提示小框：所有提示文案聚合显示于此 -->
-                <div id="captchaTip" class="captcha-tip" role="status" aria-live="polite">
-                    <i class="tip-icon fas fa-info-circle"></i>
-                    <span id="captchaTipText">{{ _('After the countdown ends, please enter the captcha. You will be redirected to the homepage after successful verification.') }}</span>
+                <div class="timer" aria-live="polite">
+                    <span>{{ _('Please wait') }}</span>
+                    <strong id="retrySeconds">{{ retry_after|default(60) }}</strong>
+                    <span>{{ _('seconds') }}</span>
                 </div>
             </div>
-        </div>
-        <div class="error-illustration" aria-hidden="true">
-            <i class="fas fa-search fa-pulse"></i>
+
+            <!-- 右侧：验证码与输入框 -->
+            <div class="error-right">
+                <div id="captchaArea" class="captcha-area" aria-hidden="false">
+                    <p class="captcha-title">
+                        <i class="fas fa-shield-alt"></i>
+                        {{ _('Human Verification') }}
+                    </p>
+
+                    <div class="captcha-row">
+                        <img id="captchaImg429" src="{{ url_for('views.captcha429') }}" alt="CAPTCHA" width="140" height="50" />
+                        <button id="refreshCaptcha429" class="captcha-btn" type="button">
+                            <i class="fas fa-sync"></i> {{ _('Refresh') }}
+                        </button>
+                    </div>
+
+                    <div class="captcha-input">
+                        <input id="captchaInput429" type="text" maxlength="5" inputmode="latin" autocomplete="one-time-code"
+                               placeholder="{{ _('Enter the 5-letter code') }}" aria-label="{{ _('Captcha code') }}" />
+                        <button id="submitCaptcha429" class="captcha-btn primary" type="button">
+                            <i class="fas fa-check-circle"></i> {{ _('Verify') }}
+                        </button>
+                    </div>
+
+                    <!-- 常驻提示小框：所有提示文案聚合显示于此 -->
+                    <div id="captchaTip" class="captcha-tip" role="status" aria-live="polite">
+                        <i class="tip-icon fas fa-info-circle"></i>
+                        <span id="captchaTipText">{{ _('After the countdown ends, please enter the captcha. You will be redirected to the homepage after successful verification.') }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+    <!-- 说明：原插画区已移除，以满足左右分布布局需求 -->
 </section>
 
 <style>
@@ -64,9 +63,10 @@
         color: white;
     }
 
-    .error-content {
-        max-width: 600px;
-    }
+    /* 两栏布局容器 */
+    .error-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; width: 100%; }
+    .error-left { display: flex; flex-direction: column; justify-content: center; }
+    .error-right { display: flex; justify-content: center; }
 
     .error-code {
         font-size: 8rem;
@@ -90,38 +90,21 @@
         opacity: 0.9;
     }
 
-    .error-illustration {
-        font-size: 10rem;
-        opacity: 0.2;
-        position: absolute;
-        right: 10%;
-        animation: float 3s ease-in-out infinite;
-    }
+    /* 旧插画样式移除 */
 
     .fa-pulse {
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-        100% { transform: translateY(0px); }
-    }
+    /* 兼容保留 */
+    @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.4; } }
 
-    @keyframes pulse {
-        0%, 100% { opacity: 0.2; }
-        50% { opacity: 0.4; }
-    }
-
-    @media (max-width: 768px) {
-        .error-hero { padding: 6rem 0 3rem; text-align: center; }
-        .error-content { margin: 0 auto; }
-        .error-illustration { display: none; }
-    }
+    @media (max-width: 992px) { .error-grid { grid-template-columns: 1fr; } .error-right { justify-content: stretch; } }
+    @media (max-width: 768px) { .error-hero { padding: 6rem 0 3rem; } }
 
     /* 追加：验证码区域（在深色背景上使用白卡片，避免破坏404风格） */
     /* 追加：验证码区域（在深色背景上使用白卡片，避免破坏404风格） */
-    .captcha-area { background: #fff; border-radius: 12px; padding: 1rem 1rem 0.8rem; color: #0f172a; width: 640px; height: 300px; overflow: hidden; box-sizing: border-box; flex: 0 0 auto; }
+    .captcha-area { background: #fff; border-radius: 12px; padding: 1rem 1rem 0.8rem; color: #0f172a; width: 100%; max-width: 640px; min-height: 300px; overflow: hidden; box-sizing: border-box; flex: 0 0 auto; }
     /* 标题 */
     .captcha-title { font-weight: 800; color: #0f172a; background: rgba(0,71,171,0.08); padding: .5rem .75rem; border-radius: 10px; display: inline-flex; align-items: center; gap: .5rem; margin: 0 0 .25rem; }
     /* 图标 */
