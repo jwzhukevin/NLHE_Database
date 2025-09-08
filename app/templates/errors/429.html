@@ -20,37 +20,43 @@
 
             <!-- 右侧：验证码与输入框 -->
             <div class="error-right">
-                <div id="captchaArea" class="captcha-area" aria-hidden="false">
+                <!-- 简约的人机验证卡片：默认可见，但在倒计时未结束前为禁用态（居中、等距） -->
+                <div id="captchaArea" class="captcha-area disabled" aria-hidden="false">
                     <p class="captcha-title">
                         <i class="fas fa-shield-alt"></i>
                         {{ _('Human Verification') }}
                     </p>
+                    <p class="captcha-subnote">Electrons are in random motion.</p>
 
-                    <div class="captcha-row">
-                        <img id="captchaImg429" src="{{ url_for('views.captcha429') }}" alt="CAPTCHA" width="140" height="50" />
-                        <button id="refreshCaptcha429" class="captcha-btn" type="button">
+                    <!-- 电子动画层（不阻挡交互） -->
+                    <canvas id="hvElectrons" class="hv-electrons" aria-hidden="true"></canvas>
+
+                    <!-- 简化：移除文字引导，采用居中直观布局 -->
+
+                    <div class="captcha-row hv-action">
+                        <img id="captchaImg429" class="captcha-img" src="{{ url_for('views.captcha429') }}" alt="CAPTCHA" width="220" height="48" />
+                        <button id="refreshCaptcha429" class="captcha-btn" type="button" disabled>
                             <i class="fas fa-sync"></i> {{ _('Refresh') }}
                         </button>
                     </div>
 
-                    <div class="captcha-input">
+                    <div class="captcha-input hv-action">
                         <input id="captchaInput429" type="text" maxlength="5" inputmode="latin" autocomplete="one-time-code"
-                               placeholder="{{ _('Enter the 5-letter code') }}" aria-label="{{ _('Captcha code') }}" />
-                        <button id="submitCaptcha429" class="captcha-btn primary" type="button">
+                               placeholder="{{ _('Enter 5 letters') }}" aria-label="{{ _('Captcha code') }}" disabled />
+                        <button id="submitCaptcha429" class="captcha-btn primary" type="button" disabled>
                             <i class="fas fa-check-circle"></i> {{ _('Verify') }}
                         </button>
                     </div>
 
                     <!-- 常驻提示小框：所有提示文案聚合显示于此 -->
-                    <div id="captchaTip" class="captcha-tip" role="status" aria-live="polite">
+                    <div id="captchaTip" class="captcha-tip info" role="status" aria-live="polite">
                         <i class="tip-icon fas fa-info-circle"></i>
-                        <span id="captchaTipText">{{ _('After the countdown ends, please enter the captcha. You will be redirected to the homepage after successful verification.') }}</span>
+                        <span id="captchaTipText">{{ _('Please wait until the countdown finishes, then enter the captcha to continue') }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- 说明：原插画区已移除，以满足左右分布布局需求 -->
 </section>
 
 <style>
@@ -66,7 +72,7 @@
     /* 两栏布局容器 */
     .error-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; width: 100%; }
     .error-left { display: flex; flex-direction: column; justify-content: center; }
-    .error-right { display: flex; justify-content: center; }
+    .error-right { display: flex; justify-content: center; align-items: center; }
 
     .error-code {
         font-size: 8rem;
@@ -103,25 +109,43 @@
     @media (max-width: 768px) { .error-hero { padding: 6rem 0 3rem; } }
 
     /* 追加：验证码区域（在深色背景上使用白卡片，避免破坏404风格） */
-    /* 追加：验证码区域（在深色背景上使用白卡片，避免破坏404风格） */
-    .captcha-area { background: #fff; border-radius: 12px; padding: 1rem 1rem 0.8rem; color: #0f172a; width: 100%; max-width: 640px; min-height: 300px; overflow: hidden; box-sizing: border-box; flex: 0 0 auto; }
+    .captcha-area { position: relative; background: #fff; border-radius: 12px; padding: .75rem 1rem .75rem 1.25rem; color: #0f172a; width: 100%; max-width: 560px; min-height: 240px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0.2rem; text-align: left; overflow: hidden; }
+    .captcha-area.disabled { opacity: .7; }
     /* 标题 */
-    .captcha-title { font-weight: 800; color: #0f172a; background: rgba(0,71,171,0.08); padding: .5rem .75rem; border-radius: 10px; display: inline-flex; align-items: center; gap: .5rem; margin: 0 0 .25rem; }
+    .captcha-title { font-weight: 800; color: #0f172a; background: rgba(0,71,171,0.08); padding: .4rem .6rem; border-radius: 10px; display: inline-flex; align-items: center; gap: .4rem; margin: 0 0 .04rem; }
+    /* 注释副标题：更紧凑的间距 + 脉冲动画 */
+    .captcha-subnote {
+        color: #0047AB;
+        margin: 0; /* 最小化上下间距，具体间隔由父级 gap 控制 */
+        font-size: .85rem;
+        line-height: 1.1;
+        font-style: italic;
+        letter-spacing: .3px;
+        animation: hv-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes hv-pulse {
+        0%, 100% { opacity: .85; text-shadow: 0 0 0 rgba(0,71,171,0.0); }
+        50% { opacity: 1; text-shadow: 0 0 6px rgba(0,71,171,0.35); }
+    }
     /* 图标 */
     .captcha-title .fa-shield-alt { color: #0047AB; opacity: 1; }
+    /* 电子动画层：置于内容下方，不拦截鼠标 */
+    .hv-electrons { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .35; }
+    /* 提升内容层级，盖在动画之上 */
+    .captcha-title, .captcha-subnote, .captcha-row, .captcha-input, .captcha-tip { position: relative; z-index: 1; }
     /* 描述 */
     .captcha-desc { color: #334155; margin: .5rem 0 0.75rem; font-size: .95rem; }
     /* 行 */
-    .captcha-row { display: flex; gap: 0.6rem; align-items: center; margin: .2rem 0; }
+    .captcha-row { display: flex; justify-content: flex-start; align-items: center; gap: 0.6rem; margin: .04rem 0; }
     /* 输入框 */
-    .captcha-input { display: flex; gap: 0.5rem; margin-top: .2rem; }
-    .captcha-input input { padding: 0.75rem 0.9rem; border: 1px solid #cbd5e1; border-radius: 10px; width: 180px; text-transform: uppercase; letter-spacing: 3px; background: #fff; color: #0f172a; outline: none; transition: box-shadow .2s, border-color .2s, background .2s; }
+    .captcha-input { display: flex; justify-content: flex-start; align-items: center; gap: 0.6rem; margin-top: .04rem; }
+    .captcha-input input { height: 48px; padding: 0 0.9rem; border: 1px solid #cbd5e1; border-radius: 10px; width: 220px; text-transform: uppercase; letter-spacing: 3px; background: #fff; color: #0f172a; outline: none; transition: box-shadow .2s, border-color .2s, background .2s; }
     /* 占位符样式 */
     .captcha-input input::placeholder { color: #94a3b8; }
     /* 聚焦样式 */
     .captcha-input input:focus { border-color: #0047AB; box-shadow: 0 0 0 3px rgba(0,71,171,0.25), 0 6px 20px rgba(0,0,0,0.12); background: #fff; }
     /* 按钮 */
-    .captcha-btn { padding: 0.75rem 1.1rem; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #0047AB; font-weight: 800; cursor: pointer; transition: transform .15s ease, box-shadow .2s, background .2s; display: inline-flex; align-items: center; gap: .5rem; }
+    .captcha-btn { height: 48px; padding: 0 1.1rem; min-width: 140px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #0047AB; font-weight: 800; cursor: pointer; transition: transform .15s ease, box-shadow .2s, background .2s; display: inline-flex; align-items: center; gap: .5rem; }
     /* 按钮悬停样式 */
     .captcha-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
     /* 按钮点击样式 */
@@ -132,12 +156,13 @@
     .captcha-btn.primary:hover { filter: brightness(1.05); }
     /* 禁用按钮 */
     .captcha-btn[disabled] { opacity: .6; cursor: not-allowed; box-shadow: none; }
+    .captcha-input input:disabled { background: #f1f5f9; cursor: not-allowed; }
     /* 加载中状态 */
     .captcha-btn.loading i { animation: spin 1s linear infinite; }
     /* 消息显示 */
     .captcha-msg { display: none; }
 
-    .captcha-tip { display: flex; align-items: flex-start; gap: .6rem; margin: .9rem 0 0; padding: .75rem .9rem; border-radius: 10px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; }
+    .captcha-tip { display: flex; align-items: flex-start; gap: .6rem; margin: .5rem 0 0; padding: .6rem .8rem; border-radius: 10px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; }
     .captcha-tip .tip-icon { margin-top: 2px; color: #1e293b; }
     .captcha-tip.info { background: #eff6ff; border-color: #bfdbfe; }
     .captcha-tip.info .tip-icon { color: #1d4ed8; }
@@ -187,6 +212,175 @@
 
     let challengePassed = false; // 解释：仅当“时间到且验证码正确”后为 true
 
+    // 电子动画：简单弹性碰撞 + 随机运动
+    const electronCanvas = document.getElementById('hvElectrons');
+    let electronCtx = null;
+    let electrons = [];
+    let electronRAF = null;
+
+    function initElectrons() {
+        if (!electronCanvas) return;
+        electronCtx = electronCanvas.getContext('2d');
+        resizeElectrons();
+        const N = 10;
+        electrons = [];
+        for (let i = 0; i < N; i++) {
+            const r = 3; // 更小且统一
+            // 初速：方向随机，速度在 [V_INIT_MIN, V_INIT_MAX] 内（更高上限）
+            const V_INIT_MAX = 3.8, V_INIT_MIN = 1.2;
+            const theta = Math.random() * Math.PI * 2;
+            const speed = V_INIT_MIN + Math.random() * (V_INIT_MAX - V_INIT_MIN);
+            const vx = Math.cos(theta) * speed;
+            const vy = Math.sin(theta) * speed;
+            const x = r + Math.random() * (electronCanvas.width - 2 * r);
+            const y = r + Math.random() * (electronCanvas.height - 2 * r);
+            // 跟踪前一帧的速度与角度，以及变化率的指数滑动平均
+            electrons.push({ x, y, vx, vy, r, prevSpeed: speed, prevAngle: theta, sAvg: 0, aAvg: 0 });
+        }
+        animateElectrons();
+    }
+
+    // 对速度做小角度随机旋转，并加上轻微噪声，加速/减速保持在范围内
+    function steerQuantum(e) {
+        // 依据“变化率耦合”调整：速度变化率越小→方向变化率越大；方向变化率越慢→速度变化率越大
+        const V_MAX = 4.2, V_MIN = 1.0;
+        const BASE_DELTA = 0.28;   // 方向最大旋转基准（约 16°）
+        const NOISE_MAX = 0.18;    // 速度噪声上限
+
+        // 当前速度与角度
+        const spdNow = Math.hypot(e.vx, e.vy) || V_MIN;
+        const angNow = Math.atan2(e.vy, e.vx);
+
+        // 计算变化率并做指数滑动平均，降低瞬时抖动
+        const ds = Math.abs(spdNow - (e.prevSpeed || spdNow));
+        let dtheta = Math.abs(angNow - (e.prevAngle || angNow));
+        // 角度归一化到 [0, π]
+        dtheta = Math.min(Math.PI, Math.abs((dtheta + Math.PI) % (2 * Math.PI) - Math.PI));
+
+        const ALPHA = 0.15; // 平滑系数
+        e.sAvg = (e.sAvg || 0) * (1 - ALPHA) + ds * ALPHA;
+        e.aAvg = (e.aAvg || 0) * (1 - ALPHA) + dtheta * ALPHA;
+
+        // 归一化到 [0,1] 的权重：越小→越接近 1
+        const S_RANGE = 0.6; // 速度变化率参考范围
+        const A_RANGE = 0.5; // 方向变化率参考范围（弧度）
+        const sWeight = Math.max(0, Math.min(1, 1 - e.sAvg / S_RANGE)); // 小速度变化→大权重
+        const aWeight = Math.max(0, Math.min(1, 1 - e.aAvg / A_RANGE)); // 小角度变化→大权重
+
+        // 方向旋转角：受 sWeight 控制（速度变化小→方向变化大）
+        const delta = BASE_DELTA * Math.max(0.2, sWeight);
+        const rot = (Math.random() * 2 - 1) * delta;
+        const cosr = Math.cos(rot), sinr = Math.sin(rot);
+        let nvx = e.vx * cosr - e.vy * sinr;
+        let nvy = e.vx * sinr + e.vy * cosr;
+
+        // 速度噪声：受 aWeight 控制（方向变化小→速度变化大）
+        const ax = (Math.random() - 0.5) * (NOISE_MAX * Math.max(0.25, aWeight));
+        const ay = (Math.random() - 0.5) * (NOISE_MAX * Math.max(0.25, aWeight));
+        nvx += ax; nvy += ay;
+
+        // 速度约束
+        const spd = Math.hypot(nvx, nvy) || V_MIN;
+        const scale = spd > V_MAX ? V_MAX / spd : (spd < V_MIN ? V_MIN / spd : 1);
+        e.vx = nvx * scale;
+        e.vy = nvy * scale;
+
+        // 保存当前状态用于下一帧计算变化率
+        e.prevSpeed = Math.hypot(e.vx, e.vy) || V_MIN;
+        e.prevAngle = Math.atan2(e.vy, e.vx);
+    }
+
+    // 边界处理：不做经典弹性，改为随机一个指向内部的新方向与速度
+    function bounceQuantum(e) {
+        const V_MAX = 4.2, V_MIN = 1.0;
+        // 判断靠近哪条边，偏向内侧
+        let biasAngle = null;
+        const pad = e.r + 1;
+        if (e.x - pad <= 0) biasAngle = 0; // 右
+        else if (e.x + pad >= electronCanvas.width) biasAngle = Math.PI; // 左
+        else if (e.y - pad <= 0) biasAngle = Math.PI / 2; // 下
+        else if (e.y + pad >= electronCanvas.height) biasAngle = -Math.PI / 2; // 上
+        // 在偏向角附近随机一个角度
+        const spread = Math.PI / 3; // ±60° 的扩散
+        const theta = (biasAngle !== null ? biasAngle : Math.random() * Math.PI * 2)
+                    + (Math.random() - 0.5) * spread;
+        const speed = V_MIN + Math.random() * (V_MAX - V_MIN);
+        e.vx = Math.cos(theta) * speed;
+        e.vy = Math.sin(theta) * speed;
+        // 将粒子拉回边内
+        e.x = Math.min(Math.max(e.x, pad), electronCanvas.width - pad);
+        e.y = Math.min(Math.max(e.y, pad), electronCanvas.height - pad);
+    }
+
+    function resizeElectrons() {
+        if (!electronCanvas) return;
+        const rect = electronCanvas.getBoundingClientRect();
+        // 以 CSS 像素为准设置画布尺寸，简化处理
+        electronCanvas.width = Math.max(10, Math.floor(rect.width));
+        electronCanvas.height = Math.max(10, Math.floor(rect.height));
+    }
+
+    function animateElectrons() {
+        if (!electronCtx || !electronCanvas) return;
+        // 拖尾：用半透明白色覆盖，保留上一帧的轻微残影
+        electronCtx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        electronCtx.fillRect(0, 0, electronCanvas.width, electronCanvas.height);
+        // 绘制并更新
+        for (const e of electrons) {
+            // 运动
+            e.x += e.vx;
+            e.y += e.vy;
+            // 边界“量子”处理：靠边时随机内向速度
+            if (e.x - e.r < 0 || e.x + e.r > electronCanvas.width || e.y - e.r < 0 || e.y + e.r > electronCanvas.height) {
+                bounceQuantum(e);
+            }
+            // 每帧对速度进行小随机旋转与噪声加减速
+            steerQuantum(e);
+            // 绘制（蓝色）
+            electronCtx.beginPath();
+            electronCtx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+            electronCtx.fillStyle = '#3b82f6';
+            electronCtx.fill();
+        }
+        electronRAF = requestAnimationFrame(animateElectrons);
+    }
+
+    function stopElectrons() {
+        if (electronRAF) cancelAnimationFrame(electronRAF);
+        electronRAF = null;
+        if (electronCtx && electronCanvas) {
+            electronCtx.clearRect(0, 0, electronCanvas.width, electronCanvas.height);
+        }
+        if (electronCanvas) {
+            electronCanvas.style.display = 'none'; // 到时消失
+        }
+    }
+
+    // 初始化与自适应
+    if (electronCanvas) {
+        window.addEventListener('resize', () => {
+            const wasHidden = electronCanvas.style.display === 'none';
+            electronCanvas.style.display = '';
+            resizeElectrons();
+            if (wasHidden) electronCanvas.style.display = 'none';
+        });
+        // 监听卡片尺寸变化，实时自适应（防止内容增减导致高度变化）
+        const cardEl = document.getElementById('captchaArea');
+        if (window.ResizeObserver && cardEl) {
+            const ro = new ResizeObserver(() => {
+                const wasHidden = electronCanvas.style.display === 'none';
+                electronCanvas.style.display = '';
+                resizeElectrons();
+                if (wasHidden) electronCanvas.style.display = 'none';
+            });
+            ro.observe(cardEl);
+        }
+        // 仅在仍需等待的场景启动动画
+        if (!isNaN(seconds) && seconds > 0) {
+            initElectrons();
+        }
+    }
+
     function enableActions() {
         // 解释：现在页面没有可点按钮，保持标志用于阻止重复提交
         challengePassed = true;
@@ -197,6 +391,25 @@
         captchaArea.classList.remove('is-hidden');
         captchaArea.setAttribute('aria-hidden', 'false');
         // 解释：倒计时结束后请先完成验证码
+    }
+
+    function unlockCaptcha() {
+        // 移除禁用态样式
+        if (captchaArea) {
+            captchaArea.classList.remove('disabled');
+        }
+        // 启用控件
+        if (refreshCaptcha429) {
+            refreshCaptcha429.disabled = false;
+        }
+        if (captchaInput429) {
+            captchaInput429.disabled = false;
+        }
+        if (submitCaptcha429) {
+            submitCaptcha429.disabled = false;
+        }
+        // 更新提示
+        setTip('info', "{{ _('Please enter the captcha to continue') }}");
     }
 
     function refreshCaptcha() {
@@ -223,7 +436,10 @@
                 showCaptchaArea();
                 refreshCaptcha();
                 setTip('info', "{{ _('Time is up. Please complete the captcha to continue') }}");
+                unlockCaptcha();
                 setTimeout(() => captchaInput429 && captchaInput429.focus(), 50);
+                // 停止并隐藏电子动画
+                stopElectrons();
             }
         }
     }
