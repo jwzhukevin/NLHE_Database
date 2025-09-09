@@ -4,7 +4,13 @@
 <!-- Login Main Content -->
 <section class="login-content">
     <div class="container">
-        <div class="login-card">
+        <div class="login-card login-grid">
+            <!-- 左侧：电子动画区域（复用429思路，适配登录页） -->
+            <div class="login-hero">
+                <canvas id="hvElectronsLogin" aria-hidden="true"></canvas>
+            </div>
+            <!-- 右侧：登录模块整体（对称且独立） -->
+            <div class="login-pane">
             <!-- Login Type Selector -->
             <div class="login-type-selector">
                 <button class="type-btn active" id="user-btn">
@@ -20,8 +26,10 @@
             <!-- Login Form -->
             <div class="login-form-wrapper">
                 <h2 id="form-title">{{ _('Sign In') }}</h2>
+                <!-- 成功/错误提示区（动态填充） -->
+                <div id="login-message" class="login-message" role="status" aria-live="polite" style="display:none"></div>
                 
-                <form method="post" class="login-form">
+                <form method="post" class="login-form" id="login-form">
                     {% if csrf_token %}
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     {% endif %}
@@ -89,9 +97,23 @@
                     </div>
                 </div>
             </div>
+            </div> <!-- /login-pane -->
         </div>
     </div>
 </section>
+
+<!-- 登录成功全屏弹框与遮罩 -->
+<div id="login-success-backdrop" class="login-success-backdrop" aria-hidden="true" style="display:none"></div>
+<div id="login-success-modal" class="login-success-modal" role="dialog" aria-modal="true" aria-live="assertive" style="display:none">
+    <div class="login-success-card" role="document">
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="success-text" id="login-success-text"></div>
+        <div class="success-progress">
+            <div class="success-progress-bar" id="login-success-bar"></div>
+        </div>
+    </div>
+    
+</div>
 
 <!-- i18n texts as JSON to avoid JS parsing issues before template rendering -->
 <script id="i18n-texts" type="application/json">
@@ -99,7 +121,10 @@
   "signIn": _("Sign In"),
   "logIn": _("Log In"),
   "adminSignIn": _("Administrator Sign In"),
-  "logInAsAdmin": _("Log In as Administrator")
+  "logInAsAdmin": _("Log In as Administrator"),
+  "loginSuccessRedirect": _("Login successful. Redirecting to database in 2 seconds…"),
+  "invalidCaptcha": _("Invalid captcha code, please try again"),
+  "invalidCredentials": _("Incorrect password. You have %(n)d attempts remaining.")
 } | tojson }}
 </script>
 
@@ -124,9 +149,7 @@
         // 采用从 <script type="application/json"> 读取的方式，避免未渲染阶段的语法误报
         // [Deprecated 20250820] 旧方案（已弃用备份）：内联 JSON.parse 包裹模板输出，可能触发 IDE 误报
         // const i18nTexts = JSON.parse('{{ {"signIn": _("Sign In"), "logIn": _("Log In"), "adminSignIn": _("Administrator Sign In"), "logInAsAdmin": _("Log In as Administrator")} | tojson | replace("'", "\\u0027") }}');
-        const i18nTexts = JSON.parse(
-            document.getElementById('i18n-texts').textContent
-        );
+        const i18nTexts = JSON.parse(document.getElementById('i18n-texts').textContent);
         
         // Password visibility toggle
         const passwordField = document.getElementById('password');
@@ -165,6 +188,209 @@
         document.getElementById('captcha-img').onclick = function() {
             this.src = "{{ url_for('views.captcha') }}?" + Math.random();
         };
+
+        // 电子动画（登录页）：复用429思路，适配左侧容器
+        const electronCanvas = document.getElementById('hvElectronsLogin');
+        const heroEl = document.querySelector('.login-hero');
+        let electronCtx = null;
+        let electrons = [];
+        let electronRAF = null;
+        let fadeOut = false;
+
+        function resizeElectrons() {
+            if (!electronCanvas || !heroEl) return;
+            const rect = heroEl.getBoundingClientRect();
+            electronCanvas.width = Math.max(10, Math.floor(rect.width));
+            electronCanvas.height = Math.max(10, Math.floor(rect.height));
+        }
+
+        function initElectrons() {
+            if (!electronCanvas) return;
+            electronCtx = electronCanvas.getContext('2d');
+            resizeElectrons();
+            const N = 100;
+            electrons = [];
+            for (let i = 0; i < N; i++) {
+                const r = 3;
+                const V_INIT_MAX = 3.2, V_INIT_MIN = 1.1;
+                const theta = Math.random() * Math.PI * 2;
+                const speed = V_INIT_MIN + Math.random() * (V_INIT_MAX - V_INIT_MIN);
+                const vx = Math.cos(theta) * speed;
+                const vy = Math.sin(theta) * speed;
+                const x = r + Math.random() * (electronCanvas.width - 2 * r);
+                const y = r + Math.random() * (electronCanvas.height - 2 * r);
+                electrons.push({ x, y, vx, vy, r, prevSpeed: speed, prevAngle: theta, sAvg: 0, aAvg: 0, alpha: 0.28 });
+            }
+            animateElectrons();
+        }
+
+        function steerQuantum(e) {
+            const V_MAX = 3.6, V_MIN = 1.0;
+            const BASE_DELTA = 0.22;   // 方向最大旋转基准
+            const NOISE_MAX = 0.14;    // 速度噪声上限
+            const spdNow = Math.hypot(e.vx, e.vy) || V_MIN;
+            const angNow = Math.atan2(e.vy, e.vx);
+            const ds = Math.abs(spdNow - (e.prevSpeed || spdNow));
+            let dtheta = Math.abs(angNow - (e.prevAngle || angNow));
+            dtheta = Math.min(Math.PI, Math.abs((dtheta + Math.PI) % (2 * Math.PI) - Math.PI));
+            const ALPHA = 0.15;
+            e.sAvg = (e.sAvg || 0) * (1 - ALPHA) + ds * ALPHA;
+            e.aAvg = (e.aAvg || 0) * (1 - ALPHA) + dtheta * ALPHA;
+            const S_RANGE = 0.6, A_RANGE = 0.5;
+            const sWeight = Math.max(0, Math.min(1, 1 - (e.sAvg || 0) / S_RANGE));
+            const aWeight = Math.max(0, Math.min(1, 1 - (e.aAvg || 0) / A_RANGE));
+            const delta = BASE_DELTA * Math.max(0.2, sWeight);
+            const rot = (Math.random() * 2 - 1) * delta;
+            const cosr = Math.cos(rot), sinr = Math.sin(rot);
+            let nvx = e.vx * cosr - e.vy * sinr;
+            let nvy = e.vx * sinr + e.vy * cosr;
+            const ax = (Math.random() - 0.5) * (NOISE_MAX * Math.max(0.25, aWeight));
+            const ay = (Math.random() - 0.5) * (NOISE_MAX * Math.max(0.25, aWeight));
+            nvx += ax; nvy += ay;
+            const spd = Math.hypot(nvx, nvy) || V_MIN;
+            const scale = spd > V_MAX ? V_MAX / spd : (spd < V_MIN ? V_MIN / spd : 1);
+            e.vx = nvx * scale; e.vy = nvy * scale;
+            e.prevSpeed = Math.hypot(e.vx, e.vy) || V_MIN;
+            e.prevAngle = Math.atan2(e.vy, e.vx);
+        }
+
+        function bounceQuantum(e) {
+            const V_MAX = 3.6, V_MIN = 1.0;
+            let biasAngle = null;
+            const pad = e.r + 1;
+            if (e.x - pad <= 0) biasAngle = 0;
+            else if (e.x + pad >= electronCanvas.width) biasAngle = Math.PI;
+            else if (e.y - pad <= 0) biasAngle = Math.PI / 2;
+            else if (e.y + pad >= electronCanvas.height) biasAngle = -Math.PI / 2;
+            const spread = Math.PI / 3;
+            const theta = (biasAngle !== null ? biasAngle : Math.random() * Math.PI * 2) + (Math.random() - 0.5) * spread;
+            const speed = V_MIN + Math.random() * (V_MAX - V_MIN);
+            e.vx = Math.cos(theta) * speed;
+            e.vy = Math.sin(theta) * speed;
+            e.x = Math.min(Math.max(e.x, pad), electronCanvas.width - pad);
+            e.y = Math.min(Math.max(e.y, pad), electronCanvas.height - pad);
+        }
+
+        function animateElectrons() {
+            if (!electronCtx || !electronCanvas) return;
+            electronCtx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+            electronCtx.fillRect(0, 0, electronCanvas.width, electronCanvas.height);
+            for (const e of electrons) {
+                e.x += e.vx; e.y += e.vy;
+                if (e.x - e.r < 0 || e.x + e.r > electronCanvas.width || e.y - e.r < 0 || e.y + e.r > electronCanvas.height) {
+                    bounceQuantum(e);
+                }
+                if (!fadeOut) steerQuantum(e);
+                electronCtx.beginPath();
+                electronCtx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+                electronCtx.fillStyle = `rgba(30,58,138, ${Math.max(0, e.alpha)})`;
+                electronCtx.fill();
+                if (fadeOut) {
+                    e.alpha -= 0.04; // 约25帧淡出
+                }
+            }
+            electronRAF = requestAnimationFrame(animateElectrons);
+        }
+
+        function scatterAndFade() {
+            if (!electrons.length) return;
+            // 将速度指向外侧并提速
+            for (const e of electrons) {
+                const cx = electronCanvas.width / 2, cy = electronCanvas.height / 2;
+                const ang = Math.atan2(e.y - cy, e.x - cx);
+                const speed = 5.2; // 瞬时加速
+                e.vx = Math.cos(ang) * speed;
+                e.vy = Math.sin(ang) * speed;
+            }
+            fadeOut = true;
+            setTimeout(() => {
+                if (electronRAF) cancelAnimationFrame(electronRAF);
+                electronRAF = null;
+                if (electronCanvas) electronCanvas.style.display = 'none';
+            }, 900);
+        }
+
+        // 初始化与观察尺寸
+        if (electronCanvas && heroEl) {
+            const ro = window.ResizeObserver ? new ResizeObserver(resizeElectrons) : null;
+            if (ro) ro.observe(heroEl);
+            initElectrons();
+        }
+
+        // AJAX 登录（方案B）
+        const form = document.getElementById('login-form');
+        const loginMsg = document.getElementById('login-message');
+        const captchaInput = document.getElementById('captcha');
+        const captchaImg = document.getElementById('captcha-img');
+        // 成功弹框元素
+        const successBackdrop = document.getElementById('login-success-backdrop');
+        const successModal = document.getElementById('login-success-modal');
+        const successText = document.getElementById('login-success-text');
+        const successBar = document.getElementById('login-success-bar');
+
+        function showLoginSuccessModal(durationMs, text) {
+            if (successText) successText.textContent = text || i18nTexts.loginSuccessRedirect;
+            if (successBackdrop) successBackdrop.style.display = '';
+            if (successModal) successModal.style.display = '';
+            if (successBar) {
+                // 重置进度条
+                successBar.style.transition = 'none';
+                successBar.style.width = '0%';
+                // 下一帧开始动画
+                requestAnimationFrame(() => {
+                    successBar.style.transition = `width ${Math.max(0, durationMs)}ms linear`;
+                    successBar.style.width = '100%';
+                });
+            }
+        }
+        function setMsg(type, text) {
+            if (!loginMsg) return;
+            loginMsg.className = 'login-message ' + (type || 'info');
+            loginMsg.textContent = text || '';
+            loginMsg.style.display = text ? '' : 'none';
+        }
+        function shakeCard() {
+            const card = document.querySelector('.login-card');
+            if (!card) return;
+            card.classList.remove('shake');
+            void card.offsetWidth; // reflow
+            card.classList.add('shake');
+        }
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            setMsg('', '');
+            const payload = {
+                email: document.getElementById('email').value.trim(),
+                username: document.getElementById('username').value.trim(),
+                password: document.getElementById('password').value,
+                captcha: captchaInput.value.trim(),
+                login_type: document.getElementById('login-type').value
+            };
+            try {
+                const resp = await fetch("{{ url_for('views.login_json') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                if (data && data.ok) {
+                    // 显示全屏成功弹框 + 进度条
+                    scatterAndFade();
+                    showLoginSuccessModal(2000, i18nTexts.loginSuccessRedirect);
+                    setTimeout(() => { window.location.assign(data.redirect || "{{ url_for('views.index') }}"); }, 2000);
+                } else {
+                    const err = (data && data.error) || i18nTexts.invalidCredentials;
+                    setMsg('error', err);
+                    shakeCard();
+                    // 刷新验证码
+                    if (captchaImg) captchaImg.src = "{{ url_for('views.captcha') }}?" + Date.now();
+                    if (captchaInput) captchaInput.focus();
+                }
+            } catch (ex) {
+                setMsg('error', 'Network error');
+                shakeCard();
+            }
+        });
     });
 </script>
 
@@ -175,6 +401,7 @@
     .login-content {
         background-color: var(--light-bg);
         padding: 0 0 2rem 0;
+        margin-top: 12px; /* 与固定导航栏留出视觉缝隙 */
         min-height: calc(100vh - 64px - 350px);
         display: flex;
         align-items: center;
@@ -186,11 +413,32 @@
         background-color: white;
         border-radius: 12px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        max-width: 480px;
+        max-width: 980px;
         width: 100%;
         margin: 0 auto;
         overflow: hidden;
         transition: all 0.3s ease;
+    }
+
+    /* 两栏布局 */
+    .login-card.login-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+    }
+
+    .login-hero {
+        position: relative;
+        min-height: 520px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+        border-right: 1px solid #f1f5f9;
+    }
+
+    #hvElectronsLogin {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: .28;
     }
     
     /* Login Type Selector */
@@ -508,6 +756,11 @@
         .login-card {
             border-radius: 10px;
         }
+
+        .login-card.login-grid {
+            display: block; /* 回退为单栏 */
+        }
+        .login-hero { display: none; }
         
         .form-actions {
             flex-direction: column;
@@ -516,17 +769,96 @@
         .login-form-wrapper {
             padding: 1.5rem;
         }
+        /* 修复：移动端下 admin-warning 默认折叠隐藏 */
+        .admin-warning {
+            gap: 0.75rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            height: 0;
+            overflow: hidden;
+        }
+            
+        .admin-warning.visible {
+            opacity: 1;
+            visibility: visible;
+            height: auto;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
         
-        .login-form-wrapper h2 {
-            font-size: 1.35rem;
-            margin-bottom: 1.25rem;
+        .warning-icon {
+            color: #f59e0b;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .warning-text p {
+            color: #92400e;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        /* Password input with toggle button */
+        .password-input-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.5rem;
+            transition: color 0.2s;
+        }
+        
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+        
+        .password-toggle:focus {
+            outline: none;
         }
 
-        /* 移动端验证码适配 */
+        /* Captcha styles */
         .captcha-container {
-            flex-direction: column;
-            gap: 0.75rem;
-            align-items: stretch;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .captcha-input {
+            flex: 1;
+            min-width: 0; /* 防止flex item溢出 */
+            /* 确保继承标准输入框样式 */
+            height: 3rem;
+            padding: 0 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: #f8fafc;
+        }
+
+        .captcha-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+            outline: none;
+            background-color: white;
+        }
+
+        .captcha-input::placeholder {
+            color: #94a3b8;
         }
 
         .captcha-image-wrapper {
@@ -545,6 +877,60 @@
             font-size: 0.7rem;
         }
     }
+
+    /* 登录成功弹框与遮罩（从 <script> 中移至此处） */
+    .login-success-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 4000;
+    }
+    .login-success-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 4001;
+    }
+    .login-success-card {
+        width: min(560px, 90vw);
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+        padding: 1.1rem 1.25rem 1.1rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+        animation: modalFadeIn .2s ease-out;
+    }
+    .login-success-card .success-icon {
+        font-size: 2rem;
+        color: #16a34a; /* 绿色对勾 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-success-card .success-text {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 1.05rem;
+    }
+    .success-progress {
+        width: 100%;
+        height: 6px;
+        background: #e5e7eb; /* 灰背景 */
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: .2rem;
+    }
+    .success-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #1E5CB3, #007FFF);
+    }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 {% endblock %}
 

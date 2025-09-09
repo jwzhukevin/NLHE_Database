@@ -68,12 +68,13 @@ class LoginStateManager:
             # 4. 执行Flask-Login登录
             flask_login_user(user, remember=False)  # 不支持记住我功能
 
-            # 5. 只有在状态真正发生变化时才显示登录消息（游客 → 登录用户）
+            # 5. 仅记录状态变化日志，不再弹出任何欢迎提示
             if not was_authenticated_before:
-                flash(_('Welcome back, %(username)s!', username=user.username), 'success')
-                current_app.logger.info(f"Login status changed: Guest → {user.role} user, showing welcome message")
+                current_app.logger.info(
+                    f"Login status changed: Guest → {user.role} user (no flash message)"
+                )
             else:
-                current_app.logger.info(f"User was already authenticated, no welcome message shown")
+                current_app.logger.info("User was already authenticated, no welcome message shown")
             
             # 6. 记录成功登录事件
             log_security_event(
@@ -94,7 +95,7 @@ class LoginStateManager:
             
             current_app.logger.info(f"User {user.username} logged in successfully from {ip_address}")
             
-            return True, _("Welcome back, %(username)s!", username=user.username), None
+            return True, None, None
             
         except Exception as e:
             current_app.logger.error(f"Login error for user {user.username}: {e}")
@@ -136,9 +137,8 @@ class LoginStateManager:
                 # 3. 执行Flask-Login登出
                 flask_logout_user()
 
-                # 4. 只有在状态真正发生变化时才显示登出消息（登录用户 → 游客）
-                flash(_('You have been logged out successfully.'), 'info')
-                current_app.logger.info(f"Logout status changed: {username} → Guest, showing logout message")
+                # 4. 仅记录日志，不再显示登出消息
+                current_app.logger.info(f"Logout status changed: {username} → Guest (no flash message)")
 
                 # 5. 完全清理会话
                 session.clear()
@@ -147,7 +147,7 @@ class LoginStateManager:
                 regenerate_session()
 
                 current_app.logger.info(f"User {username} logged out successfully from {ip_address}")
-                return True, _("You have been logged out successfully.")
+                return True, None
 
             else:
                 # 用户未登录，静默处理（不显示消息，因为状态没有变化）
@@ -168,7 +168,7 @@ class LoginStateManager:
             except:
                 pass
                 
-            return True, _("Logout completed.")
+            return True, None
     
     @staticmethod
     def _cleanup_old_session():

@@ -1171,6 +1171,124 @@ def login():
         
     return render_template('auth/login.html')
 
+# JSON 登录接口：供前端 AJAX 校验使用
+@bp.route('/auth/login_json', methods=['POST'])
+@check_ip_blocked
+@csrf.exempt
+def login_json():
+    """
+    JSON 登录接口（方案B）：
+    - 输入：email, username, password, captcha, login_type
+    - 逻辑：与表单登录一致的校验流程（验证码→邮箱→用户名→管理员→密码）
+    - 成功：login_user，并返回 { ok: true, redirect }
+    - 失败：返回 { ok: false, error }
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        email = (data.get('email') or '').strip()
+        username = (data.get('username') or '').strip()
+        password = data.get('password') or ''
+        captcha_input = (data.get('captcha') or '').strip().upper()
+        login_type = (data.get('login_type') or 'user').strip()
+        admin_login = login_type == 'admin'
+
+        # 验证码校验
+        real_captcha = session.get('captcha', '')
+        if not captcha_input or captcha_input != real_captcha:
+            return jsonify({
+                'ok': False,
+                'error': _('Invalid captcha code, please try again')
+            }), 200
+
+        # 基础字段校验
+        if not email or not username or not password:
+            return jsonify({
+                'ok': False,
+                'error': _('All fields are required.')
+            }), 200
+
+        # 登录失败计数
+        ip = get_client_ip()
+        failed_key = f"login_failed:{ip}"
+        failed_attempts = session.get(failed_key, 0)
+        max_attempts = 5
+
+        # 记录尝试
+        log_security_event("LOGIN_ATTEMPT_JSON", f"User: {username}, Email: {email}", ip)
+
+        # 邮箱存在性
+        user_by_email = User.query.filter_by(email=email).first()
+        if not user_by_email:
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                return jsonify({'ok': False, 'error': _('Your IP has been blocked due to too many failed login attempts.')}), 200
+            remaining_attempts = max_attempts - failed_attempts
+            return jsonify({'ok': False, 'error': _('Email not found. Please check your email address. You have %(n)d attempts remaining.', n=remaining_attempts)}), 200
+
+        # 用户名匹配
+        if user_by_email.username != username:
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                return jsonify({'ok': False, 'error': _('Your IP has been blocked due to too many failed login attempts.')}), 200
+            remaining_attempts = max_attempts - failed_attempts
+            return jsonify({'ok': False, 'error': _('Username does not match this email address. You have %(n)d attempts remaining.', n=remaining_attempts)}), 200
+
+        # 管理员登录权限
+        if admin_login and user_by_email.role != 'admin':
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed admin login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                return jsonify({'ok': False, 'error': _('Your IP has been blocked due to too many unauthorized admin login attempts.')}), 200
+            remaining_attempts = max_attempts - failed_attempts
+            return jsonify({'ok': False, 'error': _('This account does not have administrator privileges. You have %(n)d attempts remaining.', n=remaining_attempts)}), 200
+
+        # 密码校验
+        if not user_by_email.validate_password(password):
+            failed_attempts += 1
+            session[failed_key] = failed_attempts
+            if failed_attempts >= max_attempts:
+                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed login attempts")
+                db.session.add(block_ip)
+                db.session.commit()
+                session.pop(failed_key, None)
+                return jsonify({'ok': False, 'error': _('Your IP has been blocked due to too many failed login attempts.')}), 200
+            remaining_attempts = max_attempts - failed_attempts
+            return jsonify({'ok': False, 'error': _('Incorrect password. You have %(n)d attempts remaining.', n=remaining_attempts)}), 200
+
+        # 登录成功，清除失败计数
+        session.pop(failed_key, None)
+
+        # 使用统一登录状态管理器
+        try:
+            success, message, redirect_url = LoginStateManager.login_user(user_by_email)
+            if success:
+                next_page = request.args.get('next')
+                return jsonify({'ok': True, 'redirect': next_page or url_for('views.index')})
+            else:
+                return jsonify({'ok': False, 'error': message or _('An error occurred: %(error)s', error='login')})
+        except Exception as e:
+            current_app.logger.error(f"Login system error (JSON): {e}")
+            error_msg = LoginErrorHandler.handle_login_error('system_error')
+            return jsonify({'ok': False, 'error': error_msg}), 200
+
+    except Exception as e:
+        current_app.logger.error(f"login_json unexpected error: {e}")
+        return jsonify({'ok': False, 'error': 'Internal server error'}), 500
+
 # User logout route - 重构版本
 @bp.route('/logout', methods=['GET', 'POST'])
 def logout():

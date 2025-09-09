@@ -116,7 +116,7 @@
          * 定义了页面主要内容的布局和间距
          */
         .main-content {
-            padding-top: 74px; /* 顶部内边距与导航栏高度匹配 */
+            padding-top: var(--navbar-height, 74px); /* 动态匹配导航栏高度 */
             min-height: calc(100vh - 350px); /* 最小高度确保页面填充 */
             margin-top: 0; /* 移除顶部外边距 */
             background-color: var(--light-bg); /* 使用浅色背景 */
@@ -127,123 +127,7 @@
             padding-top: 0; /* 移除顶部内边距 */
         }
 
-        /* ========== Flash消息样式 ========== */
-        /* Flash消息容器：右侧弹出，平滑动画 */
-        .flash-messages {
-            position: fixed;
-            top: 90px;
-            right: 20px;
-            width: 350px;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            pointer-events: none;
-        }
-        .flash-messages .container {
-            width: 100%;
-            max-width: 100vw;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        /* 单条Flash消息样式 - 右侧弹出动画 */
-        .flash-message {
-            width: 100%;
-            max-width: 350px;
-            margin: 0.5rem 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.9rem 1.2rem;
-            border-radius: 0.8rem;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-            font-size: 1.12rem;
-            font-weight: 500;
-            pointer-events: auto;
-            position: relative;
-            color: #fff;
-            letter-spacing: 0.01em;
-            /* 右侧滑入动画 */
-            transform: translateX(100%);
-            opacity: 0;
-            animation: slideInFromRight 0.5s ease-out forwards;
-        }
-
-        /* 右侧滑入动画 */
-        @keyframes slideInFromRight {
-            0% {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            100% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* 右侧滑出动画 */
-        @keyframes slideOutToRight {
-            0% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-        /* 成功消息：半透明蓝色 */
-        .flash-message.success {
-            background: rgba(33, 150, 243, 0.85); /* 蓝色，透明度高 */
-        }
-        /* 错误消息：半透明红色 */
-        .flash-message.error {
-            background: rgba(220, 53, 69, 0.88); /* 红色，透明度高 */
-        }
-        /* 信息消息：半透明深灰 */
-        .flash-message.info {
-            background: rgba(51, 51, 51, 0.80); /* 深灰，透明度高 */
-        }
-        /* 图标样式 */
-        .flash-message .message-content i {
-            font-size: 1.3rem;
-            margin-right: 0.6rem;
-        }
-        /* 关闭按钮极简样式 */
-        .close-flash {
-            background: none;
-            border: none;
-            border-radius: 50%;
-            width: 1.8rem;
-            height: 1.8rem;
-            font-size: 1.2rem;
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 0.7rem;
-            opacity: 0.7;
-            transition: background 0.2s, color 0.2s, opacity 0.2s;
-        }
-        .close-flash:hover {
-            background: rgba(255,255,255,0.12);
-            color: #fff;
-            opacity: 1;
-        }
-        .flash-message .message-content {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .flash-message.hide {
-            opacity: 0;
-            transform: translateY(-24px) scale(0.98);
-            transition: opacity 0.4s, transform 0.4s;
-        }
+        
     </style>
 </head>
 <body>
@@ -297,6 +181,15 @@
                     <i class="fas fa-sign-in-alt"></i> {{ _('Login') }}
                 </a>
                 {% endif %}
+
+                <!-- 自适应收纳：更多下拉（默认隐藏，JS控制显示） -->
+                <div class="dropdown more-dropdown" id="more-dropdown" aria-label="More">
+                    <a href="#" class="dropdown-toggle" id="more-toggle">
+                        <i class="fas fa-ellipsis-h"></i> {{ _('More') }}
+                    </a>
+                    <div class="dropdown-menu" id="more-menu"></div>
+                </div>
+
                 <!-- 用户类型提示区域，头像+用户名+下拉菜单 -->
                 <div class="user-type-indicator user-dropdown">
                     {% if current_user.is_authenticated and current_user.is_admin() %}
@@ -351,6 +244,7 @@
             display: flex;                        /* 弹性布局 */
             justify-content: space-between;       /* 两端对齐 */
             align-items: center;                  /* 垂直居中 */
+            overflow: visible;                    /* 允许内部下拉溢出 */
         }
 
         /* Logo样式 */
@@ -364,8 +258,11 @@
         /* 导航链接容器 */
         .nav-links {
             display: flex;                        /* 弹性布局 */
-            gap: var(--spacing-xl);               /* 链接间距 */
+            gap: 0.75rem;                         /* 紧凑间距 */
             position: relative;                   /* 相对定位 */
+            flex-wrap: nowrap;                    /* 不换行 */
+            white-space: nowrap;                  /* 不自动换行 */
+            overflow: visible;                    /* 允许下拉菜单可见，溢出由“更多”收纳控制 */
         }
 
         /* 导航链接样式 */
@@ -373,13 +270,20 @@
             color: var(--text-color);            /* 文字颜色 */
             text-decoration: none;                /* 移除下划线 */
             font-weight: 500;                     /* 中等字重 */
-            padding: var(--spacing-sm) var(--spacing-md); /* 内边距 */
+            padding: 0.35rem 0.6rem;              /* 更紧凑的内边距 */
             border-radius: var(--button-radius);  /* 圆角边框 */
             transition: all 0.3s ease;            /* 过渡动画 */
             display: flex;                        /* 弹性布局 */
             align-items: center;                  /* 垂直居中 */
             gap: var(--spacing-sm);              /* 图标和文字间距 */
         }
+
+        .nav-links .dropdown-toggle {
+            padding: 0.35rem 0.6rem;              /* 下拉触发与链接统一内边距 */
+        }
+
+        /* 更多下拉默认隐藏，由JS根据是否有收纳项决定显示 */
+        .more-dropdown { display: none; }
 
         /* 导航链接悬停效果 */
         .nav-links a:hover {
@@ -413,7 +317,7 @@
             border-radius: var(--button-radius);   /* 圆角边框 */
             box-shadow: var(--card-shadow);        /* 阴影效果 */
             min-width: 240px;                      /* 最小宽度 */
-            z-index: 1001;                         /* 确保显示在最上层 */
+            z-index: 3001;                         /* 提升层级，避免被裁剪 */
             flex-direction: column;                /* 垂直排列 */
             margin-top: 5px;                       /* 与触发按钮的间距 */
         }
@@ -731,6 +635,115 @@
                     }
                 });
             })();
+
+            // ===== 自适应：将低优先级导航项收纳到“更多” =====
+            const navLinks = document.querySelector('.nav-links');
+            const moreDropdown = document.getElementById('more-dropdown');
+            const moreToggle = document.getElementById('more-toggle');
+            const moreMenu = document.getElementById('more-menu');
+
+            if (moreToggle && moreMenu) {
+                moreToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    moreMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', function(e){
+                    if (!moreDropdown.contains(e.target)) {
+                        moreMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            function isFixed(node) {
+                if (!node || node.nodeType !== 1) return true;
+                // 保留：语言下拉、用户区、“更多”自身
+                if (node.id === 'more-dropdown') return true;
+                if (node.classList.contains('user-type-indicator')) return true;
+                const toggle = node.querySelector('#lang-dropdown');
+                if (toggle) return true;
+                return false;
+            }
+
+            function currentItems() {
+                // 可移动的候选：nav-links 直接子元素
+                return Array.from(navLinks.children).filter(el => el && el.nodeType === 1);
+            }
+
+            function measureOverflow() {
+                return navLinks.scrollWidth > navLinks.clientWidth + 2; // 容忍2px误差
+            }
+
+            function moveToMore(el) {
+                if (!moreDropdown || !moreMenu) return;
+                moreDropdown.style.display = '';
+                // 将原元素移入 moreMenu，保持可点击（直接附加）
+                moreMenu.appendChild(el);
+            }
+
+            function moveBackFromMore() {
+                if (!moreMenu || !moreDropdown) return;
+                // 将 moreMenu 中的第一个项目移回（先进先出）
+                const item = moreMenu.firstElementChild;
+                if (item) {
+                    // 在 "更多" 按钮前插入
+                    navLinks.insertBefore(item, moreDropdown);
+                }
+            }
+
+            function compactOnce() {
+                // 先尝试释放空间（把已收纳的移回），再判断是否仍溢出
+                let safeGuard = 50; // 防止死循环
+                while (moreMenu && moreMenu.children.length && !measureOverflow() && safeGuard-- > 0) {
+                    moveBackFromMore();
+                }
+                // 若仍溢出，从右往左移动非固定项
+                safeGuard = 50;
+                while (measureOverflow() && safeGuard-- > 0) {
+                    const items = currentItems();
+                    // 从倒数第一个开始寻找可移动项
+                    let moved = false;
+                    for (let i = items.length - 1; i >= 0; i--) {
+                        const el = items[i];
+                        if (isFixed(el)) continue;
+                        moveToMore(el);
+                        moved = true;
+                        break;
+                    }
+                    if (!moved) break; // 没有可移动项
+                }
+                // 如果更多里没有内容则隐藏
+                if (moreDropdown) {
+                    moreDropdown.style.display = (moreMenu && moreMenu.children.length) ? '' : 'none';
+                }
+            }
+
+            // 初始执行与窗口变化监听
+            compactOnce();
+            window.addEventListener('resize', () => {
+                // 为防抖，简化处理：直接调用一次
+                compactOnce();
+            });
+
+            // ===== 动态设置导航高度，消除英雄模块与导航之间的间隙 =====
+            const navbarEl = document.querySelector('.navbar');
+            function setNavbarHeightVar() {
+                if (!navbarEl) return;
+                const h = Math.max(0, navbarEl.offsetHeight || 74);
+                document.documentElement.style.setProperty('--navbar-height', h + 'px');
+            }
+            // 初次计算
+            setNavbarHeightVar();
+            // 在窗口尺寸变化时更新
+            window.addEventListener('resize', setNavbarHeightVar);
+            // 在字体加载或图片/图标渲染后可能高度变化，使用延时与加载事件兜底
+            window.addEventListener('load', setNavbarHeightVar);
+            setTimeout(setNavbarHeightVar, 150);
+            setTimeout(setNavbarHeightVar, 400);
+            // 观察导航内部结构变化（登录状态变化、更多收纳等）
+            if (window.MutationObserver && navbarEl) {
+                const mo = new MutationObserver(() => setNavbarHeightVar());
+                mo.observe(navbarEl, { childList: true, subtree: true, attributes: true });
+            }
         });
     </script>
 
