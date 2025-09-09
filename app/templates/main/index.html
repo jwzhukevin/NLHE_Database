@@ -437,27 +437,27 @@
                 <div class="search-row">
                     <!-- 材料类型下拉框 -->
                     <div class="filter-group">
-                        <label for="materials_type">Materials Type</label>
+                        <label for="materials_type">{{ _('Materials Type') }}</label>
                         <select name="materials_type" id="materials_type">
-                            <option value="">All</option>
-                            <option value="unknown" {% if search_params.materials_type == 'unknown' %}selected{% endif %}>Unknown</option>
-                            <option value="metal" {% if search_params.materials_type == 'metal' %}selected{% endif %}>Metal</option>
-                            <option value="semimetal" {% if search_params.materials_type == 'semimetal' %}selected{% endif %}>Semimetal</option>
-                            <option value="semiconductor" {% if search_params.materials_type == 'semiconductor' %}selected{% endif %}>Semiconductor</option>
-                            <option value="insulator" {% if search_params.materials_type == 'insulator' %}selected{% endif %}>Insulator</option>
+                            <option value="">{{ _('All') }}</option>
+                            <option value="unknown" {% if search_params.materials_type == 'unknown' %}selected{% endif %}>{{ _('Unknown') }}</option>
+                            <option value="metal" {% if search_params.materials_type == 'metal' %}selected{% endif %}>{{ _('Metal') }}</option>
+                            <option value="semimetal" {% if search_params.materials_type == 'semimetal' %}selected{% endif %}>{{ _('Semimetal') }}</option>
+                            <option value="semiconductor" {% if search_params.materials_type == 'semiconductor' %}selected{% endif %}>{{ _('Semiconductor') }}</option>
+                            <option value="insulator" {% if search_params.materials_type == 'insulator' %}selected{% endif %}>{{ _('Insulator') }}</option>
                         </select>
                     </div>
 
                     <!-- 带隙范围 -->
                     <div class="filter-group">
-                        <label for="band_gap_min">Band Gap (eV)</label>
+                        <label for="band_gap_min">{{ _('Band Gap (eV)') }}</label>
                         <div class="range-inputs">
                             <input type="number" name="band_gap_min" id="band_gap_min"
-                                   placeholder="Min" step="0.01"
+                                   placeholder="{{ _('Min') }}" step="0.01"
                                    value="{{ search_params.band_gap_min }}">
-                            <span>to</span>
+                            <span>{{ _('to') }}</span>
                             <input type="number" name="band_gap_max" id="band_gap_max"
-                                   placeholder="Max" step="0.01"
+                                   placeholder="{{ _('Max') }}" step="0.01"
                                    value="{{ search_params.band_gap_max }}">
                         </div>
                     </div>
@@ -467,28 +467,28 @@
                 <div class="search-row">
                     <!-- Max Shift Current范围 -->
                     <div class="filter-group">
-                        <label for="max_sc_min">Max Shift Current (μA/V²)</label>
+                        <label for="max_sc_min">{{ _('Max Shift Current (μA/V²)') }}</label>
                         <div class="range-inputs">
                             <input type="number" name="max_sc_min" id="max_sc_min"
-                                   placeholder="Min" step="0.01"
+                                   placeholder="{{ _('Min') }}" step="0.01"
                                    value="{{ search_params.max_sc_min }}">
-                            <span>to</span>
+                            <span>{{ _('to') }}</span>
                             <input type="number" name="max_sc_max" id="max_sc_max"
-                                   placeholder="Max" step="0.01"
+                                   placeholder="{{ _('Max') }}" step="0.01"
                                    value="{{ search_params.max_sc_max }}">
                         </div>
                     </div>
 
                     <!-- 费米能级范围 -->
                     <div class="filter-group">
-                        <label for="fermi_level_min">Fermi Level (eV)</label>
+                        <label for="fermi_level_min">{{ _('Fermi Level (eV)') }}</label>
                         <div class="range-inputs">
                             <input type="number" name="fermi_level_min" id="fermi_level_min" 
-                                   placeholder="Min" step="0.01" 
+                                   placeholder="{{ _('Min') }}" step="0.01" 
                                    value="{{ search_params.fermi_level_min }}">
-                            <span>to</span>
+                            <span>{{ _('to') }}</span>
                             <input type="number" name="fermi_level_max" id="fermi_level_max" 
-                                   placeholder="Max" step="0.01" 
+                                   placeholder="{{ _('Max') }}" step="0.01" 
                                    value="{{ search_params.fermi_level_max }}">
                         </div>
                     </div>
@@ -497,16 +497,16 @@
                 <!-- 第三行: MP-ID 与空间群 -->
                 <div class="search-row">
                     <div class="filter-group">
-                        <label for="mp_id">MP-ID</label>
+                        <label for="mp_id">{{ _('MP-ID') }}</label>
                         <input type="text" name="mp_id" id="mp_id" 
-                               placeholder="e.g., mp-12345" 
+                               placeholder="{{ _('e.g., mp-12345') }}" 
                                value="{{ search_params.mp_id }}">
                     </div>
 
                     <div class="filter-group">
-                        <label for="space_group">Space Group</label>
+                        <label for="space_group">{{ _('Space Group') }}</label>
                         <input type="text" name="space_group" id="space_group" 
-                               placeholder="e.g., 194 or P6_3/mmc" 
+                               placeholder="{{ _('e.g., 194 or P6_3/mmc') }}" 
                                value="{{ search_params.space_group }}">
                     </div>
                 </div>
@@ -601,7 +601,7 @@
         <!-- 搜索验证提示 -->
         <div id="searchAlert" class="search-alert" style="display: none;">
             <i class="fas fa-exclamation-circle"></i>
-            <span>Please enter search criteria or select at least one filter before searching.</span>
+            <span>{{ _('Please enter search criteria or select at least one filter before searching.') }}</span>
         </div>
         <style>
         /* 搜索验证提示样式 */
@@ -638,7 +638,7 @@
     <div class="search-info">
         {% if search_params|any %}
             <div class="search-summary">
-                Searching with filters:
+                {{ _('Searching with filters:') }}
             </div>
             <div class="active-filters">
                 {% for key, value in search_params.items() %}
@@ -652,7 +652,7 @@
                         </span>
                     {% endif %}
                 {% endfor %}
-                <a href="{{ url_for('views.index') }}" class="clear-all-filters">Clear All</a>
+                <a href="{{ url_for('views.index') }}" class="clear-all-filters">{{ _('Clear All') }}</a>
             </div>
         {% endif %}
     </div>

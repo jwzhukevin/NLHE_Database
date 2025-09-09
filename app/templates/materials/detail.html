@@ -383,8 +383,8 @@ setTimeout(function() {
 <div id="bcd-section" class="content-section">
     <div class="detail-card" id="bcd-card">
         <div class="card-header">
-            <h3>Berry curvature dipole (BCD)</h3>
-            <span class="card-header-extra" aria-label="Eigen Matrix">Eigen Matrix</span>
+            <h3>{{ _('Berry curvature dipole (BCD)') }}</h3>
+            <span class="card-header-extra" aria-label="{{ _('Eigen Matrix') }}">{{ _('Eigen Matrix') }}</span>
         </div>
         <div class="card-content">
             <div class="two-column-layout">
@@ -403,15 +403,15 @@ setTimeout(function() {
         </div>
     </div>
     
-    <div class="sc-legend-container" aria-label="BCD Legend" style="display:none"></div>
+    <div class="sc-legend-container" aria-label="{{ _('BCD Legend') }}" style="display:none"></div>
 </div>
 
 <!-- ====================== DW 部分：九曲线 + Eigen Matrix ====================== -->
 <div id="dw-section" class="content-section">
     <div class="detail-card" id="dw-card">
         <div class="card-header">
-            <h3>Drude weight (DW)</h3>
-            <span class="card-header-extra" aria-label="Eigen Matrix">Eigen Matrix</span>
+            <h3>{{ _('Drude weight (DW)') }}</h3>
+            <span class="card-header-extra" aria-label="{{ _('Eigen Matrix') }}">{{ _('Eigen Matrix') }}</span>
         </div>
         <div class="card-content">
             <div class="two-column-layout">
@@ -430,7 +430,7 @@ setTimeout(function() {
         </div>
     </div>
     
-    <div class="sc-legend-container" aria-label="DW Legend" style="display:none"></div>
+    <div class="sc-legend-container" aria-label="{{ _('DW Legend') }}" style="display:none"></div>
 </div>
 
 <!-- ====================== 第四栏：基本信息和表面属性（移动至页面底部） ====================== -->
@@ -445,7 +445,7 @@ setTimeout(function() {
                 </div>
                 <div class="card-content collapsed">
                     <ul>
-                        <li><span class="property-label">ID:</span> <span class="property-value">{{ material.formatted_id }}</span></li>
+                        <li><span class="property-label">{{ _('ID:') }}</span> <span class="property-value">{{ material.formatted_id }}</span></li>
                         <li><span class="property-label">{{ _('Fermi Level:') }}</span> <span class="property-value">{{ material.fermi_level ~ ' eV' if material.fermi_level is not none else _('Not available yet') }}</span></li>
                     </ul>
                 </div>
