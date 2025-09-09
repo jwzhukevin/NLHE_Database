@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-09 17:14+0800\n"
+"POT-Creation-Date: 2025-09-09 20:26+0800\n"
 "PO-Revision-Date: 2025-08-19 17:01+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1522,11 +1522,11 @@ msgid "SC"
 msgstr ""
 
 #: app/templates/materials/detail.html:128
-msgid "BCD"
+msgid "Berry curvature dipole"
 msgstr ""
 
 #: app/templates/materials/detail.html:129
-msgid "DW"
+msgid "Drude weight"
 msgstr ""
 
 #: app/templates/materials/detail.html:130
@@ -1838,5 +1838,11 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Status:"
+#~ msgstr ""
+
+#~ msgid "BCD"
+#~ msgstr ""
+
+#~ msgid "DW"
 #~ msgstr ""
 

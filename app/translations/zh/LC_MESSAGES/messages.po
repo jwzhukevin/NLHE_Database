@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-09 17:14+0800\n"
+"POT-Creation-Date: 2025-09-09 20:26+0800\n"
 "PO-Revision-Date: 2025-08-19 17:01+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -1229,15 +1229,15 @@ msgstr[0] "本页共 %(count)s 条材料"
 
 #: app/templates/main/index.html:755
 msgid "Per Page"
-msgstr ""
+msgstr "每页"
 
 #: app/templates/main/index.html:780
 msgid "Columns"
-msgstr ""
+msgstr "列"
 
 #: app/templates/main/index.html:782
 msgid "Optional Columns"
-msgstr ""
+msgstr "可选列"
 
 #: app/templates/main/index.html:795 app/templates/main/index.html:798
 #: app/templates/main/index.html:943
@@ -1246,7 +1246,7 @@ msgstr "最大位移电流 (μA/V²)"
 
 #: app/templates/main/index.html:802
 msgid "Apply"
-msgstr ""
+msgstr "应用"
 
 #: app/templates/main/index.html:937
 msgid "ID"
@@ -1531,13 +1531,14 @@ msgstr "能带结构"
 msgid "SC"
 msgstr "位移电流"
 
+# 导航：仅中文全称
 #: app/templates/materials/detail.html:128
-msgid "BCD"
-msgstr ""
+msgid "Berry curvature dipole"
+msgstr "贝里曲率偶极"
 
 #: app/templates/materials/detail.html:129
-msgid "DW"
-msgstr ""
+msgid "Drude weight"
+msgstr "德鲁德权重"
 
 #: app/templates/materials/detail.html:130
 #: app/templates/materials/detail.html:320
@@ -1843,4 +1844,10 @@ msgstr "成果："
 
 #~ msgid "Status:"
 #~ msgstr "状态："
+
+#~ msgid "BCD"
+#~ msgstr ""
+
+#~ msgid "DW"
+#~ msgstr ""
 
