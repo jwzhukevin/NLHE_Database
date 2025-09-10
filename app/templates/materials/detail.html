@@ -120,15 +120,7 @@ setTimeout(function() {
                 </div>
 
                 <!-- 属性导航链接 -->
-                <div class="nav-properties">
-                    <a href="#first-section" class="nav-property-link active">{{ _('Structure') }}</a>
-                    <a href="#second-section" class="nav-property-link">{{ _('Crystal Data') }}</a>
-                    <a href="#third-section" class="nav-property-link">{{ _('Band Structure') }}</a>
-                    <a href="#sc-section" class="nav-property-link">{{ _('SC') }}</a>
-                    <a href="#bcd-section" class="nav-property-link">{{ _('Berry curvature dipole') }}</a>
-                    <a href="#dw-section" class="nav-property-link">{{ _('Drude weight') }}</a>
-                    <a href="#fourth-section" class="nav-property-link">{{ _('Properties') }}</a>
-                </div>
+                <!-- [Removed 20250910] 顶部属性导航已移除，改由左侧固定侧栏提供锚点导航 -->
             </div>
 
             <!-- 右侧：功能按钮 -->
@@ -169,8 +161,26 @@ setTimeout(function() {
     </div>
 </div>
 
-<!-- ====================== 主容器 ====================== -->
-<div class="material-detail-container">
+<!-- ====================== 左侧固定侧栏 + 右侧主内容布局 ====================== -->
+<div class="detail-layout">
+    <!-- 左侧固定侧栏：常驻左侧，不随滚动消失 -->
+    <aside class="detail-sidebar" aria-label="{{ _('Material Sections Navigation') }}">
+        <div class="sidebar-title" title="{{ material.name }} ({{ material.formatted_id }})">{{ material.name }} ({{ material.formatted_id }})</div>
+        <nav class="sidebar-nav">
+            <a href="#first-section"  class="nav-property-link active">{{ _('Structure') }}</a>
+            <a href="#second-section" class="nav-property-link">{{ _('Crystal Data') }}</a>
+            <a href="#third-section"  class="nav-property-link">{{ _('Band Structure') }}</a>
+            <a href="#sc-section"     class="nav-property-link">{{ _('SC') }}</a>
+            <a href="#bcd-section"    class="nav-property-link">{{ _('Berry curvature dipole') }}</a>
+            <a href="#dw-section"     class="nav-property-link">{{ _('Drude weight') }}</a>
+            <a href="#fourth-section" class="nav-property-link">{{ _('Properties') }}</a>
+        </nav>
+    </aside>
+
+    <!-- 右侧主内容容器 -->
+    <div class="detail-main">
+    <!-- ====================== 主容器 ====================== -->
+    <div class="material-detail-container">
 
     <!-- ====================== 第一栏：3D结构和晶体结构 ====================== -->
     <div id="first-section" class="content-section">
@@ -494,4 +504,22 @@ setTimeout(function() {
     "dw_matrix_path": {{ ('/static/' ~ dw_matrix_path)|tojson if dw_matrix_path else 'null' }}
 }
 </script>
+<!-- 动态设置材料导航高度，保证侧边栏在面包屑下方停住 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const matNav = document.querySelector('.material-nav');
+        function setMatNavHeight() {
+            if (!matNav) return;
+            const h = Math.max(0, matNav.offsetHeight || 0);
+            document.documentElement.style.setProperty('--material-nav-height', h + 'px');
+        }
+        setMatNavHeight();
+        window.addEventListener('resize', setMatNavHeight);
+        window.addEventListener('load', setMatNavHeight);
+        if (window.MutationObserver && matNav) {
+            const mo = new MutationObserver(setMatNavHeight);
+            mo.observe(matNav, { childList: true, subtree: true, attributes: true });
+        }
+    });
+    </script>
 {% endblock %}

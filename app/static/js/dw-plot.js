@@ -267,8 +267,6 @@
                     curveVisibility.fill(false);
                     curveVisibility[curveIndex] = true;
                     applyCurveVisibility();
-                    const traceName = traces[curveIndex].name;
-                    showNotification(`<i class=\"fas fa-eye\"></i> Isolated: Only showing \"${traceName}\" curve`);
                 }
 
                 // 图例点击：单击切换，双击隔离

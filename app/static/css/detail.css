@@ -477,10 +477,10 @@
 
 /* SC 响应式微调 */
 @media (max-width: 1200px) {
-    #sc-plot { min-height: 400px; }
+    #sc-plot { min-height: 300px; }
 }
 @media (max-width: 768px) {
-    #sc-plot { min-height: 300px; }
+    #sc-plot { min-height: 240px; }
     .sc-legend-container { padding: 8px 0; gap: 4px; }
     .sc-legend-item { padding: 2px 6px; font-size: 10px; }
     .sc-legend-color { width: 10px; height: 10px; margin-right: 4px; }
@@ -613,11 +613,18 @@
  * 若需统一调高/调低：优先改这三处的 `height / min-height`。
  */
 .viewer-container:hover { box-shadow: rgba(0,0,0,0.15) 0px 8px 24px; }
-.viewer-content { padding: 0 20px 20px; transition: max-height 0.3s ease, opacity 0.3s ease; max-height: 2000px; opacity: 1; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 700px; }
+.viewer-content { padding: 0 20px 20px; transition: max-height 0.3s ease, opacity 0.3s ease; max-height: 2000px; opacity: 1; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 600px; }
 .viewer-content.collapsed { max-height: 0; padding: 0 20px; opacity: 0; min-height: 0; }
-.crystal-viewer { width: 100%; height: 700px; border-radius: 8px; background: #f8fafc; border: 2px solid #e2e8f0; overflow: hidden; transition: all 0.3s ease; position: relative; flex: 1; min-height: 700px; }
+.crystal-viewer { width: 100%; height: 600px; border-radius: 8px; background: #f8fafc; border: 2px solid #e2e8f0; overflow: hidden; transition: all 0.3s ease; position: relative; flex: 1; min-height: 600px; }
 .crystal-viewer canvas, .crystal-viewer div { z-index: 10 !important; }
-#bandStructure, #scStructure, #bcdStructure, #dwStructure { width: 100%; flex-grow: 1; min-height: 700px; height: 700px; border-radius: 8px; background: #f8fafc; border: 2px solid #e2e8f0; overflow: hidden; transition: all 0.3s ease; position: relative; }
+#bandStructure, #scStructure, #bcdStructure, #dwStructure { width: 100%; flex-grow: 1; min-height: 320px; height: 360px; border-radius: 8px; background: #f8fafc; border: 2px solid #e2e8f0; overflow: hidden; transition: all 0.3s ease; position: relative; }
+/* SC 专用高度：在保持其它模块紧凑的同时，提高 SC 模块高度至 400px */
+#scStructure { height: auto; min-height: 400px; }
+ 
+/* 桌面端（≥1201px）放大 BCD 与 DW 卡片高度 */
+@media (min-width: 1201px) {
+    #bcdStructure, #dwStructure { height: 600px; min-height: 420px; }
+}
 .crystal-viewer:hover, #bandStructure:hover, #scStructure:hover, #bcdStructure:hover, #dwStructure:hover { border-color: #0047AB; box-shadow: rgba(0,71,171,0.15) 0 0 0 4px; }
 /* 平板端（≤1200px）高度与布局说明
  * - 将两列布局堆叠为单列（更易阅读）
@@ -626,7 +633,9 @@
 @media (max-width: 1200px) {
     .two-column-layout { flex-direction: column; }
     .column-60, .column-40, .column-70, .column-30 { flex: 1; width: 100%; }
-    .crystal-viewer, #bandStructure, #scStructure, #bcdStructure, #dwStructure, .viewer-content { height: 560px; min-height: 560px; }
+    .crystal-viewer, #bandStructure, #scStructure, #bcdStructure, #dwStructure, .viewer-content { height: 320px; min-height: 280px; }
+    /* SC 模块在中屏下的专用下限 */
+    #scStructure { min-height: 300px; }
 }
 /* 移动端（≤768px）高度与导航说明
  * - 进一步降低高度，保证内容在手机上不显得拥挤
@@ -635,7 +644,9 @@
 @media (max-width: 768px) {
     .material-detail-container { padding: 16px; margin-top: 200px; }
     .material-nav { height: auto; flex-direction: column; padding: 15px; top: 56px; }
-    .crystal-viewer, #bandStructure, #scStructure, #bcdStructure, #dwStructure, .viewer-content { height: 420px; min-height: 420px; }
+    .crystal-viewer, #bandStructure, #scStructure, #bcdStructure, #dwStructure, .viewer-content { height: 260px; min-height: 240px; }
+    /* SC 模块在小屏下的专用下限 */
+    #scStructure { min-height: 240px; }
 }
 
 /* ===== 原子信息卡片样式（从 detail.html 迁移） ===== */
@@ -683,4 +694,98 @@
     font-size: 1.3rem;
     font-weight: 600;
     line-height: 1.3;
+}
+
+/* ===== 详情页：左侧固定侧栏布局 ===== */
+.detail-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 8px 16px 0; /* 收紧上内边距，使内容更靠近顶部 */
+}
+
+.detail-sidebar {
+    position: sticky;
+    top: calc(var(--navbar-height, 74px) + var(--material-nav-height, 64px) + 4px);
+    align-self: start;
+    height: calc(100vh - (var(--navbar-height, 74px) + var(--material-nav-height, 64px) + 8px));
+    overflow: hidden; /* 固定标题，限制滚动在链接区域 */
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    padding: 0; /* 去除外层 padding，转移到内部元素 */
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px; /* 侧栏内部留白 */
+    flex: 1 1 auto;     /* 占满剩余空间 */
+    overflow: auto;     /* 仅链接区域可滚动 */
+    min-height: 0;      /* 关键：允许子元素在弹性容器内正确产生滚动 */
+}
+
+.sidebar-title {
+    /* 标题固定在侧栏顶部；侧栏本身不滚动，故无需 sticky */
+    background: #ffffff;
+    padding: 12px 16px;
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.05rem;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 0 0 auto; /* 关键：标题不参与伸缩，防止被列表挤压 */
+}
+
+/* 复用现有 .nav-property-link 风格，并在侧栏中微调展示 */
+.detail-sidebar .nav-property-link {
+    display: block;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+.detail-sidebar .nav-property-link:hover {
+    color: #0047AB;
+    border-color: rgba(0,71,171,0.5);
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(0,71,171,0.10);
+}
+.detail-sidebar .nav-property-link.active {
+    color: #fff;
+    background: #0047AB;
+    border-color: #0047AB;
+    box-shadow: 0 2px 10px rgba(0,71,171,0.20);
+}
+
+.detail-main {
+    min-width: 0; /* 防止内容溢出 */
+}
+
+/* 桌面端隐藏顶部的属性导航（已由侧栏接管） */
+@media (min-width: 992px) {
+    .material-nav .nav-properties { display: none; }
+}
+
+/* 窄屏：隐藏侧栏，继续使用页面主内容全宽展示 */
+@media (max-width: 991.98px) {
+    .detail-layout {
+        display: block;
+        padding: 0 16px;
+    }
+    .detail-sidebar { display: none; }
+    .detail-main { width: 100%; }
 }
