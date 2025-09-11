@@ -1838,6 +1838,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     ` : ''}
 
+                    ${data.partners && data.partners.length > 0 ? `
+                    <div class="analysis-section">
+                        <h4>Recommended Partners</h4>
+                        <div class="element-tags">
+                            ${data.partners.map(p => `
+                                <span class="element-tag similar"
+                                      onclick="addSimilarElement('${p.element}')"
+                                      title="score=${(p.score||0).toFixed(3)}, lift=${(p.lift||0).toFixed(2)}, cond=${(p.cond||0).toFixed(2)}">
+                                    ${p.element}
+                                </span>
+                            `).join('')}
+                        </div>
+                        <small>Click to add to selection</small>
+                    </div>
+                    ` : ``}
+
                     ${Object.keys(data.element_groups).length > 0 ? `
                     <div class="analysis-section">
                         <h4>Element Groups</h4>
@@ -2177,3 +2193,4 @@ function validateSearch() {
 </script>
 
 {% endblock %}
+
