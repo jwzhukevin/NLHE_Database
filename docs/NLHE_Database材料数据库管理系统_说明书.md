@@ -279,7 +279,7 @@ def index():
     materials = pagination.items
     
     return render_template(
-        'main/index.html',
+        'main/database.html',
         materials=materials,
         pagination=pagination,
         filters={

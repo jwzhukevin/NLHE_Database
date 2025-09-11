@@ -11,7 +11,7 @@
   - `commands.py`：CLI 命令集合（初始化、导入、用户/成员管理、结构检查、缓存运维等）。
   - `search_optimizer.py`：搜索缓存、统计与失效策略（由 `__init__.py` 注册事件）。
   - `templates/`：Jinja2 模板
-    - `main/index.html`：首页/主要视图入口
+    - `main/database.html`：首页/主要视图入口
     - `components/periodic_table.html`：元素周期表组件
     - `errors/429.html`：限流错误页
     - 其他页面目录：`articles/`、`auth/`、`components/` 等
@@ -150,7 +150,7 @@ app/
   commands.py
   search_optimizer.py
   templates/
-    main/index.html
+    main/database.html
     components/periodic_table.html
     errors/429.html
     ...

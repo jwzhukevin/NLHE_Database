@@ -579,7 +579,7 @@ sudo apt install -y python3-venv python3-dev build-essential \
 
 - 前端静态库
   - 由模板在 `app/static/js/` 引用（如 Three.js/Plotly.js）。
-  - 若路径改动，需同步更新对应模板（如 `app/templates/main/index.html`）。
+  - 若路径改动，需同步更新对应模板（如 `app/templates/main/database.html`）。
 
 ## 14. 配置与目录规范（.env 示例/权限）
 
@@ -755,7 +755,7 @@ app/
   api.py
   search_optimizer.py
   templates/
-    main/index.html
+    main/database.html
     components/periodic_table.html
     errors/429.html
     ...
@@ -850,7 +850,7 @@ wsgi.py
         → 返回 JSON
  
  模板/页面
-   ├─ app/templates/main/index.html (入口/汇总)
+   ├─ app/templates/main/database.html (入口/汇总)
    └─ app/templates/components/periodic_table.html (组件)
  
  关键文件

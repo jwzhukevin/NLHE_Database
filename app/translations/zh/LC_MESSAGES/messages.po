@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-09 20:26+0800\n"
+"POT-Creation-Date: 2025-09-11 23:13+0800\n"
 "PO-Revision-Date: 2025-08-19 17:01+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -18,22 +18,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/auth_manager.py:73 app/auth_manager.py:97
-#, python-format
-msgid "Welcome back, %(username)s!"
-msgstr "欢迎回来，%(username)s！"
-
-#: app/auth_manager.py:102
+#: app/auth_manager.py:103
 msgid "Login failed due to system error. Please try again."
 msgstr "登录失败，系统错误。请重试。"
-
-#: app/auth_manager.py:140 app/auth_manager.py:150
-msgid "You have been logged out successfully."
-msgstr "您已成功退出登录。"
-
-#: app/auth_manager.py:171 app/views.py:1203
-msgid "Logout completed."
-msgstr "已退出登录。"
 
 #: app/views.py:311
 msgid "Access denied. This feature requires administrator privileges."
@@ -58,7 +45,7 @@ msgstr "材料 %(name)s 添加成功！"
 msgid "Invalid data: %(error)s"
 msgstr "无效数据：%(error)s"
 
-#: app/views.py:445 app/views.py:772
+#: app/views.py:445 app/views.py:772 app/views.py:1282
 #, python-format
 msgid "An error occurred: %(error)s"
 msgstr "发生错误：%(error)s"
@@ -143,62 +130,67 @@ msgstr "访问被拒绝。由于多次登录失败，你的 IP 已被封禁。"
 msgid "Security token expired or invalid. Please try again."
 msgstr "安全令牌已过期或无效，请重试。"
 
-#: app/views.py:1050
+#: app/templates/auth/login.html:126 app/views.py:1050 app/views.py:1200
 msgid "Invalid captcha code, please try again"
 msgstr "验证码错误，请重试"
 
-#: app/views.py:1059
+#: app/views.py:1059 app/views.py:1207
 msgid "All fields are required."
 msgstr "所有字段均为必填。"
 
-#: app/views.py:1085 app/views.py:1104 app/views.py:1142
+#: app/views.py:1085 app/views.py:1104 app/views.py:1142 app/views.py:1229
+#: app/views.py:1242 app/views.py:1268
 msgid "Your IP has been blocked due to too many failed login attempts."
 msgstr "由于多次登录失败，你的 IP 已被封禁。"
 
-#: app/views.py:1088
+#: app/views.py:1088 app/views.py:1231
 #, python-format
 msgid ""
 "Email not found. Please check your email address. You have %(n)d attempts"
 " remaining."
 msgstr "未找到该邮箱，请检查邮箱地址。你还剩余 %(n)d 次尝试。"
 
-#: app/views.py:1107
+#: app/views.py:1107 app/views.py:1244
 #, python-format
 msgid ""
 "Username does not match this email address. You have %(n)d attempts "
 "remaining."
 msgstr "用户名与该邮箱不匹配。你还剩余 %(n)d 次尝试。"
 
-#: app/views.py:1123
+#: app/views.py:1123 app/views.py:1255
 msgid ""
 "Your IP has been blocked due to too many unauthorized admin login "
 "attempts."
 msgstr "由于多次未授权的管理员登录尝试，你的 IP 已被封禁。"
 
-#: app/views.py:1126
+#: app/views.py:1126 app/views.py:1257
 #, python-format
 msgid ""
 "This account does not have administrator privileges. You have %(n)d "
 "attempts remaining."
 msgstr "该账户不具备管理员权限。你还剩余 %(n)d 次尝试。"
 
-#: app/views.py:1145
+#: app/templates/auth/login.html:127 app/views.py:1145 app/views.py:1270
 #, python-format
 msgid "Incorrect password. You have %(n)d attempts remaining."
 msgstr "密码错误。你还剩余 %(n)d 次尝试。"
 
-#: app/views.py:1271
+#: app/views.py:1321
+msgid "Logout completed."
+msgstr "已退出登录。"
+
+#: app/views.py:1389
 msgid "Session cleared successfully."
 msgstr "会话清理成功。"
 
-#: app/views.py:1901
+#: app/views.py:2098
 #, python-format
 msgid ""
 "Band analysis completed! Analyzed: %(analyzed)d, Cached: %(cached)d, "
 "Failed: %(failed)d"
 msgstr "能带分析完成！已分析：%(analyzed)d，已缓存：%(cached)d，失败：%(failed)d"
 
-#: app/views.py:1905
+#: app/views.py:2102
 #, python-format
 msgid "Batch analysis failed: %(error)s"
 msgstr "批量分析失败：%(error)s"
@@ -207,135 +199,140 @@ msgstr "批量分析失败：%(error)s"
 msgid "NLHE Database - Nonlinear Hall Effect Materials Database"
 msgstr "NLHE 数据库 - 非线性霍尔效应材料数据库"
 
-#: app/templates/base.html:253 app/templates/base.html:256
-#: app/templates/base.html:571
+#: app/templates/base.html:137 app/templates/base.html:140
+#: app/templates/base.html:475
 msgid "Database"
 msgstr "数据库"
 
 #: app/templates/articles/view.html:10 app/templates/articles/view.html:417
-#: app/templates/base.html:259
+#: app/templates/base.html:143
 msgid "Contents"
 msgstr "目录"
 
-#: app/templates/base.html:263
+#: app/templates/base.html:147
 msgid "Tools"
 msgstr "工具"
 
-#: app/templates/base.html:267
+#: app/templates/base.html:151
 msgid "MP Machine Learning"
 msgstr "MP 机器学习"
 
-#: app/templates/base.html:270
+#: app/templates/base.html:154
 msgid "Materials Cloud Tools"
 msgstr "Materials Cloud 工具"
 
-#: app/templates/base.html:273
+#: app/templates/base.html:157
 msgid "NOMAD Laboratory"
 msgstr "NOMAD 实验室"
 
-#: app/templates/base.html:280
+#: app/templates/base.html:164
 msgid "SiliconFlow LLM"
 msgstr "SiliconFlow 大模型"
 
-#: app/templates/base.html:283
+#: app/templates/base.html:167
 msgid "Program"
 msgstr "程序"
 
-#: app/templates/base.html:290
+#: app/templates/base.html:174
 msgid "Add"
 msgstr "新增"
 
-#: app/templates/base.html:297
+#: app/templates/base.html:181
 msgid "Login"
 msgstr "登录"
 
-#: app/templates/base.html:306 app/templates/base.html:312
+#: app/templates/base.html:188
+#, fuzzy
+msgid "More"
+msgstr "阅读更多"
+
+#: app/templates/base.html:199 app/templates/base.html:205
 msgid "Logout"
 msgstr "登出"
 
-#: app/templates/base.html:316
+#: app/templates/base.html:209
 msgid "Guest"
 msgstr "游客"
 
-#: app/templates/base.html:324
+#: app/templates/base.html:217
 msgid "Language"
 msgstr "语言"
 
-#: app/templates/base.html:327
+#: app/templates/base.html:220
 msgid "English"
 msgstr "英文"
 
-#: app/templates/base.html:328
+#: app/templates/base.html:221
 msgid "中文"
 msgstr "中文"
 
-#: app/templates/base.html:572 app/templates/main/landing.html:7
+#: app/templates/base.html:476 app/templates/main/landing.html:7
 msgid "Materials Database"
 msgstr "材料数据库"
 
-#: app/templates/base.html:573
+#: app/templates/base.html:477
 msgid "Explore and discover novel materials"
 msgstr "探索与发现新材料"
 
-#: app/templates/base.html:576
+#: app/templates/base.html:480
 msgid "We"
 msgstr "我们"
 
 # 新增：模块重命名为 Team
-#: app/templates/base.html:578 app/templates/members/index.html:6
+#: app/templates/base.html:482 app/templates/members/index.html:6
 msgid "Team"
 msgstr "团队"
 
-#: app/templates/base.html:579
+#: app/templates/base.html:483
 msgid "Publications"
 msgstr "学术成果"
 
-#: app/templates/base.html:580
+#: app/templates/base.html:484
 msgid "Achievements"
 msgstr "成果"
 
-#: app/templates/base.html:581
+#: app/templates/base.html:485
 msgid "Join Us"
 msgstr "加入我们"
 
-#: app/templates/base.html:585
+#: app/templates/base.html:489
 msgid "Related Links"
 msgstr "相关链接"
 
-#: app/templates/base.html:587
+#: app/templates/base.html:491
 msgid "IMR Graduate School, CAS"
 msgstr "中科院金属所研究生院"
 
-#: app/templates/base.html:588
+#: app/templates/base.html:492
 msgid "Institute of Metal Research, CAS"
 msgstr "中国科学院金属研究所"
 
-#: app/templates/base.html:589
+#: app/templates/base.html:493
 msgid "Chinese Academy of Sciences"
 msgstr "中国科学院"
 
-#: app/templates/base.html:593
+#: app/templates/base.html:497
 msgid "Contact Us"
 msgstr "联系我们"
 
-#: app/templates/base.html:594
+#: app/templates/base.html:498
 msgid "Address: 72 Wenhua Road, Shenhe District, Shenyang"
 msgstr "地址：沈阳市沈河区文化路72号"
 
-#: app/templates/base.html:595
+#: app/templates/base.html:499
 msgid "Postal Code: 110016"
 msgstr "邮编：110016"
 
-#: app/templates/base.html:596
+#: app/templates/base.html:500
 msgid "Email: contact@nlhe-database.org"
 msgstr "邮箱：contact@nlhe-database.org"
 
-#: app/templates/base.html:600
+#: app/templates/base.html:504
 #, fuzzy
 msgid "NLHE Database."
 msgstr "数据库"
 
-#: app/templates/base.html:600
+#: app/templates/base.html:504
 msgid "Powered by"
 msgstr ""
 
@@ -347,7 +344,7 @@ msgstr "文档与内容"
 msgid "Search contents..."
 msgstr "搜索内容..."
 
-#: app/templates/articles/listing.html:21 app/templates/main/index.html:442
+#: app/templates/articles/listing.html:21 app/templates/main/database.html:442
 msgid "All"
 msgstr "全部"
 
@@ -390,86 +387,90 @@ msgstr "目录"
 msgid "Back to Contents"
 msgstr "返回目录"
 
-#: app/templates/auth/login.html:12
+#: app/templates/auth/login.html:18
 msgid "User"
 msgstr "普通用户"
 
-#: app/templates/auth/login.html:16
+#: app/templates/auth/login.html:22
 msgid "Administrator"
 msgstr "管理员"
 
-#: app/templates/auth/login.html:22 app/templates/auth/login.html:99
-#: app/templates/auth/login.html:119 app/templates/auth/login.html:126
+#: app/templates/auth/login.html:28 app/templates/auth/login.html:121
+#: app/templates/auth/login.html:144 app/templates/auth/login.html:151
 msgid "Sign In"
 msgstr "登录"
 
-#: app/templates/auth/login.html:33
+#: app/templates/auth/login.html:41
 msgid "Email"
 msgstr "邮箱"
 
-#: app/templates/auth/login.html:35
+#: app/templates/auth/login.html:43
 msgid "Enter your email address"
 msgstr "输入你的邮箱地址"
 
-#: app/templates/auth/login.html:41
+#: app/templates/auth/login.html:49
 msgid "Username"
 msgstr "用户名"
 
-#: app/templates/auth/login.html:43
+#: app/templates/auth/login.html:51
 msgid "Enter your username"
 msgstr "输入你的用户名"
 
-#: app/templates/auth/login.html:49 app/templates/auth/login.html:54
+#: app/templates/auth/login.html:57 app/templates/auth/login.html:62
 msgid "Captcha"
 msgstr "验证码"
 
-#: app/templates/auth/login.html:52
+#: app/templates/auth/login.html:60
 msgid "Enter the captcha"
 msgstr "输入验证码"
 
-#: app/templates/auth/login.html:57
+#: app/templates/auth/login.html:65
 msgid "Click to refresh"
 msgstr "点击刷新"
 
-#: app/templates/auth/login.html:66
+#: app/templates/auth/login.html:74
 msgid "Password"
 msgstr "密码"
 
-#: app/templates/auth/login.html:69
+#: app/templates/auth/login.html:77
 msgid "Enter your password"
 msgstr "输入你的密码"
 
-#: app/templates/auth/login.html:77 app/templates/auth/login.html:100
-#: app/templates/auth/login.html:120 app/templates/auth/login.html:126
+#: app/templates/auth/login.html:85 app/templates/auth/login.html:122
+#: app/templates/auth/login.html:145 app/templates/auth/login.html:151
 msgid "Log In"
 msgstr "登录"
 
-#: app/templates/auth/login.html:78
+#: app/templates/auth/login.html:86
 msgid "Return to Database"
 msgstr "返回数据库"
 
-#: app/templates/auth/login.html:88
+#: app/templates/auth/login.html:96
 msgid ""
 "This area is restricted to administrators only. Unauthorized access "
 "attempts are monitored."
 msgstr "本区域仅限管理员访问，未授权访问将被监控。"
 
-#: app/templates/auth/login.html:101 app/templates/auth/login.html:121
-#: app/templates/auth/login.html:126
+#: app/templates/auth/login.html:123 app/templates/auth/login.html:146
+#: app/templates/auth/login.html:151
 msgid "Administrator Sign In"
 msgstr "管理员登录"
 
-#: app/templates/auth/login.html:102 app/templates/auth/login.html:122
-#: app/templates/auth/login.html:126
+#: app/templates/auth/login.html:124 app/templates/auth/login.html:147
+#: app/templates/auth/login.html:151
 msgid "Log In as Administrator"
 msgstr "以管理员身份登录"
+
+#: app/templates/auth/login.html:125
+msgid "Login successful. Redirecting to database in 2 seconds…"
+msgstr ""
 
 #: app/templates/components/periodic_table.html:6
 msgid "Periodic Table"
 msgstr "元素周期表"
 
 #: app/templates/components/periodic_table.html:7
-#: app/templates/main/index.html:655
+#: app/templates/main/database.html:655
 msgid "Clear All"
 msgstr "清空全部"
 
@@ -892,12 +893,12 @@ msgstr "锕系元素"
 msgid "SiliconFlow LLM Chat"
 msgstr "SiliconFlow 大模型聊天"
 
-#: app/templates/deepseek/chat.html:219 app/templates/main/index.html:991
-#: app/templates/materials/detail.html:164
+#: app/templates/deepseek/chat.html:219 app/templates/main/database.html:991
+#: app/templates/materials/detail.html:156
 msgid "Delete"
 msgstr "删除"
 
-#: app/templates/deepseek/chat.html:220 app/templates/main/index.html:221
+#: app/templates/deepseek/chat.html:220 app/templates/main/database.html:221
 msgid "Clear"
 msgstr "清空"
 
@@ -1104,118 +1105,118 @@ msgid ""
 "has been notified and is working to fix the issue as soon as possible."
 msgstr "服务器遇到技术问题。我们的团队已收到通知，将尽快修复。"
 
-#: app/templates/main/index.html:215
+#: app/templates/main/database.html:215
 msgid "Search materials, MP IDs, space groups..."
 msgstr "搜索材料、MP ID、空间群..."
 
-#: app/templates/main/index.html:217 app/templates/main/index.html:222
+#: app/templates/main/database.html:217 app/templates/main/database.html:222
 msgid "Search"
 msgstr "搜索"
 
-#: app/templates/main/index.html:223
+#: app/templates/main/database.html:223
 msgid "Elements"
 msgstr "元素"
 
-#: app/templates/main/index.html:224
+#: app/templates/main/database.html:224
 msgid "Advanced"
 msgstr "高级"
 
-#: app/templates/main/index.html:440 app/templates/materials/add.html:222
+#: app/templates/main/database.html:440 app/templates/materials/add.html:222
 #: app/templates/materials/edit.html:264
 msgid "Materials Type"
 msgstr "材料类型"
 
-#: app/templates/main/index.html:443 app/templates/main/index.html:951
-#: app/templates/main/index.html:957 app/templates/materials/add.html:229
-#: app/templates/materials/detail.html:235
-#: app/templates/materials/detail.html:353
+#: app/templates/main/database.html:443 app/templates/main/database.html:951
+#: app/templates/main/database.html:957 app/templates/materials/add.html:229
+#: app/templates/materials/detail.html:245
 #: app/templates/materials/detail.html:363
-#: app/templates/materials/detail.html:369
-#: app/templates/materials/detail.html:487
-#: app/templates/materials/detail.html:488
+#: app/templates/materials/detail.html:373
+#: app/templates/materials/detail.html:379
+#: app/templates/materials/detail.html:497
+#: app/templates/materials/detail.html:498
 #: app/templates/materials/edit.html:271
 msgid "Unknown"
 msgstr "未知"
 
-#: app/templates/main/index.html:444 app/templates/materials/add.html:225
+#: app/templates/main/database.html:444 app/templates/materials/add.html:225
 #: app/templates/materials/edit.html:267
 msgid "Metal"
 msgstr "金属"
 
-#: app/templates/main/index.html:445 app/templates/materials/add.html:226
+#: app/templates/main/database.html:445 app/templates/materials/add.html:226
 #: app/templates/materials/edit.html:268
 msgid "Semimetal"
 msgstr "半金属"
 
-#: app/templates/main/index.html:446 app/templates/materials/add.html:227
+#: app/templates/main/database.html:446 app/templates/materials/add.html:227
 #: app/templates/materials/edit.html:269
 msgid "Semiconductor"
 msgstr "半导体"
 
-#: app/templates/main/index.html:447 app/templates/materials/add.html:228
+#: app/templates/main/database.html:447 app/templates/materials/add.html:228
 #: app/templates/materials/edit.html:270
 msgid "Insulator"
 msgstr "绝缘体"
 
-#: app/templates/main/index.html:453 app/templates/main/index.html:789
-#: app/templates/main/index.html:792 app/templates/main/index.html:942
+#: app/templates/main/database.html:453 app/templates/main/database.html:789
+#: app/templates/main/database.html:792 app/templates/main/database.html:942
 #: app/templates/materials/add.html:217 app/templates/materials/edit.html:257
 msgid "Band Gap (eV)"
 msgstr "带隙 (eV)"
 
-#: app/templates/main/index.html:456 app/templates/main/index.html:473
-#: app/templates/main/index.html:487
+#: app/templates/main/database.html:456 app/templates/main/database.html:473
+#: app/templates/main/database.html:487
 msgid "Min"
 msgstr ""
 
-#: app/templates/main/index.html:458 app/templates/main/index.html:475
-#: app/templates/main/index.html:489
+#: app/templates/main/database.html:458 app/templates/main/database.html:475
+#: app/templates/main/database.html:489
 msgid "to"
 msgstr ""
 
-#: app/templates/main/index.html:460 app/templates/main/index.html:477
-#: app/templates/main/index.html:491
+#: app/templates/main/database.html:460 app/templates/main/database.html:477
+#: app/templates/main/database.html:491
 #, fuzzy
 msgid "Max"
 msgstr "最大位移电流："
 
-#: app/templates/main/index.html:470
+#: app/templates/main/database.html:470
 #, fuzzy
 msgid "Max Shift Current (μA/V²)"
 msgstr "最大位移电流 (μA/V²)"
 
-#: app/templates/main/index.html:484 app/templates/main/index.html:783
-#: app/templates/main/index.html:786 app/templates/main/index.html:941
+#: app/templates/main/database.html:484 app/templates/main/database.html:783
+#: app/templates/main/database.html:786 app/templates/main/database.html:941
 msgid "Fermi Level (eV)"
 msgstr "费米能级 (eV)"
 
-#: app/templates/main/index.html:500 app/templates/main/index.html:938
+#: app/templates/main/database.html:500 app/templates/main/database.html:938
 msgid "MP-ID"
 msgstr "MP-ID"
 
-#: app/templates/main/index.html:502
+#: app/templates/main/database.html:502
 msgid "e.g., mp-12345"
 msgstr ""
 
-#: app/templates/main/index.html:507 app/templates/main/index.html:940
+#: app/templates/main/database.html:507 app/templates/main/database.html:940
 msgid "Space Group"
 msgstr "空间群"
 
-#: app/templates/main/index.html:509
+#: app/templates/main/database.html:509
 msgid "e.g., 194 or P6_3/mmc"
 msgstr ""
 
-#: app/templates/main/index.html:604
+#: app/templates/main/database.html:604
 msgid ""
 "Please enter search criteria or select at least one filter before "
 "searching."
 msgstr ""
 
-#: app/templates/main/index.html:641
+#: app/templates/main/database.html:641
 msgid "Searching with filters:"
 msgstr ""
 
-#: app/templates/main/index.html:747
+#: app/templates/main/database.html:747
 #, python-format
 msgid ""
 "\n"
@@ -1227,79 +1228,79 @@ msgid_plural ""
 "            "
 msgstr[0] "本页共 %(count)s 条材料"
 
-#: app/templates/main/index.html:755
+#: app/templates/main/database.html:755
 msgid "Per Page"
 msgstr "每页"
 
-#: app/templates/main/index.html:780
+#: app/templates/main/database.html:780
 msgid "Columns"
 msgstr "列"
 
-#: app/templates/main/index.html:782
+#: app/templates/main/database.html:782
 msgid "Optional Columns"
 msgstr "可选列"
 
-#: app/templates/main/index.html:795 app/templates/main/index.html:798
-#: app/templates/main/index.html:943
+#: app/templates/main/database.html:795 app/templates/main/database.html:798
+#: app/templates/main/database.html:943
 msgid "Max SC (μA/V²)"
 msgstr "最大位移电流 (μA/V²)"
 
-#: app/templates/main/index.html:802
+#: app/templates/main/database.html:802
 msgid "Apply"
 msgstr "应用"
 
-#: app/templates/main/index.html:937
+#: app/templates/main/database.html:937
 msgid "ID"
 msgstr "编号"
 
-#: app/templates/main/index.html:939 app/templates/materials/edit.html:29
+#: app/templates/main/database.html:939 app/templates/materials/edit.html:29
 msgid "Material Name"
 msgstr "材料名称"
 
-#: app/templates/main/index.html:941 app/templates/main/index.html:942
-#: app/templates/main/index.html:943
+#: app/templates/main/database.html:941 app/templates/main/database.html:942
+#: app/templates/main/database.html:943
 msgid "Hide this column"
 msgstr ""
 
-#: app/templates/main/index.html:944
+#: app/templates/main/database.html:944
 msgid "Actions"
 msgstr "操作"
 
-#: app/templates/main/index.html:957 app/templates/main/index.html:958
-#: app/templates/main/index.html:963
+#: app/templates/main/database.html:957 app/templates/main/database.html:958
+#: app/templates/main/database.html:963
 msgid "N/A"
 msgstr "无"
 
-#: app/templates/main/index.html:970 app/templates/materials/detail.html:200
-#: app/templates/materials/detail.html:201
-#: app/templates/materials/detail.html:202
-#: app/templates/materials/detail.html:203
-#: app/templates/materials/detail.html:204
-#: app/templates/materials/detail.html:205
-#: app/templates/materials/detail.html:206
-#: app/templates/materials/detail.html:207
-#: app/templates/materials/detail.html:227
-#: app/templates/materials/detail.html:232
+#: app/templates/main/database.html:970 app/templates/materials/detail.html:210
+#: app/templates/materials/detail.html:211
+#: app/templates/materials/detail.html:212
+#: app/templates/materials/detail.html:213
+#: app/templates/materials/detail.html:214
+#: app/templates/materials/detail.html:215
+#: app/templates/materials/detail.html:216
+#: app/templates/materials/detail.html:217
+#: app/templates/materials/detail.html:237
+#: app/templates/materials/detail.html:242
 msgid "Loading..."
 msgstr "加载中..."
 
-#: app/templates/main/index.html:978
+#: app/templates/main/database.html:978
 msgid "View in MP"
 msgstr "在 MP 查看"
 
-#: app/templates/main/index.html:984 app/templates/materials/detail.html:157
+#: app/templates/main/database.html:984 app/templates/materials/detail.html:149
 msgid "Edit"
 msgstr "编辑"
 
-#: app/templates/main/index.html:990 app/templates/materials/detail.html:161
+#: app/templates/main/database.html:990 app/templates/materials/detail.html:153
 msgid "Delete permanently?"
 msgstr "永久删除？"
 
-#: app/templates/main/index.html:1140
+#: app/templates/main/database.html:1140
 msgid "Previous"
 msgstr "上一页"
 
-#: app/templates/main/index.html:1155
+#: app/templates/main/database.html:1155
 msgid "Next"
 msgstr "下一页"
 
@@ -1513,205 +1514,209 @@ msgstr "首页"
 msgid "Materials"
 msgstr "材料"
 
-#: app/templates/materials/detail.html:124
+#: app/templates/materials/detail.html:140
+msgid "Back"
+msgstr "返回"
+
+#: app/templates/materials/detail.html:167
+msgid "Material Sections Navigation"
+msgstr ""
+
+#: app/templates/materials/detail.html:170
 msgid "Structure"
 msgstr "结构"
 
-#: app/templates/materials/detail.html:125
+#: app/templates/materials/detail.html:171
 msgid "Crystal Data"
 msgstr "晶体数据"
 
-#: app/templates/materials/detail.html:126
-#: app/templates/materials/detail.html:263
-#: app/templates/materials/detail.html:282
+#: app/templates/materials/detail.html:172
+#: app/templates/materials/detail.html:273
+#: app/templates/materials/detail.html:292
 msgid "Band Structure"
 msgstr "能带结构"
 
-#: app/templates/materials/detail.html:127
+#: app/templates/materials/detail.html:173
 msgid "SC"
 msgstr "位移电流"
 
 # 导航：仅中文全称
-#: app/templates/materials/detail.html:128
+#: app/templates/materials/detail.html:174
 msgid "Berry curvature dipole"
 msgstr "贝里曲率偶极"
 
-#: app/templates/materials/detail.html:129
+#: app/templates/materials/detail.html:175
 msgid "Drude weight"
 msgstr "德鲁德权重"
 
-#: app/templates/materials/detail.html:130
-#: app/templates/materials/detail.html:320
+#: app/templates/materials/detail.html:176
+#: app/templates/materials/detail.html:330
 msgid "Properties"
 msgstr "属性"
 
-#: app/templates/materials/detail.html:148
-msgid "Back"
-msgstr "返回"
-
-#: app/templates/materials/detail.html:182
+#: app/templates/materials/detail.html:192
 msgid "3D Structure"
 msgstr "三维结构"
 
-#: app/templates/materials/detail.html:195
+#: app/templates/materials/detail.html:205
 msgid "Crystal Structure"
 msgstr "晶体结构"
 
-#: app/templates/materials/detail.html:200
+#: app/templates/materials/detail.html:210
 msgid "Lattice a:"
 msgstr "晶格 a："
 
-#: app/templates/materials/detail.html:201
+#: app/templates/materials/detail.html:211
 msgid "Lattice b:"
 msgstr "晶格 b："
 
-#: app/templates/materials/detail.html:202
+#: app/templates/materials/detail.html:212
 msgid "Lattice c:"
 msgstr "晶格 c："
 
-#: app/templates/materials/detail.html:203
+#: app/templates/materials/detail.html:213
 msgid "Alpha:"
 msgstr "α："
 
-#: app/templates/materials/detail.html:204
+#: app/templates/materials/detail.html:214
 msgid "Beta:"
 msgstr "β："
 
-#: app/templates/materials/detail.html:205
+#: app/templates/materials/detail.html:215
 msgid "Gamma:"
 msgstr "γ："
 
-#: app/templates/materials/detail.html:206
+#: app/templates/materials/detail.html:216
 msgid "Volume:"
 msgstr "体积："
 
-#: app/templates/materials/detail.html:207
+#: app/templates/materials/detail.html:217
 msgid "Density:"
 msgstr "密度："
 
-#: app/templates/materials/detail.html:222
+#: app/templates/materials/detail.html:232
 msgid "Crystal Symmetry"
 msgstr "晶体对称性"
 
-#: app/templates/materials/detail.html:227
+#: app/templates/materials/detail.html:237
 msgid "Crystal System:"
 msgstr "晶体系统："
 
-#: app/templates/materials/detail.html:228
+#: app/templates/materials/detail.html:238
 msgid "Space Group:"
 msgstr "空间群："
 
-#: app/templates/materials/detail.html:235
+#: app/templates/materials/detail.html:245
 msgid "MP-ID:"
 msgstr "MP-ID："
 
-#: app/templates/materials/detail.html:245
+#: app/templates/materials/detail.html:255
 msgid "Atomic Coordinates"
 msgstr "原子坐标"
 
-#: app/templates/materials/detail.html:249
+#: app/templates/materials/detail.html:259
 msgid "Loading atomic coordinates..."
 msgstr "正在加载原子坐标..."
 
-#: app/templates/materials/detail.html:265
+#: app/templates/materials/detail.html:275
 msgid "Download band data"
 msgstr "下载能带数据"
 
-#: app/templates/materials/detail.html:287
+#: app/templates/materials/detail.html:297
 msgid "Band Gap:"
 msgstr "带隙："
 
-#: app/templates/materials/detail.html:292
-#: app/templates/materials/detail.html:301
+#: app/templates/materials/detail.html:302
+#: app/templates/materials/detail.html:311
 msgid "Analyzing..."
 msgstr "分析中..."
 
-#: app/templates/materials/detail.html:296
+#: app/templates/materials/detail.html:306
 msgid "Materials Type:"
 msgstr "材料类型："
 
-#: app/templates/materials/detail.html:316
+#: app/templates/materials/detail.html:326
 msgid "Shift Current"
 msgstr "位移电流"
 
-#: app/templates/materials/detail.html:318
+#: app/templates/materials/detail.html:328
 #, fuzzy
 msgid "SC Tabs"
 msgstr "状态"
 
-#: app/templates/materials/detail.html:319
+#: app/templates/materials/detail.html:329
 #, fuzzy
 msgid "Relations"
 msgstr "操作"
 
-#: app/templates/materials/detail.html:340
+#: app/templates/materials/detail.html:350
 msgid "Loading element relations..."
 msgstr "正在加载元素关联..."
 
-#: app/templates/materials/detail.html:348
+#: app/templates/materials/detail.html:358
 #, fuzzy
 msgid "Max SC"
 msgstr "最大位移电流："
 
-#: app/templates/materials/detail.html:358
+#: app/templates/materials/detail.html:368
 #, fuzzy
 msgid "Max Photon Energy"
 msgstr "最大光子能量："
 
-#: app/templates/materials/detail.html:368
+#: app/templates/materials/detail.html:378
 #, fuzzy
 msgid "Max Tensor Type"
 msgstr "最大张量类型："
 
-#: app/templates/materials/detail.html:386
+#: app/templates/materials/detail.html:396
 msgid "Berry curvature dipole (BCD)"
 msgstr ""
 
-#: app/templates/materials/detail.html:387
-#: app/templates/materials/detail.html:414
+#: app/templates/materials/detail.html:397
+#: app/templates/materials/detail.html:424
 msgid "Eigen Matrix"
 msgstr ""
 
-#: app/templates/materials/detail.html:406
+#: app/templates/materials/detail.html:416
 msgid "BCD Legend"
 msgstr ""
 
-#: app/templates/materials/detail.html:413
+#: app/templates/materials/detail.html:423
 msgid "Drude weight (DW)"
 msgstr ""
 
-#: app/templates/materials/detail.html:433
+#: app/templates/materials/detail.html:443
 msgid "DW Legend"
 msgstr ""
 
-#: app/templates/materials/detail.html:443
+#: app/templates/materials/detail.html:453
 msgid "Basic Properties"
 msgstr "基本性质"
 
-#: app/templates/materials/detail.html:448
+#: app/templates/materials/detail.html:458
 #, fuzzy
 msgid "ID:"
 msgstr "编号"
 
-#: app/templates/materials/detail.html:449
+#: app/templates/materials/detail.html:459
 msgid "Fermi Level:"
 msgstr "费米能级："
 
-#: app/templates/materials/detail.html:449
-#: app/templates/materials/detail.html:464
-#: app/templates/materials/detail.html:465
+#: app/templates/materials/detail.html:459
+#: app/templates/materials/detail.html:474
+#: app/templates/materials/detail.html:475
 msgid "Not available yet"
 msgstr "暂无数据"
 
-#: app/templates/materials/detail.html:459
+#: app/templates/materials/detail.html:469
 msgid "Surface Properties"
 msgstr "表面性质"
 
-#: app/templates/materials/detail.html:464
+#: app/templates/materials/detail.html:474
 msgid "Vacuum Level:"
 msgstr "真空能级："
 
-#: app/templates/materials/detail.html:465
+#: app/templates/materials/detail.html:475
 msgid "Work Function:"
 msgstr "功函数："
 
@@ -1850,4 +1855,10 @@ msgstr "成果："
 
 #~ msgid "DW"
 #~ msgstr ""
+
+#~ msgid "Welcome back, %(username)s!"
+#~ msgstr "欢迎回来，%(username)s！"
+
+#~ msgid "You have been logged out successfully."
+#~ msgstr "您已成功退出登录。"
 
