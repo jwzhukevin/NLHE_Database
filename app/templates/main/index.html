@@ -49,7 +49,7 @@
           padding: 2rem;
           margin-bottom: 2rem;
           position: relative;            /* 承载绝对定位的动画画布 */
-          overflow: hidden;              /* 裁切画布到圆角内 */
+          overflow: visible;             /* 允许下拉建议框超出表单显示，避免被裁剪 */
         }
 
         /* 量子电子动画画布样式（全覆盖卡片，不拦截交互） */
@@ -297,7 +297,7 @@
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           max-height: 300px;
           overflow-y: auto;
-          z-index: 1000;
+          z-index: 3000;               /* 提升层级，避免被表格或工具栏覆盖 */
         }
 
         .suggestion-item {

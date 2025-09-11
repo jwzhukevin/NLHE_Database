@@ -1880,18 +1880,97 @@ def element_analysis():
         # 获取元素族匹配
         group_matches = chemical_parser.find_element_group_matches(elements)
 
-        # 统计包含这些元素的材料数量
-        material_count = 0
+        # 统计包含这些元素的材料数量（默认 OR 逻辑）并计算“最适搭配元素”
+        elements_logic = (request.args.get('elements_logic', 'or') or 'or').lower()
+        if elements_logic not in ('or', 'and'):
+            elements_logic = 'or'
+
+        # 读取本地全部材料
         all_materials = Material.query.all()
+
+        # 解析所有材料的元素集合，并做基础计数
+        from collections import defaultdict
+        total = 0
+        count_S = 0  # 满足 S（OR/AND）的材料数量
+        count_e = defaultdict(int)      # 每个元素在全库中的出现材料数
+        count_S_e = defaultdict(int)    # 满足 S 且包含元素 e 的材料数
+
+        # 为减少重复解析，缓存每条材料解析结果
+        parsed_material_elements = []  # list[set]
+
+        S = set(elements)
+
         for material in all_materials:
-            if material.name and chemical_parser.contains_elements(material.name, elements, 'any'):
-                material_count += 1
+            name = getattr(material, 'name', None)
+            if not name:
+                continue
+            try:
+                elems = chemical_parser.get_elements_from_formula(name)
+            except Exception:
+                elems = set()
+            if not elems:
+                continue
+
+            parsed_material_elements.append(elems)
+            total += 1
+
+            # 全库元素计数
+            for e in elems:
+                count_e[e] += 1
+
+        # 第二遍：计算满足 S 的材料数与共现
+        def match_S(elems: set) -> bool:
+            if not S:
+                return False
+            if elements_logic == 'and':
+                return S.issubset(elems)
+            # 默认 OR
+            return bool(S & elems)
+
+        for elems in parsed_material_elements:
+            if match_S(elems):
+                count_S += 1
+                # 对每个不在 S 的元素做共现计数
+                for e in elems:
+                    if e in S:
+                        continue
+                    count_S_e[e] += 1
+
+        # material_count 用于前端显示“包含这些元素的材料数量”
+        material_count = count_S
+
+        # 计算推荐搭配元素（partners）
+        partners = []
+        if total > 0 and count_S > 0:
+            for e, c_se in count_S_e.items():
+                c_e = count_e.get(e, 0)
+                # 基础过滤：避免噪声
+                cond = c_se / max(count_S, 1)
+                if c_se < 2 or cond < 0.1:
+                    continue
+                # 提升度与评分（加入极小数防 0 除）
+                lift = (c_se / total) / (((count_S / total) * (c_e / total)) + 1e-12)
+                score = lift * cond
+                partners.append({
+                    'element': e,
+                    'score': float(score),
+                    'count_s_e': int(c_se),
+                    'count_s': int(count_S),
+                    'count_e': int(c_e),
+                    'lift': float(lift),
+                    'cond': float(cond),
+                })
+
+            # 排序并截断 Top-K（默认 10）
+            partners.sort(key=lambda x: x['score'], reverse=True)
+            partners = partners[:10]
 
         return jsonify({
             'selected_elements': elements,
             'similar_elements': similar_elements[:10],  # 限制建议数量
             'element_groups': {k: list(v) for k, v in group_matches.items()},
             'material_count': material_count,
+            'partners': partners,
             'analysis': {
                 'total_elements': len(elements),
                 'has_metals': bool(set(elements) & chemical_parser.element_groups.get('transition_metals', set())),
