@@ -1,0 +1,34 @@
+/* [base/footer.css] 由 base.html 内联样式迁移。页脚与底部区块样式 */
+
+/* ========== 页脚样式 ========== */
+.footer {
+    background-color: rgb(181, 222, 253);
+    padding: var(--spacing-xl) 0;
+    box-shadow: var(--card-shadow);
+    font-size: var(--font-size-sm);
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: var(--font-size-lg);
+}
+
+.footer-section ul { list-style: none; padding: 0; }
+.footer-section ul li { margin-bottom: 0.5rem; }
+
+.footer-bottom {
+    border-top: 1px solid var(--input-border);
+    padding-top: 1.5rem;
+    text-align: center;
+}
+
+.footer a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+.footer a:hover { color: var(--secondary-color); }

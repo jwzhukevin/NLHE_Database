@@ -1,0 +1,110 @@
+/* [components/periodic_table.css] 元素周期表组件样式（由 components/periodic_table.html 内联样式迁移） */
+
+.is-hidden { display: none !important; }
+
+.periodic-table-wrapper {
+    margin-top: 1rem;
+    border: 1px solid #D9E2F0;
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.periodic-table-wrapper .elements-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    background-color: #f1f5f9;
+    border-bottom: 1px solid #D9E2F0;
+    font-weight: 500;
+    border-radius: 6px 6px 0 0;
+}
+
+.periodic-table-wrapper .header-left { display: flex; align-items: center; gap: 10px; }
+.periodic-table-wrapper .header-right { display: flex; align-items: center; gap: 10px; }
+
+.periodic-table-wrapper .elements-header span:first-child { font-weight: 600; color: var(--primary-color); font-size: 1.05rem; }
+
+.periodic-table-wrapper .elements-header #clearElements {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.7rem;
+    background-color: rgba(0, 71, 171, 0.08);
+    color: var(--primary-color);
+    border: 1px solid rgba(0, 71, 171, 0.15);
+    border-radius: 4px;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.periodic-table-wrapper .elements-header #clearElements:hover { background-color: rgba(0, 71, 171, 0.15); transform: translateY(-1px); }
+.periodic-table-wrapper .elements-header #clearElements:active { background-color: rgba(0, 71, 171, 0.25); transform: translateY(0); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+.periodic-table-wrapper .elements-header span#selectedElementsCount { background-color: var(--primary-color); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+.periodic-table-wrapper .periodic-table-container { padding: 1.2rem; position: relative; }
+
+.periodic-table-wrapper .periodic-table { display: grid; grid-template-columns: repeat(18, minmax(40px, 1fr)); gap: 4px; width: 100%; }
+
+.periodic-table-wrapper .element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    aspect-ratio: 1/1;
+    border: 1px solid rgba(0,0,0,0.06);
+    position: relative;
+}
+.periodic-table-wrapper .atomic-number { position: absolute; top: 2px; right: 3px; font-size: 0.7rem; font-weight: normal; opacity: 0.7; }
+.periodic-table-wrapper .element:hover { transform: scale(1.08); z-index: 2; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
+.periodic-table-wrapper .element.selected { box-shadow: 0 0 0 2px var(--primary-color); color: white; background-color: var(--primary-color); transform: scale(1.05); animation: elementSelected 0.3s ease-out; }
+@keyframes elementSelected { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1.05); } }
+
+.periodic-table-wrapper .element-controls { display: none; }
+.periodic-table-wrapper #clearElements:not(.elements-header #clearElements) { display: none; }
+
+.periodic-table-wrapper .element .tooltip {
+    visibility: hidden;
+    position: absolute;
+    top: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px 14px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+    z-index: 1000;
+    pointer-events: none;
+    width: max-content;
+    max-width: 220px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.periodic-table-wrapper .element .tooltip::after { content: ""; position: absolute; bottom: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: transparent transparent rgba(0, 0, 0, 0.9) transparent; }
+.periodic-table-wrapper .element:hover .tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(2px); }
+.periodic-table-wrapper .element .tooltip strong { color: #6ee7ff; font-size: 0.85rem; }
+
+.periodic-table-wrapper .element-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 10px 0; border-top: 1px solid #edf2f7; justify-content: center; }
+.periodic-table-wrapper .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; margin-right: 8px; margin-bottom: 8px; }
+.periodic-table-wrapper .legend-color { width: 16px; height: 16px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); }
+
+/* 元素类型颜色样式 */
+.alkali { background-color: #ffcdd2; }
+.alkaline { background-color: #f8bbd0; }
+.transition { background-color: #bbdefb; }
+.post-transition { background-color: #b2dfdb; }
+.metalloid { background-color: #c8e6c9; }
+.nonmetal { background-color: #dcedc8; }
+.halogen { background-color: #f0f4c3; }
+.noble { background-color: #d1c4e9; }
+.lanthanoid { background-color: #ffe0b2; }
+.actinoid { background-color: #ffccbc; }

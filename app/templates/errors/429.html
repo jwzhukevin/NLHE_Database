@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/errors.css', v='20250913') }}">
+{% endblock %}
 {% block title %}{{ _('Too Many Requests') }}{% endblock %}
 
 {% block content %}
@@ -59,140 +62,7 @@
     </div>
 </section>
 
-<style>
-    .error-hero {
-        padding: 8rem 0 4rem;
-        min-height: 70vh;
-        display: flex;
-        align-items: center;
-        background: linear-gradient(135deg, #0047AB, #1E5CB3);
-        color: white;
-    }
-
-    /* 两栏布局容器 */
-    .error-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; width: 100%; }
-    .error-left { display: flex; flex-direction: column; justify-content: center; }
-    .error-right { display: flex; justify-content: center; align-items: center; }
-
-    .error-code {
-        font-size: 8rem;
-        font-weight: 800;
-        line-height: 1;
-        margin-bottom: 1rem;
-        color: rgba(255, 255, 255, 0.2);
-        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-    }
-
-    .error-hero h1 {
-        font-size: clamp(2rem, 5vw, 3.5rem);
-        margin-bottom: 1rem;
-        line-height: 1.2;
-    }
-
-    .error-hero p {
-        font-size: clamp(1rem, 2vw, 1.25rem);
-        max-width: 800px;
-        margin: 0 0 2rem;
-        opacity: 0.9;
-    }
-
-    /* 旧插画样式移除 */
-
-    .fa-pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    /* 兼容保留 */
-    @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.4; } }
-
-    @media (max-width: 992px) { .error-grid { grid-template-columns: 1fr; } .error-right { justify-content: stretch; } }
-    @media (max-width: 768px) { .error-hero { padding: 6rem 0 3rem; } }
-
-    /* 追加：验证码区域（在深色背景上使用白卡片，避免破坏404风格） */
-    .captcha-area { position: relative; background: #fff; border-radius: 12px; padding: .75rem 1rem .75rem 1.25rem; color: #0f172a; width: 100%; max-width: 560px; min-height: 240px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0.2rem; text-align: left; overflow: hidden; }
-    .captcha-area.disabled { opacity: .7; }
-    /* 标题 */
-    .captcha-title { font-weight: 800; color: #0f172a; background: rgba(0,71,171,0.08); padding: .4rem .6rem; border-radius: 10px; display: inline-flex; align-items: center; gap: .4rem; margin: 0 0 .04rem; }
-    /* 注释副标题：更紧凑的间距 + 脉冲动画 */
-    .captcha-subnote {
-        color: #0047AB;
-        margin: 0; /* 最小化上下间距，具体间隔由父级 gap 控制 */
-        font-size: .85rem;
-        line-height: 1.1;
-        font-style: italic;
-        letter-spacing: .3px;
-        animation: hv-pulse 2.4s ease-in-out infinite;
-    }
-    @keyframes hv-pulse {
-        0%, 100% { opacity: .85; text-shadow: 0 0 0 rgba(0,71,171,0.0); }
-        50% { opacity: 1; text-shadow: 0 0 6px rgba(0,71,171,0.35); }
-    }
-    /* 图标 */
-    .captcha-title .fa-shield-alt { color: #0047AB; opacity: 1; }
-    /* 电子动画层：置于内容下方，不拦截鼠标 */
-    .hv-electrons { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .35; }
-    /* 提升内容层级，盖在动画之上 */
-    .captcha-title, .captcha-subnote, .captcha-row, .captcha-input, .captcha-tip { position: relative; z-index: 1; }
-    /* 描述 */
-    .captcha-desc { color: #334155; margin: .5rem 0 0.75rem; font-size: .95rem; }
-    /* 行 */
-    .captcha-row { display: flex; justify-content: flex-start; align-items: center; gap: 0.6rem; margin: .04rem 0; }
-    /* 输入框 */
-    .captcha-input { display: flex; justify-content: flex-start; align-items: center; gap: 0.6rem; margin-top: .04rem; }
-    .captcha-input input { height: 48px; padding: 0 0.9rem; border: 1px solid #cbd5e1; border-radius: 10px; width: 220px; text-transform: uppercase; letter-spacing: 3px; background: #fff; color: #0f172a; outline: none; transition: box-shadow .2s, border-color .2s, background .2s; }
-    /* 占位符样式 */
-    .captcha-input input::placeholder { color: #94a3b8; }
-    /* 聚焦样式 */
-    .captcha-input input:focus { border-color: #0047AB; box-shadow: 0 0 0 3px rgba(0,71,171,0.25), 0 6px 20px rgba(0,0,0,0.12); background: #fff; }
-    /* 按钮 */
-    .captcha-btn { height: 48px; padding: 0 1.1rem; min-width: 140px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #0047AB; font-weight: 800; cursor: pointer; transition: transform .15s ease, box-shadow .2s, background .2s; display: inline-flex; align-items: center; gap: .5rem; }
-    /* 按钮悬停样式 */
-    .captcha-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
-    /* 按钮点击样式 */
-    .captcha-btn:active { transform: translateY(0); }
-    /* 主要按钮样式 */
-    .captcha-btn.primary { background: #0047AB; color: #fff; border-color: #0047AB; }
-    /* 主要按钮悬停样式 */
-    .captcha-btn.primary:hover { filter: brightness(1.05); }
-    /* 禁用按钮 */
-    .captcha-btn[disabled] { opacity: .6; cursor: not-allowed; box-shadow: none; }
-    .captcha-input input:disabled { background: #f1f5f9; cursor: not-allowed; }
-    /* 加载中状态 */
-    .captcha-btn.loading i { animation: spin 1s linear infinite; }
-    /* 消息显示 */
-    .captcha-msg { display: none; }
-
-    .captcha-tip { display: flex; align-items: flex-start; gap: .6rem; margin: .5rem 0 0; padding: .6rem .8rem; border-radius: 10px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; }
-    .captcha-tip .tip-icon { margin-top: 2px; color: #1e293b; }
-    .captcha-tip.info { background: #eff6ff; border-color: #bfdbfe; }
-    .captcha-tip.info .tip-icon { color: #1d4ed8; }
-    .captcha-tip.warn { background: #fff7ed; border-color: #fdba74; }
-    .captcha-tip.warn .tip-icon { color: #f59e0b; }
-    .captcha-tip.error { background: #fef2f2; border-color: #fca5a5; }
-    .captcha-tip.error .tip-icon { color: #dc2626; }
-    .captcha-tip.success { background: #ecfdf5; border-color: #86efac; }
-    .captcha-tip.success .tip-icon { color: #16a34a; }
-
-    .shake { animation: shake .35s ease; }
-    .glow { animation: glow 1.2s ease; }
-
-    /* 倒计时在深色背景上保持可读 */
-    .timer { font-size: 1.05rem; margin-bottom: 1rem; }
-
-    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
-    @keyframes shake {
-        0%,100% { transform: translateX(0); }
-        20% { transform: translateX(-4px); }
-        40% { transform: translateX(4px); }
-        60% { transform: translateX(-3px); }
-        80% { transform: translateX(3px); }
-    }
-    @keyframes glow {
-        0% { box-shadow: 0 0 0 0 rgba(25,135,84,0.0); }
-        50% { box-shadow: 0 0 0 6px rgba(25,135,84,0.35); }
-        100% { box-shadow: 0 0 0 0 rgba(25,135,84,0.0); }
-    }
-</style>
+<!-- [Deprecated 20250913] 错误页样式已迁移至 static/css/pages/errors.css（429） -->
 
 <script>
     // 使用后端传入的 retry_after（默认 60）进行倒计时，并在结束后提示进行验证码验证

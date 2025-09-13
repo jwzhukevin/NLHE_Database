@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/errors.css', v='20250913') }}">
+{% endblock %}
+
 {% block content %}
 <section class="error-hero">
     <div class="container">
@@ -22,126 +26,5 @@
     </div>
 </section>
 
-<style>
-    .error-hero {
-        padding: 8rem 0 4rem;
-        min-height: 70vh;
-        display: flex;
-        align-items: center;
-        background: linear-gradient(135deg, #0047AB, #1E5CB3);
-        color: white;
-    }
-
-    .error-content {
-        max-width: 600px;
-    }
-
-    .error-code {
-        font-size: 8rem;
-        font-weight: 800;
-        line-height: 1;
-        margin-bottom: 1rem;
-        color: rgba(255, 255, 255, 0.2);
-        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
-    }
-
-    .error-hero h1 {
-        font-size: clamp(2rem, 5vw, 3.5rem);
-        margin-bottom: 1rem;
-        line-height: 1.2;
-    }
-
-    .error-hero p {
-        font-size: clamp(1rem, 2vw, 1.25rem);
-        max-width: 800px;
-        margin: 0 0 2rem;
-        opacity: 0.9;
-    }
-
-    .error-actions {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .cta-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 1rem 2rem;
-        background-color: white;
-        color: #0047AB;
-        text-decoration: none;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .cta-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .cta-button.secondary {
-        background-color: rgba(255, 255, 255, 0.1);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .cta-button.secondary:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .error-illustration {
-        font-size: 10rem;
-        opacity: 0.2;
-        position: absolute;
-        right: 10%;
-        animation: float 3s ease-in-out infinite;
-    }
-
-    .fa-pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    @keyframes float {
-        0% {
-            transform: translateY(0px);
-        }
-        50% {
-            transform: translateY(-20px);
-        }
-        100% {
-            transform: translateY(0px);
-        }
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 0.2;
-        }
-        50% {
-            opacity: 0.4;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .error-hero {
-            padding: 6rem 0 3rem;
-            text-align: center;
-        }
-
-        .error-content {
-            margin: 0 auto;
-        }
-
-        .error-illustration {
-            display: none;
-        }
-
-        .error-actions {
-            justify-content: center;
-        }
-    }
-</style>
+<!-- [Deprecated 20250913] 错误页样式已迁移至 static/css/pages/errors.css（404） -->
 {% endblock %}

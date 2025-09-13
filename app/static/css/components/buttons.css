@@ -12,3 +12,17 @@
     transition: all 0.15s ease;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
+
+/* 通用：保存/取消按钮的交互基线（不含颜色/尺寸） */
+.btn-save,
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}

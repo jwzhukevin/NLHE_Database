@@ -1,0 +1,4 @@
+/* [base/loader.css] 由 base.html 内联样式迁移。全局加载器与动画 */
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+body.loaded #global-loader { display: none !important; }
