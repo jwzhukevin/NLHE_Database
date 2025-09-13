@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/members.css', v='20250913') }}">
+{% endblock %}
 {% block content %}
     <!-- ========== 英雄区域 ========== -->
     <section class="hero">
@@ -35,127 +39,5 @@
         </div>
     </section>
 
-    <style>
-        /* ========== 英雄区域样式 ========== */
-        .hero {
-            padding: 5rem 0 4rem; /* 上下内边距设置,营造空间感 */
-            text-align: left; /* 文本左对齐 */
-            background: linear-gradient(135deg, #003c85, #0d274b); /* 深蓝色渐变背景,增加视觉层次感 */
-            color: white; /* 文字颜色设为白色,与深色背景形成对比 */
-            margin-bottom: 3rem; /* 与下方内容保持间距 */
-        }
-
-        /* 英雄区域标题样式 */
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem); /* 响应式字体大小,最小2rem,最大3.5rem */
-            margin-bottom: 1rem; /* 底部外边距,与下方段落保持间距 */
-            line-height: 1.2; /* 行高设置,提高可读性 */
-        }
-
-        /* 英雄区域描述文本样式 */
-        .hero p {
-            font-size: clamp(1rem, 2vw, 1.25rem); /* 响应式字体大小,最小1rem,最大1.25rem */
-            max-width: 800px; /* 限制最大宽度,保持良好的阅读体验 */
-            margin: 0; /* 重置外边距 */
-            opacity: 0.9; /* 轻微透明度,使文字柔和 */
-        }
-
-        /* ========== 成员区域样式 ========== */
-        .members-section {
-            padding: 2rem 0 4rem;
-            background-color: #F5F8FF;
-        }
-
-        .member-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-
-        .member-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 71, 171, 0.08);
-            padding: 2rem;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid #e0e7ef;
-        }
-
-        .member-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0, 71, 171, 0.15);
-        }
-
-        .member-photo-wrapper {
-            width: 120px;
-            height: 120px;
-            margin-bottom: 1.5rem;
-            border-radius: 50%;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 71, 171, 0.15);
-            border: 3px solid #e3ecfa;
-        }
-
-        .member-photo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .member-name {
-            font-size: 1.35rem;
-            font-weight: 600;
-            color: #0047AB;
-            margin-bottom: 0.5rem;
-        }
-
-        .title {
-            color: #1976d2;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
-
-        .bio {
-            font-size: 1rem;
-            color: #444;
-            margin-bottom: 1.5rem;
-        }
-
-        .achievements {
-            text-align: left;
-            width: 100%;
-        }
-
-        .achievements strong {
-            color: #0047AB;
-        }
-
-        .achievements-list {
-            margin: 0.5rem 0 0 0;
-            padding: 0 0 0 1.5rem;
-            color: #333;
-        }
-
-        .achievements-list li {
-            margin-bottom: 0.5rem;
-        }
-
-        /* ========== 响应式设计 ========== */
-        @media (max-width: 768px) {
-            .member-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .member-card {
-                max-width: 90%;
-                margin: 0 auto;
-            }
-        }
-    </style>
+    <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/members.css -->
 {% endblock %} 

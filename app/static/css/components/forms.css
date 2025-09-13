@@ -1,0 +1,11 @@
+/* [components/forms.css] 全局表单组件样式（占位，后续逐步沉淀通用规则） */
+
+/* 目前各页面的输入框/表单分布在 pages/*.css 与 main.css 中。 */
+/* 后续可将 .range-inputs、输入框焦点态、通用label/field间距等迁移至此。 */
+
+/* 通用范围输入行：左右输入+间隔符布局，不设定边框/颜色等视觉属性 */
+.range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

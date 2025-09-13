@@ -1,0 +1,14 @@
+/* [components/buttons.css] 全局按钮组件样式（占位，后续逐步沉淀通用规则） */
+
+/* 目前各页面已有 .btn 定义，避免冲突，这里暂不覆盖具体颜色与尺寸。 */
+/* 后续可将重复度高的按钮风格迁移至此，并在页面CSS中只保留差异化覆盖。 */
+
+/* 基础小按钮尺寸与动效（不覆盖颜色与边框） */
+.btn.small {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}

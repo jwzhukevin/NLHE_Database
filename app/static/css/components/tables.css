@@ -1,0 +1,60 @@
+/* [components/tables.css] 通用表格基础样式（布局/间距/排序指示），页面配色与特殊规则在 pages/*.css 中覆盖 */
+
+/* 兼容当前项目现有类名：.material-data-table */
+.table-basic,
+.material-data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 2rem 0;
+}
+
+/* 表头基础外观与排版 */
+.table-basic th,
+.material-data-table th {
+  background-color: #f1f5f9;
+  color: #333333;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 700;
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* 可排序表头 */
+.table-basic th.sortable,
+.material-data-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* 排序指示器 */
+.table-basic th .sort-indicator,
+.material-data-table th .sort-indicator {
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  margin-left: 4px;
+  color: #64748b;
+  font-size: 0.85em;
+}
+.table-basic th[aria-sort='asc'] .sort-indicator::after,
+.material-data-table th[aria-sort='asc'] .sort-indicator::after { content: '▲'; }
+.table-basic th[aria-sort='desc'] .sort-indicator::after,
+.material-data-table th[aria-sort='desc'] .sort-indicator::after { content: '▼'; }
+.table-basic th[aria-sort='none'] .sort-indicator::after,
+.material-data-table th[aria-sort='none'] .sort-indicator::after { content: ''; }
+
+/* 单元格基础与行 hover */
+.table-basic td,
+.material-data-table td { padding: 1rem; border-bottom: 1px solid #edf2f7; }
+.table-basic tr:hover,
+.material-data-table tr:hover { background-color: var(--light-bg); }
+
+/* 文本与对齐的基础（页面可覆盖具体列对齐与特殊列） */
+.table-basic th, .table-basic td,
+.material-data-table th, .material-data-table td {
+  text-align: left;
+  vertical-align: middle;
+}

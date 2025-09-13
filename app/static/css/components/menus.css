@@ -1,0 +1,43 @@
+/* [components/menus.css] 通用菜单基础样式（布局与动效），配色与阴影细节交由页面覆盖 */
+
+.menu { position: relative; }
+
+.menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+  min-width: 200px;
+  z-index: 20;
+  transform-origin: top right;
+}
+
+.menu-panel:not(.is-hidden) { animation: menuPop 120ms ease-out; }
+@keyframes menuPop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 6px;
+  color: #1f2a44;
+  font-weight: 500;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.menu-title { font-weight: 700; margin: 4px 6px 8px; color: #0f172a; }
+
+/* 页面可自行覆盖以下交互配色 */
+.menu-item:hover { background: #f2f6ff; color: var(--primary-color); }
+.menu-item.active { background: rgba(0, 127, 255, 0.08); color: var(--primary-color); position: relative; }
+.menu-item.active::after { content: '✓'; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: var(--primary-color); font-weight: 700; }

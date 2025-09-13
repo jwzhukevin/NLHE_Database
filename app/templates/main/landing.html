@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing.css', v='20250913') }}">
+{% endblock %}
+
 {% block content %}
     <!-- ========== 英雄区域 ========== -->
     <section class="hero">
@@ -10,50 +14,7 @@
         </div>
     </section>
 
-    <style>
-        /* ========== 英雄区域样式 ========== */
-        /* 英雄区域的主要容器样式 */
-        .hero {
-            padding: 5rem 0 4rem; /* 上下内边距设置,营造空间感 */
-            text-align: left; /* 文本左对齐 */
-            background: linear-gradient(135deg, #003c85, #0d274b); /* 深蓝色渐变背景,增加视觉层次感 */
-            color: white; /* 文字颜色设为白色,与深色背景形成对比 */
-        }
-        
-
-        /* 英雄区域标题样式 */
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem); /* 响应式字体大小,最小2rem,最大3.5rem */
-            margin-bottom: 1rem; /* 底部外边距,与下方段落保持间距 */
-            line-height: 1.2; /* 行高设置,提高可读性 */
-        }
-
-        /* 英雄区域描述文本样式 */
-        .hero p {
-            font-size: clamp(1rem, 2vw, 1.25rem); /* 响应式字体大小,最小1rem,最大1.25rem */
-            max-width: 800px; /* 限制最大宽度,保持良好的阅读体验 */
-            margin: 0 0 2rem; /* 上边距0,左右边距0,下边距2rem */
-            opacity: 0.9; /* 轻微透明度,使文字柔和 */
-        }
-
-        /* 号召性按钮样式 */
-        .cta-button {
-            display: inline-block; /* 行内块级显示 */
-            padding: 1rem 2rem; /* 内边距设置,让按钮更突出 */
-            background-color: white; /* 白色背景 */
-            color: #0047AB; /* 深蓝色文字 */
-            text-decoration: none; /* 移除下划线 */
-            border-radius: 8px; /* 圆角边框 */
-            font-weight: 600; /* 字体加粗 */
-            transition: transform 0.3s, box-shadow 0.1s; /* 添加过渡动画效果 */
-        }
-
-        /* 按钮悬停效果 */
-        .cta-button:hover {
-            transform: translateY(-2px); /* 向上浮动2像素 */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 添加阴影效果 */
-        }
-    </style>
+    <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/landing.css（hero 与 CTA） -->
 
     <!-- 量子电子动画脚本（Landing 英雄区专用，10秒后朝外发散并渐隐；电子为白色） -->
     <script>
@@ -254,44 +215,7 @@
         </div>
     </section>
 
-    <style>
-        /* ========== 特性区域样式 ========== */
-        .features {
-            padding: 4rem 0;
-            background-color: white;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .feature-card {
-            padding: 2rem;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
-            transition: transform 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature-icon {
-            font-size: 2rem;
-            color: #0047AB;
-            margin-bottom: 1rem;
-        }
-
-        .feature-card h3 {
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
-            color: #0047AB;
-        }
-    </style>
+    <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/landing.css（features） -->
 
     <!-- ========== 数据统计区域 ========== -->
     <section class="stats">
@@ -313,44 +237,5 @@
         </div>
     </section>
 
-    <style>
-        /* ========== 数据统计区域样式 ========== */
-        .stats {
-            padding: 4rem 0;
-            background-color: #F5F8FF;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat-card {
-            padding: 2rem;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: var(--card-shadow);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #0047AB;
-            margin-bottom: 0.5rem;
-        }
-
-        /* ========== 响应式设计 ========== */
-        @media (max-width: 768px) {
-            .hero {
-                padding: 6rem 0 3rem;
-            }
-
-            .features-grid,
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/landing.css（stats 与响应式） -->
 {% endblock %}
