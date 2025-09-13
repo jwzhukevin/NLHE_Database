@@ -211,7 +211,7 @@
             const N = 100;
             electrons = [];
             for (let i = 0; i < N; i++) {
-                const r = 3;
+                const r = 3.5;
                 const V_INIT_MAX = 3.2, V_INIT_MIN = 1.1;
                 const theta = Math.random() * Math.PI * 2;
                 const speed = V_INIT_MIN + Math.random() * (V_INIT_MAX - V_INIT_MIN);
@@ -219,7 +219,7 @@
                 const vy = Math.sin(theta) * speed;
                 const x = r + Math.random() * (electronCanvas.width - 2 * r);
                 const y = r + Math.random() * (electronCanvas.height - 2 * r);
-                electrons.push({ x, y, vx, vy, r, prevSpeed: speed, prevAngle: theta, sAvg: 0, aAvg: 0, alpha: 0.28 });
+                electrons.push({ x, y, vx, vy, r, prevSpeed: speed, prevAngle: theta, sAvg: 0, aAvg: 0, alpha: 0.48 });
             }
             animateElectrons();
         }
@@ -273,7 +273,7 @@
 
         function animateElectrons() {
             if (!electronCtx || !electronCanvas) return;
-            electronCtx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+            electronCtx.fillStyle = 'rgba(0, 0, 0, 0.02)';
             electronCtx.fillRect(0, 0, electronCanvas.width, electronCanvas.height);
             for (const e of electrons) {
                 e.x += e.vx; e.y += e.vy;
@@ -283,13 +283,24 @@
                 if (!fadeOut) steerQuantum(e);
                 electronCtx.beginPath();
                 electronCtx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-                electronCtx.fillStyle = `rgba(30,58,138, ${Math.max(0, e.alpha)})`;
+                electronCtx.fillStyle = `rgba(34,197,94, ${Math.max(0, e.alpha)})`;
                 electronCtx.fill();
                 if (fadeOut) {
                     e.alpha -= 0.04; // 约25帧淡出
                 }
             }
             electronRAF = requestAnimationFrame(animateElectrons);
+        }
+
+        // 温和渐隐：不改变粒子速度，仅在指定时长内逐帧降低 alpha 并隐藏画布
+        function gentleFadeOut(durationMs) {
+            if (fadeOut) return; // 已在淡出流程中
+            fadeOut = true;
+            setTimeout(() => {
+                if (electronRAF) cancelAnimationFrame(electronRAF);
+                electronRAF = null;
+                if (electronCanvas) electronCanvas.style.display = 'none';
+            }, Math.max(0, durationMs || 3000));
         }
 
         function scatterAndFade() {
@@ -315,6 +326,10 @@
             const ro = window.ResizeObserver ? new ResizeObserver(resizeElectrons) : null;
             if (ro) ro.observe(heroEl);
             initElectrons();
+            // 展示10秒后，进行3秒温和渐隐（不影响登录成功时的散射淡出）
+            setTimeout(() => {
+                if (!fadeOut) gentleFadeOut(3000);
+            }, 10000);
         }
 
         // AJAX 登录（方案B）
@@ -430,15 +445,15 @@
     .login-hero {
         position: relative;
         min-height: 520px;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-        border-right: 1px solid #f1f5f9;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        border-right: 1px solid #0b3aa1;
     }
 
     #hvElectronsLogin {
         position: absolute;
         inset: 0;
         pointer-events: none;
-        opacity: .28;
+        opacity: .42;
     }
     
     /* Login Type Selector */
