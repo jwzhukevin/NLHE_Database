@@ -684,6 +684,12 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* ===== 默认隐藏（由JS控制显示） — 从 detail.html 内联样式迁移 ===== */
+/* 注意：不影响 .tab-header.inline 的可见性 */
+.tab-header[aria-hidden="true"]:not(.inline) { display: none; }
+#bcdNotice, #dwNotice { display: none; }
+#bcd-section .sc-legend-container, #dw-section .sc-legend-container { display: none; }
+
 /* 卡片标题右侧附加标签（与 h3 标题风格一致）
  * - 用途：在卡片标题栏右侧展示如 “Eigen Matrix” 等附加信息
  * - 对齐：`margin-left: auto;` 将其推到标题行最右侧

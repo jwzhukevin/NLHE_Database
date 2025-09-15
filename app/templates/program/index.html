@@ -1,19 +1,22 @@
 {% extends 'base.html' %}
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/program.css', v='20250913') }}">
+{% endblock %}
 {% block content %}
-<div class="main-content" style="max-width:600px;margin:40px auto;">
+<div class="main-content program-container">
     <h2>TXT文件格式转换</h2>
-    <form method="post" enctype="multipart/form-data" style="margin-bottom:2rem;">
+    <form method="post" enctype="multipart/form-data" class="program-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        <div style="margin-bottom:1rem;">
+        <div class="form-row">
             <input type="file" name="file" accept=".txt" required>
         </div>
         <button type="submit" class="btn btn-primary">上传并转换</button>
     </form>
     {% if dat_file or docx_file %}
-    <div style="margin-top:1.5rem;">
+    <div class="program-results">
         <h4>下载转换结果：</h4>
         {% if dat_file %}
-        <a href="{{ url_for('program.download', filename=dat_file) }}" class="btn btn-outline-primary" style="margin-right:1rem;">下载 .dat 文件</a>
+        <a href="{{ url_for('program.download', filename=dat_file) }}" class="btn btn-outline-primary mr-1rem">下载 .dat 文件</a>
         {% endif %}
         {% if docx_file %}
         <a href="{{ url_for('program.download', filename=docx_file) }}" class="btn btn-outline-primary">下载 .docx 文件</a>

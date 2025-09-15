@@ -1,0 +1,10 @@
+/* [components/utilities.css] 通用工具类（颜色/字重/小间距） */
+
+.text-muted { color: #888; }
+.text-danger { color: #e74c3c; }
+.text-primary-600 { color: #1976d2; }
+.fw-bold { font-weight: bold; }
+
+/* 间距工具（按需扩展） */
+.mr-10 { margin-right: 10px; }
+.mr-1rem { margin-right: 1rem; }

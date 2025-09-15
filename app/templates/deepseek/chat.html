@@ -65,19 +65,19 @@
                 </div>
                 <div class="chat-turn ai-turn">
                     <div class="ai-label">{{ _('AI') }}</div>
-                    <div style="display:flex;flex-direction:column;align-items:flex-start;width:100%;">
+                    <div class="ai-wrapper">
                         <div class="bubble ai-bubble" data-ai="{{ turn.assistant|e }}"></div>
                         <div class="ai-actions" data-index="{{ loop.index0 }}">
                             <!-- 保存按钮 -->
-                            <button class="ai-action-btn save-btn" title="{{ _('Save answer') }}" data-index="{{ loop.index0 }}" style="background:none;border:none;cursor:pointer;">
+                            <button class="ai-action-btn save-btn btn-ghost" title="{{ _('Save answer') }}" data-index="{{ loop.index0 }}">
                                 <svg width="20" height="20" viewBox="0 0 20 20"><path d="M5 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6.83a2 2 0 0 0-.59-1.41l-2.83-2.83A2 2 0 0 0 12.17 2H5zm0 2h7v3a1 1 0 0 0 1 1h3v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4zm9 1.41V7h1.59L14 5.41zM7 10v4h6v-4H7zm2 2h2v-2h-2v2z"/></svg>
                             </button>
                             <!-- 重新回答按钮 -->
-                            <button class="ai-action-btn retry-btn" title="{{ _('Retry answering') }}" data-index="{{ loop.index0 }}" style="background:none;border:none;cursor:pointer;">
+                            <button class="ai-action-btn retry-btn btn-ghost" title="{{ _('Retry answering') }}" data-index="{{ loop.index0 }}">
                                 <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2a8 8 0 1 1-7.75 6.25.75.75 0 1 1 1.46-.5A6.5 6.5 0 1 0 10 3.5V6a.75.75 0 0 1-1.5 0V2.75A.75.75 0 0 1 9.25 2H10z"/></svg>
                             </button>
                             <!-- 删除按钮 -->
-                            <button class="ai-action-btn delete-btn" title="{{ _('Delete answer') }}" data-index="{{ loop.index0 }}" style="background:none;border:none;cursor:pointer;">
+                            <button class="ai-action-btn delete-btn btn-ghost" title="{{ _('Delete answer') }}" data-index="{{ loop.index0 }}">
                                 <svg width="20" height="20" viewBox="0 0 20 20"><path d="M7.5 2a1 1 0 0 0-1 1V3.5H3.75a.75.75 0 0 0 0 1.5h12.5a.75.75 0 0 0 0-1.5H13.5V3a1 1 0 0 0-1-1h-5zm-2 4v9a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2V6h-9zm2 2.5a.75.75 0 0 1 1.5 0v5a.75.75 0 0 1-1.5 0v-5zm3 0a.75.75 0 0 1 1.5 0v5a.75.75 0 0 1-1.5 0v-5z"/></svg>
                             </button>
                         </div>
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 添加AI等待气泡
         const aiDiv = document.createElement('div');
         aiDiv.className = 'chat-turn ai-turn';
-        aiDiv.innerHTML = '<div class="ai-label">' + i18n.labelAI + '</div><div style="display:flex;flex-direction:column;align-items:flex-start;width:100%;"><div class="bubble ai-bubble">' + i18n.generating + '</div></div>';
+        aiDiv.innerHTML = '<div class="ai-label">' + i18n.labelAI + '</div><div class="ai-wrapper"><div class="bubble ai-bubble">' + i18n.generating + '</div></div>';
         chatHistory.appendChild(aiDiv);
         chatHistory.scrollTop = chatHistory.scrollHeight;
         textarea.value = '';

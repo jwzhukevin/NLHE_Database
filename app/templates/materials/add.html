@@ -157,13 +157,13 @@ document.querySelectorAll('input[type="file"]').forEach(function(input) {
         // 显示信息
         fileNameSpan.innerHTML = `
             <b>{{ _('File:') }}</b> ${file.name} <br>
-            <b>{{ _('Required name:') }}</b> <span style="color:#1976d2">${requiredName}</span> <br>
-            <b>{{ _('Target path:') }}</b> <span style="color:#888">${path}</span> <br>
+            <b>{{ _('Required name:') }}</b> <span class="text-primary-600">${requiredName}</span> <br>
+            <b>{{ _('Target path:') }}</b> <span class="text-muted">${path}</span> <br>
             <b>{{ _('Size:') }}</b> ${sizeStr}
         `;
         // 文件名不一致警告
         if (file.name !== requiredName) {
-            fileNameSpan.innerHTML += `<br><span style="color:#e74c3c;font-weight:bold">{{ _('Warning: File name must be') }} <u>${requiredName}</u></span>`;
+            fileNameSpan.innerHTML += `<br><span class="text-danger fw-bold">{{ _('Warning: File name must be') }} <u>${requiredName}</u></span>`;
         }
     });
 });

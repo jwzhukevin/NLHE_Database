@@ -7,8 +7,8 @@
             <button type="button" class="btn btn-sm" id="clearElements">{{ _('Clear All') }}</button>
         </div>
         <div class="header-right">
-            <small style="color: #666; margin-right: 10px;">{{ _('Click elements to add to search') }}</small>
-            <button type="button" class="btn btn-sm {{ '' if show_analyze_btn else 'is-hidden' }}" id="analyzeElements" style="margin-right: 10px;">{{ _('Analyze') }}</button>
+            <small class="pt-tip">{{ _('Click elements to add to search') }}</small>
+            <button type="button" class="btn btn-sm {{ '' if show_analyze_btn else 'is-hidden' }} mr-10" id="analyzeElements">{{ _('Analyze') }}</button>
             <span id="selectedElementsCount">{{ _('0 selected') }}</span>
         </div>
     </div>
@@ -25,7 +25,7 @@
                     {{ _('Electron:') }} 1s¹
                 </div>
             </div>
-            <div style="grid-column: span 16;"></div>
+            <div class="grid-span-16"></div>
             <div class="element noble" data-symbol="He">
                 <span class="atomic-number">2</span>
                 He
@@ -58,7 +58,7 @@
                     {{ _('Electron:') }} [He] 2s²
                 </div>
             </div>
-            <div style="grid-column: span 10;"></div>
+            <div class="grid-span-10"></div>
             <div class="element metalloid" data-symbol="B">
                 <span class="atomic-number">5</span>
                 B
@@ -137,7 +137,7 @@
                     {{ _('Electron:') }} [Ne] 3s²
                 </div>
             </div>
-            <div class="element-spacer" style="grid-column: span 10;"></div>
+            <div class="element-spacer grid-span-10"></div>
             <div class="element post-transition" data-symbol="Al">
                 Al
                 <div class="tooltip">
@@ -850,7 +850,7 @@
             </div>
 
             <!-- 镧系 -->
-            <div style="grid-column: span 3;"></div>
+            <div class="grid-span-3"></div>
             <div class="element lanthanoid" data-symbol="Ce">
                 Ce
                 <div class="tooltip">
@@ -979,7 +979,7 @@
             </div>
 
             <!-- 锕系 -->
-            <div style="grid-column: span 3;"></div>
+            <div class="grid-span-3"></div>
             <div class="element actinoid" data-symbol="Th">
                 Th
                 <div class="tooltip">

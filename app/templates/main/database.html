@@ -10,7 +10,7 @@
     <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（.data-table-container） -->
 
     <!-- ====================== 搜索表单 ====================== -->
-    <form method="GET" action="{{ url_for('views.index') }}" class="search-form" id="searchForm" onsubmit="return validateSearch()" style="background-color:#fff;">
+    <form method="GET" action="{{ url_for('views.index') }}" class="search-form" id="searchForm" onsubmit="return validateSearch()">
         <!-- 量子电子动画画布（仅首屏10秒展示，随后渐隐隐藏） -->
         <canvas id="hvElectronsDb" class="hv-electrons" aria-hidden="true"></canvas>
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（.search-form, .hv-electrons） -->
@@ -169,7 +169,7 @@
                        value="{{ search_params.q }}"
                        aria-label="{{ _('Search') }}"
                        autocomplete="off">
-                <div class="search-suggestions" id="searchSuggestions" style="display: none;"></div>
+                <div class="search-suggestions" id="searchSuggestions"></div>
             </div>
             <button type="button" class="btn btn-clear" id="clearSearchBtn">{{ _('Clear') }}</button>
             <button type="submit" class="btn">{{ _('Search') }}</button>
@@ -185,7 +185,7 @@
         <!-- [Removed 20250908] Deprecated inline periodic table backup removed. See components/periodic_table.html -->
 
         <!-- 高级搜索 -->
-        <div class="advanced-search" id="advancedSearch" style="display: none;">
+        <div class="advanced-search" id="advancedSearch">
             <div class="search-group">
                 <!-- 第一行: 材料类型和带隙选择 -->
                 <div class="search-row">
@@ -269,7 +269,7 @@
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（advanced-search） -->
         
         <!-- 搜索验证提示 -->
-        <div id="searchAlert" class="search-alert" style="display: none;">
+        <div id="searchAlert" class="search-alert">
             <i class="fas fa-exclamation-circle"></i>
             <span>{{ _('Please enter search criteria or select at least one filter before searching.') }}</span>
         </div>

@@ -33,10 +33,10 @@
                     {% if cif_files %}
                     <p class="file-info">{{ _('Current CIF file(s):') }}<br>
                         {% for f in cif_files %}
-                        <b>{{ f }}</b><br><span style="color:#888">{{ _('Path:') }} {{ structure_dir }}/{{ f }}</span><br>
+                        <b>{{ f }}</b><br><span class="text-muted">{{ _('Path:') }} {{ structure_dir }}/{{ f }}</span><br>
                         {% endfor %}
                         {% if cif_files|length > 1 %}
-                        <span style="color:#e74c3c;font-weight:bold">{{ _('Warning: 存在多个.cif文件，请只保留一个！') }}</span>
+                        <span class="text-danger fw-bold">{{ _('Warning: 存在多个.cif文件，请只保留一个！') }}</span>
                         {% endif %}
                     </p>
                     {% endif %}
@@ -50,10 +50,10 @@
                     {% if band_files %}
                     <p class="file-info">{{ _('Current band file(s):') }}<br>
                         {% for f in band_files %}
-                        <b>{{ f }}</b><br><span style="color:#888">{{ _('Path:') }} {{ band_dir }}/{{ f }}</span><br>
+                        <b>{{ f }}</b><br><span class="text-muted">{{ _('Path:') }} {{ band_dir }}/{{ f }}</span><br>
                         {% endfor %}
                         {% if band_files|length > 1 %}
-                        <span style="color:#e74c3c;font-weight:bold">{{ _('Warning: 存在多个能带文件，请只保留一个！') }}</span>
+                        <span class="text-danger fw-bold">{{ _('Warning: 存在多个能带文件，请只保留一个！') }}</span>
                         {% endif %}
                     </p>
                     {% endif %}
@@ -71,7 +71,7 @@
                     <input type="file" name="properties_json" accept=".json" class="custom-file-input">
                     <small class="help-text">{{ _('JSON file with material properties') }}</small>
                     {% if material.properties_json %}
-                    <p class="file-info">{{ _('Current file:') }} <b>{{ material.properties_json }}</b><br><span style="color:#888">{{ _('Path:') }} /static/materials/IMR-{{ material.id }}/{{ material.properties_json }}</span><br><span style="color:#1976d2">{{ _('Required name: material.json') }}</span></p>
+                    <p class="file-info">{{ _('Current file:') }} <b>{{ material.properties_json }}</b><br><span class="text-muted">{{ _('Path:') }} /static/materials/IMR-{{ material.id }}/{{ material.properties_json }}</span><br><span class="text-primary-600">{{ _('Required name: material.json') }}</span></p>
                     {% endif %}
                     <span class="file-name">{{ _('No file selected') }}</span>
                 </div>
@@ -84,7 +84,7 @@
                     <div class="file-list">
                         {% for f in sc_files %}
                         <div class="file-item">
-                            <b>{{ f }}</b><br><span style="color:#888">{{ _('Path:') }} {{ sc_dir }}/{{ f }}</span><br>
+                            <b>{{ f }}</b><br><span class="text-muted">{{ _('Path:') }} {{ sc_dir }}/{{ f }}</span><br>
                             <button type="button" class="btn btn-sm btn-danger delete-file" data-file="{{ sc_dir }}/{{ f }}">{{ _('删除') }}</button>
                         </div>
                         {% else %}

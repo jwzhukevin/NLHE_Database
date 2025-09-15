@@ -31,7 +31,7 @@
             <div class="login-form-wrapper">
                 <h2 id="form-title">{{ _('Sign In') }}</h2>
                 <!-- 成功/错误提示区（动态填充） -->
-                <div id="login-message" class="login-message" role="status" aria-live="polite" style="display:none"></div>
+                <div id="login-message" class="login-message" role="status" aria-live="polite"></div>
                 
                 <form method="post" class="login-form" id="login-form">
                     {% if csrf_token %}
@@ -107,8 +107,8 @@
 </section>
 
 <!-- 登录成功全屏弹框与遮罩 -->
-<div id="login-success-backdrop" class="login-success-backdrop" aria-hidden="true" style="display:none"></div>
-<div id="login-success-modal" class="login-success-modal" role="dialog" aria-modal="true" aria-live="assertive" style="display:none">
+<div id="login-success-backdrop" class="login-success-backdrop" aria-hidden="true"></div>
+<div id="login-success-modal" class="login-success-modal" role="dialog" aria-modal="true" aria-live="assertive">
     <div class="login-success-card" role="document">
         <div class="success-icon"><i class="fas fa-check-circle"></i></div>
         <div class="success-text" id="login-success-text"></div>

@@ -112,6 +112,7 @@
   overflow-y: auto;
   z-index: 3000;               /* 提升层级，避免被表格或工具栏覆盖 */
 }
+#searchSuggestions { display: none; }
 .suggestion-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; transition: background-color 0.15s; }
 .suggestion-item:hover, .suggestion-item.highlighted { background-color: #f8fafc; }
 .suggestion-item:last-child { border-bottom: none; }
@@ -174,6 +175,7 @@
   animation: fadeIn 0.3s ease-in-out; max-width: 90%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
+#searchAlert { display: none; }
 .search-alert i { color: #ff9800; font-size: 1.2rem; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -229,6 +231,7 @@
 .material-data-table td:last-child { text-align: center; }
 .material-data-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
 .material-data-table tbody tr:nth-child(odd) { background-color: #ffffff; }
+.material-data-table th, .material-data-table td { white-space: nowrap; }
 .material-link { color: var(--primary-color); text-decoration: none; font-weight: 500; }
 .material-link:hover { color: var(--secondary-color); }
 .action-buttons { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: nowrap; }
@@ -237,6 +240,21 @@
 .action-buttons .btn:hover, .action-buttons form .btn:hover { background-color: var(--secondary-color); transform: translateY(-1px); }
 .action-buttons .mp { padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; background-color: #f5f5f5; color: #333; border: 1px solid #e0e0e0; cursor: pointer; transition: all 0.2s; text-decoration: none; font-weight: 600; display: inline-block; line-height: 1; }
 .action-buttons .mp:hover { background-color: #e0e0e0; transform: translateY(-1px); }
+
+/* ===== 指定列行为：ID 列严格单行展示 ===== */
+.material-data-table th[data-col-key="id"],
+.material-data-table td[data-col-key="id"] {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* ===== 其余数据列（除前四列）启用省略号，避免横向撑破布局 ===== */
+.material-data-table td[data-col-key]:not([data-col-key="id"]):not([data-col-key="mp_id"]):not([data-col-key="name"]):not([data-col-key="space_group"]):not([data-col-key="actions"]) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0; /* 允许列在布局中被压缩以显示省略号 */
+}
 
 /* ===== 分页样式 ===== */
 .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; }

@@ -1,0 +1,7 @@
+/* [pages/program.css] 程序工具页样式（由 program/index.html 行内样式迁移） */
+
+.program-container { max-width: 600px; margin: 40px auto; }
+.program-form { margin-bottom: 2rem; }
+.program-form .form-row { margin-bottom: 1rem; }
+.program-results { margin-top: 1.5rem; }
+.mr-1rem { margin-right: 1rem; }

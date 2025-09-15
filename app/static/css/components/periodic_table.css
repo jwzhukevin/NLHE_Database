@@ -108,3 +108,10 @@
 .noble { background-color: #d1c4e9; }
 .lanthanoid { background-color: #ffe0b2; }
 .actinoid { background-color: #ffccbc; }
+
+/* ===== 辅助类：替代模板中的行内样式 ===== */
+.periodic-table-wrapper .pt-tip { color: #666; margin-right: 10px; }
+.periodic-table-wrapper .mr-10 { margin-right: 10px; }
+.periodic-table-wrapper .grid-span-16 { grid-column: span 16; }
+.periodic-table-wrapper .grid-span-10 { grid-column: span 10; }
+.periodic-table-wrapper .grid-span-3 { grid-column: span 3; }

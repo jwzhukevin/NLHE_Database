@@ -32,3 +32,7 @@
 .ai-actions.visible { opacity: 1; }
 .ai-action-btn svg path { fill: #007FFF !important; transition: fill 0.2s; }
 .ai-action-btn:hover svg path { fill: #0047AB !important; }
+
+/* 辅助类：替代模板中的行内样式 */
+.ai-wrapper { display:flex; flex-direction:column; align-items:flex-start; width:100%; }
+.btn-ghost { background:none; border:none; cursor:pointer; }
