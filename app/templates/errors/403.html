@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/errors.css', v='20250929') }}">
+{% endblock %}
+{% block title %}{{ _('Forbidden') }}{% endblock %}
+
+{% block content %}
+<section class="error-hero">
+    <div class="container">
+        <div class="error-grid">
+            <!-- 左侧：状态与说明 -->
+            <div class="error-left" role="region" aria-labelledby="err403_title">
+                <div class="error-code">403</div>
+                <h1 id="err403_title">{{ _('Chat Seats Are Full') }}</h1>
+                <p class="error-sub">
+                    {{ _('Two users are currently using the chat. Please try again later.') }}
+                </p>
+                {% if active_count is defined %}
+                <p class="error-sub small">
+                    {{ _('Current active chat users') }}: <strong>{{ active_count }}</strong>/2
+                </p>
+                {% endif %}
+
+                <div class="actions mt-3">
+                    <a class="btn btn--primary" href="{{ url_for('views.index') }}">
+                        <i class="fas fa-home"></i> {{ _('Back to Home') }}
+                    </a>
+                    <button class="btn" type="button" onclick="history.back()">
+                        <i class="fas fa-arrow-left"></i> {{ _('Go Back') }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：简要说明块（保持与 429 风格一致的双栏布局） -->
+            <div class="error-right">
+                <div class="info-card">
+                    <p class="info-title">
+                        <i class="fas fa-info-circle"></i>
+                        {{ _('Why am I seeing this?') }}
+                    </p>
+                    <ul class="info-list">
+                        <li>{{ _('The system allows up to 2 active chat users at the same time.') }}</li>
+                        <li>{{ _('When one user leaves the chat page, a seat will be released automatically shortly.') }}</li>
+                        <li>{{ _('You can still use all other features of the site.') }}</li>
+                    </ul>
+                    <p class="info-footer">
+                        {{ _('Please try again later. Thank you for your understanding!') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

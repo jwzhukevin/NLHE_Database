@@ -170,6 +170,9 @@
                 </div>
                 <!-- 登录用户专用功能按钮 -->
                 {% if current_user.is_authenticated %}
+                <a href="{{ url_for('chat.chat_page') }}">
+                    <i class="fas fa-comments"></i> {{ _('Chat') }}
+                </a>
                 <a href="{{ url_for('program.index') }}">
                     <i class="fas fa-cogs"></i> {{ _('Program') }}
                 </a>

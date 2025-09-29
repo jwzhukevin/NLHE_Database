@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/chat.css', v='20250929') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container" id="chat-container" aria-live="polite">
+    <h1 class="chat-title"><i class="fas fa-comments"></i> {{ _('Chat') }}</h1>
+
+    <div id="messages" class="messages" role="log"></div>
+
+    <div class="chat-input">
+        <textarea id="user-input" rows="3" placeholder="{{ _('Type your question here...') }}" aria-label="{{ _('Your Message') }}"></textarea>
+        <div class="actions">
+            <button id="send-btn" class="btn"><i class="fas fa-paper-plane"></i> {{ _('Send') }}</button>
+            <button id="clear-btn" class="btn small btn-cancel"><i class="fas fa-broom"></i> {{ _('Clear') }}</button>
+            <button id="export-btn" class="btn small btn-save"><i class="fas fa-download"></i> {{ _('Export') }}</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/chat.js', v='20250929') }}"></script>
+<script>
+  // 注入当前语言到前端，便于请求携带（使用字符串避免静态检查误报）
+  window.CURRENT_LOCALE = "{{ (current_locale or 'en') }}";
+</script>
+{% endblock %}

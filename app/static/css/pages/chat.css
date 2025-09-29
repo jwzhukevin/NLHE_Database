@@ -1,0 +1,60 @@
+/* [pages/chat.css] 聊天页面样式（简洁一致风格） */
+
+#chat-container {
+    padding: 1rem 0;
+}
+
+.chat-title {
+    margin: 1rem 0 0.75rem;
+}
+
+.messages {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    padding: 1rem;
+    min-height: 280px;
+    max-height: 55vh;
+    overflow: auto;
+}
+
+.msg {
+    display: flex;
+    margin-bottom: 0.75rem;
+}
+
+.msg .bubble {
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.msg.user {
+    justify-content: flex-end;
+}
+
+.msg.user .bubble {
+    background: var(--light-bg);
+}
+
+.msg.assistant .bubble {
+    background: #f4f7ff;
+}
+
+.chat-input {
+    margin-top: 0.75rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem 0.75rem;
+}
+
+.chat-input textarea {
+    grid-column: 1 / span 2;
+}
+
+.chat-input .actions {
+    display: flex;
+    gap: 0.5rem;
+}

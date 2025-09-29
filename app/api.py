@@ -5,7 +5,12 @@
 import json
 import os
 import glob
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, Response
+from flask_login import login_required, current_user
+import requests
+import redis
+from datetime import datetime
+import re
 from .models import Material, db
 from .structure_parser import parse_cif_file, save_structure_file, find_structure_file, generate_supercell, get_cif_data, _process_structure, generate_primitive_cell
 from pymatgen.io.cif import CifWriter
@@ -46,10 +51,7 @@ def get_structure(material_id):
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
-
+ 
 @bp.route('/structure/<int:material_id>/conventional', methods=['GET'])
 def get_conventional_cell(material_id):
     """
@@ -529,3 +531,211 @@ def update_material_metal_type(material_id):
             f"Error handling deprecated update-metal-type: {str(e)}"
         )
         return jsonify({"error": str(e)}), 500
+
+# ===================== Chat Streaming Endpoint =====================
+@bp.route('/chat/stream', methods=['POST'])
+@login_required
+def chat_stream():
+    """
+    流式聊天端点：对接硅基流动 DeepSeek（OpenAI 兼容接口）。
+
+    输入（JSON）：
+      - messages: [{role: 'user'|'assistant'|'system', content: str}, ...]
+      - model: 默认 'deepseek-chat'
+      - lang: 'zh'|'en'（可选）
+    """
+    data = request.get_json(silent=True) or {}
+    messages = data.get('messages') or []
+    raw_model = (data.get('model') or '').strip()
+    # 兼容旧值：deepseek-chat/deepseek 统一映射为 Hunyuan V3
+    if not raw_model or raw_model.lower() in ('deepseek-chat', 'deepseek'):
+        model = 'tencent/Hunyuan-MT-7B'
+    else:
+        model = raw_model
+    lang = data.get('lang') or 'en'
+
+    # 说明：按页面占位实现全局并发控制，此处不再做按请求的429限流
+    username = getattr(current_user, 'username', 'user') or 'user'
+
+    # 目录与标题
+    base_dir = os.path.join(current_app.root_path, 'static', 'chat', username)
+    try:
+        os.makedirs(base_dir, exist_ok=True)
+    except Exception:
+        pass
+
+    first_user = next((m for m in messages if m.get('role') == 'user'), None)
+    raw_title = (first_user.get('content') if first_user else '') or 'chat'
+    title = raw_title.strip()[:30]
+    # 文件名安全化
+    title = re.sub(r'[\\/:*?"<>|\s]+', '_', title) or 'chat'
+    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"{title}_{ts}.jsonl"
+    file_path = os.path.join(base_dir, filename)
+    audit_path = os.path.join(base_dir, f"audit-{datetime.now().strftime('%Y%m%d')}.log")
+
+    # 优先：代码内密钥；兜底：环境变量
+    try:
+        from .credentials import SILICONFLOW_API_KEY as CODE_API_KEY
+    except Exception:
+        CODE_API_KEY = ''
+    api_key = CODE_API_KEY or os.getenv('SILICONFLOW_API_KEY', '')
+    if not api_key:
+        # 回退并发计数
+        try:
+            if r is not None and isinstance(active_count, int) and active_count > 0:
+                r.decr(gate_key)
+        except Exception:
+            pass
+        return Response('Server missing SILICONFLOW_API_KEY', status=500, mimetype='text/plain; charset=utf-8')
+
+    url = 'https://api.siliconflow.cn/v1/chat/completions'
+    headers = {
+        'Authorization': f'Bearer {api_key}',
+        'Content-Type': 'application/json'
+    }
+    payload = {
+        'model': model,
+        'messages': messages,
+        'stream': True
+    }
+
+    # 预取可跨上下文使用的信息（避免生成器 finally 阶段访问上下文）
+    try:
+        logger_ref = current_app.logger
+    except Exception:
+        logger_ref = None
+    ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+
+    # 写入 meta 与历史到存档
+    try:
+        with open(file_path, 'a', encoding='utf-8') as f:
+            meta = {
+                'type': 'meta',
+                'title': raw_title,
+                'title_sanitized': title,
+                'timestamp': ts,
+                'user': username,
+                'model': model,
+                'lang': lang
+            }
+            f.write(json.dumps(meta, ensure_ascii=False) + '\n')
+            for m in messages:
+                f.write(json.dumps({'type': 'message', **m}, ensure_ascii=False) + '\n')
+    except Exception as e:
+        if logger_ref:
+            logger_ref.warning(f'failed to write chat meta/messages: {e}')
+
+    def stream_generator():
+        total_len = 0
+        err_text = None
+        try:
+            with requests.post(url, headers=headers, json=payload, stream=True, timeout=60) as resp:
+                if resp.status_code != 200:
+                    err = resp.text
+                    err_text = f'Upstream {resp.status_code}: {err}'
+                    yield err_text
+                    return
+                # 强制按 UTF-8 处理，避免编码猜测导致乱码
+                resp.encoding = 'utf-8'
+                assistant_acc = ''
+                for raw_line in resp.iter_lines(decode_unicode=False):
+                    if not raw_line:
+                        continue
+                    # 明确以 UTF-8 解码，忽略异常字节
+                    line = raw_line.decode('utf-8', 'ignore').strip()
+                    if line == 'data: [DONE]':
+                        break
+                    if not line.startswith('data:'):
+                        continue
+                    try:
+                        j = json.loads(line[len('data:'):].strip())
+                        choices = j.get('choices') or []
+                        delta = (choices[0].get('delta') if choices else {}) or {}
+                        content = delta.get('content')
+                        if content:
+                            assistant_acc += content
+                            total_len += len(content)
+                            yield content
+                    except Exception:
+                        # 解析失败：不透传原始行，避免将 "data: {...}" 泄漏到前端
+                        continue
+
+                # 写入 assistant 最终回复
+                try:
+                    with open(file_path, 'a', encoding='utf-8') as f:
+                        f.write(json.dumps({'type': 'message', 'role': 'assistant', 'content': assistant_acc}, ensure_ascii=False) + '\n')
+                except Exception as e:
+                    if logger_ref:
+                        logger_ref.warning(f'failed to write assistant message: {e}')
+        finally:
+            # 审计
+            try:
+                with open(audit_path, 'a', encoding='utf-8') as af:
+                    stamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    logline = {
+                        'time': stamp,
+                        'user': username,
+                        'ip': ip,
+                        'model': model,
+                        'title': raw_title[:60],
+                        'resp_length': total_len,
+                        'error': err_text
+                    }
+                    af.write(json.dumps(logline, ensure_ascii=False) + '\n')
+            except Exception as e:
+                if logger_ref:
+                    logger_ref.warning(f'failed to write audit log: {e}')
+
+    
+    return Response(stream_generator(), mimetype='text/plain; charset=utf-8')
+
+# 为流式端点豳免 CSRF（仅此端点）
+try:
+    from . import csrf as _csrf
+    if _csrf is not None:
+        _csrf.exempt(chat_stream)
+except Exception:
+    pass
+
+# ============== ChatOccupancy APIs (Heartbeat/Release) ==============
+@bp.route('/chat/heartbeat', methods=['POST'])
+@login_required
+def chat_heartbeat():
+    """
+    聊天占位心跳：进入聊天页即开始心跳，维持当前用户占位。
+
+    逻辑：
+    - 使用 Redis 键 chat:active_user:{username} 表示一个活跃对话用户，占位 TTL 60 秒
+    - 心跳调用将键续期为 60 秒
+    """
+    try:
+        username = getattr(current_user, 'username', 'user') or 'user'
+        rurl = current_app.config.get('RATELIMIT_STORAGE_URL') or current_app.config.get('REDIS_URL')
+        if not rurl:
+            return jsonify({"ok": True, "note": "redis_unconfigured"})
+        r = redis.from_url(rurl)
+        key = f'chat:active_user:{username}'
+        r.set(key, 1, ex=60)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@bp.route('/chat/release', methods=['POST'])
+@login_required
+def chat_release():
+    """
+    释放聊天占位：离开页面或显式释放时调用。
+    """
+    try:
+        username = getattr(current_user, 'username', 'user') or 'user'
+        rurl = current_app.config.get('RATELIMIT_STORAGE_URL') or current_app.config.get('REDIS_URL')
+        if not rurl:
+            return jsonify({"ok": True, "note": "redis_unconfigured"})
+        r = redis.from_url(rurl)
+        key = f'chat:active_user:{username}'
+        r.delete(key)
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
