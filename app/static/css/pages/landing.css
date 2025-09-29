@@ -28,3 +28,24 @@
   .hero { padding: 6rem 0 3rem; }
   .features-grid, .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* ========== CTA 按钮（页面级覆盖，仅保留 hover 变深） ========== */
+/* 说明：landing 页 CTA 只需要鼠标悬停变深色，不需要位移动画/阴影等动态效果 */
+.hero .cta-form .cta-button {
+  transform: none !important;
+  box-shadow: none !important;
+  animation: none !important;
+  transition: background-color 120ms ease !important; /* 仅保留背景色过渡 */
+}
+
+.hero .cta-form .cta-button:hover {
+  transform: none !important;
+  box-shadow: none !important; /* 变深色由 .btn--primary:hover 提供 */
+}
+
+.hero .cta-form .cta-button:active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 可访问性：保留默认的 focus 可视化，不强行移除 outline */
