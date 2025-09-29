@@ -225,9 +225,6 @@ msgstr "Materials Cloud 工具"
 msgid "NOMAD Laboratory"
 msgstr "NOMAD 实验室"
 
-#: app/templates/base.html:164
-msgid "SiliconFlow LLM"
-msgstr "SiliconFlow 大模型"
 
 #: app/templates/base.html:167
 msgid "Program"
@@ -889,9 +886,6 @@ msgstr "镧系元素"
 msgid "Actinides"
 msgstr "锕系元素"
 
-#: app/templates/deepseek/chat.html:216
-msgid "SiliconFlow LLM Chat"
-msgstr "SiliconFlow 大模型聊天"
 
 #: app/templates/deepseek/chat.html:219 app/templates/main/database.html:991
 #: app/templates/materials/detail.html:156
@@ -902,100 +896,33 @@ msgstr "删除"
 msgid "Clear"
 msgstr "清空"
 
-#: app/templates/deepseek/chat.html:221
-msgid "New"
-msgstr "新建"
 
 #: app/templates/deepseek/chat.html:222 app/templates/deepseek/chat.html:244
 msgid "Save"
 msgstr "保存"
 
-#: app/templates/deepseek/chat.html:223
-msgid "History:"
-msgstr "历史："
 
-#: app/templates/deepseek/chat.html:225
-msgid "Current Session"
-msgstr "当前会话"
 
-#: app/templates/deepseek/chat.html:233 app/templates/deepseek/chat.html:258
-#, fuzzy
-msgid "Rename"
-msgstr "重命名"
 
-#: app/templates/deepseek/chat.html:241
-msgid "Name this session"
-msgstr "为该会话命名"
 
-#: app/templates/deepseek/chat.html:242
-#, fuzzy
-msgid "Session name"
-msgstr "会话名称"
 
 #: app/templates/deepseek/chat.html:245 app/templates/deepseek/chat.html:259
 #: app/templates/materials/add.html:247
 msgid "Cancel"
 msgstr "取消"
 
-#: app/templates/deepseek/chat.html:255
-msgid "Rename this session"
-msgstr "重命名该会话"
 
-#: app/templates/deepseek/chat.html:256
-msgid "New name"
-msgstr "新名称"
 
-#: app/templates/deepseek/chat.html:267 app/templates/deepseek/chat.html:305
-msgid "You"
-msgstr "你"
 
-#: app/templates/deepseek/chat.html:271 app/templates/deepseek/chat.html:306
-msgid "AI"
-msgstr "AI"
 
-#: app/templates/deepseek/chat.html:276 app/templates/deepseek/chat.html:309
-msgid "Save answer"
-msgstr "保存回答"
 
-#: app/templates/deepseek/chat.html:280
-msgid "Retry answering"
-msgstr "重新回答"
 
-#: app/templates/deepseek/chat.html:284
-msgid "Delete answer"
-msgstr "删除回答"
 
-#: app/templates/deepseek/chat.html:294
-msgid "Type your message..."
-msgstr "输入你的消息…"
 
-#: app/templates/deepseek/chat.html:295
-msgid "Send"
-msgstr "发送"
 
-#: app/templates/deepseek/chat.html:307
-msgid "Generating..."
-msgstr "正在生成…"
 
-#: app/templates/deepseek/chat.html:308
-msgid "Copied!"
-msgstr "已复制！"
 
-#: app/templates/deepseek/chat.html:310
-msgid "Copy question"
-msgstr "复制问题"
 
-#: app/templates/deepseek/chat.html:311
-msgid "Submit failed:"
-msgstr "提交失败："
-
-#: app/templates/deepseek/chat.html:312
-msgid "Are you sure you want to delete this Q&A?"
-msgstr "确定删除此问答吗？"
-
-#: app/templates/deepseek/chat.html:313
-msgid "Server error"
-msgstr "服务器错误"
 
 #: app/templates/errors/404.html:8
 msgid "Page Not Found"

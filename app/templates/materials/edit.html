@@ -85,7 +85,7 @@
                         {% for f in sc_files %}
                         <div class="file-item">
                             <b>{{ f }}</b><br><span class="text-muted">{{ _('Path:') }} {{ sc_dir }}/{{ f }}</span><br>
-                            <button type="button" class="btn btn-sm btn-danger delete-file" data-file="{{ sc_dir }}/{{ f }}">{{ _('删除') }}</button>
+                            <button type="button" class="btn btn-sm btn-danger btn--sm btn--danger delete-file" data-file="{{ sc_dir }}/{{ f }}">{{ _('删除') }}</button>
                         </div>
                         {% else %}
                         <div class="no-files">{{ _('无Shift Current文件') }}</div>
@@ -140,12 +140,12 @@
 
         <!-- Form Action Buttons -->
         <div class="form-actions">
-            <button type="submit" class="btn btn-save" 
+            <button type="submit" class="btn btn-save btn--primary" 
                     data-confirm="{{ _('Confirm Save?') }}">
                 <i class="fas fa-save"></i> {{ _('Update Material') }}
             </button>
             <a href="{{ url_for('views.detail', material_id=material.id) }}" 
-               class="btn btn-cancel">
+               class="btn btn-cancel btn--ghost">
                 <i class="fas fa-times"></i> {{ _('Discard Changes') }}
             </a>
         </div>

@@ -4,11 +4,11 @@
     <div class="elements-header">
         <div class="header-left">
             <span>{{ _('Periodic Table') }}</span>
-            <button type="button" class="btn btn-sm" id="clearElements">{{ _('Clear All') }}</button>
+            <button type="button" class="btn btn-sm btn--sm btn--secondary" id="clearElements">{{ _('Clear All') }}</button>
         </div>
         <div class="header-right">
             <small class="pt-tip">{{ _('Click elements to add to search') }}</small>
-            <button type="button" class="btn btn-sm {{ '' if show_analyze_btn else 'is-hidden' }} mr-10" id="analyzeElements">{{ _('Analyze') }}</button>
+            <button type="button" class="btn btn-sm btn--sm btn--primary {{ '' if show_analyze_btn else 'is-hidden' }} mr-10" id="analyzeElements">{{ _('Analyze') }}</button>
             <span id="selectedElementsCount">{{ _('0 selected') }}</span>
         </div>
     </div>

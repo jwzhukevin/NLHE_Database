@@ -170,9 +170,6 @@
                 </div>
                 <!-- 登录用户专用功能按钮 -->
                 {% if current_user.is_authenticated %}
-                <a href="{{ url_for('siliconflow.chat') }}">
-                    <i class="fas fa-robot"></i> {{ _('SiliconFlow LLM') }}
-                </a>
                 <a href="{{ url_for('program.index') }}">
                     <i class="fas fa-cogs"></i> {{ _('Program') }}
                 </a>

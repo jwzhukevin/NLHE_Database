@@ -151,7 +151,7 @@ setTimeout(function() {
 
                 <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}"
                    type="submit" data-confirm="{{ _('Delete permanently?') }}" onclick="return confirm(this.dataset.confirm)"
-                   class="action-btn delete-btn">
+                   class="action-btn delete-btn btn btn--danger">
                     <i class="fas fa-trash-alt"></i>
                     <span>{{ _('Delete') }}</span>
                 </a>

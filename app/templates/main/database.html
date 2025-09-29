@@ -171,10 +171,10 @@
                        autocomplete="off">
                 <div class="search-suggestions" id="searchSuggestions"></div>
             </div>
-            <button type="button" class="btn btn-clear" id="clearSearchBtn">{{ _('Clear') }}</button>
-            <button type="submit" class="btn">{{ _('Search') }}</button>
-            <button type="button" class="btn" id="elementsToggleBtn" aria-controls="periodicTableWrapper" aria-expanded="false">{{ _('Elements') }}</button>
-            <button type="button" class="btn" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
+            <button type="button" class="btn btn-clear btn--ghost" id="clearSearchBtn">{{ _('Clear') }}</button>
+            <button type="submit" class="btn btn--primary">{{ _('Search') }}</button>
+            <button type="button" class="btn btn--secondary" id="elementsToggleBtn" aria-controls="periodicTableWrapper" aria-expanded="false">{{ _('Elements') }}</button>
+            <button type="button" class="btn btn--secondary" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
             <input type="hidden" name="per_page" id="per_page" value="">
         </div>
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（analysis modal 样式已外置） -->
@@ -288,13 +288,13 @@
                         <span class="filter-tag">
                             <span class="filter-key">{{ key|title }}</span>
                             <span class="filter-value">{{ value }}</span>
-                            <a href="{{ url_for('views.index', **(search_params|remove_key(key))) }}" class="remove-filter" title="Remove this filter">
+                            <a href="{{ url_for('views.index', **(search_params|remove_key(key))) }}" class="remove-filter btn btn--link btn--sm" title="Remove this filter">
                                 <i class="fas fa-times"></i>
                             </a>
                         </span>
                     {% endif %}
                 {% endfor %}
-                <a href="{{ url_for('views.index') }}" class="clear-all-filters">{{ _('Clear All') }}</a>
+                <a href="{{ url_for('views.index') }}" class="clear-all-filters btn btn--link btn--sm">{{ _('Clear All') }}</a>
             </div>
         {% endif %}
     </div>
@@ -311,7 +311,7 @@
         </span>
         <div class="table-toolbar">
             <div class="menu per-page">
-                <button type="button" class="btn small" id="perPageBtn" aria-expanded="false">{{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">({{ pagination.per_page if pagination else 10 }})</span></button>
+                <button type="button" class="btn small btn--sm btn--secondary" id="perPageBtn" aria-expanded="false">{{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">({{ pagination.per_page if pagination else 10 }})</span></button>
                 <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
                     <button type="button" class="menu-item" data-per-page="10">
                       <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
@@ -336,7 +336,7 @@
                 </div>
             </div>
             <div class="menu column-visibility">
-                <button type="button" class="btn small" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
+                <button type="button" class="btn small btn--sm btn--secondary" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
                 <div class="menu-panel is-hidden" id="colMenu" role="menu" aria-labelledby="colToggleBtn">
                     <div class="menu-title">{{ _('Optional Columns') }}</div>
                     <label class="menu-check" data-field="fermi_level" title="{{ _('Fermi Level (eV)') }}">
@@ -358,7 +358,7 @@
                       <i class="far fa-eye field-visibility" aria-hidden="true"></i>
                     </label>
                     <div class="menu-actions">
-                        <button type="button" class="btn small" id="applyColsBtn">{{ _('Apply') }}</button>
+                        <button type="button" class="btn small btn--sm btn--primary" id="applyColsBtn">{{ _('Apply') }}</button>
                     </div>
                 </div>
             </div>
@@ -416,13 +416,13 @@
                            MP
                         </a>
                         {% if current_user.is_authenticated and current_user.is_admin() %}
-                        <a class="btn" 
+                        <a class="btn btn--secondary" 
                            href="{{ url_for('views.edit', material_id=material.id) }}">
                            {{ _('Edit') }}
                         </a>
                         <form method="post" 
                               action="{{ url_for('views.delete', material_id=material.id) }}">
-                            <button class="btn" 
+                            <button class="btn btn--danger" 
                                     type="submit"
                                     data-confirm="{{ _('Delete permanently?') }}"
                                     onclick="return confirm(this.getAttribute('data-confirm'))">{{ _('Delete') }}</button>

@@ -86,8 +86,8 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="primary-btn" id="login-button">{{ _('Log In') }}</button>
-                        <a href="{{ url_for('views.index') }}" class="secondary-btn">{{ _('Return to Database') }}</a>
+                        <button type="submit" class="primary-btn btn btn--primary" id="login-button">{{ _('Log In') }}</button>
+                        <a href="{{ url_for('views.index') }}" class="secondary-btn btn btn--link">{{ _('Return to Database') }}</a>
                     </div>
                 </form>
                 
@@ -349,8 +349,8 @@
 
         function showLoginSuccessModal(durationMs, text) {
             if (successText) successText.textContent = text || i18nTexts.loginSuccessRedirect;
-            if (successBackdrop) successBackdrop.style.display = '';
-            if (successModal) successModal.style.display = '';
+            if (successBackdrop) successBackdrop.style.display = 'block';
+            if (successModal) successModal.style.display = 'flex';
             if (successBar) {
                 // 重置进度条
                 successBar.style.transition = 'none';

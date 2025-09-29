@@ -98,13 +98,13 @@
 
         <!-- Form Action Buttons -->
         <div class="form-actions">
-            <button type="submit" class="btn btn-save" 
+            <button type="submit" class="btn btn-save btn--primary" 
                     data-confirm="{{ _('Confirm Save?') }}"
                     onclick="return confirm(this.getAttribute('data-confirm'))">
                 <i class="fas fa-save"></i> {{ _('Create Material') }}
             </button>
             <a href="{{ url_for('views.index') }}" 
-               class="btn btn-cancel">
+               class="btn btn-cancel btn--ghost">
                 <i class="fas fa-times"></i> {{ _('Cancel') }}
             </a>
         </div>

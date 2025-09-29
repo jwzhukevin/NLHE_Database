@@ -14,7 +14,6 @@ NLHE_Database是一个专为材料科学研究设计的综合数据库管理系�
 - **批量数据处理**：支持CSV和JSON格式的数据批量导入导出
 - **用户认证与权限**：多级权限控制系统，支持管理员账户和普通用户区分
 - **安全防护措施**：IP封锁保护机制，防止暴力登录尝试
-- **AI对话集成**：集成Deepseek AI对话接口，支持科研问题咨询和材料知识问答
 - **文件格式转换**：支持TXT文件转换为DAT和DOCX格式的工具
 
 ## 技术架构
@@ -36,9 +35,6 @@ NLHE_Database是一个专为材料科学研究设计的综合数据库管理系�
 - **NumPy/SciPy**：科学计算库，提供数值计算支持
 - **Spglib**：空间群计算，用于晶体对称性分析
 
-### AI集成
-- **Deepseek API**：集成QwQ-32B大型语言模型，提供科研问题解答
-- **会话管理**：支持多会话保存、切换和管理
 
 ## 项目结构
 
@@ -50,7 +46,6 @@ NLHE_Database/
 │   ├── views.py           # 视图函数和路由
 │   ├── api.py             # RESTful API接口
 │   ├── articles.py        # 文章管理模块
-│   ├── deepseek.py        # AI对话接口模块
 │   ├── program.py         # 文件格式转换工具模块
 │   ├── structure_parser.py # 结构文件解析工具
 │   ├── commands.py        # CLI命令工具
@@ -61,7 +56,6 @@ NLHE_Database/
 │   │   │   ├── band-plot.js       # 能带图绘制
 │   │   │   └── sc-plot.js         # SC结构图绘制
 │   │   ├── images/        # 图片资源
-│   │   ├── chat/          # AI对话历史记录
 │   │   └── materials/     # 材料数据文件（按IMR-ID组织）
 │   └── templates/         # HTML模板
 ├── instance/              # Flask实例文件夹
@@ -151,10 +145,6 @@ NLHE_Database/
 - 发布与材料相关的研究文章和报告
 - 支持富文本编辑，可插入图片和引用
 
-### AI对话助手
-- 基于Deepseek API的科研问题咨询
-- 支持多会话保存和管理
-- 历史对话查看和编辑功能
 
 ### 文件格式转换
 - 支持TXT文件转换为DAT和DOCX格式
@@ -165,7 +155,6 @@ NLHE_Database/
 - 定期备份`instance/app.db`数据库文件
 - 系统日志记录在应用实例目录中
 - 建议按计划对材料数据进行增量备份
-- AI对话历史存储在用户目录下，可单独备份
 
 ## 开发者说明
 
@@ -173,7 +162,6 @@ NLHE_Database/
 - 使用蓝图(Blueprint)分离不同功能模块
 - 数据库迁移通过Flask-Migrate管理
 - 结构解析模块使用Pymatgen库处理CIF文件
-- AI模块使用Deepseek API，可配置为其他兼容接口
 
 ## 技术亮点
 
@@ -181,7 +169,6 @@ NLHE_Database/
 - **交互式可视化**：前端使用WebGL技术实现高性能3D渲染
 - **材料ID系统**：采用标准化的材料编码系统（IMR-XXXXXXXX）
 - **多层次安全**：包括数据验证、用户认证和防暴力攻击机制
-- **AI辅助研究**：集成大型语言模型，辅助材料研究和数据分析
 
 ## 许可与贡献
 

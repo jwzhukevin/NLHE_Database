@@ -1351,7 +1351,6 @@ def debug_user_status():
 
         <h2>导航栏显示逻辑测试</h2>
         <ul>
-            <li>显示SiliconFlow按钮: {'是' if current_user.is_authenticated else '否'}</li>
             <li>显示Program按钮: {'是' if current_user.is_authenticated else '否'}</li>
             <li>显示Add按钮: {'是' if current_user.is_authenticated and current_user.is_admin() else '否'}</li>
             <li>显示Login按钮: {'是' if not current_user.is_authenticated else '否'}</li>
