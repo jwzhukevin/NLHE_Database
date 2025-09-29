@@ -5,7 +5,7 @@
 import json
 import os
 import glob
-from flask import Blueprint, jsonify, request, current_app, Response
+from flask import Blueprint, jsonify, request, current_app, Response, session
 from flask_login import login_required, current_user
 import requests
 import redis
@@ -554,7 +554,7 @@ def chat_stream():
         model = raw_model
     lang = data.get('lang') or 'en'
 
-    # 说明：按页面占位实现全局并发控制，此处不再做按请求的429限流
+    # 不做并发席位限制；仅组织存档路径
     username = getattr(current_user, 'username', 'user') or 'user'
 
     # 目录与标题
@@ -564,14 +564,14 @@ def chat_stream():
     except Exception:
         pass
 
-    first_user = next((m for m in messages if m.get('role') == 'user'), None)
-    raw_title = (first_user.get('content') if first_user else '') or 'chat'
-    title = raw_title.strip()[:30]
-    # 文件名安全化
-    title = re.sub(r'[\\/:*?"<>|\s]+', '_', title) or 'chat'
+    # 使用会话固定文件名：进入聊天页时生成，整场会话复用
+    session_filename = session.get('chat_session_file')
+    if not session_filename:
+        session_filename = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
+        session['chat_session_file'] = session_filename
+    file_path = os.path.join(base_dir, session_filename)
+    # 生成审计文件按日期聚合
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f"{title}_{ts}.jsonl"
-    file_path = os.path.join(base_dir, filename)
     audit_path = os.path.join(base_dir, f"audit-{datetime.now().strftime('%Y%m%d')}.log")
 
     # 优先：代码内密钥；兜底：环境变量
@@ -581,12 +581,6 @@ def chat_stream():
         CODE_API_KEY = ''
     api_key = CODE_API_KEY or os.getenv('SILICONFLOW_API_KEY', '')
     if not api_key:
-        # 回退并发计数
-        try:
-            if r is not None and isinstance(active_count, int) and active_count > 0:
-                r.decr(gate_key)
-        except Exception:
-            pass
         return Response('Server missing SILICONFLOW_API_KEY', status=500, mimetype='text/plain; charset=utf-8')
 
     url = 'https://api.siliconflow.cn/v1/chat/completions'
@@ -607,19 +601,21 @@ def chat_stream():
         logger_ref = None
     ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
 
-    # 写入 meta 与历史到存档
+    # 写入 meta 与历史到存档（仅在文件为空时写入 meta）
     try:
+        file_exists = os.path.exists(file_path)
+        file_empty = (not file_exists) or (os.path.getsize(file_path) == 0)
         with open(file_path, 'a', encoding='utf-8') as f:
-            meta = {
-                'type': 'meta',
-                'title': raw_title,
-                'title_sanitized': title,
-                'timestamp': ts,
-                'user': username,
-                'model': model,
-                'lang': lang
-            }
-            f.write(json.dumps(meta, ensure_ascii=False) + '\n')
+            if file_empty:
+                meta = {
+                    'type': 'meta',
+                    'timestamp': ts,
+                    'user': username,
+                    'model': model,
+                    'lang': lang,
+                    'session_file': session_filename
+                }
+                f.write(json.dumps(meta, ensure_ascii=False) + '\n')
             for m in messages:
                 f.write(json.dumps({'type': 'message', **m}, ensure_ascii=False) + '\n')
     except Exception as e:
@@ -678,7 +674,7 @@ def chat_stream():
                         'user': username,
                         'ip': ip,
                         'model': model,
-                        'title': raw_title[:60],
+                        'title': session_filename,
                         'resp_length': total_len,
                         'error': err_text
                     }
@@ -690,7 +686,7 @@ def chat_stream():
     
     return Response(stream_generator(), mimetype='text/plain; charset=utf-8')
 
-# 为流式端点豳免 CSRF（仅此端点）
+# 为流式端点豁免 CSRF（仅此端点）
 try:
     from . import csrf as _csrf
     if _csrf is not None:
@@ -698,44 +694,4 @@ try:
 except Exception:
     pass
 
-# ============== ChatOccupancy APIs (Heartbeat/Release) ==============
-@bp.route('/chat/heartbeat', methods=['POST'])
-@login_required
-def chat_heartbeat():
-    """
-    聊天占位心跳：进入聊天页即开始心跳，维持当前用户占位。
-
-    逻辑：
-    - 使用 Redis 键 chat:active_user:{username} 表示一个活跃对话用户，占位 TTL 60 秒
-    - 心跳调用将键续期为 60 秒
-    """
-    try:
-        username = getattr(current_user, 'username', 'user') or 'user'
-        rurl = current_app.config.get('RATELIMIT_STORAGE_URL') or current_app.config.get('REDIS_URL')
-        if not rurl:
-            return jsonify({"ok": True, "note": "redis_unconfigured"})
-        r = redis.from_url(rurl)
-        key = f'chat:active_user:{username}'
-        r.set(key, 1, ex=60)
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
-
-
-@bp.route('/chat/release', methods=['POST'])
-@login_required
-def chat_release():
-    """
-    释放聊天占位：离开页面或显式释放时调用。
-    """
-    try:
-        username = getattr(current_user, 'username', 'user') or 'user'
-        rurl = current_app.config.get('RATELIMIT_STORAGE_URL') or current_app.config.get('REDIS_URL')
-        if not rurl:
-            return jsonify({"ok": True, "note": "redis_unconfigured"})
-        r = redis.from_url(rurl)
-        key = f'chat:active_user:{username}'
-        r.delete(key)
-        return jsonify({"ok": True})
-    except Exception as e:
-        return jsonify({"ok": False, "error": str(e)}), 500
+#（已移除占位限制相关 API）

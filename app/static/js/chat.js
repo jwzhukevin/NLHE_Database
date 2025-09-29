@@ -13,7 +13,6 @@
 
   let history = [];
   let inFlight = false;
-  let hbTimer = null;
 
   function appendMessage(role, text) {
     const item = document.createElement('div');
@@ -130,53 +129,4 @@
   btnClear && btnClear.addEventListener('click', clearChat);
   btnExport && btnExport.addEventListener('click', exportChat);
 
-  // ========== 占位心跳与释放 ==========
-  async function heartbeat() {
-    try {
-      const resp = await fetch('/api/chat/heartbeat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        keepalive: true
-      });
-      if (!resp.ok) {
-        throw new Error('heartbeat ' + resp.status);
-      }
-      const data = await resp.json().catch(() => ({}));
-      if (!data.ok) throw new Error(data.error || 'heartbeat failed');
-      // 心跳成功，确保输入可用
-      if (elInput) elInput.disabled = false;
-      if (btnSend) btnSend.disabled = false;
-    } catch (e) {
-      // 心跳失败：禁用输入并提示
-      if (elInput) elInput.disabled = true;
-      if (btnSend) btnSend.disabled = true;
-      appendMessage('assistant', '[系统] 当前对话席位不可用，请稍后重试。');
-    }
-  }
-
-  function startHeartbeat() {
-    heartbeat();
-    hbTimer = setInterval(heartbeat, 20000);
-  }
-
-  function releaseSeat() {
-    try {
-      const data = new Blob([JSON.stringify({ ok: true })], { type: 'application/json' });
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/chat/release', data);
-      } else {
-        fetch('/api/chat/release', { method: 'POST', body: data, keepalive: true });
-      }
-    } catch {}
-  }
-
-  window.addEventListener('pageshow', () => startHeartbeat());
-  window.addEventListener('pagehide', () => {
-    if (hbTimer) clearInterval(hbTimer);
-    releaseSeat();
-  });
-  window.addEventListener('beforeunload', () => {
-    if (hbTimer) clearInterval(hbTimer);
-    releaseSeat();
-  });
 })();
