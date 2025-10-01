@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="padding-top: var(--navbar-height, 74px); min-height: 60vh;">
+  <div class="error-grid" style="max-width: 760px; margin: 0 auto; text-align: center;">
+    <div class="error-code" style="font-size: 4rem; font-weight: 700; color: #0047AB;">410</div>
+    <h1>{{ _('Resource Gone') }}</h1>
+    <p style="margin-top: 1rem; color: #555;">
+      {{ _('Write operations are disabled. The site is currently running in read-only mode.') }}
+    </p>
+    <p style="margin-top: .5rem; color: #666;">
+      {{ _('If you believe this is an error, please contact the site maintainer.') }}
+    </p>
+    <div style="margin-top: 1.5rem;">
+      <a href="{{ url_for('views.index') }}" class="btn btn--primary">{{ _('Back to Database') }}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

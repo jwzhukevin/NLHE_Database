@@ -43,9 +43,9 @@ def register_commands(app):
         """添加新用户"""
         db.create_all()
         
-        # 验证角色是否有效
-        if role not in ['admin', 'user']:
-            click.echo(f'Invalid role: {role}. Must be "admin" or "user".')
+        # [Deprecated 20251001] 只读模式：仅允许创建普通用户
+        if role != 'user':
+            click.echo(f'Invalid role: {role}. Only "user" is allowed in read-only mode.')
             return 1
 
         # 验证邮箱格式
@@ -279,57 +279,10 @@ def register_commands(app):
         click.echo('Database initialization completed.')
 
     @app.cli.command()
-    @click.option('--username', prompt=True)
-    @click.option('--email', prompt=True)
-    @click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True)
-    def admin(username, email, password):
-        """创建管理员用户"""
-        db.create_all()
-        
-        # 验证邮箱格式
-        email = email.strip().lower()
-        if '@' not in email:
-            click.echo(f'Invalid email format: {email}')
-            return 1
-        
-        # 检查用户是否已存在（通过邮箱或用户名）
-        user_by_email = User.query.filter_by(email=email).first()
-        user_by_username = User.query.filter_by(username=username).first()
-        
-        if user_by_email:
-            click.echo('Updating existing user...')
-            user = user_by_email
-            user.username = username
-            user.set_password(password)
-
-            # 确保用户具有管理员角色
-            if user.role != 'admin':
-                user.role = 'admin'
-                click.echo('User role updated to admin.')
-        elif user_by_username:
-            click.echo('Updating existing user and adding email...')
-            user = user_by_username
-            user.email = email
-            user.set_password(password)
-
-            # 确保用户具有管理员角色
-            if user.role != 'admin':
-                user.role = 'admin'
-                click.echo('User role updated to admin.')
-        else:
-            click.echo('Creating new admin user...')
-            user = User(username=username, name='NLHE Database', email=email, role='admin')
-            user.set_password(password)
-            db.session.add(user)
-        
-        try:
-            db.session.commit()
-            click.echo('Admin account updated successfully.')
-            return 0
-        except Exception as e:
-            db.session.rollback()
-            click.echo(f'Error creating/updating admin: {str(e)}')
-            return 1
+    def admin():
+        """[Deprecated 20251001] 创建管理员用户命令已禁用（只读模式）"""
+        click.echo('❌ This command is disabled. The site runs in read-only mode; admin role is not supported.')
+        return 1
 
     @app.cli.command()
     def update_nullable_columns():

@@ -77,8 +77,12 @@ class User(db.Model, UserMixin):
     
     # 管理员检查方法
     def is_admin(self):
-        """检查用户是否为管理员"""
-        return self.role == 'admin'
+        """检查用户是否为管理员
+
+        [Deprecated 20251001] 取消管理员机制：所有用户均视为非管理员。
+        无论数据库中角色字段为何值，均返回 False。
+        """
+        return False
     
     # 注册用户检查方法
     def is_registered_user(self):

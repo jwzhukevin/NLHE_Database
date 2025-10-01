@@ -141,21 +141,7 @@ setTimeout(function() {
                 </a>
                 {% endif %}
 
-                <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
-                {% if current_user.is_authenticated and current_user.is_admin() %}
-                <a href="{{ url_for('views.edit', material_id=material.id) }}"
-                   class="btn btn--secondary">
-                    <i class="fas fa-edit"></i>
-                    <span>{{ _('Edit') }}</span>
-                </a>
-
-                <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}"
-                   type="submit" data-confirm="{{ _('Delete permanently?') }}" onclick="return confirm(this.dataset.confirm)"
-                   class="btn btn--danger">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>{{ _('Delete') }}</span>
-                </a>
-                {% endif %}
+                {# [Deprecated 20251001] 编辑/删除入口已移除（只读模式） #}
             </div>
         </div>
     </div>

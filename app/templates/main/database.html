@@ -418,19 +418,7 @@
                            title="{{ _('View in MP') }}">
                            MP
                         </a>
-                        {% if current_user.is_authenticated and current_user.is_admin() %}
-                        <a class="btn btn--secondary" 
-                           href="{{ url_for('views.edit', material_id=material.id) }}">
-                           {{ _('Edit') }}
-                        </a>
-                        <form method="post" 
-                              action="{{ url_for('views.delete', material_id=material.id) }}">
-                            <button class="btn btn--danger" 
-                                    type="submit"
-                                    data-confirm="{{ _('Delete permanently?') }}"
-                                    onclick="return confirm(this.getAttribute('data-confirm'))">{{ _('Delete') }}</button>
-                        </form>
-                        {% endif %}
+                        {# [Deprecated 20251001] 行级编辑/删除入口已移除（只读模式） #}
                     </div>
                 </td>
             </tr>

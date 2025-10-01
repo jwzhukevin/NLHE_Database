@@ -324,128 +324,11 @@ def get_material_dir(material_id):
     new_dir = os.path.join(base_dir, f'IMR-{material_id}')
     return new_dir
 
-# Material add route (admin required)
+# [Deprecated 20251001] 网页端新增功能已移除，保持只读
 @bp.route('/add', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def add():
-    """
-    添加新材料。
-
-    目录策略说明：
-    - 仅使用新目录 `IMR-{id}`；
-    - 旧目录（`IMR-00000001` 这类补零格式）的回退与兼容由 `structure_parser` 内部集中处理，
-      本视图不直接感知旧格式，避免多处维护导致不一致。
-    """
-    if request.method == 'POST':
-        try:
-            # 获取上传的文件
-            structure_file = request.files.get('structure_file')
-            band_file = request.files.get('band_file')
-            properties_json = request.files.get('properties_json')
-            sc_structure_file = request.files.get('sc_structure_file')
-
-            from werkzeug.utils import secure_filename
-            import os
-
-            # 先保存结构文件到临时目录
-            structure_filename = None
-            temp_structure_path = None
-            chemical_name = None
-            if structure_file and structure_file.filename.endswith('.cif'):
-                # 直接用原始文件名保存
-                structure_filename = secure_filename(structure_file.filename)
-                temp_structure_path = os.path.join(current_app.root_path, 'static/temp', structure_filename)
-                os.makedirs(os.path.dirname(temp_structure_path), exist_ok=True)
-                structure_file.save(temp_structure_path)
-                # 尝试提取化学式
-                chemical_name = extract_chemical_formula_from_cif(temp_structure_path)
-                # 解释：仅从 CIF 解析空间群；失败则 Unknown/None
-                sg_name_from_cif = 'Unknown'
-                sg_num_from_cif = None
-                try:
-                    _structure = Structure.from_file(temp_structure_path)
-                    _analyzer = SpacegroupAnalyzer(_structure)
-                    sg_name_from_cif = _analyzer.get_space_group_symbol() or 'Unknown'
-                    sg_num_from_cif = _analyzer.get_space_group_number() or None
-                except Exception as e:
-                    current_app.logger.warning(f"CIF symmetry parse failed in add(): {e}")
-
-            # 材料名优先用CIF解析结果，否则用Material+ID
-            material_data = {
-                'name': chemical_name if chemical_name else None,
-                'structure_file': structure_filename,  # 仅作记录，实际读取时遍历目录
-                'properties_json': properties_json.filename if properties_json and properties_json.filename else None,
-                'sc_structure_file': sc_structure_file.filename if sc_structure_file and sc_structure_file.filename else None,
-                'fermi_level': safe_float(request.form.get('fermi_level')),
-                'band_gap': safe_float(request.form.get('band_gap')),
-                'materials_type': request.form.get('materials_type'),
-                'sg_name': sg_name_from_cif if 'sg_name_from_cif' in locals() else 'Unknown',
-                'sg_num': sg_num_from_cif if 'sg_num_from_cif' in locals() else None
-            }
-
-            material = Material(**material_data)
-            db.session.add(material)
-            db.session.flush()  # 获取ID
-
-            if not material.name:
-                material.name = f"Material_IMR-{material.id}"
-            material.validate()
-
-            # 目录用新格式
-            material_dir = get_material_dir(material.id)
-            structure_dir = os.path.join(material_dir, 'structure')
-            band_dir = os.path.join(material_dir, 'band')
-            sc_dir = os.path.join(material_dir, 'sc')
-            os.makedirs(structure_dir, exist_ok=True)
-            os.makedirs(band_dir, exist_ok=True)
-            os.makedirs(sc_dir, exist_ok=True)
-
-            # 保存CIF文件
-            if temp_structure_path and structure_filename:
-                structure_path = os.path.join(structure_dir, structure_filename)
-                os.rename(temp_structure_path, structure_path)
-
-            # 处理其他文件，直接保存原始文件名
-            if properties_json and properties_json.filename:
-                properties_json_filename = secure_filename(properties_json.filename)
-                properties_json_path = os.path.join(material_dir, properties_json_filename)
-                properties_json.save(properties_json_path)
-                material.properties_json = properties_json_filename
-            if band_file and band_file.filename:
-                band_filename = secure_filename(band_file.filename)
-                band_path = os.path.join(band_dir, band_filename)
-                band_file.save(band_path)
-            # 处理Shift Current文件
-            if sc_structure_file and sc_structure_file.filename:
-                sc_filename = secure_filename(sc_structure_file.filename)
-                sc_path = os.path.join(sc_dir, sc_filename)
-                sc_structure_file.save(sc_path)
-                material.sc_structure_file = sc_filename
-                flash(_('Shift Current file %(filename)s uploaded successfully', filename=sc_filename), 'success')
-
-                # 如果是dat文件，尝试重命名为sc.dat
-                if sc_filename.endswith('.dat') and sc_filename != 'sc.dat':
-                    try:
-                        new_sc_path = os.path.join(sc_dir, 'sc.dat')
-                        os.rename(sc_path, new_sc_path)
-                        material.sc_structure_file = 'sc.dat'
-                        flash(_('Shift Current file renamed to sc.dat'), 'success')
-                    except Exception as e:
-                        current_app.logger.warning(f"Failed to rename SC file: {str(e)}")
-
-            db.session.commit()
-            flash(_('Material %(name)s added successfully!', name=material.name), 'success')
-            return redirect(url_for('views.detail', material_id=material.id))
-
-        except ValueError as e:
-            flash(_('Invalid data: %(error)s', error=str(e)), 'error')
-            return redirect(url_for('views.add'))
-        except Exception as e:
-            flash(_('An error occurred: %(error)s', error=str(e)), 'error')
-            return redirect(url_for('views.add'))
-
-    return render_template('materials/add.html')
+    return render_template('404.html'), 404
 
 @bp.route('/set-language')
 def set_language():
@@ -667,141 +550,12 @@ def safe_int(value):
     except ValueError:
         return None
 
-# Material edit route (admin required)
+# [Deprecated 20251001] 网页端编辑功能已移除，保持只读
 @bp.route('/materials/edit/IMR-<string:material_id>', methods=['GET', 'POST'])
 @login_required  
-@admin_required
 def edit(material_id):
-    """
-    编辑材料，ID目录用IMR-{id}格式，兼容旧格式。
-    """
-    try:
-        numeric_id = int(material_id)
-    except ValueError:
-        return render_template('404.html'), 404
-    material = Material.query.get_or_404(numeric_id)
+    return render_template('404.html'), 404
 
-    import glob
-    if request.method == 'POST':
-        try:
-            structure_file = request.files.get('structure_file')
-            band_file = request.files.get('band_file')
-            properties_json = request.files.get('properties_json')
-            sc_structure_file = request.files.get('sc_structure_file')
-
-            material_dir = get_material_dir(material.id)
-            structure_dir = os.path.join(material_dir, 'structure')
-            band_dir = os.path.join(material_dir, 'band')
-            sc_dir = os.path.join(material_dir, 'sc')
-            os.makedirs(structure_dir, exist_ok=True)
-            os.makedirs(band_dir, exist_ok=True)
-            os.makedirs(sc_dir, exist_ok=True)
-
-            # 结构文件上传，直接保存原始文件名
-            if structure_file and structure_file.filename:
-                if not structure_file.filename.endswith('.cif'):
-                    flash(_('Please upload a .cif format structure file!'), 'error')
-                    return redirect(url_for('views.edit', material_id=material_id))
-                structure_filename = secure_filename(structure_file.filename)
-                structure_path = os.path.join(structure_dir, structure_filename)
-                structure_file.save(structure_path)
-                material.structure_file = structure_filename
-                # 提取化学式
-                chemical_name = extract_chemical_formula_from_cif(structure_path)
-                if chemical_name:
-                    existing_material = Material.query.filter(
-                        Material.name == chemical_name,
-                        Material.id != numeric_id
-                    ).first()
-                    if existing_material:
-                        flash(_('Material name "%(chemical_name)s" already exists, please change CIF file', chemical_name=chemical_name), 'error')
-                        return redirect(url_for('views.edit', material_id=material_id))
-                    material.name = chemical_name
-                    flash(_('Material name updated from CIF file: %(chemical_name)s', chemical_name=chemical_name), 'info')
-                # 解释：仅从 CIF 解析空间群；失败则 Unknown/None
-                try:
-                    _structure = Structure.from_file(structure_path)
-                    _analyzer = SpacegroupAnalyzer(_structure)
-                    material.sg_name = _analyzer.get_space_group_symbol() or 'Unknown'
-                    material.sg_num = _analyzer.get_space_group_number() or None
-                except Exception as e:
-                    current_app.logger.warning(f"CIF symmetry parse failed in edit(): {e}")
-                    material.sg_name = 'Unknown'
-                    material.sg_num = None
-
-            # band文件上传
-            if band_file and band_file.filename:
-                if band_file.filename.endswith(('.json', '.dat')):
-                    band_filename = secure_filename(band_file.filename)
-                    band_path = os.path.join(band_dir, band_filename)
-                    band_file.save(band_path)
-
-            # SC结构文件上传
-            if sc_structure_file and sc_structure_file.filename:
-                sc_structure_filename = secure_filename(sc_structure_file.filename)
-                sc_structure_path = os.path.join(sc_dir, sc_structure_filename)
-                sc_structure_file.save(sc_structure_path)
-                material.sc_structure_file = sc_structure_filename
-
-            # 属性json
-            if properties_json and properties_json.filename:
-                properties_json_filename = secure_filename(properties_json.filename)
-                properties_json_path = os.path.join(material_dir, properties_json_filename)
-                properties_json.save(properties_json_path)
-                material.properties_json = properties_json_filename
-
-            # 其他属性
-            if not structure_file or not structure_file.filename or not material.name:
-                material.name = request.form.get('name')
-            if not material.name:
-                flash(_('Material name cannot be empty!'), 'error')
-                return redirect(url_for('views.edit', material_id=material_id))
-            # [Deprecated 20250822] status 字段已移除
-            material.fermi_level = safe_float(request.form.get('fermi_level'))
-            # 电子性质参数 - 只保留带隙和材料类型
-            material.band_gap = safe_float(request.form.get('band_gap'))
-            material.materials_type = request.form.get('materials_type')
-            db.session.commit()
-            flash(_('Material information updated successfully.'), 'success')
-            return redirect(url_for('views.detail', material_id=material_id))
-        except ValueError as e:
-            flash(_('Invalid data: %(error)s', error=str(e)), 'error')
-            return redirect(url_for('views.edit', material_id=material_id))
-        except Exception as e:
-            db.session.rollback()
-            flash(_('An error occurred: %(error)s', error=str(e)), 'error')
-            return redirect(url_for('views.edit', material_id=material_id))
-
-    # GET请求，显示所有.cif、band、sc文件
-    material_dir = get_material_dir(material.id)
-    structure_dir = os.path.join(material_dir, 'structure')
-    band_dir = os.path.join(material_dir, 'band')
-    sc_dir = os.path.join(material_dir, 'sc')
-    # 获取文件列表并检查多文件情况
-    cif_files = []
-    band_files = []
-    sc_files = []
-
-    # 检查结构文件
-    if os.path.exists(structure_dir):
-        cif_files = [f for f in os.listdir(structure_dir) if f.endswith('.cif')]
-        if len(cif_files) > 1:
-            flash(_('Warning: Multiple CIF files found in structure directory. Please keep only one!'), 'warning')
-
-    # 检查能带文件（只检查.dat文件，.json是分析结果文件）
-    if os.path.exists(band_dir):
-        band_dat_files = [f for f in os.listdir(band_dir) if f.endswith('.dat')]
-        if len(band_dat_files) > 1:
-            flash(_('Warning: Multiple band .dat files found in band directory. Please keep only one!'), 'warning')
-        # 获取所有能带相关文件用于显示
-        band_files = [f for f in os.listdir(band_dir) if f.endswith('.dat') or f.endswith('.json')]
-
-    # 检查SC文件
-    if os.path.exists(sc_dir):
-        sc_files = [f for f in os.listdir(sc_dir) if f.endswith('.dat')]
-        if len(sc_files) > 1:
-            flash(_('Warning: Multiple SC files found in sc directory. Please keep only one!'), 'warning')
-    return render_template('materials/edit.html', material=material, cif_files=cif_files, band_files=band_files, sc_files=sc_files, structure_dir=structure_dir, band_dir=band_dir, sc_dir=sc_dir)
 
 # Material detail page
 @bp.route('/materials/IMR-<string:material_id>')
@@ -920,66 +674,11 @@ def material_by_mp(mp_id):
         current_app.logger.error(f"material_by_mp error: {e}")
         return render_template('500.html'), 500
 
-# Material delete route (admin required)
+# [Deprecated 20251001] 网页端删除功能已移除，保持只读
 @bp.route('/materials/delete/IMR-<string:material_id>', methods=['POST'])
 @login_required  
-@admin_required
 def delete(material_id):
-    """
-    Delete material record
-    
-    Parameters:
-        material_id: ID of the material to delete (format is number part, no IMR-prefix)
-    
-    Note:
-        Only accepts POST requests, to prevent CSRF attacks
-    """
-    # Extract numeric part from string ID
-    try:
-        numeric_id = int(material_id)
-    except ValueError:
-        return render_template('404.html'), 404
-        
-    material = Material.query.get_or_404(numeric_id)  # Get material or return 404 error
-    
-    # Delete related files
-    import os
-    import shutil
-    from flask import current_app
-    
-    # Delete material-specific folder and all its contents
-    material_dir = get_material_dir(numeric_id)
-    if os.path.exists(material_dir):
-        shutil.rmtree(material_dir)
-    
-    # Keep original file deletion logic to ensure backward compatibility
-    # Delete structure file
-    if material.structure_file:
-        structure_path = os.path.join(current_app.root_path, 'static/structures', material.structure_file)
-        if os.path.exists(structure_path):
-            os.remove(structure_path)
-    
-    # Delete band file
-    band_path = os.path.join(current_app.root_path, 'static/band', f'{material.id}.dat')
-    if os.path.exists(band_path):
-        os.remove(band_path)
-    
-    # Delete attribute JSON file
-    if material.properties_json:
-        json_path = os.path.join(current_app.root_path, 'static/properties', material.properties_json)
-        if os.path.exists(json_path):
-            os.remove(json_path)
-    
-    # Delete Shift Current file
-    if material.sc_structure_file:
-        sc_path = os.path.join(current_app.root_path, 'static/sc_structures', material.sc_structure_file)
-        if os.path.exists(sc_path):
-            os.remove(sc_path)
-    
-    db.session.delete(material)  # Delete record
-    db.session.commit()  # Commit transaction
-    flash(_('Material "%(name)s" and all related files have been successfully deleted.', name=material.name), 'success')  # Display success message
-    return redirect(url_for('views.index'))  # Redirect to homepage
+    return render_template('404.html'), 404
 
 # Helper function to get client IP
 def get_client_ip():
@@ -1051,8 +750,7 @@ def login():
             return render_template('auth/login.html')
         password = request.form.get('password')
         remember = 'remember' in request.form
-        login_type = request.form.get('login_type')
-        admin_login = login_type == 'admin'
+        # [Deprecated 20251001] 管理员登录类型已移除，仅保留普通登录
         
         # Form validation
         if not email or not username or not password:
@@ -1107,24 +805,7 @@ def login():
             flash(_('Username does not match this email address. You have %(n)d attempts remaining.', n=remaining_attempts), 'error')
             return render_template('auth/login.html')
         
-        # Distinguish between admin login and regular login
-        if admin_login and user_by_email.role != 'admin':
-            # Update failure count
-            failed_attempts += 1
-            session[failed_key] = failed_attempts
-            remaining_attempts = max_attempts - failed_attempts
-            
-            # If failure count reaches limit, block IP
-            if failed_attempts >= max_attempts:
-                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed admin login attempts")
-                db.session.add(block_ip)
-                db.session.commit()
-                session.pop(failed_key, None)
-                flash(_('Your IP has been blocked due to too many unauthorized admin login attempts.'), 'error')
-                return redirect(url_for('views.login'))
-            
-            flash(_('This account does not have administrator privileges. You have %(n)d attempts remaining.', n=remaining_attempts), 'error')
-            return render_template('auth/login.html')
+        # [Deprecated 20251001] 管理员登录分支已移除
         
         # Check password
         if not user_by_email.validate_password(password):
@@ -1189,8 +870,7 @@ def login_json():
         username = (data.get('username') or '').strip()
         password = data.get('password') or ''
         captcha_input = (data.get('captcha') or '').strip().upper()
-        login_type = (data.get('login_type') or 'user').strip()
-        admin_login = login_type == 'admin'
+        # [Deprecated 20251001] 管理员登录类型已移除
 
         # 验证码校验
         real_captcha = session.get('captcha', '')
@@ -1243,18 +923,7 @@ def login_json():
             remaining_attempts = max_attempts - failed_attempts
             return jsonify({'ok': False, 'error': _('Username does not match this email address. You have %(n)d attempts remaining.', n=remaining_attempts)}), 200
 
-        # 管理员登录权限
-        if admin_login and user_by_email.role != 'admin':
-            failed_attempts += 1
-            session[failed_key] = failed_attempts
-            if failed_attempts >= max_attempts:
-                block_ip = BlockedIP(ip_address=ip, reason="Multiple failed admin login attempts")
-                db.session.add(block_ip)
-                db.session.commit()
-                session.pop(failed_key, None)
-                return jsonify({'ok': False, 'error': _('Your IP has been blocked due to too many unauthorized admin login attempts.')}), 200
-            remaining_attempts = max_attempts - failed_attempts
-            return jsonify({'ok': False, 'error': _('This account does not have administrator privileges. You have %(n)d attempts remaining.', n=remaining_attempts)}), 200
+        # [Deprecated 20251001] 管理员登录权限检查已移除（只读模式下不区分管理员）
 
         # 密码校验
         if not user_by_email.validate_password(password):
@@ -1331,7 +1000,6 @@ def debug_user_status():
     # 收集系统状态信息（不显示用户个人信息）
     status = {
         'is_authenticated': current_user.is_authenticated,
-        'user_role_type': 'admin' if current_user.is_authenticated and current_user.is_admin() else 'user' if current_user.is_authenticated else 'guest',
         'session_keys_count': len(session.keys()),
         'remote_addr': request.remote_addr,
         'user_agent_browser': request.headers.get('User-Agent', 'N/A')[:50] + '...' if len(request.headers.get('User-Agent', '')) > 50 else request.headers.get('User-Agent', 'N/A')
@@ -1349,12 +1017,10 @@ def debug_user_status():
             {''.join(f'<tr><td>{k}</td><td>{v}</td></tr>' for k, v in status.items())}
         </table>
 
-        <h2>导航栏显示逻辑测试</h2>
+        <h2>导航栏显示逻辑测试（只读模式）</h2>
         <ul>
             <li>显示Program按钮: {'是' if current_user.is_authenticated else '否'}</li>
-            <li>显示Add按钮: {'是' if current_user.is_authenticated and current_user.is_admin() else '否'}</li>
             <li>显示Login按钮: {'是' if not current_user.is_authenticated else '否'}</li>
-            <li>用户类型: {status['user_role_type']}</li>
         </ul>
 
         <h2>系统状态信息</h2>
@@ -1985,122 +1651,17 @@ def element_analysis():
 @csrf_exempt  # CSRF豁免，因为这是API端点
 def update_band_gap():
     """
-    更新材料的Band Gap值
-
-    接收从前端计算得出的Band Gap值并保存到数据库
+    [Deprecated 20251001] 写操作端点已禁用：只读模式
     """
-    try:
-        data = request.get_json()
-        current_app.logger.info(f"Band gap update request data: {data}")
-
-        if not data:
-            current_app.logger.error("No JSON data provided in band gap update request")
-            return jsonify({'success': False, 'error': 'No data provided'}), 400
-
-        material_id = data.get('material_id')
-        band_gap = data.get('band_gap')
-
-        current_app.logger.info(f"Extracted material_id: {material_id}, band_gap: {band_gap}")
-
-        if material_id is None:
-            return jsonify({'success': False, 'error': 'Material ID is required'}), 400
-
-        if band_gap is None:
-            return jsonify({'success': False, 'error': 'Band gap value is required'}), 400
-
-        # 转换material_id为整数
-        try:
-            material_id_int = int(material_id)
-        except (ValueError, TypeError):
-            return jsonify({'success': False, 'error': 'Invalid material ID format'}), 400
-
-        # 查找材料
-        material = Material.query.get(material_id_int)
-        if not material:
-            return jsonify({'success': False, 'error': 'Material not found'}), 404
-
-        # 验证Band Gap值的合理性
-        try:
-            band_gap_float = float(band_gap)
-            if band_gap_float < 0 or band_gap_float > 20:  # 合理范围检查
-                return jsonify({'success': False, 'error': 'Band gap value out of reasonable range (0-20 eV)'}), 400
-        except (ValueError, TypeError):
-            return jsonify({'success': False, 'error': 'Invalid band gap value'}), 400
-
-        # 更新Band Gap值
-        old_band_gap = material.band_gap
-        material.band_gap = band_gap_float
-
-        try:
-            db.session.commit()
-            current_app.logger.info(
-                f"Updated band gap for material {material.formatted_id}: "
-                f"{old_band_gap} -> {band_gap_float} eV"
-            )
-
-            return jsonify({
-                'success': True,
-                'message': 'Band gap updated successfully',
-                'material_id': material_id,
-                'old_band_gap': old_band_gap,
-                'new_band_gap': band_gap_float
-            })
-
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Database error updating band gap: {str(e)}")
-            return jsonify({'success': False, 'error': 'Database update failed'}), 500
-
-    except Exception as e:
-        current_app.logger.error(f"Error in update_band_gap: {str(e)}")
-        return jsonify({'success': False, 'error': 'Internal server error'}), 500
+    return jsonify({'success': False, 'error': 'Write operations are disabled (read-only mode).', 'status': 410}), 410
 
 # update_metal_type API端点已移除 - 现在材料类型从band.json文件中读取
 
 @bp.route('/admin/analyze-bands')
 @login_required
-@admin_required
 def admin_analyze_bands():
-    """管理员批量分析能带数据功能"""
-    force_recalculate = request.args.get('force', 'false').lower() == 'true'
-
-    try:
-        # 获取所有材料
-        materials = Material.query.all()
-        material_paths = []
-
-        for material in materials:
-            if force_recalculate or material.band_gap is None or material.materials_type is None:
-                material_path = f"app/static/materials/{material.formatted_id}/band"
-                material_paths.append((material_path, material))
-
-        # 批量分析
-        analyzed = 0
-        failed = 0
-        cached = len(materials) - len(material_paths)
-
-        for material_path, material in material_paths:
-            try:
-                result = band_analyzer.analyze_material(material_path)
-                if result['band_gap'] is not None:
-                    material.band_gap = result['band_gap']
-                    material.materials_type = result['materials_type']
-                    analyzed += 1
-                else:
-                    failed += 1
-            except Exception as e:
-                current_app.logger.error(f"Failed to analyze {material.formatted_id}: {e}")
-                failed += 1
-
-        db.session.commit()
-
-        flash(_('Band analysis completed! Analyzed: %(analyzed)d, Cached: %(cached)d, Failed: %(failed)d', analyzed=analyzed, cached=cached, failed=failed), 'success')
-
-    except Exception as e:
-        current_app.logger.error(f"Error in batch band analysis: {e}")
-        flash(_('Batch analysis failed: %(error)s', error=str(e)), 'error')
-
-    return redirect(url_for('views.index'))
+    # [Deprecated 20251001] 管理员工具已移除，保持只读
+    return render_template('404.html'), 404
 
 @bp.route('/api/band-config')
 def get_band_config():

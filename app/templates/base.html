@@ -178,12 +178,7 @@
                 </a>
                 {% endif %}
 
-                <!-- 管理员专用按钮 -->
-                {% if current_user.is_authenticated and current_user.is_admin() %}
-                <a href="{{ url_for('views.add') }}">
-                    <i class="fas fa-plus"></i> {{ _('Add') }}
-                </a>
-                {% endif %}
+                {# [Deprecated 20251001] 管理员新增入口已移除（只读模式） #}
 
                 <!-- 未登录用户显示登录按钮 -->
                 {% if not current_user.is_authenticated %}
@@ -202,13 +197,7 @@
 
                 <!-- 用户类型提示区域，头像+用户名+下拉菜单 -->
                 <div class="user-type-indicator user-dropdown">
-                    {% if current_user.is_authenticated and current_user.is_admin() %}
-                        <span class="user-avatar admin user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
-                        <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
-                        <div class="user-dropdown-menu">
-                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}</a>
-                        </div>
-                    {% elif current_user.is_authenticated %}
+                    {% if current_user.is_authenticated %}
                         <span class="user-avatar user user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
                         <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
                         <div class="user-dropdown-menu">

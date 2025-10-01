@@ -104,50 +104,13 @@ def get_conventional_cell(material_id):
 @bp.route('/structure/upload/<int:material_id>', methods=['POST'])
 def upload_structure(material_id):
     """
-    上传材料的 CIF 结构文件（与材料 ID 关联）。
-
-    参数：
-        material_id: 材料 ID。
-
-    返回：
-        JSON：包含保存结果与文件相对路径；失败时返回错误信息。
+    [Deprecated 20251001] 写操作端点已禁用：只读模式
     """
-    try:
-        material = Material.query.get_or_404(material_id)
-        
-        # 文件验证
-        if ('file' not in request.files or 
-            request.files['file'].filename == '' or 
-            not request.files['file'].filename.lower().endswith('.cif')):
-            return jsonify({"error": "Please provide a valid CIF file"}), 400
-        
-        file = request.files['file']
-        file_content = file.read()
-        
-        # 保存文件
-        filename = save_structure_file(file_content, file.filename, material_id=material_id)
-        if not filename:
-            return jsonify({"error": "Failed to save structure file"}), 500
-        
-        # 更新材料记录
-        try:
-            file_path = os.path.join(current_app.root_path, 'static', filename)
-            chemical_name = extract_chemical_formula_from_cif(file_path)
-            
-            if chemical_name:
-                material.name = chemical_name
-            db.session.commit()
-        except Exception:
-            pass  # 不中断上传过程
-        
-        return jsonify({
-            "success": True,
-            "message": "Structure file uploaded successfully",
-            "filename": filename
-        })
-    
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({
+        "success": False,
+        "error": "Write operations are disabled (read-only mode).",
+        "status": 410
+    }), 410
 
 
 @bp.route('/structure/<int:material_id>/supercell', methods=['GET'])
@@ -416,88 +379,13 @@ def get_structure_by_params():
 @bp.route('/structure/update-names', methods=['POST'])
 def update_material_names():
     """
-    从现有的CIF文件更新材料名称
-    
-    可选参数:
-        material_id: 特定材料的ID（如果提供，只更新这个材料）
-    
-    返回:
-        更新结果的JSON响应
+    [Deprecated 20251001] 写操作端点已禁用：只读模式
     """
-    try:
-        # 检查是否提供了具体的材料ID
-        material_id = request.args.get('material_id')
-        
-        if material_id:
-            # 如果提供了ID，只更新这个特定材料
-            material = Material.query.get_or_404(int(material_id))
-            materials = [material]
-        else:
-            # 否则，获取所有材料
-            materials = Material.query.all()
-        
-        updated_count = 0
-        errors = []
-        
-        # 遍历每个材料
-        for material in materials:
-            try:
-                # 获取结构文件路径
-                file_relative_path = find_structure_file(material_id=material.id)
-                
-                if not file_relative_path:
-                    # 如果在新目录结构中没有找到，尝试在旧目录中查找
-                    file_relative_path = find_structure_file(material_name=material.name)
-                
-                if not file_relative_path:
-                    errors.append(f"No structure file found for material ID: {material.id}")
-                    continue
-                
-                # 构建完整文件路径
-                file_path = os.path.join(current_app.root_path, 'static', file_relative_path)
-                
-                if not os.path.exists(file_path):
-                    errors.append(f"Structure file not found on disk: {file_path}")
-                    continue
-                
-                # 使用提取函数从CIF文件中读取化学式
-                chemical_name = extract_chemical_formula_from_cif(file_path)
-                
-                # 如果找到了化学式，更新材料名称
-                if chemical_name:
-                    old_name = material.name
-                    material.name = chemical_name
-                    current_app.logger.info(f"Updated material ID {material.id} name from '{old_name}' to '{chemical_name}'")
-                    updated_count += 1
-                else:
-                    # 如果没有找到化学式，尝试解析CIF获取计算的化学式
-                    structure_data_json = parse_cif_file(filename=file_relative_path)
-                    structure_data = json.loads(structure_data_json)
-                    
-                    if 'error' not in structure_data and 'formula' in structure_data:
-                        old_name = material.name
-                        material.name = structure_data['formula']
-                        current_app.logger.info(f"Updated material ID {material.id} name from '{old_name}' to '{structure_data['formula']}' using formula")
-                        updated_count += 1
-            
-            except Exception as e:
-                errors.append(f"Error processing material ID {material.id}: {str(e)}")
-        
-        # 提交所有更改
-        db.session.commit()
-        
-        # 返回更新结果
-        return jsonify({
-            "success": True,
-            "message": f"Updated {updated_count} material names",
-            "errors": errors
-        })
-    
-    except Exception as e:
-        # 回滚会话并返回错误
-        db.session.rollback()
-        current_app.logger.error(f"Error updating material names: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+    return jsonify({
+        "success": False,
+        "error": "Write operations are disabled (read-only mode).",
+        "status": 410
+    }), 410
 
 @bp.route('/materials/<int:material_id>/update-metal-type', methods=['POST'])
 def update_material_metal_type(material_id):
