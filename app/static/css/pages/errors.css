@@ -7,11 +7,8 @@
 .error-hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 1rem; line-height: 1.2; }
 .error-hero p { font-size: clamp(1rem, 2vw, 1.25rem); max-width: 800px; margin: 0 0 2rem; opacity: 0.9; }
 
-/* CTA 按钮（错误页用） */
-.cta-button { display: inline-flex; align-items: center; gap: 0.5rem; padding: 1rem 2rem; background-color: white; color: #0047AB; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s, box-shadow 0.3s; }
-.cta-button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-.cta-button.secondary { background-color: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
-.cta-button.secondary:hover { background-color: rgba(255,255,255,0.2); }
+/* [Deprecated 20251001] CTA 按钮视觉已由 components/buttons.css 的 .btn 体系统一管理
+   模板已改为 .btn btn--primary/btn--ghost（404/500），此处不再定义 .cta-button 视觉样式。 */
 
 /* 插画与动画（404/500） */
 .error-illustration { font-size: 10rem; opacity: 0.2; position: absolute; right: 10%; animation: float 3s ease-in-out infinite; }
@@ -40,12 +37,9 @@
 .captcha-input input { height: 48px; padding: 0 0.9rem; border: 1px solid #cbd5e1; border-radius: 10px; width: 220px; text-transform: uppercase; letter-spacing: 3px; background: #fff; color: #0f172a; outline: none; transition: box-shadow .2s, border-color .2s, background .2s; }
 .captcha-input input::placeholder { color: #94a3b8; }
 .captcha-input input:focus { border-color: #0047AB; box-shadow: 0 0 0 3px rgba(0,71,171,0.25), 0 6px 20px rgba(0,0,0,0.12); background: #fff; }
-.captcha-btn { height: 48px; padding: 0 1.1rem; min-width: 140px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #0047AB; font-weight: 800; cursor: pointer; transition: transform .15s ease, box-shadow .2s, background .2s; display: inline-flex; align-items: center; gap: .5rem; }
-.captcha-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
-.captcha-btn:active { transform: translateY(0); }
-.captcha-btn.primary { background: #0047AB; color: #fff; border-color: #0047AB; }
-.captcha-btn.primary:hover { filter: brightness(1.05); }
-.captcha-btn[disabled] { opacity: .6; cursor: not-allowed; box-shadow: none; }
+/* [Deprecated 20251001] 验证码按钮视觉交由 .btn（429 模板已使用 .btn--secondary/.btn--primary/.btn--sm）
+   保留最小兼容：.btn.loading i 继续使用本文件内的 @keyframes spin 动画。 */
+.btn.loading i { animation: spin 1s linear infinite; }
 .captcha-input input:disabled { background: #f1f5f9; cursor: not-allowed; }
 .captcha-btn.loading i { animation: spin 1s linear infinite; }
 .captcha-tip { display: flex; align-items: flex-start; gap: .6rem; margin: .5rem 0 0; padding: .6rem .8rem; border-radius: 10px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; }

@@ -2,9 +2,27 @@
 
 /* ===== 外层容器 ===== */
 .data-table-container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0.5rem auto 2rem auto; /* 减少顶部边距，保持底部边距 */
   padding: 0 20px;
+}
+
+/* 表格外层：超过视口时允许横向滚动；不影响整体居中 */
+.table-outer {
+  overflow-x: auto;
+}
+
+/* 表格内层：在未达到视口宽度时保持表格居中，从中间向两边拓宽 */
+.table-inner {
+  display: flex;
+  justify-content: center;
+  min-width: 100%; /* 确保未触达视口宽度时也能撑满以实现可见居中 */
+}
+
+/* 统一的内容宽度容器：标题 + 表格共用同一内容宽度 */
+.table-stack {
+  width: max-content;   /* 宽度由内部内容（通常为表格）决定 */
+  min-width: 1200px;    /* 与表格一致的最小宽度，保证对齐与密度 */
 }
 
 /* ===== 搜索表单容器与画布皮肤 ===== */
@@ -74,29 +92,9 @@
 }
 
 /* 搜索按钮样式 */
-.basic-search .btn {
-  height: 2.5rem;               /* 与输入框相同高度 */
-  padding: 0 1.5rem;            /* 适当的内边距 */
-  border-radius: 4px;           /* 减小圆角 */
-  font-size: 1rem;              /* 字体大小 */
-  font-weight: 500;             /* 字体粗细 */
-  transition: all 0.2s;         /* 过渡效果 */
-}
+.basic-search .btn { height: 2.5rem; } /* [Deprecated 20250930] 仅保留高度对齐，其余视觉由 .btn 体系管理 */
 /* Clear按钮特殊样式 */
-.basic-search .btn-clear {
-  background-color: #f3f4f6;    /* 浅灰色背景 */
-  color: #6b7280;               /* 灰色文字 */
-  border: 1px solid #d1d5db;    /* 灰色边框 */
-}
-.basic-search .btn-clear:hover {
-  background-color: #e5e7eb;    /* 悬停时稍深的灰色 */
-  color: #374151;               /* 悬停时深色文字 */
-  border-color: #9ca3af;        /* 悬停时深色边框 */
-}
-.basic-search .btn-clear:active {
-  background-color: #d1d5db;    /* 点击时更深的灰色 */
-  transform: translateY(1px);   /* 点击时轻微下移效果 */
-}
+/* [Deprecated 20250930] .basic-search .btn-clear 视觉覆盖已移除，使用 components/buttons.css 的 .btn-clear */
 /* 搜索输入容器 */
 .search-input-container { flex: 1; position: relative; }
 /* 搜索建议 */
@@ -193,14 +191,11 @@
 .clear-all-filters:hover { background-color: rgba(0, 71, 171, 0.15); text-decoration: underline; }
 
 /* ===== 表格标题与工具栏、菜单 ===== */
-.table-title { display: flex; align-items: center; justify-content: space-between; margin: 1.8rem 0 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid #e2e8f0; }
+.table-title { display: flex; align-items: center; justify-content: space-between; margin: 1.8rem 0 1rem; padding: 0 1rem 0.8rem 1rem; border-bottom: 1px solid #e2e8f0; width: 100%; white-space: nowrap; }
 .title2 { color: var(--primary-color); font-weight: 600; font-size: 1.15rem; position: relative; padding-left: 1rem; }
 .title2::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 1.1em; background-color: var(--primary-color); border-radius: 2px; }
 .table-toolbar { display: flex; gap: 10px; align-items: center; }
-.btn.small { border: 1px solid rgba(0, 71, 171, 0.25); background: linear-gradient(180deg, #ffffff, #f9fbff); color: var(--primary-color); font-weight: 600; }
-.btn.small:hover { background: linear-gradient(180deg, #f9fbff, #eef4ff); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 71, 171, 0.12); }
-.btn.small:focus { outline: none; box-shadow: 0 0 0 3px rgba(0, 127, 255, 0.25); }
-.btn.small.active { background: linear-gradient(180deg, #e6f0ff, #dce9ff); border-color: var(--primary-color); color: #093a9c; }
+/* [Deprecated 20250930] .btn.small 视觉已由 .btn--sm 统一提供；页面级覆盖删除 */
 /* [Deprecated 20250913] 菜单基础样式已迁移至 components/menus.css（.menu, .menu-panel, .menu-item, .menu-title, @keyframes menuPop） */
 .menu.per-page .menu-panel { width: 100px; min-width: 100px; max-width: 100px; }
 .menu.per-page .menu-item { display: grid; grid-template-columns: 18px auto; align-items: center; gap: 8px; padding: 6px 22px 6px 8px; }
@@ -222,12 +217,15 @@
 .col-remove { margin-left: 6px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 700; }
 .col-remove:hover { color: #ef4444; }
 .hidden { display: none !important; }
-#applyColsBtn.btn.small { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
-#applyColsBtn.btn.small:hover { filter: brightness(0.95); }
+/* [Deprecated 20250930] #applyColsBtn.btn.small 专属视觉删除；如需强调，请在模板添加 btn--primary/btn--accent 等修饰类 */
 .per-page-current { font-weight: 600; color: #093a9c; margin-left: 2px; }
 
 /* ===== 表格样式与操作按钮 ===== */
 /* [Deprecated 20250913] 表格基础样式已迁移至 components/tables.css（.material-data-table 基础、th/td、排序指示等） */
+.material-data-table {
+  width: max-content;   /* 随内容自然扩展，直至触达视口或滚动容器 */
+  min-width: 1200px;    /* 最小宽度，保证初始视觉密度与易读性 */
+}
 .material-data-table td:last-child { text-align: center; }
 .material-data-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
 .material-data-table tbody tr:nth-child(odd) { background-color: #ffffff; }
@@ -236,10 +234,8 @@
 .material-link:hover { color: var(--secondary-color); }
 .action-buttons { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: nowrap; }
 .action-buttons form { display: inline-block; margin: 0; }
-.action-buttons .btn, .action-buttons form .btn { padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; background-color: var(--primary-color); color: white; border: none; cursor: pointer; transition: all 0.2s; text-decoration: none; font-weight: 500; display: inline-block; line-height: 1; }
-.action-buttons .btn:hover, .action-buttons form .btn:hover { background-color: var(--secondary-color); transform: translateY(-1px); }
-.action-buttons .mp { padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; background-color: #f5f5f5; color: #333; border: 1px solid #e0e0e0; cursor: pointer; transition: all 0.2s; text-decoration: none; font-weight: 600; display: inline-block; line-height: 1; }
-.action-buttons .mp:hover { background-color: #e0e0e0; transform: translateY(-1px); }
+/* [Deprecated 20250930] 行内操作按钮视觉由 components/buttons.css 的 .btn 体系统一管理；
+   此处不再覆盖 .action-buttons 下按钮的背景/边框/hover 等视觉。 */
 
 /* ===== 指定列行为：ID 列严格单行展示 ===== */
 .material-data-table th[data-col-key="id"],

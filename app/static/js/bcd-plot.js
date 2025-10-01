@@ -154,7 +154,7 @@
                         <i class="fas fa-info-circle"></i> <span class="control-tip-text">Single-click to toggle curves, double-click to isolate (hide all others).</span>
                     </div>
                     <div class="sc-control-item">
-                        <button id="bcdResetBtn" class="sc-control-btn">Reset Chart</button>
+                        <button id="bcdResetBtn" class="sc-control-btn btn btn--secondary btn--sm">Reset Chart</button>
                     </div>
                     <div class="sc-control-status">
                         <span class="visible-count-text">Visible: <span id="bcdVisibleCount">${traces.length}</span>/${traces.length} curves</span>

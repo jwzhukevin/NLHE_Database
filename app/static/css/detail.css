@@ -328,49 +328,8 @@
     justify-content: flex-end;
 }
 
-.coords-toggle-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(to right, #EFF6FF, #DBEAFE);
-    color: #0047AB;
-    border: 1px solid #BFDBFE;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0, 71, 171, 0.15);
-    position: relative;
-    overflow: hidden;
-    min-width: 150px;
-}
-
-.coords-toggle-btn:hover {
-    background: linear-gradient(to right, #DBEAFE, #BFDBFE);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 71, 171, 0.3);
-}
-
-.coords-toggle-btn:active { transform: translateY(0); box-shadow: 0 2px 3px rgba(0, 71, 171, 0.2); }
-.coords-toggle-btn i { margin-right: 8px; font-size: 0.9rem; transition: all 0.3s ease; }
-.coords-toggle-btn.active { background: linear-gradient(to right, #0047AB, #1E40AF); color: white; }
-.coords-toggle-btn.active i { transform: rotate(180deg); }
-
-.coords-toggle-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to right, rgba(255,255,255,0.1), rgba(255,255,255,0.3));
-    transform: translateX(-100%);
-    transition: transform 0.6s ease;
-}
-
-.coords-toggle-btn:hover::before { transform: translateX(100%); }
+/* [Deprecated 20250930] 坐标切换按钮视觉交由 components/buttons.css 的 .btn 体系统一管理 */
+/* .coords-toggle-btn 仅作为语义/选择器钩子存在，此处不再声明任何按钮视觉样式 */
 
 .toggle-label {
     display: flex;
@@ -421,25 +380,8 @@
 .sc-control-tip i { color: #0047AB; font-size: 16px; }
 
 .sc-control-item { display: flex; gap: 10px; }
-.sc-control-btn {
-    padding: 8px 16px;
-    background: #0047AB;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    white-space: nowrap;
-}
-.sc-control-btn:hover { background: #00348F; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
-.sc-control-btn:active { transform: translateY(0); box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
-.sc-control-btn.active { background: #003366; }
+/* [Deprecated 20250930] 控制面板按钮视觉交由 .btn 体系统一管理；此处不再定义按钮视觉 */
+/* .sc-control-btn 仅作为组件语义类保留（供 JS 选择器与布局），不负责视觉样式 */
 
 .sc-control-status { font-size: 14px; color: #4b5563; font-weight: 500; background: rgba(224, 231, 255, 0.6); padding: 6px 12px; border-radius: 4px; border-left: 3px solid #0047AB; }
 .visible-count-text { white-space: nowrap; }
@@ -566,18 +508,9 @@
 .nav-property-link:hover { color: #0047AB; background-color: #fff; border-color: rgba(0,71,171,0.5); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,71,171,0.15); }
 .nav-property-link.active { color: #fff; background-color: #0047AB; border-color: #0047AB; font-weight: 700; box-shadow: 0 2px 8px rgba(0,71,171,0.3); }
 .nav-actions { display: flex; align-items: center; gap: 8px; }
-.action-btn { display: flex; align-items: center; gap: 6px; padding: 10px 16px; text-decoration: none; font-weight: 600; font-size: 0.9rem; border-radius: 8px; transition: all 0.3s ease; border: 2px solid transparent; }
-.action-btn i { font-size: 0.9rem; }
-.action-btn span { font-weight: 600; }
-.mp-btn { color: #1e40af; background-color: #eff6ff; border-color: #bfdbfe; }
-.mp-btn:hover { color: #fff; background-color: #1e40af; border-color: #1e40af; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(30,64,175,0.3); }
-.back-btn { color: #475569; background-color: #f8fafc; border-color: #e2e8f0; }
-.back-btn:hover { color: #1e293b; background-color: #e2e8f0; border-color: #cbd5e1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(71,85,105,0.2); }
-.edit-btn { color: #059669; background-color: #ecfdf5; border-color: #a7f3d0; }
-.edit-btn:hover { color: #fff; background-color: #059669; border-color: #059669; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(5,150,105,0.3); }
-.delete-btn { color: #dc2626; background-color: #fef2f2; border-color: #fecaca; }
-.delete-btn:hover { color: #fff; background-color: #dc2626; border-color: #dc2626; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
-.action-btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+/* [Deprecated 20251001] 导航按钮视觉已由 components/buttons.css 的 .btn 体系统一管理。
+   历史类 .action-btn/.mp-btn/.back-btn/.edit-btn/.delete-btn 不再承担视觉职责，仅保留为历史标识。
+   如需调整视觉，请在模板上添加/调整 .btn 修饰类（如 .btn--ghost/.btn--secondary/.btn--danger）。 */
 @media (max-width: 1200px) {
     .material-nav { padding: 14px 0; }
     .material-nav-wrapper { padding: 0 20px; }

@@ -611,7 +611,8 @@ function updateAtomicCoordinatesDisplay(data) {
                 </div>
                 <div class="coordinates-controls">
                     <div class="coordinates-toggle">
-                        <button class="coords-toggle-btn" id="coords-toggle-btn">
+                        <!-- [Fix 20251001] 文本显示不全：移除 btn--icon 固定尺寸，避免裁切 -->
+                        <button class="coords-toggle-btn btn btn--secondary btn--sm" id="coords-toggle-btn">
                             <i class="fas fa-sync-alt"></i>
                             <span id="toggle-btn-text">Show Fractional</span>
                         </button>

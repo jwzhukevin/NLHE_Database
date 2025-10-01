@@ -5,9 +5,8 @@
 .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); margin-bottom: 1rem; line-height: 1.2; }
 .hero p { font-size: clamp(1rem, 2vw, 1.25rem); max-width: 800px; margin: 0 0 2rem; opacity: 0.9; }
 
-/* 号召性按钮 */
-.cta-button { display: inline-block; padding: 1rem 2rem; background-color: white; color: #0047AB; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.3s, box-shadow 0.1s; }
-.cta-button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+/* [Deprecated 20250929] CTA 视觉交由 components/buttons.css 的 .btn 体系统一管理；
+   此处不再声明 .cta-button 的任何样式，保留说明用于回滚追溯。 */
 
 /* ========== 特性区域样式 ========== */
 .features { padding: 4rem 0; background-color: white; }

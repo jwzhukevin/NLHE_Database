@@ -128,14 +128,14 @@ setTimeout(function() {
                 <!-- Materials Project外部链接 -->
                 <a href="{% if material.mp_id %}https://next-gen.materialsproject.org/materials/{{ material.mp_id }}{% else %}https://next-gen.materialsproject.org/materials?formula={{ material.name }}{% endif %}"
                    target="_blank"
-                   class="action-btn mp-btn">
+                   class="btn btn--ghost">
                     <i class="fas fa-external-link-alt"></i>
                     <span>MP</span>
                 </a>
 
                 <!-- 搜索返回按钮 -->
                 {% if request.referrer and 'q=' in request.referrer %}
-                <a href="{{ request.referrer }}" class="action-btn back-btn">
+                <a href="{{ request.referrer }}" class="btn btn--secondary">
                     <i class="fas fa-arrow-left"></i>
                     <span>{{ _('Back') }}</span>
                 </a>
@@ -144,14 +144,14 @@ setTimeout(function() {
                 <!-- 管理员专用功能：仅在管理员用户登录时显示 -->
                 {% if current_user.is_authenticated and current_user.is_admin() %}
                 <a href="{{ url_for('views.edit', material_id=material.id) }}"
-                   class="action-btn edit-btn">
+                   class="btn btn--secondary">
                     <i class="fas fa-edit"></i>
                     <span>{{ _('Edit') }}</span>
                 </a>
 
                 <a method="post" action="{{ url_for('views.delete', material_id=material.id) }}"
                    type="submit" data-confirm="{{ _('Delete permanently?') }}" onclick="return confirm(this.dataset.confirm)"
-                   class="action-btn delete-btn btn btn--danger">
+                   class="btn btn--danger">
                     <i class="fas fa-trash-alt"></i>
                     <span>{{ _('Delete') }}</span>
                 </a>

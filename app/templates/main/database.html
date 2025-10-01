@@ -300,7 +300,10 @@
     </div>
     <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（filters/tags） -->
 
-    <!-- 表格标题 -->
+    <!-- 表格标题 + 表格放入同一滚动容器，保证左右边界对齐 -->
+    <div class="table-outer">
+        <div class="table-inner">
+    <div class="table-stack">
     <div class="table-title">
         <span class="title2">
             {% trans count=materials|length %}
@@ -409,7 +412,7 @@
                 </td>
                 <td data-col-key="actions">
                     <div class="action-buttons">
-                        <a class="mp" 
+                        <a class="btn btn--ghost btn--sm" 
                            href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" 
                            target="_blank"
                            title="{{ _('View in MP') }}">
@@ -434,6 +437,9 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
+        </div>
+    </div>
     <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（material-data-table & actions） -->
 
     <!-- 分页导航 -->
@@ -1448,6 +1454,62 @@ function validateSearch() {
             });
         });
     });
+</script>
+
+<!-- 表格居中滚动脚本：当表格宽于视口时，自动将滚动位置置于水平居中 -->
+<script>
+    (function(){
+        function centerScrollableTables(){
+            try {
+                document.querySelectorAll('.table-outer').forEach(outer => {
+                    const sw = outer.scrollWidth || 0;
+                    const cw = outer.clientWidth || 0;
+                    if (sw > cw) {
+                        outer.scrollLeft = Math.max(0, Math.floor((sw - cw) / 2));
+                    } else {
+                        outer.scrollLeft = 0;
+                    }
+                });
+            } catch (e) {
+                console.warn('centerScrollableTables failed:', e);
+            }
+        }
+
+        // 初始与窗口尺寸变化时保持居中
+        document.addEventListener('DOMContentLoaded', centerScrollableTables);
+        window.addEventListener('load', centerScrollableTables);
+        window.addEventListener('resize', function(){
+            // 使用 requestAnimationFrame 避免频繁计算
+            window.requestAnimationFrame(centerScrollableTables);
+        });
+
+        // 若列可见性或每页数量变更后需要保持居中，可在对应逻辑后手动调用
+        // 这里钩住菜单应用按钮进行一次性处理
+        document.addEventListener('click', function(e){
+            if (e.target && e.target.id === 'applyColsBtn') {
+                setTimeout(centerScrollableTables, 0);
+            }
+        });
+
+        // 钩住 per_page 菜单项点击后也进行居中
+        document.addEventListener('click', function(e){
+            const t = e.target.closest('[data-per-page]');
+            if (t) {
+                // 让 URL 更新与 DOM 可能变化后再执行
+                setTimeout(centerScrollableTables, 0);
+            }
+        }, true);
+
+        // 监听表格或标题容器尺寸变化，自动保持居中
+        if (window.ResizeObserver) {
+            try {
+                const ro = new ResizeObserver(() => {
+                    window.requestAnimationFrame(centerScrollableTables);
+                });
+                document.querySelectorAll('.table-stack, .material-data-table').forEach(el => ro.observe(el));
+            } catch {}
+        }
+    })();
 </script>
 
 {% endblock %}

@@ -367,15 +367,7 @@ function createToolbar(container) {
     const screenshotBtn = document.createElement('button');
     screenshotBtn.innerHTML = '<i class="fas fa-camera"></i>'; // 使用Font Awesome图标
     screenshotBtn.title = '截图'; // 设置鼠标悬停提示文字
-    screenshotBtn.className = 'toolbar-btn'; // 设置CSS类名
-    screenshotBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)'; // 更高透明度的白色背景
-    screenshotBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)'; // 添加细边框
-    screenshotBtn.style.borderRadius = '6px'; // 圆角边框
-    screenshotBtn.style.padding = '10px 12px'; // 增加内边距
-    screenshotBtn.style.cursor = 'pointer'; // 鼠标悬停时显示手型光标
-    screenshotBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)'; // 柔和的阴影效果
-    screenshotBtn.style.fontSize = '16px'; // 设置字体大小
-    screenshotBtn.style.transition = 'all 0.2s ease'; // 添加过渡效果
+    screenshotBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon'; // 统一按钮体系，保留原类
     screenshotBtn.addEventListener('click', takeScreenshot); // 添加点击事件监听器
     toolbar.appendChild(screenshotBtn); // 将按钮添加到工具栏
     
@@ -383,15 +375,7 @@ function createToolbar(container) {
     const downloadCIFBtn = document.createElement('button');
     downloadCIFBtn.innerHTML = '<i class="fas fa-download"></i>'; // 使用下载图标
     downloadCIFBtn.title = '下载CIF文件'; // 设置提示文字
-    downloadCIFBtn.className = 'toolbar-btn';
-    downloadCIFBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-    downloadCIFBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-    downloadCIFBtn.style.borderRadius = '6px';
-    downloadCIFBtn.style.padding = '10px 12px';
-    downloadCIFBtn.style.cursor = 'pointer';
-    downloadCIFBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)';
-    downloadCIFBtn.style.fontSize = '16px';
-    downloadCIFBtn.style.transition = 'all 0.2s ease';
+    downloadCIFBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
     downloadCIFBtn.addEventListener('click', downloadCIFFile); // 添加下载CIF文件的点击事件
     toolbar.appendChild(downloadCIFBtn);
     
@@ -399,15 +383,7 @@ function createToolbar(container) {
     const resetViewBtn = document.createElement('button');
     resetViewBtn.innerHTML = '<i class="fas fa-redo-alt"></i>'; // 使用重置图标
     resetViewBtn.title = '重置视图'; // 设置提示文字
-    resetViewBtn.className = 'toolbar-btn';
-    resetViewBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-    resetViewBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-    resetViewBtn.style.borderRadius = '6px';
-    resetViewBtn.style.padding = '10px 12px';
-    resetViewBtn.style.cursor = 'pointer';
-    resetViewBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)';
-    resetViewBtn.style.fontSize = '16px';
-    resetViewBtn.style.transition = 'all 0.2s ease';
+    resetViewBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
     resetViewBtn.addEventListener('click', resetView); // 添加重置视图的点击事件
     toolbar.appendChild(resetViewBtn);
     
@@ -420,15 +396,7 @@ function createToolbar(container) {
     const modelTypeBtn = document.createElement('button');
     modelTypeBtn.innerHTML = '<i class="fas fa-cubes"></i>'; // 使用立方体图标
     modelTypeBtn.title = 'Switch Model Type'; // 设置提示文字
-    modelTypeBtn.className = 'toolbar-btn';
-    modelTypeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-    modelTypeBtn.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-    modelTypeBtn.style.borderRadius = '6px';
-    modelTypeBtn.style.padding = '10px 12px';
-    modelTypeBtn.style.cursor = 'pointer';
-    modelTypeBtn.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.08)';
-    modelTypeBtn.style.fontSize = '16px';
-    modelTypeBtn.style.transition = 'all 0.2s ease';
+    modelTypeBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
     
     // 创建模型类型下拉菜单
     const modelTypeDropdown = document.createElement('div');
@@ -2108,29 +2076,12 @@ function getCurrentMaterialId() {
 function createPrimitiveCellButton(container) {
     // 创建主按钮
     const mainButton = document.createElement('button');
-    mainButton.className = 'primitive-cell-button';
+    mainButton.className = 'primitive-cell-button btn btn--secondary btn--sm';
     mainButton.textContent = 'Primitive Cell';
     mainButton.style.position = 'absolute';
     mainButton.style.bottom = '10px';
     mainButton.style.right = '10px';
-    mainButton.style.backgroundColor = '#4CAF50';
-    mainButton.style.color = 'white';
-    mainButton.style.border = 'none';
-    mainButton.style.borderRadius = '4px';
-    mainButton.style.padding = '8px 12px';
-    mainButton.style.cursor = 'pointer';
     mainButton.style.zIndex = '1000';
-    mainButton.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.2)';
-    mainButton.style.transition = 'background-color 0.3s';
-    
-    // 添加按钮鼠标悬停效果
-    mainButton.addEventListener('mouseover', () => {
-        mainButton.style.backgroundColor = '#45a049';
-    });
-    
-    mainButton.addEventListener('mouseout', () => {
-        mainButton.style.backgroundColor = '#4CAF50';
-    });
     
     // 添加点击事件，转换为原胞
     mainButton.addEventListener('click', () => {
@@ -2165,17 +2116,9 @@ function createSupercellPanel(container) {
     // 创建转换按钮
     const transformBtn = document.createElement('button');
     transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Transform';
-    transformBtn.className = 'transform-btn';
-    transformBtn.style.padding = '2px 4px';
-    transformBtn.style.backgroundColor = '#4CAF50';
-    transformBtn.style.color = 'white';
-    transformBtn.style.border = 'none';
-    transformBtn.style.borderRadius = '4px';
-    transformBtn.style.cursor = 'pointer';
-    transformBtn.style.fontSize = '16px';
-    transformBtn.style.display = 'flex';
-    transformBtn.style.alignItems = 'center';
-    transformBtn.style.justifyContent = 'center';
+    /* [Fix 20251001] 文本被截断：移除 btn--icon 固定尺寸限制 */
+    transformBtn.className = 'transform-btn btn btn--secondary btn--sm';
+    // 视觉交由 .btn 控制
     transformBtn.style.gap = '3px';
     panel.appendChild(transformBtn);
 
@@ -2242,6 +2185,7 @@ function createSupercellPanel(container) {
     // 创建按钮组
     const buttonGroup = document.createElement('div');
     buttonGroup.style.display = 'flex';
+    buttonGroup.style.flexDirection = 'column'; /* [Fix 20251001] 竖向堆叠避免拥挤导致裁切 */
     buttonGroup.style.gap = '8px';
     buttonGroup.style.marginTop = '10px';
     buttonGroup.style.justifyContent = 'center';
@@ -2249,80 +2193,25 @@ function createSupercellPanel(container) {
     // 创建显示原胞按钮
     const primitiveBtn = document.createElement('button');
     primitiveBtn.textContent = 'Primitive Cell';
-    primitiveBtn.className = 'cell-btn';
-    primitiveBtn.style.flex = '1';
-    primitiveBtn.style.padding = '4px 6px';
-    primitiveBtn.style.backgroundColor = '#2196F3';
-    primitiveBtn.style.color = 'white';
-    primitiveBtn.style.border = 'none';
-    primitiveBtn.style.borderRadius = '4px';
-    primitiveBtn.style.cursor = 'pointer';
-    primitiveBtn.style.fontSize = '14px';
-    primitiveBtn.style.fontWeight = 'normal';
-    primitiveBtn.style.transition = 'all 0.1s ease';
-    
-    // 添加按钮悬停效果
-    primitiveBtn.addEventListener('mouseover', () => {
-        primitiveBtn.style.backgroundColor = '#1976D2';
-        primitiveBtn.style.transform = 'scale(1.05)';
-    });
-    
-    primitiveBtn.addEventListener('mouseout', () => {
-        primitiveBtn.style.backgroundColor = '#2196F3';
-        primitiveBtn.style.transform = 'scale(1)';
-    });
+    primitiveBtn.className = 'cell-btn btn btn--secondary btn--sm';
+    primitiveBtn.style.width = '100%'; // [Fix 20251001] 全宽，避免文本折断
+    primitiveBtn.style.whiteSpace = 'nowrap';
 
     // 创建显示传统胞按钮
     const conventionalBtn = document.createElement('button');
     conventionalBtn.textContent = 'Conventional Cell';
-    conventionalBtn.className = 'cell-btn';
-    conventionalBtn.style.flex = '1';
-    conventionalBtn.style.padding = '4px 6px';
-    conventionalBtn.style.backgroundColor = '#2196F3';
-    conventionalBtn.style.color = 'white';
-    conventionalBtn.style.border = 'none';
-    conventionalBtn.style.borderRadius = '4px';
-    conventionalBtn.style.cursor = 'pointer';
-    conventionalBtn.style.fontSize = '14px';
-    conventionalBtn.style.fontWeight = 'normal';
-    conventionalBtn.style.transition = 'all 0.1s ease';
-    
-    // 添加按钮悬停效果
-    conventionalBtn.addEventListener('mouseover', () => {
-        conventionalBtn.style.backgroundColor = '#1976D2';
-        conventionalBtn.style.transform = 'scale(1.05)';
-    });
-    
-    conventionalBtn.addEventListener('mouseout', () => {
-        conventionalBtn.style.backgroundColor = '#2196F3';
-        conventionalBtn.style.transform = 'scale(1)';
-    });
+    conventionalBtn.className = 'cell-btn btn btn--secondary btn--sm';
+    conventionalBtn.style.width = '100%'; // [Fix 20251001] 全宽，避免文本折断
+    conventionalBtn.style.whiteSpace = 'nowrap';
 
     // 创建完成按钮
     const doneBtn = document.createElement('button');
     doneBtn.textContent = 'Cell expansion';
-    doneBtn.className = 'cell-btn';
-    doneBtn.style.flex = '1';
-    doneBtn.style.padding = '4px 6px';
-    doneBtn.style.backgroundColor = '#4CAF50';
-    doneBtn.style.color = 'white';
-    doneBtn.style.border = 'none';
-    doneBtn.style.borderRadius = '4px';
-    doneBtn.style.cursor = 'pointer';
-    doneBtn.style.fontSize = '14px';
-    doneBtn.style.fontWeight = 'normal';
-    doneBtn.style.transition = 'all 0.1s ease';
+    doneBtn.className = 'cell-btn btn btn--primary btn--sm';
+    doneBtn.style.width = '100%'; // [Fix 20251001] 全宽，避免文本折断
+    doneBtn.style.whiteSpace = 'nowrap';
     
-    // 添加按钮悬停效果
-    doneBtn.addEventListener('mouseover', () => {
-        doneBtn.style.backgroundColor = '#388E3C';
-        doneBtn.style.transform = 'scale(1.05)';
-    });
-    
-    doneBtn.addEventListener('mouseout', () => {
-        doneBtn.style.backgroundColor = '#4CAF50';
-        doneBtn.style.transform = 'scale(1)';
-    });
+    // 视觉 hover 效果交由 .btn 控制
 
     buttonGroup.appendChild(primitiveBtn);
     buttonGroup.appendChild(conventionalBtn);

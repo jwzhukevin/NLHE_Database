@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ _('NLHE Database - Nonlinear Hall Effect Materials Database') }}</title>
+    <title>NLHE MatdataX - Nonlinear Hall Effect Materials Database</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -144,10 +144,10 @@
     <!-- ========== 导航栏 ========== -->
     <nav class="navbar">
         <div class="container nav-content">
-            <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> {{ _('Database') }}</a>
+            <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> MatdataX</a>
             <div class="nav-links">
                 <a href="{{ url_for('views.index') }}">
-                    <i class="fas fa-table"></i> {{ _('Database') }}
+                    <i class="fas fa-table"></i> MatdataX
                 </a>
                 <a href="{{ url_for('articles.listing') }}">
                     <i class="fas fa-book"></i> {{ _('Contents') }}
@@ -266,8 +266,8 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>{{ _('Database') }}</h3>
-                    <p>{{ _('Materials Database') }}</p>
+                    <h3>MatdataX</h3>
+                    <p>MatdataX</p>
                     <p>{{ _('Explore and discover novel materials') }}</p>
                 </div>
                 <div class="footer-section">
@@ -295,7 +295,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 {{ _('NLHE Database.') }} {{ _('Powered by') }} <a href="https://github.com/pallets/flask">Flask</a> & <a href="https://github.com/jwzhukevin/watchlist">Code</a></p>
+                <p>&copy; 2025 NLHE MatdataX. {{ _('Powered by') }} <a href="https://github.com/pallets/flask">Flask</a> & <a href="https://github.com/jwzhukevin/watchlist">Code</a></p>
             </div>
         </div>
     </footer>

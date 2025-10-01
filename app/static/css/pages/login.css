@@ -151,45 +151,9 @@
     gap: 1rem;
     margin-top: 1.25rem;
 }
+.form-actions .btn { flex: 1; height: 3rem; display: inline-flex; align-items: center; justify-content: center; }
 
-.primary-btn {
-    flex: 1;
-    background-color: var(--primary-color);
-    color: white;
-    height: 3rem;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.primary-btn:hover {
-    background-color: var(--button-hover);
-}
-
-.secondary-btn {
-    flex: 1;
-    background-color: white;
-    color: #475569;
-    height: 3rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.secondary-btn:hover {
-    background-color: #f8fafc;
-    border-color: #cbd5e0;
-}
+/* [Deprecated 20250930] .primary-btn/.secondary-btn 仅保留为历史标识，不再承担布局与视觉职责 */
 
 /* Admin warning - always take up space but visibility controlled */
 .admin-warning {

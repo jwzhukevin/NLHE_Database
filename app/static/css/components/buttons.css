@@ -3,6 +3,100 @@
 /* 目前各页面已有 .btn 定义，避免冲突，这里暂不覆盖具体颜色与尺寸。 */
 /* 后续可将重复度高的按钮风格迁移至此，并在页面CSS中只保留差异化覆盖。 */
 
+/* =========================
+   统一按钮主题变量（可按需覆盖）
+   说明：
+   - 本段仅提供“可配置入口”，不改动现有行为与颜色。
+   - 若页面或主题需要统一改色，只需在全局 :root 重写变量。
+   ========================= */
+:root {
+    /* 尺寸与圆角 */
+    --btn-radius: 0.5rem;
+    --btn-radius-sm: 0.375rem;
+
+    /* 过渡（节奏） */
+    --btn-transition-fast: 150ms;
+
+    /* 中性基线 */
+    --btn-neutral-bg: #ffffff;
+    --btn-neutral-text: #111827;
+    --btn-neutral-border: #d1d5db;
+    --btn-neutral-hover-bg: #f3f4f6;
+
+    /* Primary */
+    --btn-primary-bg: #1d4ed8;
+    --btn-primary-border: #1d4ed8;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover-bg: #1e40af;
+    --btn-primary-hover-border: #1e40af;
+
+    /* Secondary */
+    --btn-secondary-bg: #f3f4f6;
+    --btn-secondary-border: #d1d5db;
+    --btn-secondary-text: #111827;
+    --btn-secondary-hover-bg: #e5e7eb;
+
+    /* Success */
+    --btn-success-bg: #10b981;
+    --btn-success-border: #10b981;
+    --btn-success-text: #ffffff;
+    --btn-success-hover-bg: #0ea371;
+    --btn-success-hover-border: #0ea371;
+
+    /* Warning */
+    --btn-warning-bg: #f59e0b;
+    --btn-warning-border: #f59e0b;
+    --btn-warning-text: #111827;
+    --btn-warning-hover-bg: #d97706;
+    --btn-warning-hover-border: #d97706;
+
+    /* Danger */
+    --btn-danger-bg: #ef4444;
+    --btn-danger-border: #ef4444;
+    --btn-danger-text: #ffffff;
+    --btn-danger-hover-bg: #dc2626;
+    --btn-danger-hover-border: #dc2626;
+
+    /* Info */
+    --btn-info-bg: #0ea5e9;
+    --btn-info-border: #0ea5e9;
+    --btn-info-text: #ffffff;
+    --btn-info-hover-bg: #0284c7;
+    --btn-info-hover-border: #0284c7;
+
+    /* Link */
+    --btn-link-text: #1d4ed8;
+
+    /* Ghost Hover */
+    --btn-ghost-hover-bg: #f3f4f6;
+    --btn-ghost-hover-border: #e5e7eb;
+
+    /* Focus 与 Active 可访问性视觉 */
+    --btn-focus-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+    --btn-active-border: #2563eb;
+    --btn-active-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/*
+ 使用指南（按钮体系）
+ - 基础：<button class="btn btn--secondary">文本</button>
+ - 语义：btn--primary / btn--secondary / btn--success / btn--warning / btn--danger / btn--info / btn--ghost / btn--link
+ - 尺寸：btn--sm / (默认 md) / btn--lg
+ - 形态：btn--block（整行铺满）/ btn--icon（纯图标按钮，勿与文字混用）
+ - 状态：disabled 或 .is-loading（内部可放 <span class="spinner" aria-hidden="true"></span>）
+ - 暗色：自动跟随系统；也可在 <html data-theme="dark"> 强制
+ - 兼容：.btn.small 等同 .btn.btn--sm；.btn-clear 等同幽灵心智
+ 注意：.btn--icon 仅用于“纯图标按钮”。若含文字，请勿使用 .btn--icon，避免被固定尺寸裁切。
+*/
+
+/* =========================
+   兼容与别名说明（不改变现有规则）
+   - .btn.small 等价 .btn.btn--sm（已保留）
+   - .btn-clear 等价“幽灵按钮”心智（已保留）
+   - 页面历史类名（如 primary-btn/secondary-btn/search-button/toolbar-btn 等）
+     不在此处强行映射，保留最小侵入；推荐改为叠加 .btn + 语义修饰。
+   ========================= */
+
 /* 基础小按钮尺寸与动效（不覆盖颜色与边框） */
 .btn.small {
     padding: 6px 10px;
@@ -47,22 +141,22 @@
     font-size: 0.95rem;
     line-height: 1.2;
     padding: 0.5rem 0.9rem;
-    border-radius: 0.5rem;
-    border: 1px solid #d1d5db; /* neutral-300 */
-    background-color: #ffffff;
-    color: #111827; /* neutral-900 */
+    border-radius: var(--btn-radius, 0.5rem);
+    border: 1px solid var(--btn-neutral-border, #d1d5db); /* neutral-300 */
+    background-color: var(--btn-neutral-bg, #ffffff);
+    color: var(--btn-neutral-text, #111827); /* neutral-900 */
     cursor: pointer;
     user-select: none;
     text-decoration: none;
-    transition: background-color 150ms ease,
-                border-color 150ms ease,
-                color 150ms ease,
-                box-shadow 150ms ease,
+    transition: background-color var(--btn-transition-fast, 150ms) ease,
+                border-color var(--btn-transition-fast, 150ms) ease,
+                color var(--btn-transition-fast, 150ms) ease,
+                box-shadow var(--btn-transition-fast, 150ms) ease,
                 transform 50ms ease;
 }
 
 .btn:hover {
-    background-color: #f3f4f6; /* neutral-100 */
+    background-color: var(--btn-neutral-hover-bg, #f3f4f6); /* neutral-100 */
 }
 
 .btn:active {
@@ -71,7 +165,7 @@
 
 .btn:focus-visible {
     outline: 2px solid transparent;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35); /* blue-600 */
+    box-shadow: var(--btn-focus-shadow, 0 0 0 3px rgba(37, 99, 235, 0.35)); /* blue-600 */
 }
 
 .btn[disabled], .btn.is-disabled {
@@ -81,8 +175,8 @@
 }
 
 /* 尺寸修饰 */
-.btn--sm { padding: 0.375rem 0.6rem; font-size: 0.875rem; border-radius: 0.375rem; }
-.btn--lg { padding: 0.75rem 1.1rem; font-size: 1rem; border-radius: 0.5rem; }
+.btn--sm { padding: 0.375rem 0.6rem; font-size: 0.875rem; border-radius: var(--btn-radius-sm, 0.375rem); }
+.btn--lg { padding: 0.75rem 1.1rem; font-size: 1rem; border-radius: var(--btn-radius, 0.5rem); }
 
 /* 形态修饰 */
 .btn--block { display: flex; width: 100%; }
@@ -90,36 +184,36 @@
 .btn--icon.btn--sm { width: 2rem; height: 2rem; }
 
 /* 语义修饰（实心） */
-.btn--primary   { background-color: #1d4ed8; border-color: #1d4ed8; color: #fff; }
-.btn--primary:hover { background-color: #1e40af; border-color: #1e40af; }
+.btn--primary   { background-color: var(--btn-primary-bg, #1d4ed8); border-color: var(--btn-primary-border, #1d4ed8); color: var(--btn-primary-text, #fff); }
+.btn--primary:hover { background-color: var(--btn-primary-hover-bg, #1e40af); border-color: var(--btn-primary-hover-border, #1e40af); }
 
-.btn--secondary { background-color: #f3f4f6; border-color: #d1d5db; color: #111827; }
-.btn--secondary:hover { background-color: #e5e7eb; }
+.btn--secondary { background-color: var(--btn-secondary-bg, #f3f4f6); border-color: var(--btn-secondary-border, #d1d5db); color: var(--btn-secondary-text, #111827); }
+.btn--secondary:hover { background-color: var(--btn-secondary-hover-bg, #e5e7eb); }
 
-.btn--success   { background-color: #10b981; border-color: #10b981; color: #fff; }
-.btn--success:hover { background-color: #0ea371; border-color: #0ea371; }
+.btn--success   { background-color: var(--btn-success-bg, #10b981); border-color: var(--btn-success-border, #10b981); color: var(--btn-success-text, #fff); }
+.btn--success:hover { background-color: var(--btn-success-hover-bg, #0ea371); border-color: var(--btn-success-hover-border, #0ea371); }
 
-.btn--warning   { background-color: #f59e0b; border-color: #f59e0b; color: #111827; }
-.btn--warning:hover { background-color: #d97706; border-color: #d97706; color: #111827; }
+.btn--warning   { background-color: var(--btn-warning-bg, #f59e0b); border-color: var(--btn-warning-border, #f59e0b); color: var(--btn-warning-text, #111827); }
+.btn--warning:hover { background-color: var(--btn-warning-hover-bg, #d97706); border-color: var(--btn-warning-hover-border, #d97706); color: var(--btn-warning-text, #111827); }
 
-.btn--danger    { background-color: #ef4444; border-color: #ef4444; color: #fff; }
-.btn--danger:hover { background-color: #dc2626; border-color: #dc2626; }
+.btn--danger    { background-color: var(--btn-danger-bg, #ef4444); border-color: var(--btn-danger-border, #ef4444); color: var(--btn-danger-text, #fff); }
+.btn--danger:hover { background-color: var(--btn-danger-hover-bg, #dc2626); border-color: var(--btn-danger-hover-border, #dc2626); }
 
-.btn--info      { background-color: #0ea5e9; border-color: #0ea5e9; color: #fff; }
-.btn--info:hover { background-color: #0284c7; border-color: #0284c7; }
+.btn--info      { background-color: var(--btn-info-bg, #0ea5e9); border-color: var(--btn-info-border, #0ea5e9); color: var(--btn-info-text, #fff); }
+.btn--info:hover { background-color: var(--btn-info-hover-bg, #0284c7); border-color: var(--btn-info-hover-border, #0284c7); }
 
 /* 语义修饰（幽灵/链接） */
 .btn--ghost {
     background-color: transparent;
     border-color: transparent;
-    color: #111827;
+    color: var(--btn-neutral-text, #111827);
 }
-.btn--ghost:hover { background-color: #f3f4f6; border-color: #e5e7eb; }
+.btn--ghost:hover { background-color: var(--btn-ghost-hover-bg, #f3f4f6); border-color: var(--btn-ghost-hover-border, #e5e7eb); }
 
 .btn--link {
     background: none;
     border: none;
-    color: #1d4ed8;
+    color: var(--btn-link-text, #1d4ed8);
     padding: 0;
     height: auto;
 }
@@ -127,20 +221,106 @@
 
 /* 开关态（菜单/折叠按钮被激活时的视觉提示） */
 .btn.active {
-    border-color: #2563eb; /* blue-600 */
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    border-color: var(--btn-active-border, #2563eb); /* blue-600 */
+    box-shadow: var(--btn-active-shadow, 0 0 0 3px rgba(37, 99, 235, 0.2));
 }
 
 /* 兼容旧类 -------------------------------------------------------------- */
 /* .btn.small => 等价 .btn.btn--sm */
-.btn.small { padding: 0.375rem 0.6rem; font-size: 0.875rem; border-radius: 0.375rem; }
+.btn.small { padding: 0.375rem 0.6rem; font-size: 0.875rem; border-radius: var(--btn-radius-sm, 0.375rem); }
 
 /* .btn-clear => 使用幽灵按钮（透明底） */
 .btn-clear { background-color: transparent; border-color: transparent; }
-.btn-clear:hover { background-color: #f3f4f6; border-color: #e5e7eb; }
+.btn-clear:hover { background-color: var(--btn-ghost-hover-bg, #f3f4f6); border-color: var(--btn-ghost-hover-border, #e5e7eb); }
 
 /* 按钮组（可选） */
 .btn-group { display: inline-flex; gap: 0; }
 .btn-group .btn { border-radius: 0; }
 .btn-group .btn:first-child { border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
 .btn-group .btn:last-child  { border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
+
+/* =========================
+   加载态与动效可访问性
+   ========================= */
+.btn.is-loading {
+    cursor: progress;
+    opacity: 0.8;
+    pointer-events: none;
+}
+.btn.is-loading > .spinner {
+    width: 1em; height: 1em; border-radius: 50%;
+    border: 2px solid currentColor; border-top-color: transparent;
+    display: inline-block;
+    animation: btnSpin .8s linear infinite;
+}
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+    .btn:active { transform: none; }
+    .btn.is-loading > .spinner { animation: none; }
+}
+
+/* =========================
+   暗色模式（系统 + 手动）
+   ========================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 中性基线 */
+    --btn-neutral-bg: #0f172a;          /* slate-900 */
+    --btn-neutral-text: #e5e7eb;        /* gray-200 */
+    --btn-neutral-border: #334155;      /* slate-700 */
+    --btn-neutral-hover-bg: #1f2937;    /* gray-800 */
+
+    /* Primary */
+    --btn-primary-bg: #3b82f6;          /* blue-500 */
+    --btn-primary-border: #3b82f6;
+    --btn-primary-text: #ffffff;        /* 提升深色下可读性 */
+    --btn-primary-hover-bg: #2563eb;    /* blue-600 */
+    --btn-primary-hover-border: #2563eb;
+
+    /* Secondary */
+    --btn-secondary-bg: #111827;        /* gray-900 */
+    --btn-secondary-border: #374151;    /* gray-700 */
+    --btn-secondary-text: #e5e7eb;      /* gray-200 */
+    --btn-secondary-hover-bg: #1f2937;  /* gray-800 */
+
+    /* Ghost & Link */
+    --btn-ghost-hover-bg: #111827;
+    --btn-ghost-hover-border: #374151;
+    --btn-link-text: #60a5fa;           /* blue-400 */
+
+    /* Focus/Active */
+    --btn-focus-shadow: 0 0 0 3px rgba(96,165,250,0.35); /* blue-400 */
+    --btn-active-border: #60a5fa;
+    --btn-active-shadow: 0 0 0 3px rgba(96,165,250,0.2);
+  }
+}
+
+/* 手动强制暗色：<html data-theme="dark"> */
+[data-theme="dark"] {
+  /* 与上面暗色变量一致，可按需微调 */
+  --btn-neutral-bg: #0f172a;
+  --btn-neutral-text: #e5e7eb;
+  --btn-neutral-border: #334155;
+  --btn-neutral-hover-bg: #1f2937;
+
+  --btn-primary-bg: #3b82f6;
+  --btn-primary-border: #3b82f6;
+  --btn-primary-text: #ffffff; /* 提升深色下可读性 */
+  --btn-primary-hover-bg: #2563eb;
+  --btn-primary-hover-border: #2563eb;
+
+  --btn-secondary-bg: #111827;
+  --btn-secondary-border: #374151;
+  --btn-secondary-text: #e5e7eb;
+  --btn-secondary-hover-bg: #1f2937;
+
+  --btn-ghost-hover-bg: #111827;
+  --btn-ghost-hover-border: #374151;
+  --btn-link-text: #60a5fa;
+
+  --btn-focus-shadow: 0 0 0 3px rgba(96,165,250,0.35);
+  --btn-active-border: #60a5fa;
+  --btn-active-shadow: 0 0 0 3px rgba(96,165,250,0.2);
+}

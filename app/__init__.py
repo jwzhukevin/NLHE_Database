@@ -328,13 +328,13 @@ def create_app():
             total_materials = Material.query.count()
             return dict(
                 total_materials=total_materials,
-                app_name="NLHE Database"
+                app_name="NLHE MatdataX"
             )
         except Exception as e:
             app.logger.warning(f"无法查询统计信息: {str(e)}")
             return dict(
                 total_materials=0,
-                app_name="NLHE Database"
+                app_name="NLHE MatdataX"
             )
 
     # --- 初始化格式化ID ---
