@@ -1,5 +1,10 @@
 /* [pages/database.css] 数据库页页面级样式（由 main/database.html 内联样式迁移） */
 
+/* 页面局部变量 */
+:root {
+  --table-min-width: 1200px;
+}
+
 /* ===== 外层容器 ===== */
 .data-table-container {
   max-width: 100%;
@@ -22,7 +27,7 @@
 /* 统一的内容宽度容器：标题 + 表格共用同一内容宽度 */
 .table-stack {
   width: max-content;   /* 宽度由内部内容（通常为表格）决定 */
-  min-width: 1200px;    /* 与表格一致的最小宽度，保证对齐与密度 */
+  min-width: var(--table-min-width);    /* 与表格一致的最小宽度，保证对齐与密度 */
 }
 
 /* ===== 搜索表单容器与画布皮肤 ===== */
@@ -224,7 +229,7 @@
 /* [Deprecated 20250913] 表格基础样式已迁移至 components/tables.css（.material-data-table 基础、th/td、排序指示等） */
 .material-data-table {
   width: max-content;   /* 随内容自然扩展，直至触达视口或滚动容器 */
-  min-width: 1200px;    /* 最小宽度，保证初始视觉密度与易读性 */
+  min-width: var(--table-min-width);    /* 最小宽度，保证初始视觉密度与易读性 */
 }
 .material-data-table td:last-child { text-align: center; }
 .material-data-table tbody tr:nth-child(even) { background-color: #f8f9fa; }

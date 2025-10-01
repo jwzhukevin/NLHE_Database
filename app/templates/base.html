@@ -222,6 +222,20 @@
                 <!-- 结束 -->
 
                 <!-- 语言切换下拉 -->
+                <!-- 顶部 We 下拉（位于语言切换前） -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" id="we-dropdown">
+                        <i class="fas fa-users"></i> {{ _('We') }} <i class="fas fa-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu" id="we-menu">
+                        <a href="{{ url_for('views.members') }}"><i class="fas fa-user-friends"></i> {{ _('Team') }}</a>
+                        <a href="#"><i class="fas fa-book"></i> {{ _('Publications') }}</a>
+                        <a href="#"><i class="fas fa-trophy"></i> {{ _('Achievements') }}</a>
+                        <a href="#"><i class="fas fa-user-plus"></i> {{ _('Join Us') }}</a>
+                    </div>
+                </div>
+
+                <!-- 语言切换下拉 -->
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle" id="lang-dropdown">
                         <i class="fas fa-language"></i> {{ _('Language') }} <i class="fas fa-caret-down"></i>
@@ -337,6 +351,21 @@
                 document.addEventListener('click', function(e) {
                     if (!langDropdown.contains(e.target) && !langMenu.contains(e.target)) {
                         langMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // We 下拉菜单交互（与 Tools/Language 一致）
+            const weDropdown = document.getElementById('we-dropdown');
+            const weMenu = document.getElementById('we-menu');
+            if (weDropdown && weMenu) {
+                weDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    weMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!weDropdown.contains(e.target) && !weMenu.contains(e.target)) {
+                        weMenu.classList.remove('show');
                     }
                 });
             }
