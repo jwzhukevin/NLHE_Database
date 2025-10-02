@@ -298,22 +298,7 @@ def index():
                              search_params={},
                              error_message="Database not initialized, please contact administrator")
 
-# 定义管理员校验装饰器
-def admin_required(view_func):
-    """
-    路由管理员权限装饰器：仅允许管理员访问。
-
-    若用户未登录或非管理员，则引导至登录页。
-    """
-    @functools.wraps(view_func)
-    def wrapped_view(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin():
-            flash(_('Access denied. This feature requires administrator privileges.'), 'error')
-            return redirect(url_for('views.login'))
-        
-        return view_func(*args, **kwargs)
-    
-    return wrapped_view
+# [Deprecated 20251002] 旧逻辑：管理员权限装饰器 admin_required 已移除（项目仅保留只读功能）。
 
 # 工具函数：根据材料ID获取材料目录，仅使用新格式 IMR-{id}
 def get_material_dir(material_id):

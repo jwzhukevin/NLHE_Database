@@ -28,9 +28,9 @@ msgstr ""
 msgid "Login failed due to system error. Please try again."
 msgstr ""
 
-#: app/views.py:311
-msgid "Access denied. This feature requires administrator privileges."
-msgstr ""
+# [Deprecated 20251002] admin text removed, obsolete
+#~ msgid "Access denied. This feature requires administrator privileges."
+#~ msgstr ""
 
 #: app/views.py:425
 #, python-format
@@ -392,9 +392,9 @@ msgstr ""
 msgid "User"
 msgstr ""
 
-#: app/templates/auth/login.html:22
-msgid "Administrator"
-msgstr ""
+# [Deprecated 20251002] admin text removed, obsolete
+#~ msgid "Administrator"
+#~ msgstr ""
 
 #: app/templates/auth/login.html:28 app/templates/auth/login.html:121
 #: app/templates/auth/login.html:144 app/templates/auth/login.html:151
@@ -446,21 +446,17 @@ msgstr ""
 msgid "Return to Database"
 msgstr ""
 
-#: app/templates/auth/login.html:96
-msgid ""
-"This area is restricted to administrators only. Unauthorized access "
-"attempts are monitored."
-msgstr ""
+# [Deprecated 20251002] admin text removed, obsolete
+#~ msgid "This area is restricted to administrators only. Unauthorized access attempts are monitored."
+#~ msgstr ""
 
-#: app/templates/auth/login.html:123 app/templates/auth/login.html:146
-#: app/templates/auth/login.html:151
-msgid "Administrator Sign In"
-msgstr ""
+# [Deprecated 20251002] admin text removed, obsolete
+#~ msgid "Administrator Sign In"
+#~ msgstr ""
 
-#: app/templates/auth/login.html:124 app/templates/auth/login.html:147
-#: app/templates/auth/login.html:151
-msgid "Log In as Administrator"
-msgstr ""
+# [Deprecated 20251002] admin text removed, obsolete
+#~ msgid "Log In as Administrator"
+#~ msgstr ""
 
 #: app/templates/auth/login.html:125
 msgid "Login successful. Redirecting to database in 2 seconds…"

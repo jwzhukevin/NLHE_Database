@@ -24,7 +24,6 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20))           # 登录用户名
     email = db.Column(db.String(120), unique=True, nullable=False)  # 唯一邮箱（作为唯一标识符）
     password_hash = db.Column(db.String(128))     # 存储加密后的密码哈希值（不直接存储明文密码）
-    role = db.Column(db.String(10), default='user')  # 用户角色：admin, user, guest
 
     # 登录记录字段
     last_login_ip = db.Column(db.String(45))  # 最后登录IP地址（支持IPv6）
@@ -75,19 +74,8 @@ class User(db.Model, UserMixin):
         from .security_utils import validate_password_strength
         return validate_password_strength(password)
     
-    # 管理员检查方法
-    def is_admin(self):
-        """检查用户是否为管理员
-
-        [Deprecated 20251001] 取消管理员机制：所有用户均视为非管理员。
-        无论数据库中角色字段为何值，均返回 False。
-        """
-        return False
-    
-    # 注册用户检查方法
-    def is_registered_user(self):
-        """检查用户是否为注册用户（非游客）"""
-        return self.role in ['admin', 'user']
+    # [Deprecated 20251002] 旧逻辑：is_admin() 已移除（管理员特权彻底删除）。
+    # [Deprecated 20251002] 旧逻辑：is_registered_user() 已移除（不再依赖 role 字段）。
 
 
 # 材料数据模型类
