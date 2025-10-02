@@ -1059,6 +1059,43 @@ def debug_clear_session():
 
 # 注意：旧的users.dat文件管理函数已被移除
 # 现在所有用户数据都安全地存储在数据库中，使用bcrypt加密
+
+# ========== 错误页测试路由（仅 Debug 可用）==========
+@bp.route('/debug/show-403')
+def debug_show_403():
+    if not current_app.debug:
+        return "Debug mode only", 403
+    from flask import abort
+    abort(403)
+
+@bp.route('/debug/show-404')
+def debug_show_404():
+    if not current_app.debug:
+        return "Debug mode only", 403
+    from flask import abort
+    abort(404)
+
+@bp.route('/debug/show-410')
+def debug_show_410():
+    if not current_app.debug:
+        return "Debug mode only", 403
+    from flask import abort
+    abort(410)
+
+@bp.route('/debug/show-429')
+def debug_show_429():
+    if not current_app.debug:
+        return "Debug mode only", 403
+    from flask import abort
+    abort(429)
+
+@bp.route('/debug/show-500')
+def debug_show_500():
+    if not current_app.debug:
+        return "Debug mode only", 403
+    # 触发 500 错误页（Debug 下也渲染自定义模板）
+    from flask import abort
+    abort(500)
 # 如需管理用户，请使用 user_management.py 脚本
 
 def generate_captcha_image(text, width=140, height=50, scale_factor=2):

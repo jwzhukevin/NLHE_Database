@@ -1,4 +1,10 @@
 # English translations for PROJECT.
+msgid "BCD"
+msgstr "BCD"
+
+msgid "DW"
+msgstr "DW"
+
 # Copyright (C) 2025 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
@@ -1776,10 +1782,10 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "BCD"
-#~ msgstr ""
+#~ msgstr "BCD"
 
 #~ msgid "DW"
-#~ msgstr ""
+#~ msgstr "DW"
 
 #~ msgid "Welcome back, %(username)s!"
 #~ msgstr ""

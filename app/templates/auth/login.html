@@ -15,21 +15,11 @@
             </div>
             <!-- 右侧：登录模块整体（对称且独立） -->
             <div class="login-pane">
-            <!-- Login Type Selector -->
-            <div class="login-type-selector">
-                <button class="type-btn active" id="user-btn">
-                    <i class="fas fa-user"></i>
-                    <span>{{ _('User') }}</span>
-                </button>
-                <button class="type-btn" id="admin-btn">
-                    <i class="fas fa-user-shield"></i>
-                    <span>{{ _('Administrator') }}</span>
-                </button>
-            </div>
+            <!-- [Deprecated 20251001] 管理员登录选项已移除（只读模式） -->
             
             <!-- Login Form -->
             <div class="login-form-wrapper">
-                <h2 id="form-title">{{ _('Sign In') }}</h2>
+                <h2 id="form-title">{{ _('Log In') }}</h2>
                 <!-- 成功/错误提示区（动态填充） -->
                 <div id="login-message" class="login-message" role="status" aria-live="polite"></div>
                 
@@ -37,7 +27,7 @@
                     {% if csrf_token %}
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     {% endif %}
-                    <input type="hidden" id="login-type" name="login_type" value="user">
+                    <!-- [Deprecated 20251001] login_type 隐藏字段已移除 -->
                     
                     <div class="form-field">
                         <label for="email">
@@ -87,19 +77,11 @@
                     
                     <div class="form-actions">
                         <button type="submit" class="btn btn--primary" id="login-button">{{ _('Log In') }}</button>
-                        <a href="{{ url_for('views.index') }}" class="btn btn--link">Return to MatdataX</a>
+                        <a href="{{ url_for('views.index') }}" class="btn btn--link">{{ _('Back to Database') }}</a>
                     </div>
                 </form>
                 
-                <!-- Admin warning - always present but visibility controlled by CSS -->
-                <div class="admin-warning" id="admin-warning">
-                    <div class="warning-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="warning-text">
-                        <p>{{ _('This area is restricted to administrators only. Unauthorized access attempts are monitored.') }}</p>
-                    </div>
-                </div>
+                <!-- [Deprecated 20251001] 管理员警告块已移除 -->
             </div>
             </div> <!-- /login-pane -->
         </div>
@@ -124,8 +106,6 @@
 {{ {
   "signIn": _("Sign In"),
   "logIn": _("Log In"),
-  "adminSignIn": _("Administrator Sign In"),
-  "logInAsAdmin": _("Log In as Administrator"),
   "loginSuccessRedirect": _("Login successful. Redirecting to MatdataX in 2 seconds…"),
   "invalidCaptcha": _("Invalid captcha code, please try again"),
   "invalidCredentials": _("Incorrect password. You have %(n)d attempts remaining.")
@@ -135,11 +115,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Get DOM elements
-        const userBtn = document.getElementById('user-btn');
-        const adminBtn = document.getElementById('admin-btn');
-        const adminWarning = document.getElementById('admin-warning');
         const formTitle = document.getElementById('form-title');
-        const loginTypeInput = document.getElementById('login-type');
         const loginButton = document.getElementById('login-button');
         
         // Localized text from backend
@@ -169,25 +145,7 @@
             toggleIcon.classList.toggle('fa-eye-slash');
         });
         
-        // User button click event
-        userBtn.addEventListener('click', function() {
-            userBtn.classList.add('active');
-            adminBtn.classList.remove('active');
-            adminWarning.classList.remove('visible');
-            formTitle.textContent = i18nTexts.signIn;
-            loginTypeInput.value = 'user';
-            loginButton.textContent = i18nTexts.logIn;
-        });
-        
-        // Admin button click event
-        adminBtn.addEventListener('click', function() {
-            adminBtn.classList.add('active');
-            userBtn.classList.remove('active');
-            adminWarning.classList.add('visible');
-            formTitle.textContent = i18nTexts.adminSignIn;
-            loginTypeInput.value = 'admin';
-            loginButton.textContent = i18nTexts.logInAsAdmin;
-        });
+        // [Deprecated 20251001] 管理员切换逻辑已移除
 
         document.getElementById('captcha-img').onclick = function() {
             this.src = "{{ url_for('views.captcha') }}?" + Math.random();
@@ -382,8 +340,7 @@
                 email: document.getElementById('email').value.trim(),
                 username: document.getElementById('username').value.trim(),
                 password: document.getElementById('password').value,
-                captcha: captchaInput.value.trim(),
-                login_type: document.getElementById('login-type').value
+                captcha: captchaInput.value.trim()
             };
             try {
                 const resp = await fetch("{{ url_for('views.login_json') }}", {

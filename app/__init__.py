@@ -9,7 +9,7 @@ import sys  # 用于检测操作系统平台（Windows/Linux）
 import threading  # 用于后台非阻塞预热字体
 
 # 导入 Flask 核心模块和扩展库
-from flask import Flask, request, g  # Flask 应用核心类与请求上下文
+from flask import Flask, request, g, render_template  # Flask 应用核心类与请求上下文与错误页渲染
 from flask_sqlalchemy import SQLAlchemy  # ORM 数据库扩展
 from flask_login import LoginManager  # 用户登录管理扩展
 from flask_migrate import Migrate  # 数据库迁移工具
@@ -267,6 +267,27 @@ def create_app():
         """
         from .security_utils import add_security_headers
         return add_security_headers(response)
+
+    # --- 全局错误处理器：统一渲染错误模板 ---
+    @app.errorhandler(403)
+    def handle_403(e):
+        return render_template('errors/403.html'), 403
+
+    @app.errorhandler(404)
+    def handle_404(e):
+        return render_template('errors/404.html'), 404
+
+    @app.errorhandler(410)
+    def handle_410(e):
+        return render_template('errors/410.html'), 410
+
+    @app.errorhandler(429)
+    def handle_429(e):
+        return render_template('errors/429.html'), 429
+
+    @app.errorhandler(500)
+    def handle_500(e):
+        return render_template('errors/500.html'), 500
 
     # --- 非阻塞字体预热（首次请求后启动，避免阻塞应用启动与 preload_app 阶段） ---
     @app.before_first_request
