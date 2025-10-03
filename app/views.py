@@ -429,10 +429,10 @@ def apply():
                 _('We have received your application. We will review it and contact you via email.'),
                 '',
                 _('Summary:'),
-                f"- {_("Full Name")}: {full_name}",
-                f"- {_("Email")}: {email}",
-                f"- {_("Desired Username")}: {username}",
-                f"- {_("Affiliation")}: {affiliation or '-'}",
+                "- " + _('Full Name') + ": " + full_name,
+                "- " + _('Email') + ": " + email,
+                "- " + _('Desired Username') + ": " + username,
+                "- " + _('Affiliation') + ": " + (affiliation or '-'),
             ])
             msg_ack = Message(subject=ack_subject, recipients=[email], body=ack_body)
             mail.send(msg_ack)
