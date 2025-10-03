@@ -342,7 +342,9 @@ def cached_search(cache_enabled=True):
             # 生成用户上下文标识
             from flask_login import current_user
             if current_user.is_authenticated:
-                user_context = f"user_{current_user.get_id()}_{current_user.role}"
+                # 兼容无 role 字段的用户对象：默认标记为 'user'
+                role = getattr(current_user, 'role', 'user')
+                user_context = f"user_{current_user.get_id()}_{role}"
             else:
                 user_context = "anonymous"
 
