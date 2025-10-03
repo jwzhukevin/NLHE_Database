@@ -276,7 +276,14 @@
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（search-alert） -->
     </form>
 
-    <!-- 搜索结果信息 -->
+    <!-- [Moved] 搜索结果信息（与表格共享内容宽度）已移动到 .table-stack 内 -->
+    <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（filters/tags） -->
+
+    <!-- 表格标题 + 表格放入同一滚动容器，保证左右边界对齐 -->
+    <div class="table-outer">
+        <div class="table-inner">
+    <div class="table-stack">
+    <!-- 搜索结果信息：与表格同宽、左对齐，随表格边界动态显示 -->
     <div class="search-info">
         {% if search_params|any %}
             <div class="search-summary">
@@ -298,12 +305,6 @@
             </div>
         {% endif %}
     </div>
-    <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（filters/tags） -->
-
-    <!-- 表格标题 + 表格放入同一滚动容器，保证左右边界对齐 -->
-    <div class="table-outer">
-        <div class="table-inner">
-    <div class="table-stack">
     <div class="table-title">
         <span class="title2">
             {% trans count=materials|length %}

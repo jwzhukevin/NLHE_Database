@@ -111,7 +111,7 @@ msgstr "错误：在 sc 目录中发现多个 SC 文件，请仅保留一个！"
 #: app/views.py:916
 #, python-format
 msgid "Material with MP ID %(mp_id)s not found."
-msgstr ""
+msgstr "未找到指定的 MP 编号 %(mp_id)s 对应的材料。"
 
 #: app/views.py:981
 #, python-format
@@ -253,9 +253,8 @@ msgid "Login"
 msgstr "登录"
 
 #: app/templates/base.html:188
-#, fuzzy
 msgid "More"
-msgstr "阅读更多"
+msgstr "更多"
 
 #: app/templates/base.html:199 app/templates/base.html:205
 msgid "Logout"
@@ -339,13 +338,12 @@ msgid "Email: contact@nlhe-database.org"
 msgstr "邮箱：contact@nlhe-database.org"
 
 #: app/templates/base.html:504
-#, fuzzy
 msgid "NLHE Database."
-msgstr "数据库"
+msgstr "NLHE 数据库。"
 
 #: app/templates/base.html:504
 msgid "Powered by"
-msgstr ""
+msgstr "技术支持"
 
 #: app/templates/articles/listing.html:6
 msgid "Documentation & Contents"
@@ -474,7 +472,7 @@ msgstr "以管理员身份登录"
 
 #: app/templates/auth/login.html:125
 msgid "Login successful. Redirecting to database in 2 seconds…"
-msgstr ""
+msgstr "登录成功，2 秒后跳转到数据库页面…"
 
 #: app/templates/components/periodic_table.html:6
 msgid "Periodic Table"
@@ -958,83 +956,77 @@ msgstr "进入数据库"
 
 #: app/templates/errors/429.html:2 app/templates/errors/429.html:11
 msgid "Too Many Requests"
-msgstr ""
+msgstr "请求过于频繁"
 
 #: app/templates/errors/429.html:12
 msgid "You have sent too many requests in a short time."
-msgstr ""
+msgstr "您在短时间内发送了过多请求。"
 
 #: app/templates/errors/429.html:15
 msgid "Please wait"
-msgstr ""
+msgstr "请稍候"
 
 #: app/templates/errors/429.html:17
-#, fuzzy
 msgid "seconds"
-msgstr "发送"
+msgstr "秒"
 
 #: app/templates/errors/429.html:27
 msgid "Human Verification"
-msgstr ""
+msgstr "人机验证"
 
 #: app/templates/errors/429.html:29
 msgid "Electrons are in random motion."
-msgstr ""
+msgstr "电子在随机运动中。"
 
 #: app/templates/errors/429.html:39
-#, fuzzy
 msgid "Refresh"
-msgstr "点击刷新"
+msgstr "刷新"
 
 #: app/templates/errors/429.html:45
 msgid "Enter 5 letters"
-msgstr ""
+msgstr "请输入 5 个字母"
 
 #: app/templates/errors/429.html:45
-#, fuzzy
 msgid "Captcha code"
 msgstr "验证码"
 
 #: app/templates/errors/429.html:47
 msgid "Verify"
-msgstr ""
+msgstr "验证"
 
 #: app/templates/errors/429.html:54
 msgid ""
 "Please wait until the countdown finishes, then enter the captcha to "
 "continue"
-msgstr ""
+msgstr "请等待倒计时结束后输入验证码以继续"
 
 #: app/templates/errors/429.html:412
-#, fuzzy
 msgid "Please enter the captcha to continue"
-msgstr "输入验证码"
+msgstr "请输入验证码以继续"
 
 #: app/templates/errors/429.html:438
 msgid "Time is up. Please complete the captcha to continue"
-msgstr ""
+msgstr "倒计时已结束，请完成验证码以继续"
 
 #: app/templates/errors/429.html:470
-#, fuzzy
 msgid "Please enter the captcha code"
-msgstr "输入验证码"
+msgstr "请输入验证码"
 
 #: app/templates/errors/429.html:488
 msgid "Verified. Redirecting..."
-msgstr ""
+msgstr "验证通过，正在跳转…"
 
 #: app/templates/errors/429.html:495
 msgid "seconds remaining, please wait"
-msgstr ""
+msgstr "秒后完成，请稍候"
 
 #: app/templates/errors/429.html:497
-#, fuzzy
 msgid "Invalid captcha, please try again"
 msgstr "验证码错误，请重试"
 
 #: app/templates/errors/429.html:505
 msgid "Please wait until the countdown finishes, then try again"
-msgstr ""
+msgstr "请等待倒计时结束后再试"
 
 #: app/templates/errors/500.html:8
 msgid "Internal Server Error"
@@ -1108,21 +1100,19 @@ msgstr "带隙 (eV)"
 #: app/templates/main/database.html:456 app/templates/main/database.html:473
 #: app/templates/main/database.html:487
 msgid "Min"
-msgstr ""
+msgstr "最小值"
 
 #: app/templates/main/database.html:458 app/templates/main/database.html:475
 #: app/templates/main/database.html:489
 msgid "to"
-msgstr ""
+msgstr "至"
 
 #: app/templates/main/database.html:460 app/templates/main/database.html:477
 #: app/templates/main/database.html:491
-#, fuzzy
 msgid "Max"
-msgstr "最大位移电流："
+msgstr "最大值"
 
 #: app/templates/main/database.html:470
-#, fuzzy
 msgid "Max Shift Current (μA/V²)"
 msgstr "最大位移电流 (μA/V²)"
 
@@ -1137,7 +1127,7 @@ msgstr "MP-ID"
 
 #: app/templates/main/database.html:502
 msgid "e.g., mp-12345"
-msgstr ""
+msgstr "例如：mp-12345"
 
 #: app/templates/main/database.html:507 app/templates/main/database.html:940
 msgid "Space Group"
@@ -1145,17 +1135,17 @@ msgstr "空间群"
 
 #: app/templates/main/database.html:509
 msgid "e.g., 194 or P6_3/mmc"
-msgstr ""
+msgstr "例如：194 或 P6_3/mmc"
 
 #: app/templates/main/database.html:604
 msgid ""
 "Please enter search criteria or select at least one filter before "
 "searching."
-msgstr ""
+msgstr "在搜索前请输入条件或至少选择一个筛选项。"
 
 #: app/templates/main/database.html:641
 msgid "Searching with filters:"
-msgstr ""
+msgstr "当前筛选条件："
 
 #: app/templates/main/database.html:747
 #, python-format
@@ -1201,7 +1191,7 @@ msgstr "材料名称"
 #: app/templates/main/database.html:941 app/templates/main/database.html:942
 #: app/templates/main/database.html:943
 msgid "Hide this column"
-msgstr ""
+msgstr "隐藏此列"
 
 #: app/templates/main/database.html:944
 msgid "Actions"
@@ -1461,7 +1451,7 @@ msgstr "返回"
 
 #: app/templates/materials/detail.html:167
 msgid "Material Sections Navigation"
-msgstr ""
+msgstr "页面章节导航"
 
 #: app/templates/materials/detail.html:170
 msgid "Structure"
@@ -1581,63 +1571,57 @@ msgid "Shift Current"
 msgstr "位移电流"
 
 #: app/templates/materials/detail.html:328
-#, fuzzy
 msgid "SC Tabs"
-msgstr "状态"
+msgstr "SC 选项卡"
 
 #: app/templates/materials/detail.html:329
-#, fuzzy
 msgid "Relations"
-msgstr "操作"
+msgstr "元素关联"
 
 #: app/templates/materials/detail.html:350
 msgid "Loading element relations..."
 msgstr "正在加载元素关联..."
 
 #: app/templates/materials/detail.html:358
-#, fuzzy
 msgid "Max SC"
-msgstr "最大位移电流："
+msgstr "最大位移电流"
 
 #: app/templates/materials/detail.html:368
-#, fuzzy
 msgid "Max Photon Energy"
-msgstr "最大光子能量："
+msgstr "最大光子能量"
 
 #: app/templates/materials/detail.html:378
-#, fuzzy
 msgid "Max Tensor Type"
-msgstr "最大张量类型："
+msgstr "最大张量类型"
 
 #: app/templates/materials/detail.html:396
 msgid "Berry curvature dipole (BCD)"
-msgstr ""
+msgstr "贝里曲率偶极（BCD）"
 
 #: app/templates/materials/detail.html:397
 #: app/templates/materials/detail.html:424
 msgid "Eigen Matrix"
-msgstr ""
+msgstr "特征矩阵"
 
 #: app/templates/materials/detail.html:416
 msgid "BCD Legend"
-msgstr ""
+msgstr "BCD 图例"
 
 #: app/templates/materials/detail.html:423
 msgid "Drude weight (DW)"
-msgstr ""
+msgstr "德鲁德权重（DW）"
 
 #: app/templates/materials/detail.html:443
 msgid "DW Legend"
-msgstr ""
+msgstr "DW 图例"
 
 #: app/templates/materials/detail.html:453
 msgid "Basic Properties"
 msgstr "基本性质"
 
 #: app/templates/materials/detail.html:458
-#, fuzzy
 msgid "ID:"
-msgstr "编号"
+msgstr "编号："
 
 #: app/templates/materials/detail.html:459
 msgid "Fermi Level:"
@@ -1795,3 +1779,4 @@ msgstr "成果："
 #~ msgstr ""
 
 #~ msgid "DW"
+#~ msgstr "本征电导率"
