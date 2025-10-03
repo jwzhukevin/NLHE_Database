@@ -67,16 +67,19 @@ else
     exit 1
 fi
 
-# 3. 管理员初始化
-echo -e "\033[36m[2/4] Initializing admin information (executing ./admin.sh)...\033[0m"
-if $NOINPUT; then
-    echo -e "\033[33m[Note] In --noinput mode, please ensure admin.sh supports automatic input, otherwise manual input is still required.\033[0m"
-fi
-./admin.sh
-if [ $? -eq 0 ]; then
-    echo -e "\033[32m[Success] Admin initialization successful.\033[0m"
+# 3. 初始化首个用户（非管理员，交互式）
+echo -e "\033[36m[2/4] Creating initial user (executing ./create_initial_user.sh)...\033[0m"
+if [ -x "./create_initial_user.sh" ]; then
+    ./create_initial_user.sh
 else
-    echo -e "\033[31m[Failed] Admin initialization failed, terminating.\033[0m"
+    echo -e "\033[33m[Info] create_initial_user.sh not found or not executable.\033[0m"
+    echo -e "\033[33m[Hint] Please run: chmod +x create_initial_user.sh && ./create_initial_user.sh\033[0m"
+    exit 1
+fi
+if [ $? -eq 0 ]; then
+    echo -e "\033[32m[Success] Initial user created successfully.\033[0m"
+else
+    echo -e "\033[31m[Failed] Initial user creation failed, terminating.\033[0m"
     exit 1
 fi
 

@@ -366,11 +366,15 @@
                     body: JSON.stringify(payload)
                 });
                 const data = await resp.json();
-                if (data && data.ok === true && data.redirect && typeof data.redirect === 'string') {
+                if (data && data.ok === true) {
+                    // 成功：允许 redirect 为空，回退到首页
+                    const target = (data.redirect && typeof data.redirect === 'string')
+                        ? data.redirect
+                        : "{{ url_for('views.index') }}";
                     // 显示全屏成功弹框 + 进度条
                     scatterAndFade();
                     showLoginSuccessModal(2000, i18nTexts.loginSuccessRedirect);
-                    setTimeout(() => { window.location.assign(data.redirect || "{{ url_for('views.index') }}"); }, 2000);
+                    setTimeout(() => { window.location.assign(target); }, 2000);
                 } else {
                     const err = (data && data.error) || i18nTexts.invalidCredentials;
                     setMsg('error', err);

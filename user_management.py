@@ -41,21 +41,6 @@ def add_user():
         print("❌ 用户名不能为空")
         return
     
-    # 选择角色
-    print("\n可用角色:")
-    print("1. admin - 管理员（完全访问权限）")
-    print("2. user - 普通用户（查看和编辑权限）")
-    print("3. guest - 访客（只读权限）")
-    
-    role_choice = input("选择角色 (1-3): ").strip()
-    role_map = {'1': 'admin', '2': 'user', '3': 'guest'}
-    
-    if role_choice not in role_map:
-        print("❌ 无效的角色选择")
-        return
-    
-    role = role_map[role_choice]
-    
     # 获取密码
     while True:
         password = getpass.getpass("密码: ")
@@ -89,12 +74,11 @@ def add_user():
             print(f"❌ 用户名 {username} 已被使用")
             return
         
-        # 创建新用户
+        # 创建新用户（无角色字段）
         try:
             user = User(
                 email=email,
-                username=username,
-                role=role
+                username=username
             )
             user.set_password(password)
             
@@ -104,7 +88,7 @@ def add_user():
             print(f"\n✅ 用户创建成功！")
             print(f"   邮箱: {email}")
             print(f"   用户名: {username}")
-            print(f"   角色: {role}")
+            # 角色字段已移除
             
         except Exception as e:
             db.session.rollback()
@@ -123,11 +107,11 @@ def list_users():
             print("没有找到用户")
             return
         
-        print(f"{'ID':<5} {'邮箱':<25} {'用户名':<15} {'角色':<10}")
+        print(f"{'ID':<5} {'邮箱':<25} {'用户名':<15}")
         print("-" * 50)
         
         for user in users:
-            print(f"{user.id:<5} {user.email:<25} {user.username:<15} {user.role:<10}")
+            print(f"{user.id:<5} {user.email:<25} {user.username:<15}")
         
         print(f"\n总计: {len(users)} 个用户")
 
@@ -146,7 +130,7 @@ def modify_user():
         
         print("选择要修改的用户:")
         for i, user in enumerate(users, 1):
-            print(f"{i}. {user.email} ({user.username}) - {user.role}")
+            print(f"{i}. {user.email} ({user.username})")
         
         try:
             choice = int(input("\n输入用户编号: ")) - 1
@@ -167,20 +151,7 @@ def modify_user():
                     return
                 user.username = new_username
             
-            # 修改角色
-            print(f"\n当前角色: {user.role}")
-            print("1. admin - 管理员")
-            print("2. user - 普通用户") 
-            print("3. guest - 访客")
-            role_choice = input("新角色 (1-3, 回车跳过): ").strip()
-            
-            if role_choice:
-                role_map = {'1': 'admin', '2': 'user', '3': 'guest'}
-                if role_choice in role_map:
-                    user.role = role_map[role_choice]
-                else:
-                    print("❌ 无效的角色选择")
-                    return
+            # 角色相关逻辑已移除
             
             db.session.commit()
             print("✅ 用户信息修改成功")
@@ -262,7 +233,7 @@ def delete_user():
         
         print("选择要删除的用户:")
         for i, user in enumerate(users, 1):
-            print(f"{i}. {user.email} ({user.username}) - {user.role}")
+            print(f"{i}. {user.email} ({user.username})")
         
         try:
             choice = int(input("\n输入用户编号: ")) - 1
@@ -272,11 +243,7 @@ def delete_user():
             
             user = users[choice]
             
-            # 防止删除最后一个管理员
-            admin_count = User.query.filter_by(role='admin').count()
-            if user.role == 'admin' and admin_count <= 1:
-                print("❌ 不能删除最后一个管理员用户")
-                return
+            # 无角色概念，不再限制删除管理员
             
             print(f"\n⚠️  确认删除用户: {user.email} ({user.username})?")
             confirm = input("输入 'DELETE' 确认删除: ")

@@ -71,15 +71,15 @@ class LoginStateManager:
             # 5. 仅记录状态变化日志，不再弹出任何欢迎提示
             if not was_authenticated_before:
                 current_app.logger.info(
-                    f"Login status changed: Guest → {user.role} user (no flash message)"
+                    "Login status changed: Guest → user (no flash message)"
                 )
             else:
                 current_app.logger.info("User was already authenticated, no welcome message shown")
             
-            # 6. 记录成功登录事件
+            # 6. 记录成功登录事件（去除角色字段）
             log_security_event(
                 "LOGIN_SUCCESS", 
-                f"User: {user.username}, Role: {user.role}, Session: {session.get('_id', 'unknown')}", 
+                f"User: {user.username}, Session: {session.get('_id', 'unknown')}", 
                 ip_address
             )
             
@@ -185,7 +185,7 @@ class LoginStateManager:
         """获取当前用户状态描述"""
         try:
             if current_user and current_user.is_authenticated:
-                return f"{current_user.username} ({current_user.role})"
+                return f"{current_user.username}"
             else:
                 return "Guest"
         except (AttributeError, RuntimeError):
