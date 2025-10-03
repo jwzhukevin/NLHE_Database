@@ -1,4 +1,65 @@
 # Chinese translations for PROJECT.
+# ===== 申请页 i18n 新增条目 =====
+#: app/templates/base.html:188 app/templates/auth/apply.html:49
+msgid "Apply"
+msgstr "申请"
+
+#: app/templates/auth/apply.html:33
+msgid "Application Instructions (Email Channel)"
+msgstr "申请说明（邮件申请通道）"
+
+#: app/templates/auth/apply.html:35
+msgid "You can also send your application email to:"
+msgstr "您也可以将申请邮件发送至："
+
+#: app/templates/auth/apply.html:38
+msgid "To speed up the review, please fill in the following fields completely (Required indicates mandatory):"
+msgstr "为加快审核，请完整填写以下字段（标注“必填”的为必填项）："
+
+#: app/templates/auth/apply.html:41
+msgid "Full Name (Required)"
+msgstr "姓名（必填）"
+
+#: app/templates/auth/apply.html:42
+msgid "Email (Required, used for notifications)"
+msgstr "邮箱（必填，用于接收通知）"
+
+#: app/templates/auth/apply.html:43
+msgid "Desired Username (Required)"
+msgstr "期望用户名（必填）"
+
+#: app/templates/auth/apply.html:44
+msgid "Affiliation (Optional)"
+msgstr "单位/机构（可选）"
+
+#: app/templates/auth/apply.html:45
+msgid "Application Reason (Required, briefly describe purpose and scope)"
+msgstr "申请理由（必填，简要说明用途与范围）"
+
+#: app/templates/auth/apply.html:49
+msgid "Copy Template"
+msgstr "一键复制模板"
+
+#: app/templates/auth/apply.html:51
+msgid "MAIL_TEMPLATE_TEXT"
+msgstr "收件人：matdatax@163.com\n主题：申请开通 NLHE MatdataX 用户\n\n正文：\n姓名：________________\n邮箱：________________\n期望用户名：__________\n单位/机构（可选）：____\n申请理由（用途与范围）：\n________________________________"
+
+#: app/templates/auth/apply.html:52
+msgid "Hint: After copying, paste into your email client, complete the information, and send."
+msgstr "提示：复制后粘贴到您的邮件客户端，完善信息并发送。"
+
+#: app/templates/auth/apply.html:54
+msgid "The online application form on the right is currently unavailable. Please use the email channel above:"
+msgstr "右侧在线申请表单当前暂不可用。请使用上方的邮件通道："
+
+#: app/templates/auth/apply.html:58
+msgid "Template copied to clipboard"
+msgstr "模板已复制到剪贴板"
+
+#: app/templates/auth/apply.html:67
+msgid "The online application form is temporarily unavailable. Please use the email channel on the left."
+msgstr "在线申请表单暂不可用，请使用左侧邮件通道"
+
 # Copyright (C) 2025 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.

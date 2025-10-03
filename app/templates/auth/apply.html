@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/login.css', v='20250913') }}">
+<style>
+  /* 仅在申请页覆盖左侧背景为与导航一致的天蓝色 */
+  .login-hero {
+    background: rgb(181, 222, 253) !important;
+    border-right: none !important;
+  }
+  /* 提升说明文本的可读性 */
+  .apply-instruction h3 { color: #0b3a6d; }
+  .apply-instruction p, .apply-instruction li { color: #174e8c; }
+  .apply-instruction .mail-template { background: rgba(255,255,255,.92); }
+  .apply-instruction textarea { background: #f8fbff; }
+  /* 左侧提示的轻量动画支持 */
+  #apply-copy-message { transition: opacity .4s ease; }
+  /* 复制成功提示：统一绿色语义色 */
+  #apply-copy-message { color: #16a34a; }
+  #apply-copy-message i { color: #16a34a; }
+  /* 禁用右侧表单的覆盖与降噪 */
+  .login-pane.disabled { position: relative; filter: grayscale(0.1) opacity(0.55); pointer-events: none; }
+  .login-pane.disabled .disabled-overlay { position: absolute; inset: 0; background: rgba(255,255,255,0.6); display: flex; align-items: center; justify-content: center; z-index: 5; pointer-events: auto; }
+  .login-pane.disabled .disabled-overlay .msg { background: rgba(255,255,255,0.95); border: 1px solid #d9e2f0; box-shadow: 0 6px 18px rgba(0,0,0,0.08); color: #0b3a6d; padding: .75rem 1rem; border-radius: 10px; display: inline-flex; align-items: center; gap: .5rem; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Apply Main Content (aligned with Login) -->
+<section class="login-content">
+  <div class="container">
+    <div class="login-card login-grid">
+      <!-- 左侧：官方说明 + 邮件模板（替代动画画布） -->
+      <div class="login-hero">
+        <div class="apply-instruction" style="padding: 1rem 1.25rem; color: #0b3a6d;">
+          <h3 style="margin: 0 0 .9rem; font-size: 1.5rem; line-height: 1.25; font-weight: 700; color: #0b3a6d;">{{ _('Application Instructions (Email Channel)') }}</h3>
+          <p style="margin: .25rem 0 .5rem; line-height: 1.6;">
+            {{ _('You can also send your application email to:') }} <strong>matdatax@163.com</strong>.
+          </p>
+          <p style="margin: .25rem 0 .5rem; line-height: 1.6;">
+            {{ _('To speed up the review, please fill in the following fields completely (Required indicates mandatory):') }}
+          </p>
+          <ul style="margin: .25rem 0 .75rem 1.1rem; line-height: 1.7;">
+            <li>{{ _('Full Name (Required)') }}</li>
+            <li>{{ _('Email (Required, used for notifications)') }}</li>
+            <li>{{ _('Desired Username (Required)') }}</li>
+            <li>{{ _('Affiliation (Optional)') }}</li>
+            <li>{{ _('Application Reason (Required, briefly describe purpose and scope)') }}</li>
+          </ul>
+          <div class="mail-template" style="background: rgba(255,255,255,.85); border-radius: 8px; padding: .75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08);">
+            <div class="template-actions" style="display:flex; justify-content:flex-end; margin-bottom: .5rem;">
+              <button type="button" class="btn btn--primary" id="copy-mail-template">{{ _('Copy Template') }}</button>
+            </div>
+            <textarea id="mail-template-text" readonly rows="10" style="width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: .95rem; color:#0b3a6d; background:#f8fbff; border: 1px solid rgba(11,58,109,.15); border-radius: 6px; padding: .5rem .6rem;">{{ _('MAIL_TEMPLATE_TEXT') }}</textarea>
+            <p style="margin: .5rem 0 0; color:#305c94; font-size: .9rem;">{{ _('Hint: After copying, paste into your email client, complete the information, and send.') }}</p>
+          </div>
+          <p style="margin-top:.6rem; color:#ef4444; display:flex; align-items:center; gap:.4rem; background:#fee2e2; border-left:4px solid #ef4444; padding:.6rem .75rem; border-radius:8px;">
+            <i class="fas fa-info-circle" style="color:#ef4444;"></i>
+            <span>{{ _('The online application form on the right is currently unavailable. Please use the email channel above:') }} <strong>matdatax@163.com</strong>.</span>
+          </p>
+          <!-- 左侧复制提示（默认隐藏） -->
+          <div id="apply-copy-message" class="login-message success" role="status" aria-live="polite" style="display:none; margin-top: .5rem;">
+            <i class="fas fa-check-circle" style="margin-right:.4rem;"></i>
+            <span>{{ _('Template copied to clipboard') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧：表单区域（复用登录页结构与类名） -->
+      <div class="login-pane disabled" aria-disabled="true">
+        <!-- 覆盖层：显示禁用提示并拦截交互 -->
+        <div class="disabled-overlay" aria-hidden="false">
+          <div class="msg"><i class="fas fa-ban"></i><span>{{ _('The online application form is temporarily unavailable. Please use the email channel on the left.') }}</span></div>
+        </div>
+        <div class="login-form-wrapper">
+          <h2 id="apply-title">{{ _('Apply to Become a User') }}</h2>
+
+          <!-- 提示区（与登录页一致，可承载 flash 消息） -->
+          <div id="apply-message" class="login-message" role="status" aria-live="polite"></div>
+
+          <form method="post" class="login-form" id="apply-form" action="{{ url_for('views.apply') }}">
+            {% if csrf_token %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            {% endif %}
+
+            <div class="form-field">
+              <label for="full_name">
+                <i class="fas fa-id-card"></i>
+                <span>{{ _('Full Name') }}</span>
+              </label>
+              <input type="text" id="full_name" name="full_name" placeholder="{{ _('Enter your full name') }}" required>
+            </div>
+
+            <div class="form-field">
+              <label for="email">
+                <i class="fas fa-envelope"></i>
+                <span>{{ _('Email') }}</span>
+              </label>
+              <input type="email" id="email" name="email" placeholder="{{ _('Enter your email address') }}" required>
+            </div>
+
+            <div class="form-field">
+              <label for="username">
+                <i class="fas fa-user-circle"></i>
+                <span>{{ _('Desired Username') }}</span>
+              </label>
+              <input type="text" id="username" name="username" placeholder="{{ _('Enter your desired username') }}" required>
+            </div>
+
+            <div class="form-field">
+              <label for="affiliation">
+                <i class="fas fa-building"></i>
+                <span>{{ _('Affiliation') }}</span>
+              </label>
+              <input type="text" id="affiliation" name="affiliation" placeholder="{{ _('Enter your affiliation (optional)') }}">
+            </div>
+
+            <div class="form-field">
+              <label for="reason">
+                <i class="fas fa-file-alt"></i>
+                <span>{{ _('Reason') }}</span>
+              </label>
+              <textarea id="reason" name="reason" rows="5" placeholder="{{ _('Describe your purpose or need for access') }}" required></textarea>
+            </div>
+
+            <div class="form-field">
+              <label for="captcha">
+                <i class="fas fa-shield-alt"></i>
+                <span>{{ _('Captcha') }}</span>
+              </label>
+              <div class="captcha-container">
+                <input type="text" id="captcha" name="captcha" placeholder="{{ _('Enter the captcha') }}" maxlength="5" required class="captcha-input" />
+                <div class="captcha-image-wrapper">
+                  <img id="captcha-img" src="{{ url_for('views.captcha') }}" alt="{{ _('Captcha') }}" class="captcha-image" />
+                  <div class="captcha-refresh-hint">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>{{ _('Click to refresh') }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary" id="apply-button">{{ _('Submit Application') }}</button>
+              <a href="{{ url_for('views.index') }}" class="btn btn--link">{{ _('Back to Database') }}</a>
+            </div>
+          </form>
+        </div>
+      </div> <!-- /login-pane -->
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 验证码点击刷新（与登录页一致）
+    const captchaImg = document.getElementById('captcha-img');
+    if (captchaImg) {
+      captchaImg.addEventListener('click', function() {
+        this.src = "{{ url_for('views.captcha') }}?" + Date.now();
+      });
+    }
+    // 一键复制邮件模板
+    const copyBtn = document.getElementById('copy-mail-template');
+    const tpl = document.getElementById('mail-template-text');
+    const leftMsg = document.getElementById('apply-copy-message');
+    // 本地化文案（避免在 JS 中写死中文）
+    const copiedMsgText = "{{ _('Template copied to clipboard') }}";
+    if (copyBtn && tpl) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(tpl.value);
+          if (leftMsg) {
+            leftMsg.style.display = '';
+            leftMsg.style.opacity = '1';
+            leftMsg.className = 'login-message success';
+            const span = leftMsg.querySelector('span');
+            if (span) span.textContent = copiedMsgText;
+            setTimeout(() => { leftMsg.style.opacity = '0'; }, 1100);
+            setTimeout(() => { leftMsg.style.display = 'none'; leftMsg.style.opacity = '1'; }, 1500);
+          }
+        } catch (e) {
+          // 旧浏览器回退
+          tpl.select();
+          document.execCommand('copy');
+          if (leftMsg) {
+            leftMsg.style.display = '';
+            leftMsg.style.opacity = '1';
+            leftMsg.className = 'login-message success';
+            const span = leftMsg.querySelector('span');
+            if (span) span.textContent = copiedMsgText;
+            setTimeout(() => { leftMsg.style.opacity = '0'; }, 1100);
+            setTimeout(() => { leftMsg.style.display = 'none'; leftMsg.style.opacity = '1'; }, 1500);
+          }
+        }
+      });
+    }
+    // 可选：如需接入动画，复用登录页初始化逻辑；默认保持静态以降低干扰
+  });
+</script>
+{% endblock %}

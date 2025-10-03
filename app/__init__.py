@@ -14,6 +14,7 @@ from flask_sqlalchemy import SQLAlchemy  # ORM 数据库扩展
 from flask_login import LoginManager  # 用户登录管理扩展
 from flask_migrate import Migrate  # 数据库迁移工具
 from flask_babel import Babel, get_locale, _  # 国际化支持
+from flask_mail import Mail, Message  # 邮件发送
 
 # 导入安全相关扩展
 try:
@@ -39,6 +40,7 @@ except ImportError:
 db = SQLAlchemy()  # 创建 SQLAlchemy 实例，后续通过 init_app() 绑定应用
 login_manager = LoginManager()  # 创建登录管理实例，支持多应用实例场景
 babel = Babel()  # 创建 Babel 实例，延迟绑定
+mail = Mail()    # 创建 Mail 实例，延迟绑定
 
 # 初始化安全扩展
 csrf = None
@@ -110,6 +112,21 @@ def create_app():
     db.init_app(app)  # 延迟绑定 SQLAlchemy 到应用（工厂模式核心）
     migrate = Migrate(app, db)  # 初始化数据库迁移工具（生成迁移脚本）
     login_manager.init_app(app)  # 绑定登录管理到应用
+    # 邮件配置（从环境变量读取，保持默认关闭状态，缺失配置将导致发送时报错并被捕获）
+    app.config.setdefault('MAIL_SERVER', os.getenv('MAIL_SERVER', ''))
+    app.config.setdefault('MAIL_PORT', int(os.getenv('MAIL_PORT', '587') or 587))
+    app.config.setdefault('MAIL_USE_TLS', (os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'))
+    app.config.setdefault('MAIL_USE_SSL', (os.getenv('MAIL_USE_SSL', 'false').lower() == 'true'))
+    app.config.setdefault('MAIL_USERNAME', os.getenv('MAIL_USERNAME', ''))
+    app.config.setdefault('MAIL_PASSWORD', os.getenv('MAIL_PASSWORD', ''))
+    app.config.setdefault('MAIL_DEFAULT_SENDER', os.getenv('MAIL_DEFAULT_SENDER', 'no-reply@nlhe-database.org'))
+    app.config.setdefault('APPLICATION_RECEIVER', os.getenv('APPLICATION_RECEIVER', ''))
+    # 初始化 Mail 扩展
+    try:
+        mail.init_app(app)
+        app.logger.info("Mail extension initialized")
+    except Exception as e:
+        app.logger.warning(f"Mail extension init failed: {e}")
 
     # --- 国际化（i18n）配置 ---
     # 默认语言与受支持语言，可通过实例配置/环境覆盖

@@ -146,6 +146,16 @@
         <div class="container nav-content">
             <a href="{{ url_for('views.landing') }}" class="logo"><i class="fas fa-database"></i> MatdataX</a>
             <div class="nav-links">
+                <!-- 语言切换下拉：移到最前（在 MatdataX 链接前） -->
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle" id="lang-dropdown">
+                        <i class="fas fa-language"></i> {{ _('Language') }} <i class="fas fa-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu" id="lang-menu">
+                        <a href="{{ url_for('views.set_language', lang='en') }}" hreflang="en">{{ _('English') }}</a>
+                        <a href="{{ url_for('views.set_language', lang='zh') }}" hreflang="zh">{{ _('中文') }}</a>
+                    </div>
+                </div>
                 <a href="{{ url_for('views.index') }}">
                     <i class="fas fa-table"></i> MatdataX
                 </a>
@@ -180,12 +190,7 @@
 
                 {# [Deprecated 20251001] 管理员新增入口已移除（只读模式） #}
 
-                <!-- 未登录用户显示登录按钮 -->
-                {% if not current_user.is_authenticated %}
-                <a href="{{ url_for('views.login') }}">
-                    <i class="fas fa-sign-in-alt"></i> {{ _('Login') }}
-                </a>
-                {% endif %}
+                {# 取消未登录状态下在此处展示独立 Apply/Login 链接，改由 guest 头像下拉提供 #}
 
                 <!-- 自适应收纳：更多下拉（默认隐藏，JS控制显示） -->
                 <div class="dropdown more-dropdown" id="more-dropdown" aria-label="More">
@@ -195,23 +200,7 @@
                     <div class="dropdown-menu" id="more-menu"></div>
                 </div>
 
-                <!-- 用户类型提示区域，头像+用户名+下拉菜单 -->
-                <div class="user-type-indicator user-dropdown">
-                    {% if current_user.is_authenticated %}
-                        <span class="user-avatar user user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
-                        <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
-                        <div class="user-dropdown-menu">
-                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}</a>
-                        </div>
-                    {% else %}
-                        <span class="user-avatar guest"><i class="fas fa-user-circle"></i></span>
-                        <span class="user-name">{{ _('Guest') }}</span>
-                    {% endif %}
-                </div>
-                <!-- 结束 -->
-
-                <!-- 语言切换下拉 -->
-                <!-- 顶部 We 下拉（位于语言切换前） -->
+                <!-- We 下拉（移到 Guest 前） -->
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle" id="we-dropdown">
                         <i class="fas fa-users"></i> {{ _('We') }} <i class="fas fa-caret-down"></i>
@@ -224,16 +213,26 @@
                     </div>
                 </div>
 
-                <!-- 语言切换下拉 -->
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle" id="lang-dropdown">
-                        <i class="fas fa-language"></i> {{ _('Language') }} <i class="fas fa-caret-down"></i>
-                    </a>
-                    <div class="dropdown-menu" id="lang-menu">
-                        <a href="{{ url_for('views.set_language', lang='en') }}" hreflang="en">{{ _('English') }}</a>
-                        <a href="{{ url_for('views.set_language', lang='zh') }}" hreflang="zh">{{ _('中文') }}</a>
-                    </div>
+                <!-- 用户类型提示区域，头像+用户名+下拉菜单 -->
+                <div class="user-type-indicator user-dropdown">
+                    {% if current_user.is_authenticated %}
+                        <span class="user-avatar user user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
+                        <span class="user-name user-dropdown-toggle">{{ current_user.username }}</span>
+                        <div class="user-dropdown-menu">
+                            <a href="{{ url_for('views.logout') }}"><i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}</a>
+                        </div>
+                    {% else %}
+                        <span class="user-avatar guest user-dropdown-toggle"><i class="fas fa-user-circle"></i></span>
+                        <span class="user-name user-dropdown-toggle">{{ _('Guest') }}</span>
+                        <div class="user-dropdown-menu">
+                            <a href="{{ url_for('views.apply') }}"><i class="fas fa-user-plus"></i> {{ _('Apply') }}</a>
+                            <a href="{{ url_for('views.login') }}"><i class="fas fa-sign-in-alt"></i> {{ _('Login') }}</a>
+                        </div>
+                    {% endif %}
                 </div>
+                <!-- 结束 -->
+
+                
             </div>
         </div>
     </nav>

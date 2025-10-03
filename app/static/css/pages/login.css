@@ -448,6 +448,9 @@
 }
 
 /* 登录成功弹框与遮罩（从 <script> 中移至此处） */
+/* 默认隐藏：仅在登录成功时由 JS 显示 */
+#login-success-backdrop { display: none; }
+#login-success-modal { display: none; }
 .login-success-backdrop {
     position: fixed;
     inset: 0;
@@ -457,7 +460,7 @@
 .login-success-modal {
     position: fixed;
     inset: 0;
-    display: flex;
+    /* 显示时由 JS 设置为 flex */
     align-items: center;
     justify-content: center;
     z-index: 4001;
@@ -482,12 +485,27 @@
     justify-content: center;
     line-height: 1;
 }
-.login-success-card .success-text { font-weight: 600; color: #0f172a; }
-.login-success-card .success-progress { height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
-.login-success-card .success-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#22c55e,#16a34a); }
-@keyframes modalFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-/* 默认隐藏：由JS控制显示 */
-#login-message { display: none; }
-#login-success-backdrop { display: none; }
-#login-success-modal { display: none; }
+/* Notice component (reusable) */
+.notice {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .6rem .75rem;
+    border-radius: 8px;
+    border-left: 4px solid transparent;
+}
+.notice i { flex-shrink: 0; }
+.notice--info { color: #0b3a6d; background: #e9f3ff; border-left-color: #1e5cb3; }
+.notice--warn { color: #b45309; background: #fff7ed; border-left-color: #f59e0b; }
+.notice--danger { color: #b91c1c; background: #fee2e2; border-left-color: #ef4444; }
+.notice--danger i { color: #ef4444; }
+
+/* Copy success message (keep green success tone) */
+#apply-copy-message { color: #16a34a; }
+#apply-copy-message i { color: #16a34a; }
+
+/* Mobile: keep apply hero visible on small screens */
+@media (max-width: 640px) {
+  .apply-hero { display: block; margin-bottom: 1rem; }
+}

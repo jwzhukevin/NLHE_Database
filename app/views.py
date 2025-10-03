@@ -1,14 +1,20 @@
+# 邮件发送（在 __init__.py 已初始化全局 mail）
+from flask_mail import Message
 # view.py:
 # 视图函数模块：处理与用户界面相关的所有路由与请求
 # 覆盖：主页、材料详情、添加/编辑材料、用户认证等
 
 # 导入所需模块
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app, send_file, jsonify, abort  # Flask 核心模块
-from flask_login import login_user, logout_user, login_required, current_user  # 用户认证模块
+from flask import (
+    Blueprint, render_template, request, redirect, url_for, flash,
+    send_file, jsonify, current_app, make_response, session
+)
+from flask_login import login_user, login_required, logout_user, current_user
+  # 用户认证模块
 from flask_babel import _, get_locale  # 国际化：gettext 与当前语言
 from sqlalchemy import and_, or_  # 数据库查询条件构造器
 from .models import User, Material, BlockedIP, Member  # 自定义数据模型
-from . import db, csrf  # 数据库实例与 CSRF 保护实例
+from . import db, csrf, mail, limiter  # 数据库/CSRF/邮件/限流 实例
 import datetime  # 日期与时间处理
 import time  # 429 限流倒计时用
 import functools  # 装饰器工具
@@ -29,6 +35,15 @@ from .auth_manager import LoginStateManager, LoginErrorHandler
 from pymatgen.core import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 import math
+
+# 为限流提供安全装饰器（Flask-Limiter 不可用时降级为无操作）
+try:
+    apply_limit = limiter.limit  # type: ignore[attr-defined]
+except Exception:
+    def apply_limit(*args, **kwargs):
+        def _noop(f):
+            return f
+        return _noop
 
 # 尝试导入CSRF豁免装饰器
 try:
@@ -338,6 +353,97 @@ def set_language():
     resp = redirect(request.referrer or url_for('views.landing'))
     resp.set_cookie('lang', lang, max_age=30*24*3600, samesite='Lax')
     return resp
+
+# 申请成为用户（游客可用）
+@apply_limit("5 per minute")
+@bp.route('/apply', methods=['GET', 'POST'])
+def apply():
+    """
+    申请成为站内用户：提交信息后发送邮件到运维指定邮箱。
+
+    环境变量：
+    - APPLICATION_RECEIVER: 接收申请的邮箱地址
+    """
+    try:
+        if request.method == 'GET':
+            return render_template('auth/apply.html')
+
+        # POST: 校验字段
+        full_name = (request.form.get('full_name') or '').strip()
+        email = (request.form.get('email') or '').strip().lower()
+        username = (request.form.get('username') or '').strip()
+        affiliation = (request.form.get('affiliation') or '').strip()
+        reason = (request.form.get('reason') or '').strip()
+        captcha_input = (request.form.get('captcha') or '').strip().upper()
+
+        if not full_name or not email or not username or not reason:
+            flash(_('All fields are required.'), 'error')
+            return render_template('auth/apply.html')
+
+        # 简单邮箱格式校验
+        if '@' not in email or '.' not in email.split('@')[-1]:
+            flash(_('Invalid data: %(error)s', error=_('Email format is invalid')), 'error')
+            return render_template('auth/apply.html')
+
+        # 验证码校验（复用登录页的 session 存储）
+        real_captcha = session.get('captcha', '').upper()
+        if not captcha_input or captcha_input != real_captcha:
+            flash(_('Invalid captcha code, please try again'), 'error')
+            return render_template('auth/apply.html')
+
+        # 发送邮件
+        receiver = current_app.config.get('APPLICATION_RECEIVER') or ''
+        if not receiver:
+            current_app.logger.error('APPLICATION_RECEIVER not configured')
+            flash(_('An error occurred: %(error)s', error=_('Receiver mailbox is not configured')), 'error')
+            return render_template('auth/apply.html')
+
+        subject = f"[MatdataX] New user application: {username}"
+        body_lines = [
+            f"Full Name: {full_name}",
+            f"Email: {email}",
+            f"Desired Username: {username}",
+            f"Affiliation: {affiliation or '-'}",
+            "",
+            "Reason:",
+            reason,
+            "",
+            f"Client IP: {request.remote_addr}",
+            f"User-Agent: {request.headers.get('User-Agent', 'N/A')}",
+        ]
+        # 1) 发送管理员通知
+        msg_admin = Message(subject=subject, recipients=[receiver], body='\n'.join(body_lines))
+        try:
+            mail.send(msg_admin)
+        except Exception as e:
+            current_app.logger.error(f"send application email failed: {e}")
+            flash(_('An error occurred: %(error)s', error=_('Failed to send application email')), 'error')
+            return render_template('auth/apply.html')
+
+        # 2) 自动回执邮件（失败仅记录，不影响主流程）
+        try:
+            ack_subject = _('[MatdataX] We have received your application')
+            ack_body = '\n'.join([
+                _('Hello %(name)s,', name=full_name),
+                '',
+                _('We have received your application. We will review it and contact you via email.'),
+                '',
+                _('Summary:'),
+                f"- {_("Full Name")}: {full_name}",
+                f"- {_("Email")}: {email}",
+                f"- {_("Desired Username")}: {username}",
+                f"- {_("Affiliation")}: {affiliation or '-'}",
+            ])
+            msg_ack = Message(subject=ack_subject, recipients=[email], body=ack_body)
+            mail.send(msg_ack)
+        except Exception as e:
+            current_app.logger.warning(f"send ack email failed: {e}")
+
+        flash(_('Application submitted successfully, we will contact you via email.'), 'success')
+        return redirect(url_for('views.index'))
+    except Exception as e:
+        current_app.logger.error(f"/apply error: {e}")
+        return render_template('500.html'), 500
 
 # i18n 运行时调试路由（只读）
 @bp.route('/i18n-debug')

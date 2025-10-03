@@ -304,6 +304,7 @@
         const successModal = document.getElementById('login-success-modal');
         const successText = document.getElementById('login-success-text');
         const successBar = document.getElementById('login-success-bar');
+        let loginInFlight = false;
 
         function showLoginSuccessModal(durationMs, text) {
             if (successText) successText.textContent = text || i18nTexts.loginSuccessRedirect;
@@ -336,12 +337,28 @@
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             setMsg('', '');
-            const payload = {
-                email: document.getElementById('email').value.trim(),
-                username: document.getElementById('username').value.trim(),
-                password: document.getElementById('password').value,
-                captcha: captchaInput.value.trim()
-            };
+            if (loginInFlight) return;
+            const emailVal = document.getElementById('email').value.trim();
+            const userVal = document.getElementById('username').value.trim();
+            const passVal = document.getElementById('password').value;
+            const captchaVal = captchaInput.value.trim();
+
+            // 前端快速校验，避免无效请求导致的误判
+            if (!emailVal || !userVal || !passVal) {
+                setMsg('error', i18nTexts.invalidCredentials);
+                shakeCard();
+                return;
+            }
+            if (!captchaVal || captchaVal.length !== 5) {
+                setMsg('error', i18nTexts.invalidCaptcha);
+                if (captchaImg) captchaImg.src = "{{ url_for('views.captcha') }}?" + Date.now();
+                captchaInput && captchaInput.focus();
+                return;
+            }
+            const payload = { email: emailVal, username: userVal, password: passVal, captcha: captchaVal };
+            // 禁用按钮，防止重复提交
+            loginInFlight = true;
+            loginButton && (loginButton.disabled = true);
             try {
                 const resp = await fetch("{{ url_for('views.login_json') }}", {
                     method: 'POST',
@@ -349,7 +366,7 @@
                     body: JSON.stringify(payload)
                 });
                 const data = await resp.json();
-                if (data && data.ok) {
+                if (data && data.ok === true && data.redirect && typeof data.redirect === 'string') {
                     // 显示全屏成功弹框 + 进度条
                     scatterAndFade();
                     showLoginSuccessModal(2000, i18nTexts.loginSuccessRedirect);
@@ -365,6 +382,10 @@
             } catch (ex) {
                 setMsg('error', 'Network error');
                 shakeCard();
+            }
+            finally {
+                loginInFlight = false;
+                loginButton && (loginButton.disabled = false);
             }
         });
     });
