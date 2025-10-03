@@ -477,6 +477,31 @@
     text-align: center;
     animation: modalFadeIn .2s ease-out;
 }
+.login-success-card .success-text {
+    color: #0f172a;
+    font-weight: 600;
+}
+/* 进度条容器与条本体（缺失样式补齐） */
+.login-success-card .success-progress {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb; /* 灰色轨道 */
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 0.25rem;
+}
+.login-success-card .success-progress-bar {
+    width: 0%; /* 初始为 0，由 JS 动态从 0 -> 100% */
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+    border-radius: 999px;
+    will-change: width;
+}
+
+@keyframes modalFadeIn {
+    from { transform: translateY(6px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
 .login-success-card .success-icon {
     font-size: 2rem;
     color: #16a34a; /* 绿色对勾 */
