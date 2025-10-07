@@ -1633,20 +1633,6 @@ msgstr ""
 msgid "Max SC"
 msgstr ""
 
-#: app/templates/materials/detail.html:368
-msgid "Max Photon Energy"
-msgstr ""
-
-#: app/templates/materials/detail.html:378
-msgid "Max Tensor Type"
-msgstr ""
-
-#: app/templates/materials/detail.html:396
-msgid "Berry curvature dipole (BCD)"
-msgstr ""
-
-#: app/templates/materials/detail.html:397
-#: app/templates/materials/detail.html:424
 msgid "Eigen Matrix"
 msgstr ""
 
@@ -1789,60 +1775,8 @@ msgstr ""
 msgid "Achievements:"
 msgstr ""
 
-#~ msgid "Research Team"
-#~ msgstr ""
+msgid "Research Team"
+msgstr "Research Team"
 
-#~ msgid "Status"
-#~ msgstr ""
-
-#~ msgid "Done"
-#~ msgstr ""
-
-#~ msgid "Unconverged"
-#~ msgstr ""
-
-#~ msgid "Error"
-#~ msgstr ""
-
-#~ msgid "Download Shift Current data"
-#~ msgstr ""
-
-#~ msgid "Element Relations"
-#~ msgstr ""
-
-#~ msgid "Shift Current Properties"
-#~ msgstr ""
-
-#~ msgid "Zero"
-#~ msgstr ""
-
-#~ msgid "Same"
-#~ msgstr ""
-
-#~ msgid "Opposite"
-#~ msgstr ""
-
-#~ msgid "Max SC:"
-#~ msgstr ""
-
-#~ msgid "Max Photon Energy:"
-#~ msgstr ""
-
-#~ msgid "Max Tensor Type:"
-#~ msgstr ""
-
-#~ msgid "Status:"
-#~ msgstr ""
-
-#~ msgid "BCD"
-#~ msgstr "BCD"
-
-#~ msgid "DW"
-#~ msgstr "DW"
-
-#~ msgid "Welcome back, %(username)s!"
-#~ msgstr ""
-
-#~ msgid "You have been logged out successfully."
-#~ msgstr ""
-
+msgid "Element Relations"
+msgstr "Element Relations"

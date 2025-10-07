@@ -505,29 +505,56 @@ def split_achievements(value):
 
 
 def load_member_profile(slug):
-    """按优先级读取成员资料：profile.json → info.json。"""
-    base_dir = os.path.join(current_app.root_path, 'static', 'members', slug)
-    profile_path = os.path.join(base_dir, 'profile.json')
-    info_path = os.path.join(base_dir, 'info.json')
-
-    profile = read_json(profile_path)
-    if profile is not None:
-        return profile, 'profile'
-
-    info = read_json(info_path)
-    if info is not None:
-        # 将旧结构 info.json 映射为双语结构（默认当作英文）
-        mapped = {
-            'title_zh': '',
-            'title_en': str(info.get('title', '') or '').strip(),
-            'bio_zh': '',
-            'bio_en': str(info.get('bio', '') or '').strip(),
-            'achievements_zh': [],
-            'achievements_en': split_achievements(info.get('achievements') or []),
-        }
-        return mapped, 'info'
-
+    """
+    在成员目录下按分类查找 profile.json：
+    优先路径：members/Teacher/<slug>/profile.json → members/Student/<slug>/profile.json → members/<slug>/profile.json。
+    """
+    members_root = os.path.join(current_app.root_path, 'static', 'members')
+    search_paths = [
+        os.path.join(members_root, 'Teacher', slug, 'profile.json'),
+        os.path.join(members_root, 'Student', slug, 'profile.json'),
+        os.path.join(members_root, slug, 'profile.json'),  # 兼容无分类旧结构
+    ]
+    for path in search_paths:
+        profile = read_json(path)
+        if profile is not None:
+            # 返回 profile 以及其类别（用于需要时的参考）
+            category = 'Teacher' if '\\Teacher\\' in path or '/Teacher/' in path else (
+                'Student' if '\\Student\\' in path or '/Student/' in path else None
+            )
+            return profile, category or 'profile'
     return None, None
+
+def _list_member_dirs_by_category():
+    """扫描分类目录，返回 {category: [subdir_names]}。"""
+    members_root = os.path.join(current_app.root_path, 'static', 'members')
+    result = {'Teacher': [], 'Student': []}
+    for cat in ['Teacher', 'Student']:
+        cat_dir = os.path.join(members_root, cat)
+        if os.path.isdir(cat_dir):
+            try:
+                for name in os.listdir(cat_dir):
+                    full = os.path.join(cat_dir, name)
+                    if os.path.isdir(full):
+                        result[cat].append(name)
+            except Exception:
+                pass
+    return result
+
+def _find_member_dir_name(slug):
+    """根据 slug 在 Teacher/Student 目录中查找原始目录名，找不到返回 None。"""
+    members_root = os.path.join(current_app.root_path, 'static', 'members')
+    for cat in ['Teacher', 'Student']:
+        cat_dir = os.path.join(members_root, cat)
+        if os.path.isdir(cat_dir):
+            try:
+                for name in os.listdir(cat_dir):
+                    full = os.path.join(cat_dir, name)
+                    if os.path.isdir(full) and to_slug(name) == slug:
+                        return name
+            except Exception:
+                continue
+    return None
 
 
 def select_by_locale(profile, member, locale):
@@ -569,46 +596,143 @@ def select_by_locale(profile, member, locale):
         'display_achievements': display_achievements,
     }
 
-
 @bp.route('/members')
 def members_index():
-    """成员列表页：读取 profile.json（兼容 info.json）并按语言展示。"""
-    # 解释：查询所有成员并按 slug 读取静态资料
-    members = db.session.query(Member).order_by(Member.name.asc()).all()
+    """成员列表页：按 Teacher/Student 分类展示，仅读取 profile.json。"""
+    # DB 列表用于匹配姓名与兜底字段
+    db_members = db.session.query(Member).all()
+    db_by_slug = {to_slug(m.name or ''): m for m in db_members}
 
-    # 获取当前语言
+    # 当前语言
     try:
         current_locale = get_locale()
     except Exception:
         current_locale = 'en'
 
-    view_models = []
-    for m in members:
-        slug = to_slug(m.name or '')
-        profile, source = load_member_profile(slug)
-        if source is None:
-            current_app.logger.info(
-                f'members: no profile/info for slug={slug}, fallback to DB'
-            )
-        selected = select_by_locale(profile, m, current_locale)
+    cats = _list_member_dirs_by_category()
+    grouped = {'Teacher': [], 'Student': []}
+    for cat, names in cats.items():
+        for dir_name in sorted(names):
+            slug = to_slug(dir_name)
+            profile, found_cat = load_member_profile(slug)
+            m = db_by_slug.get(slug)
+            selected = select_by_locale(profile, m, current_locale) if m else select_by_locale(profile, Member(name=dir_name), current_locale)  # type: ignore
+            # 头像优先 profile.json → DB
+            photo = ''
+            if isinstance(profile, dict):
+                photo = str(profile.get('photo', '') or '').strip()
+            if not photo and m:
+                photo = (m.photo or '').strip()
+            # 计算图片相对路径（供前端直接使用）
+            category = found_cat if found_cat in ('Teacher', 'Student') else cat
+            photo_rel = None
+            if photo:
+                if category in ('Teacher', 'Student'):
+                    photo_rel = f'members/{category}/{slug}/{photo}'
+                else:
+                    photo_rel = f'members/{slug}/{photo}'
+            grouped[cat].append({
+                'slug': slug,
+                'name': (m.name if m else dir_name),
+                'photo': photo,
+                'photo_rel': photo_rel,
+                'category': category,
+                **selected,
+            })
 
-        # 解释：选择头像，优先 DB，其次 info/profile 中的 photo
-        photo = (m.photo or '').strip()
-        if not photo:
-            # 尝试从旧 info.json 读取 photo（若映射不到则忽略）
-            base_dir = os.path.join(current_app.root_path, 'static', 'members', slug)
-            info_json = read_json(os.path.join(base_dir, 'info.json'))
-            if isinstance(info_json, dict):
-                photo = str(info_json.get('photo', '')).strip()
+    return render_template('members/index.html', teachers=grouped['Teacher'], students=grouped['Student'])
 
-        view_models.append({
-            'slug': slug,
-            'name': m.name,
-            'photo': photo,
-            **selected,
-        })
+@bp.route('/members/<string:slug>')
+def member_detail(slug):
+    """
+    成员详情页：按 slug 定位成员并展示详情。
+    读取 profile.json（兼容 info.json），按当前语言选择显示字段，
+    并尽可能补充电话/邮箱/单位等信息（若存在）。
+    """
+    # 定位成员：优先 DB；若 DB 无，则允许仅用目录渲染
+    all_members = db.session.query(Member).all()
+    target = None
+    for m in all_members:
+        if to_slug(m.name or '') == slug:
+            target = m
+            break
+    # 目录名用于兜底展示姓名
+    dir_name = _find_member_dir_name(slug)
+    if target is None and dir_name is None:
+        return render_template('404.html'), 404
 
-    return render_template('members/index.html', members=view_models)
+    # 当前语言
+    try:
+        current_locale = get_locale()
+    except Exception:
+        current_locale = 'en'
+
+    # 读取静态资料（仅 profile.json，支持分类路径）
+    profile, source = load_member_profile(slug)
+
+    # 选择本地化显示字段
+    # 选择显示字段（若 DB 无成员则构造最小占位对象，仅提供 name/空字段）
+    if target is not None:
+        selected = select_by_locale(profile, target, current_locale)
+    else:
+        class _Tmp:  # 简单占位对象
+            name = dir_name or slug
+            title = ''
+            bio = ''
+            achievements = []
+            photo = ''
+        selected = select_by_locale(profile, _Tmp(), current_locale)  # type: ignore
+
+    # 头像：优先 profile.json 的 photo，其次回退 DB 字段
+    photo = ''
+    if isinstance(profile, dict):
+        photo = str(profile.get('photo', '') or '').strip()
+    if not photo and target is not None:
+        photo = (target.photo or '').strip()
+
+    # 计算图片相对路径
+    category = source if source in ('Teacher', 'Student') else None
+    photo_rel = None
+    if photo:
+        if category in ('Teacher', 'Student'):
+            photo_rel = f'members/{category}/{slug}/{photo}'
+        else:
+            photo_rel = f'members/{slug}/{photo}'
+
+    # 额外信息（可选）：电话/邮箱/单位（或隶属）
+    # 来源优先级：profile.json → info.json → DB 字段（若存在）
+    phone = None
+    email = None
+    affiliation = None
+    # 从 profile
+    if isinstance(profile, dict):
+        phone = profile.get('phone') or phone
+        email = profile.get('email') or email
+        affiliation = profile.get('department') or profile.get('affiliation') or affiliation
+    # 移除 info.json 读取：仅使用 profile.json 与 DB 回退
+    # 从 DB（若模型有这些字段则回退）
+    for attr, var_name in [('phone', 'phone'), ('email', 'email'), ('affiliation', 'affiliation')]:
+        if hasattr(target, attr):
+            val = getattr(target, attr) or None
+            if val and locals()[var_name] is None:
+                locals()[var_name] = val
+
+    # 准备渲染模型
+    vm = {
+        'slug': slug,
+        'name': (target.name if target is not None else (dir_name or slug)),
+        'photo': photo,
+        'photo_rel': photo_rel,
+        'category': category,
+        'display_title': selected.get('display_title') or '',
+        'display_bio': selected.get('display_bio') or '',
+        'display_achievements': selected.get('display_achievements') or [],
+        'phone': phone,
+        'email': email,
+        'affiliation': affiliation,
+    }
+
+    return render_template('members/detail.html', member=vm)
 
 # 数值安全转换的辅助函数
 def safe_float(value):

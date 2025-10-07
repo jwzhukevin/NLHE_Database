@@ -20,7 +20,6 @@
 .hero p {
     font-size: clamp(1rem, 2vw, 1.25rem); /* 响应式字体大小,最小1rem,最大1.25rem */
     max-width: 800px; /* 限制最大宽度,保持良好的阅读体验 */
-    margin: 0; /* 重置外边距 */
     opacity: 0.9; /* 轻微透明度,使文字柔和 */
 }
 
@@ -29,18 +28,46 @@
 .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; justify-content: center; margin-top: 1rem; }
 .member-card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 71, 171, 0.08); padding: 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; transition: transform 0.3s, box-shadow 0.3s; border: 1px solid #e0e7ef; }
 .member-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0, 71, 171, 0.15); }
-.member-photo-wrapper { width: 120px; height: 120px; margin-bottom: 1.5rem; border-radius: 50%; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 71, 171, 0.15); border: 3px solid #e3ecfa; }
+.member-photo-wrapper { width: 150px; height: 200px; margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 71, 171, 0.15); border: 3px solid #e3ecfa; }
 .member-photo { width: 100%; height: 100%; object-fit: cover; }
-.member-name { font-size: 1.35rem; font-weight: 600; color: #0047AB; margin-bottom: 0.5rem; }
-.title { color: #1976d2; font-weight: 500; margin-bottom: 1rem; }
 .bio { font-size: 1rem; color: #444; margin-bottom: 1.5rem; }
 .achievements { text-align: left; width: 100%; }
 .achievements strong { color: #0047AB; }
 .achievements-list { margin: 0.5rem 0 0 0; padding: 0 0 0 1.5rem; color: #333; }
 .achievements-list li { margin-bottom: 0.5rem; }
-
 /* ========== 响应式设计 ========== */
 @media (max-width: 768px) {
   .member-grid { grid-template-columns: 1fr; }
   .member-card { max-width: 90%; margin: 0 auto; }
+}
+
+/* ========== 紧凑型卡片（仅头像+姓名+职位） ========== */
+.member-card--compact {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+}
+.member-card--compact .member-name { margin-bottom: .25rem; }
+.member-card--compact .title { margin-bottom: 0; }
+
+/* ========== 成员详情页样式 ========== */
+.member-detail { padding: 2rem 0 4rem; background: #F5F8FF; }
+.member-detail .header { background: #e9f2fc; border: 1px solid #d8e6f6; border-radius: 12px; padding: 1.25rem; display: grid; grid-template-columns: 1fr 200px; gap: 1rem; align-items: center; }
+.member-detail .header .name { font-size: 1.75rem; font-weight: 800; color: #0b3a6d; margin: 0 0 .5rem; }
+.member-detail .header .meta { color: #174e8c; line-height: 1.8; }
+.member-detail .header .photo { width: 200px; height: 240px; object-fit: cover; border-radius: 8px; border: 4px solid #e3ecfa; box-shadow: 0 4px 16px rgba(0,0,0,.08); justify-self: end; background: #fff; }
+
+.member-detail .section { margin-top: 1.25rem; }
+.member-detail .section-title { background: #e9f2fc; border: 1px solid #d8e6f6; border-radius: 8px; padding: .6rem .9rem; color: #0b3a6d; font-weight: 700; }
+.member-detail .section-body { background: #fff; border: 1px solid #e5ecf7; border-radius: 8px; padding: 1rem; color: #173a58; }
+.member-detail .pub-list { margin: 0; padding-left: 1.25rem; }
+.member-detail .back-link { display: inline-flex; align-items: center; gap: .4rem; margin-top: 1rem; color: #0047AB; text-decoration: none; font-weight: 600; }
+.member-detail .back-link:hover { text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .member-detail .header { grid-template-columns: 1fr; }
+  .member-detail .header .photo { justify-self: start; width: 150px; height: 190px; }
 }

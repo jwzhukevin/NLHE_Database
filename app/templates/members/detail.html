@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/members.css', v='20250913') }}">
+{% endblock %}
+
+{% block content %}
+<section class="member-detail">
+  <div class="container">
+    <!-- 顶部信息条：姓名 + 基本信息 + 头像 -->
+    <div class="header">
+      <div class="info">
+        <h1 class="name">{{ member.name }}</h1>
+        <div class="meta">
+          {% if member.display_title %}
+          <div><strong>{{ _('Title') }}:</strong> {{ member.display_title }}</div>
+          {% endif %}
+          {% if member.phone %}
+          <div><strong>{{ _('Phone') }}:</strong> {{ member.phone }}</div>
+          {% endif %}
+          {% if member.email %}
+          <div><strong>{{ _('Email') }}:</strong> {{ member.email }}</div>
+          {% endif %}
+          {% if member.affiliation %}
+          <div><strong>{{ _('Affiliation') }}:</strong> {{ member.affiliation }}</div>
+          {% endif %}
+        </div>
+      </div>
+      {% if member.photo %}
+      <img class="photo" src="{{ url_for('static', filename=member.photo_rel or ('members/' + member.slug + '/' + member.photo)) }}" alt="{{ member.name }}" loading="lazy">
+      {% endif %}
+    </div>
+
+    <!-- 研究方向 / 简介 -->
+    {% if member.display_bio %}
+    <div class="section">
+      <div class="section-title">{{ _('Research Interests') }}</div>
+      <div class="section-body">
+        <p style="margin:0; white-space:pre-line;">{{ member.display_bio }}</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 代表论文著作 / 成就列表 -->
+    {% if member.display_achievements %}
+    <div class="section">
+      <div class="section-title">{{ _('Publications') }}</div>
+      <div class="section-body">
+        <ol class="pub-list">
+          {% for ach in member.display_achievements %}
+          <li>{{ ach }}</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+    {% endif %}
+
+    <a class="back-link" href="{{ url_for('views.members_index') }}">
+      <i class="fas fa-arrow-left"></i>
+      <span>{{ _('Back to Team') }}</span>
+    </a>
+  </div>
+</section>
+{% endblock %}

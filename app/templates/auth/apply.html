@@ -5,12 +5,24 @@
 <style>
   /* 仅在申请页覆盖左侧背景为与导航一致的天蓝色 */
   .login-hero {
-    background: rgb(181, 222, 253) !important;
+    /* 使用与 landing 英雄区一致的蓝色渐变背景 */
+    background: linear-gradient(135deg, #003c85, #0d274b) !important;
     border-right: none !important;
   }
-  /* 提升说明文本的可读性 */
-  .apply-instruction h3 { color: #0b3a6d; }
-  .apply-instruction p, .apply-instruction li { color: #174e8c; }
+  /* 提升说明文本的可读性：申请页左侧统一改为白色（不影响复制框内的 textarea） */
+  .login-hero .apply-instruction h3,
+  .login-hero .apply-instruction p,
+  .login-hero .apply-instruction li,
+  .login-hero .apply-instruction a,
+  .login-hero .apply-instruction strong,
+  .login-hero .apply-instruction .login-message,
+  .login-hero .apply-instruction .msg {
+    color: #ffffff !important;
+  }
+  /* 例外：复制提示说明保持蓝色，避免被上面的白色 !important 覆盖 */
+  .login-hero .apply-instruction .mail-template p {
+    color: #305c94 !important;
+  }
   .apply-instruction .mail-template { background: rgba(255,255,255,.92); }
   .apply-instruction textarea { background: #f8fbff; }
   /* 左侧提示的轻量动画支持 */
@@ -54,7 +66,7 @@
             <textarea id="mail-template-text" readonly rows="10" style="width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: .95rem; color:#0b3a6d; background:#f8fbff; border: 1px solid rgba(11,58,109,.15); border-radius: 6px; padding: .5rem .6rem;">{{ _('MAIL_TEMPLATE_TEXT') }}</textarea>
             <p style="margin: .5rem 0 0; color:#305c94; font-size: .9rem;">{{ _('Hint: After copying, paste into your email client, complete the information, and send.') }}</p>
           </div>
-          <p style="margin-top:.6rem; color:#ef4444; display:flex; align-items:center; gap:.4rem; background:#fee2e2; border-left:4px solid #ef4444; padding:.6rem .75rem; border-radius:8px;">
+          <p style="margin-top:.6rem; color:#ef4444; display:flex; align-items:center; gap:.4rem; background:#d21c1c; border-left:4px solid #ef4444; padding:.6rem .75rem; border-radius:8px;">
             <i class="fas fa-info-circle" style="color:#ef4444;"></i>
             <span>{{ _('The online application form on the right is currently unavailable. Please use the email channel above:') }} <strong>matdatax@163.com</strong>.</span>
           </p>

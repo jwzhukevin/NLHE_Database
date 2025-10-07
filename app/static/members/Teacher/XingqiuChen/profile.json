@@ -1,0 +1,17 @@
+{
+  "title_zh": "研究员、博士生导师",
+  "title_en": "Researcher, Doctoral supervisor",
+  "bio_zh": "从事计算材料学研究，聚焦材料物理模型与合金计算方法、设计及应用开发。",
+  "bio_en": "Research in computational materials science, focusing on physical modeling, alloy computation methods, design and applications.",
+  "achievements_zh": [
+    "在 Nature、Science、Nature Materials、Phys. Rev. Lett.、Sci. Bull 等期刊发表论文逾百篇，引用超万次。"
+  ],
+  "achievements_en": [
+    "Published 100+ papers in journals such as Nature, Science, Nature Materials, Phys. Rev. Lett., and Sci. Bull., cited over ten thousand times."
+  ],
+  "phone": "024-83970102",
+  "email": "xingqiu.chen@imr.ac.cn",
+  "department": "Materials Design and Computation Research Department",
+  "affiliation": "Institute of Metal Research, CAS",
+  "photo": "photo.jpg"
+}

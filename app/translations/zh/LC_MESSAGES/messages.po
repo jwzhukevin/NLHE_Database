@@ -1841,3 +1841,7 @@ msgstr "成果："
 
 #~ msgid "DW"
 #~ msgstr "本征电导率"
+
+#: app/templates/main/landing.html:12
+msgid "Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties."
+msgstr "探索与发现材料，加速材料科学研究与创新。我们提供全面的材料成分、结构、制备工艺、物理化学性能数据与分析工具。"

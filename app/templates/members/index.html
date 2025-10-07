@@ -8,32 +8,40 @@
     <section class="hero">
         <div class="container">
             <h1>{{ _('Team') }}</h1>
-            <p>{{ _('Meet our talented researchers dedicated to cutting-edge materials science and computational design at the Department of Materials Computation and Design, Institute of Metal Research, Chinese Academy of Sciences.') }}</p>
         </div>
     </section>
 
-    <!-- ========== 成员区域 ========== -->
+    <!-- ========== 老师分组 ========== -->
     <section class="members-section">
         <div class="container">
+            <h2 style="margin:0 0 1rem; color:#0b3a6d;">{{ _('Teachers') }}</h2>
             <div class="member-grid">
-                {# 循环渲染所有成员 #}
-                {% for member in members %}
-                <div class="member-card">
+                {% for member in teachers %}
+                <a class="member-card member-card--compact" href="{{ url_for('views.member_detail', slug=member.slug) }}" aria-label="{{ member.name }}">
                     <div class="member-photo-wrapper">
-                        <img src="{{ url_for('static', filename='members/' + member.slug + '/' + member.photo) }}" alt="{{ member.name }}" class="member-photo">
+                        <img src="{{ url_for('static', filename=member.photo_rel or ('members/' + member.slug + '/' + member.photo)) }}" alt="{{ member.name }}" class="member-photo" loading="lazy">
                     </div>
                     <h3 class="member-name">{{ member.name }}</h3>
                     <p class="title">{{ member.display_title }}</p>
-                    <p class="bio">{{ member.display_bio }}</p>
-                    <div class="achievements">
-                        <strong>{{ _('Achievements:') }}</strong>
-                        <ul class="achievements-list">
-                            {% for ach in member.display_achievements %}
-                            <li>{{ ach }}</li>
-                            {% endfor %}
-                        </ul>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 学生分组 ========== -->
+    <section class="members-section">
+        <div class="container">
+            <h2 style="margin:0 0 1rem; color:#0b3a6d;">{{ _('Students') }}</h2>
+            <div class="member-grid">
+                {% for member in students %}
+                <a class="member-card member-card--compact" href="{{ url_for('views.member_detail', slug=member.slug) }}" aria-label="{{ member.name }}">
+                    <div class="member-photo-wrapper">
+                        <img src="{{ url_for('static', filename='members/' + member.slug + '/' + member.photo) }}" alt="{{ member.name }}" class="member-photo" loading="lazy">
                     </div>
-                </div>
+                    <h3 class="member-name">{{ member.name }}</h3>
+                    <p class="title">{{ member.display_title }}</p>
+                </a>
                 {% endfor %}
             </div>
         </div>
