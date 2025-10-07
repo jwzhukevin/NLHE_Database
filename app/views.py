@@ -717,14 +717,21 @@ def member_detail(slug):
     if not photo and target is not None:
         photo = (target.photo or '').strip()
 
-    # 计算图片相对路径
+    # [Deprecated 20251007] 旧逻辑：直接用 slug 拼接目录，易在大小写敏感系统上 404
+    # 计算图片相对路径（使用实际目录名，避免大小写问题）
     category = source if source in ('Teacher', 'Student') else None
     photo_rel = None
+    # 使用实际目录名：分类下用 _find_member_dir_name，根目录结构回退到 dir_name
+    real_dir = None
+    if category in ('Teacher', 'Student'):
+        real_dir = _find_member_dir_name(slug) or slug
+    else:
+        real_dir = (dir_name or slug)
     if photo:
         if category in ('Teacher', 'Student'):
-            photo_rel = f'members/{category}/{slug}/{photo}'
+            photo_rel = f'members/{category}/{real_dir}/{photo}'
         else:
-            photo_rel = f'members/{slug}/{photo}'
+            photo_rel = f'members/{real_dir}/{photo}'
 
     # 额外信息（可选）：电话/邮箱/单位（或隶属）
     # 来源优先级：profile.json → info.json → DB 字段（若存在）
