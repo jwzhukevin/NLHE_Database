@@ -510,19 +510,43 @@ def load_member_profile(slug):
     优先路径：members/Teacher/<slug>/profile.json → members/Student/<slug>/profile.json → members/<slug>/profile.json。
     """
     members_root = os.path.join(current_app.root_path, 'static', 'members')
-    search_paths = [
-        os.path.join(members_root, 'Teacher', slug, 'profile.json'),
-        os.path.join(members_root, 'Student', slug, 'profile.json'),
-        os.path.join(members_root, slug, 'profile.json'),  # 兼容无分类旧结构
-    ]
-    for path in search_paths:
+
+    # 先在每个分类下根据 slug 匹配真实目录名，防止大小写/空格差异导致找不到文件
+    def find_dir_name(cat_dir):
+        if not os.path.isdir(cat_dir):
+            return None
+        try:
+            for name in os.listdir(cat_dir):
+                full = os.path.join(cat_dir, name)
+                if os.path.isdir(full) and to_slug(name) == slug:
+                    return name
+        except Exception:
+            return None
+        return None
+
+    teacher_dir = find_dir_name(os.path.join(members_root, 'Teacher'))
+    student_dir = find_dir_name(os.path.join(members_root, 'Student'))
+    root_dir = find_dir_name(members_root)
+
+    search_paths = []
+    if teacher_dir:
+        search_paths.append((os.path.join(members_root, 'Teacher', teacher_dir, 'profile.json'), 'Teacher'))
+    else:
+        search_paths.append((os.path.join(members_root, 'Teacher', slug, 'profile.json'), 'Teacher'))
+    if student_dir:
+        search_paths.append((os.path.join(members_root, 'Student', student_dir, 'profile.json'), 'Student'))
+    else:
+        search_paths.append((os.path.join(members_root, 'Student', slug, 'profile.json'), 'Student'))
+    # 兼容无分类旧结构
+    if root_dir:
+        search_paths.append((os.path.join(members_root, root_dir, 'profile.json'), None))
+    else:
+        search_paths.append((os.path.join(members_root, slug, 'profile.json'), None))
+
+    for path, cat in search_paths:
         profile = read_json(path)
         if profile is not None:
-            # 返回 profile 以及其类别（用于需要时的参考）
-            category = 'Teacher' if '\\Teacher\\' in path or '/Teacher/' in path else (
-                'Student' if '\\Student\\' in path or '/Student/' in path else None
-            )
-            return profile, category or 'profile'
+            return profile, (cat or 'profile')
     return None, None
 
 def _list_member_dirs_by_category():

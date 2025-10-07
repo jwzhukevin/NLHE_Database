@@ -37,7 +37,7 @@
                 {% for member in students %}
                 <a class="member-card member-card--compact" href="{{ url_for('views.member_detail', slug=member.slug) }}" aria-label="{{ member.name }}">
                     <div class="member-photo-wrapper">
-                        <img src="{{ url_for('static', filename='members/' + member.slug + '/' + member.photo) }}" alt="{{ member.name }}" class="member-photo" loading="lazy">
+                        <img src="{{ url_for('static', filename=member.photo_rel or ('members/' + member.slug + '/' + member.photo)) }}" alt="{{ member.name }}" class="member-photo" loading="lazy">
                     </div>
                     <h3 class="member-name">{{ member.name }}</h3>
                     <p class="title">{{ member.display_title }}</p>

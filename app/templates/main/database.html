@@ -173,14 +173,14 @@
             </div>
             <button type="button" class="btn btn-clear btn--ghost" id="clearSearchBtn">{{ _('Clear') }}</button>
             <button type="submit" class="btn btn--primary">{{ _('Search') }}</button>
-            <button type="button" class="btn btn--secondary" id="elementsToggleBtn" aria-controls="periodicTableWrapper" aria-expanded="false">{{ _('Elements') }}</button>
+            <button type="button" class="btn btn--secondary" id="elementsToggleBtn" aria-controls="periodicTableWrapper" aria-expanded="true">{{ _('Elements') }}</button>
             <button type="button" class="btn btn--secondary" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
             <input type="hidden" name="per_page" id="per_page" value="">
         </div>
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（analysis modal 样式已外置） -->
 
         {% from 'components/periodic_table.html' import periodic_table with context %}
-        {{ periodic_table(elements_value=search_params.elements, show_analyze_btn=True, default_visible=False) }}
+        {{ periodic_table(elements_value=search_params.elements, show_analyze_btn=True, default_visible=True) }}
 
         <!-- [Removed 20250908] Deprecated inline periodic table backup removed. See components/periodic_table.html -->
 

@@ -162,27 +162,29 @@
                 <a href="{{ url_for('articles.listing') }}">
                     <i class="fas fa-book"></i> {{ _('Contents') }}
                 </a>
+                {% if current_user.is_authenticated %}
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle" id="tools-dropdown">
-                        <i class="fas fa-tools"></i> {{ _('Tools') }} <i class="fas fa-caret-down"></i>
+                        <i class="fas fa-robot"></i> {{ _('AI Tools') }} <i class="fas fa-caret-down"></i>
                     </a>
                     <div class="dropdown-menu" id="tools-menu">
-                        <a href="https://materialsproject.org/ml" target="_blank">
-                            <i class="fas fa-brain"></i> {{ _('MP Machine Learning') }}
+                        <a href="#">
+                            <i class="fas fa-graduation-cap"></i> {{ _('Active Learning') }}
                         </a>
-                        <a href="https://www.materialscloud.org/work/tools" target="_blank">
-                            <i class="fas fa-cloud"></i> {{ _('Materials Cloud Tools') }}
+                        <a href="#">
+                            <i class="fas fa-image"></i> {{ _('Image Recognition') }}
                         </a>
-                        <a href="https://nomad-lab.eu/nomad-lab/" target="_blank">
-                            <i class="fas fa-atom"></i> {{ _('NOMAD Laboratory') }}
+                        <a href="#">
+                            <i class="fas fa-language"></i> {{ _('Natural Language Processing') }}
+                        </a>
+                        <a href="{{ url_for('chat.chat_page') }}">
+                            <i class="fas fa-comments"></i> {{ _('Chat') }}
                         </a>
                     </div>
                 </div>
+                {% endif %}
                 <!-- 登录用户专用功能按钮 -->
                 {% if current_user.is_authenticated %}
-                <a href="{{ url_for('chat.chat_page') }}">
-                    <i class="fas fa-comments"></i> {{ _('Chat') }}
-                </a>
                 <a href="{{ url_for('program.index') }}">
                     <i class="fas fa-cogs"></i> {{ _('Program') }}
                 </a>
@@ -308,25 +310,26 @@
     <script>
         // 当DOM内容加载完成后执行脚本
         document.addEventListener('DOMContentLoaded', function() {
-            // 获取工具下拉菜单相关元素
+            // 获取工具下拉菜单相关元素（未登录时元素不存在，需判空）
             const toolsDropdown = document.getElementById('tools-dropdown'); // 下拉按钮
             const toolsMenu = document.getElementById('tools-menu'); // 下拉菜单内容
-            
-            // 为下拉按钮添加点击事件监听器
-            // 点击时切换菜单的显示状态
-            toolsDropdown.addEventListener('click', function(e) {
-                e.preventDefault(); // 阻止默认行为
-                toolsMenu.classList.toggle('show'); // 切换show类来显示/隐藏菜单
-            });
-            
-            // 点击页面其他区域时关闭下拉菜单
-            // 这是一个常见的交互模式,提升用户体验
-            document.addEventListener('click', function(e) {
-                // 检查点击是否发生在下拉菜单区域外
-                if (!toolsDropdown.contains(e.target) && !toolsMenu.contains(e.target)) {
-                    toolsMenu.classList.remove('show'); // 隐藏菜单
-                }
-            });
+            if (toolsDropdown && toolsMenu) {
+                // 为下拉按钮添加点击事件监听器
+                // 点击时切换菜单的显示状态
+                toolsDropdown.addEventListener('click', function(e) {
+                    e.preventDefault(); // 阻止默认行为
+                    toolsMenu.classList.toggle('show'); // 切换show类来显示/隐藏菜单
+                });
+                
+                // 点击页面其他区域时关闭下拉菜单
+                // 这是一个常见的交互模式,提升用户体验
+                document.addEventListener('click', function(e) {
+                    // 检查点击是否发生在下拉菜单区域外
+                    if (!toolsDropdown.contains(e.target) && !toolsMenu.contains(e.target)) {
+                        toolsMenu.classList.remove('show'); // 隐藏菜单
+                    }
+                });
+            }
 
             // 语言下拉菜单交互
             const langDropdown = document.getElementById('lang-dropdown');

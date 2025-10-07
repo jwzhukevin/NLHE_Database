@@ -38,7 +38,7 @@ msgstr "Copy Template"
 
 #: app/templates/auth/apply.html:51
 msgid "MAIL_TEMPLATE_TEXT"
-msgstr "To: matdatax@163.com\nSubject: Application for NLHE MatdataX Account\n\nBody:\nFull Name: ______________________________\nEmail: __________________________________\nDesired Username: _______________________\nAffiliation (Optional): _________________\nApplication Reason (Purpose & Scope):\n________________________________________"
+msgstr "To: matdatax@163.com\nSubject: Application for MatdataX Account\n\nBody:\nFull Name: ______________________________\nEmail: __________________________________\nDesired Username: _______________________\nAffiliation (Optional): _________________\nApplication Reason (Purpose & Scope):\n________________________________________"
 
 #: app/templates/auth/apply.html:52
 msgid "Hint: After copying, paste into your email client, complete the information, and send."

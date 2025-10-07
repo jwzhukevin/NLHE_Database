@@ -42,7 +42,7 @@ msgstr "一键复制模板"
 
 #: app/templates/auth/apply.html:51
 msgid "MAIL_TEMPLATE_TEXT"
-msgstr "收件人：matdatax@163.com\n主题：申请开通 NLHE MatdataX 用户\n\n正文：\n姓名：________________\n邮箱：________________\n期望用户名：__________\n单位/机构（可选）：____\n申请理由（用途与范围）：\n________________________________"
+msgstr "收件人：matdatax@163.com\n主题：申请开通 MatdataX 用户\n\n正文：\n姓名：________________\n邮箱：________________\n期望用户名：__________\n单位/机构（可选）：____\n申请理由（用途与范围）：\n________________________________"
 
 #: app/templates/auth/apply.html:52
 msgid "Hint: After copying, paste into your email client, complete the information, and send."
