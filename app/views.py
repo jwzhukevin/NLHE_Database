@@ -649,12 +649,15 @@ def members_index():
                 photo = (m.photo or '').strip()
             # 计算图片相对路径（供前端直接使用）
             category = found_cat if found_cat in ('Teacher', 'Student') else cat
+            # 使用实际目录名以保留大小写，避免 Linux/Ubuntu 大小写敏感导致的 404
+            # 若分类发生切换（罕见），尝试在目标分类下按 slug 匹配真实目录名
+            real_dir = dir_name if category == cat else (_find_member_dir_name(slug) or dir_name)
             photo_rel = None
             if photo:
                 if category in ('Teacher', 'Student'):
-                    photo_rel = f'members/{category}/{slug}/{photo}'
+                    photo_rel = f'members/{category}/{real_dir}/{photo}'
                 else:
-                    photo_rel = f'members/{slug}/{photo}'
+                    photo_rel = f'members/{real_dir}/{photo}'
             grouped[cat].append({
                 'slug': slug,
                 'name': (m.name if m else dir_name),

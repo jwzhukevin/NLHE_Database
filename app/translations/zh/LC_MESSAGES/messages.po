@@ -288,6 +288,23 @@ msgstr "目录"
 msgid "Tools"
 msgstr "工具"
 
+# ==== AI Tools 菜单（新增）====
+#: app/templates/base.html:168
+msgid "AI Tools"
+msgstr "AI 工具"
+
+#: app/templates/base.html:172
+msgid "Active Learning"
+msgstr "主动学习"
+
+#: app/templates/base.html:175
+msgid "Image Recognition"
+msgstr "图像识别"
+
+#: app/templates/base.html:178
+msgid "Natural Language Processing"
+msgstr "自然语言处理"
+
 #: app/templates/base.html:151
 msgid "MP Machine Learning"
 msgstr "MP 机器学习"
