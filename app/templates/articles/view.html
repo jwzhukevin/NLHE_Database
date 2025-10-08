@@ -13,7 +13,12 @@
     <div class="breadcrumbs">
         <a href="{{ url_for('articles.listing') }}">{{ _('Contents') }}</a>
         <span class="separator">&gt;</span>
-        <a href="{{ url_for('articles.listing', category=category) }}">{{ category|title }}</a>
+        <a href="{{ url_for('articles.listing', category=category) }}">
+          {% if category|lower == 'instructions' %}{{ _('Instructions') }}
+          {% elif category|lower == 'articles' %}{{ _('Articles') }}
+          {% elif category|lower == 'changelog' %}{{ _('Changelog') }}
+          {% else %}{{ category|title }}{% endif %}
+        </a>
         <span class="separator">&gt;</span>
         <span class="current">{{ article.title }}</span>
     </div>

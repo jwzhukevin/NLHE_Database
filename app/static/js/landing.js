@@ -2,7 +2,7 @@
   'use strict';
   const STAGE_ID = 'carouselStage';
   const DOTS_ID = 'carouselDots';
-  const INTERVAL_MS = 10000; // 10秒
+  const INTERVAL_MS = 5000; // 5秒
 
   function createImg(src){
     const img = document.createElement('img');

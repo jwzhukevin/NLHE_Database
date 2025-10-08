@@ -541,6 +541,11 @@ msgstr "该分类下暂时没有内容。"
 msgid "Table of contents"
 msgstr "目录"
 
+# 补充：文章详情页与 TOC 使用的“Contents”键
+#: app/templates/articles/view.html
+msgid "Contents"
+msgstr "目录"
+
 #: app/templates/articles/view.html:36
 msgid "Back to Contents"
 msgstr "返回目录"
