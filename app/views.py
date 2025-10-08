@@ -134,6 +134,24 @@ def landing():
     """
     return render_template('main/landing.html')
 
+@bp.route('/api/landing-pictures')
+def api_landing_pictures():
+    """返回落地页轮播图列表（static/Picture/ 下的图片URL）。"""
+    try:
+        static_root = os.path.join(current_app.root_path, 'static', 'Picture')
+        exts = {'.png', '.jpg', '.jpeg', '.webp', '.gif'}
+        files = []
+        if os.path.isdir(static_root):
+            for name in sorted(os.listdir(static_root)):
+                lower = name.lower()
+                _, ext = os.path.splitext(lower)
+                if ext in exts:
+                    files.append(url_for('static', filename=f'Picture/{name}'))
+        return jsonify({ 'images': files })
+    except Exception as e:
+        current_app.logger.error(f"/api/landing-pictures error: {e}")
+        return jsonify({ 'images': [] })
+
 @bp.route('/database')
 @performance_monitor
 @cached_search(cache_enabled=True)
