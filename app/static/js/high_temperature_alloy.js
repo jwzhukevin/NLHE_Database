@@ -54,26 +54,9 @@
       }
     });
 
-  // ===== 工艺信息弹窗 =====
-  function openProcModal(procType, procHeat) {
-    const modal = document.getElementById('htaProcModal');
-    if (!modal) return;
-    const typeEl = document.getElementById('htaProcType');
-    const heatEl = document.getElementById('htaProcHeat');
-    typeEl.textContent = procType || '';
-    heatEl.textContent = procHeat || '';
-    modal.style.display = 'flex';
-  }
-
-  function initProcModal() {
-    const modal = document.getElementById('htaProcModal');
-    if (!modal) return;
-    const closeBtn = document.getElementById('htaProcClose');
-    closeBtn && closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.style.display = 'none';
-    });
-  }
+    // 文本搜索（q）
+    const q = (fd.get('q') || '').toString().trim();
+    if (q) params.set('q', q);
 
     // 类别多选，合并为逗号分隔
     ['crystal_structure','process_type','heat_treatment_process'].forEach(k => {
@@ -466,6 +449,14 @@
     const runSearch = () => { saveState(form, 1); loadPage(form, 1); };
     btnQuery && btnQuery.addEventListener('click', runSearch);
     btnQueryAdv && btnQueryAdv.addEventListener('click', runSearch);
+
+    // 在输入框按 Enter 时触发搜索
+    const qInput = document.getElementById('htaSearchInput');
+    if (qInput) {
+      qInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
+      });
+    }
 
     btnReset && btnReset.addEventListener('click', function(){
       // 重置后清空表格与分页

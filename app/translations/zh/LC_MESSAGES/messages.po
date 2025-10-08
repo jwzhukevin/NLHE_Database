@@ -1,3 +1,23 @@
+# ===== 新增：导航、AI 菜单与 HTA 列头翻译 =====
+#: app/templates/base.html
+msgid "High temperature alloy database"
+msgstr "高温合金数据库"
+
+#: app/templates/base.html
+msgid "LLM"
+msgstr "大语言模型"
+
+#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
+msgid "Bending Strength (MPa)"
+msgstr "弯曲强度"
+
+#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
+msgid "zt"
+msgstr "热电优值"
+
+#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
+msgid "Bending Strain"
+msgstr "弯曲应变"
 # Chinese translations for PROJECT.
 # ===== 申请页 i18n 新增条目 =====
 #: app/templates/base.html:188 app/templates/auth/apply.html:49

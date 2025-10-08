@@ -182,6 +182,13 @@ def query():
             where_clauses.append(f'"{cat_col}" IN ({placeholders})')
             params.extend(values)
 
+    # 文本搜索 q：对 Material/process_type/heat_treatment_process 进行 ILIKE 模糊匹配
+    q_text = (q.get('q') or '').strip()
+    if q_text:
+        like = f"%{q_text}%"
+        where_clauses.append('("Material" ILIKE ? OR "process_type" ILIKE ? OR "heat_treatment_process" ILIKE ?)')
+        params.extend([like, like, like])
+
     # 性能范围
     if bs_lo is not None:
         where_clauses.append('"Bending Strength (MPa)" >= ?')
