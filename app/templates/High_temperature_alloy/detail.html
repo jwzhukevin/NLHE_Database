@@ -11,7 +11,7 @@
             <i class="fas fa-home"></i> {{ _('Home') }}
           </a>
           <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
-          <a href="{{ url_for('high_temperature_alloy.index') }}" class="breadcrumb-link">{{ _('High temperature alloy') }}</a>
+          <a href="{{ url_for('high_temperature_alloy.index') }}" class="breadcrumb-link">MatdataX-II：结构材料</a>
           <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
           <span class="breadcrumb-current">{{ hta_display_id }}</span>
         </div>
@@ -167,9 +167,9 @@
           <div class="card-header"><h3>{{ _('Performance') }}</h3><i class="fas fa-chevron-down toggle-icon"></i></div>
           <div class="card-content">
             <ul>
-              <li><strong>Bending Strength (MPa):</strong> {{ '%.2f'|format(data['bending_strength_mpa']|float) }}</li>
-              <li><strong>zt:</strong> {{ '%.2f'|format(data['zt']|float) }}</li>
-              <li><strong>Bending Strain:</strong> {{ '%.2f'|format(data['bending_strain']|float) }}</li>
+              <li><strong>{{ _('Bending Strength (MPa)') }}:</strong> {{ '%.2f'|format(data['bending_strength_mpa']|float) }}</li>
+              <li><strong>{{ _('zt') }}:</strong> {{ '%.2f'|format(data['zt']|float) }}</li>
+              <li><strong>{{ _('Bending Strain') }}:</strong> {{ '%.2f'|format(data['bending_strain']|float) }}</li>
             </ul>
           </div>
         </div>

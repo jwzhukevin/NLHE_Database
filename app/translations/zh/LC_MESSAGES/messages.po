@@ -9,7 +9,7 @@ msgstr "大语言模型"
 
 #: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
 msgid "Bending Strength (MPa)"
-msgstr "弯曲强度"
+msgstr "强度"
 
 #: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
 msgid "zt"
@@ -17,12 +17,12 @@ msgstr "热电优值"
 
 #: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
 msgid "Bending Strain"
-msgstr "弯曲应变"
+msgstr "应变"
 # Chinese translations for PROJECT.
 # ===== 申请页 i18n 新增条目 =====
 #: app/templates/base.html:188 app/templates/auth/apply.html:49
 msgid "Apply"
-msgstr "申请"
+msgstr "确认"
 
 #: app/templates/auth/apply.html:33
 msgid "Application Instructions (Email Channel)"
@@ -290,20 +290,6 @@ msgstr "能带分析完成！已分析：%(analyzed)d，已缓存：%(cached)d�
 msgid "Batch analysis failed: %(error)s"
 msgstr "批量分析失败：%(error)s"
 
-#: app/templates/base.html:6
-msgid "NLHE Database - Nonlinear Hall Effect Materials Database"
-msgstr "NLHE 数据库 - 非线性霍尔效应材料数据库"
-
-#: app/templates/base.html:137 app/templates/base.html:140
-#: app/templates/base.html:475
-msgid "Database"
-msgstr "数据库"
-
-#: app/templates/articles/view.html:10 app/templates/articles/view.html:417
-#: app/templates/base.html:143
-msgid "Contents"
-msgstr "目录"
-
 #: app/templates/base.html:147
 msgid "Tools"
 msgstr "工具"
@@ -324,19 +310,6 @@ msgstr "图像识别"
 #: app/templates/base.html:178
 msgid "Natural Language Processing"
 msgstr "自然语言处理"
-
-#: app/templates/base.html:151
-msgid "MP Machine Learning"
-msgstr "MP 机器学习"
-
-#: app/templates/base.html:154
-msgid "Materials Cloud Tools"
-msgstr "Materials Cloud 工具"
-
-#: app/templates/base.html:157
-msgid "NOMAD Laboratory"
-msgstr "NOMAD 实验室"
-
 
 #: app/templates/base.html:167
 msgid "Program"
@@ -379,10 +352,6 @@ msgid "Materials Database"
 msgstr "材料数据库"
 
 # ===== 新增：High Temperature Alloy 数据库与详情页 =====
-#: app/templates/High_temperature_alloy/index.html:1
-msgid "High temperature alloy"
-msgstr "高温合金"
-
 #: app/templates/High_temperature_alloy/index.html
 msgid "Results"
 msgstr "结果"

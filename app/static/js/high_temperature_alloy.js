@@ -43,16 +43,7 @@
     const fd = new FormData(form);
     const params = new URLSearchParams();
 
-    // 元素列表
-    const elemList = ['Ag','Au','Cu','I','K','S','Se','Te'];
-    elemList.forEach(e => {
-      if (fd.get(e + '_enable')) {
-        const lo = fd.get(e.toLowerCase() + '_min');
-        const hi = fd.get(e.toLowerCase() + '_max');
-        if (lo !== null && lo !== '') params.set(e.toLowerCase() + '_min', lo);
-        if (hi !== null && hi !== '') params.set(e.toLowerCase() + '_max', hi);
-      }
-    });
+    // [Deprecated 20251008] 元素区间筛选（Ag/Au/Cu/I/K/S/Se/Te）已移除，不再拼接对应参数
 
     // 文本搜索（q）
     const q = (fd.get('q') || '').toString().trim();
@@ -115,17 +106,7 @@
       const state = JSON.parse(raw);
       // page_size
       setInputValue(form.querySelector('[name="page_size"]'), state.page_size);
-      // 元素区间 + 启用勾选
-      ['Ag','Au','Cu','I','K','S','Se','Te'].forEach(e => {
-        const lo = state[e.toLowerCase() + '_min'];
-        const hi = state[e.toLowerCase() + '_max'];
-        if (lo !== undefined || hi !== undefined) {
-          const en = form.querySelector(`[name="${e}_enable"]`);
-          if (en) en.checked = true;
-          setInputValue(form.querySelector(`[name="${e.toLowerCase()}_min"]`), lo);
-          setInputValue(form.querySelector(`[name="${e.toLowerCase()}_max"]`), hi);
-        }
-      });
+      // [Deprecated 20251008] 元素区间状态恢复已移除
       // 类别多选
       ['crystal_structure','process_type','heat_treatment_process'].forEach(k => {
         if (state[k]) {
@@ -155,15 +136,7 @@
     const tr = document.createElement('tr');
     const cells = [
       { key: 'hta_id', value: item.hta_display_id },
-      { key: 'Ag', value: item.Ag },
-      { key: 'Au', value: item.Au },
-      { key: 'Cu', value: item.Cu },
-      { key: 'I', value: item.I },
-      { key: 'K', value: item.K },
-      { key: 'S', value: item.S },
-      { key: 'Se', value: item.Se },
-      { key: 'Te', value: item.Te },
-      // Material 渲染为可点击，跳转详情
+      // Material 渲染为可点击，跳转详情（列顺序前移到编号后）
       { key: 'Material', value: item.Material, clickableDetail: true },
       { key: 'bending_strength_mpa', value: toFixed2(item.bending_strength_mpa) },
       { key: 'zt', value: toFixed2(item.zt) },
@@ -209,7 +182,9 @@
     if (!items || !items.length) {
       const tr = document.createElement('tr');
       const td = document.createElement('td');
-      td.colSpan = 14;
+      // 动态计算列数，避免列调整后空结果合并列数不匹配
+      const colCount = document.querySelectorAll('#hta-table thead th').length || 6;
+      td.colSpan = colCount;
       td.textContent = (window._ ? _('No results') : 'No results');
       tr.appendChild(td);
       tbody.appendChild(tr);
@@ -245,8 +220,8 @@
   }
 
   // ===== 每页数量与列显隐 =====
-  // 可显隐列（固定可见：hta_id, Material, actions）
-  const OPTIONAL_COLUMNS = ['Ag','Au','Cu','I','K','S','Se','Te','bending_strength_mpa','zt','bending_strain'];
+  // 可显隐列（固定可见：hta_id, Material, actions），元素列已移除
+  const OPTIONAL_COLUMNS = ['bending_strength_mpa','zt','bending_strain'];
 
   function getVisibleCols() {
     try {
@@ -351,7 +326,7 @@
     const tbody = document.querySelector('#hta-table tbody');
     if (!tbody) return;
     const rows = Array.from(tbody.querySelectorAll('tr'));
-    const numericKeys = new Set(['hta_row','Ag','Au','Cu','I','K','S','Se','Te','bending_strength_mpa','zt','bending_strain']);
+    const numericKeys = new Set(['hta_row','bending_strength_mpa','zt','bending_strain']);
     rows.sort((r1, r2) => {
       let v1, v2;
       if (sortKey === 'hta_row') {
