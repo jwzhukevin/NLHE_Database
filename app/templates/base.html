@@ -162,6 +162,9 @@
                 <a href="{{ url_for('articles.listing') }}">
                     <i class="fas fa-book"></i> {{ _('Contents') }}
                 </a>
+                <a href="{{ url_for('high_temperature_alloy.index') }}">
+                    <i class="fas fa-flask"></i> High temperature alloy
+                </a>
                 {% if current_user.is_authenticated %}
                 <div class="dropdown">
                     <a href="#" class="dropdown-toggle" id="tools-dropdown">

@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- 顶部材料导航条（对齐 materials/detail.html 的结构） -->
+<div class="material-nav">
+  <div class="material-nav-wrapper">
+    <div class="nav-main-container">
+      <div class="nav-left-section">
+        <div class="breadcrumb-nav">
+          <a href="{{ url_for('views.landing') }}" class="breadcrumb-link">
+            <i class="fas fa-home"></i> {{ _('Home') }}
+          </a>
+          <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+          <a href="{{ url_for('high_temperature_alloy.index') }}" class="breadcrumb-link">{{ _('High temperature alloy') }}</a>
+          <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
+          <span class="breadcrumb-current">{{ hta_display_id }}</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <a href="{{ url_for('high_temperature_alloy.index') }}" class="btn btn--secondary">
+          <i class="fas fa-arrow-left"></i> {{ _('Back') }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 主体：左侧固定侧栏 + 右侧模块卡片（对齐 detail-layout 结构） -->
+<div class="detail-layout">
+  <aside class="detail-sidebar" aria-label="{{ _('Material Sections Navigation') }}">
+    <div class="sidebar-title">{{ hta_display_id }} <small style="display:block;color:#666;">{{ hta_hash }}</small></div>
+    <nav class="sidebar-nav">
+      <a href="#sec-elements"  class="nav-property-link active">{{ _('Elements & Formula') }}</a>
+      <a href="#sec-process"   class="nav-property-link">{{ _('Process') }}</a>
+      <a href="#sec-crystal"   class="nav-property-link">{{ _('Crystal structure') }}</a>
+      <a href="#sec-performance" class="nav-property-link">{{ _('Performance') }}</a>
+    </nav>
+  </aside>
+
+  <div class="detail-main">
+    <div class="material-detail-container">
+
+      <!-- 模块一：元素与化学式 -->
+      <div id="sec-elements" class="content-section">
+        <div class="detail-card">
+          <div class="card-header"><h3>{{ _('Elements & Formula') }}</h3><i class="fas fa-chevron-down toggle-icon"></i></div>
+          <div class="card-content">
+            <!-- 圆饼图：非零元素占比，居中显示 -->
+            <div class="pie-wrapper" style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
+              <svg id="elementsPie" width="260" height="260" viewBox="0 0 260 260" aria-label="{{ _('Elements Pie Chart') }}" data-all-zero-text="{{ _('All element values are 0') }}"></svg>
+              <div class="pie-legend" id="elementsLegend" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
+            </div>
+            <!-- 以 JSON 形式注入元素数据，避免在 JS 中直接嵌入 Jinja 表达式 -->
+            <script id="elementsData" type="application/json">{{ {
+              'Ag': ('%.2f'|format(data['Ag']|float))|float,
+              'Au': ('%.2f'|format(data['Au']|float))|float,
+              'Cu': ('%.2f'|format(data['Cu']|float))|float,
+              'I':  ('%.2f'|format(data['I']|float))|float,
+              'K':  ('%.2f'|format(data['K']|float))|float,
+              'S':  ('%.2f'|format(data['S']|float))|float,
+              'Se': ('%.2f'|format(data['Se']|float))|float,
+              'Te': ('%.2f'|format(data['Te']|float))|float
+            }|tojson }}</script>
+            <script>
+            (function(){
+              // 解释：从 JSON script 读取数据，避免在 JS 中混入 Jinja 表达式导致的语法提示
+              const jsonEl = document.getElementById('elementsData');
+              let data = {};
+              try { data = JSON.parse(jsonEl.textContent || '{}'); } catch(_) { data = {}; }
+              const colors = { Ag:'#3b82f6',Au:'#f59e0b',Cu:'#10b981',I:'#ef4444',K:'#8b5cf6',S:'#f97316',Se:'#22c55e',Te:'#06b6d4' };
+              const entries = Object.entries(data).filter(([k,v])=>Number(v)>0);
+              const total = entries.reduce((s,[,v])=>s+Number(v),0);
+              const svg = document.getElementById('elementsPie'); if (!svg) return;
+              const cx=130, cy=130, r=100;
+              if (total<=0) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+                circle.setAttribute('cx',cx); circle.setAttribute('cy',cy); circle.setAttribute('r',r);
+                circle.setAttribute('fill','#f1f5f9');
+                svg.appendChild(circle);
+                const legend = document.getElementById('elementsLegend');
+                if (legend) {
+                  const span = document.createElement('span');
+                  span.style.color = '#64748b';
+                  const allZero = svg.getAttribute('data-all-zero-text') || 'All element values are 0';
+                  span.textContent = allZero;
+                  legend.appendChild(span);
+                }
+                return;
+              }
+              let angle = -Math.PI/2;
+              entries.forEach(([k,v])=>{
+                const frac = v/total;
+                const theta = frac*2*Math.PI;
+                const x1 = cx + r*Math.cos(angle);
+                const y1 = cy + r*Math.sin(angle);
+                const x2 = cx + r*Math.cos(angle+theta);
+                const y2 = cy + r*Math.sin(angle+theta);
+                const largeArc = theta > Math.PI ? 1 : 0;
+                const d = [
+                  `M ${cx} ${cy}`,
+                  `L ${x1} ${y1}`,
+                  `A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`,
+                  'Z'
+                ].join(' ');
+                const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+                path.setAttribute('d', d);
+                path.setAttribute('fill', colors[k] || '#94a3b8');
+                svg.appendChild(path);
+                angle += theta;
+              });
+              // 生成图例（JS 构建，避免在 HTML 中嵌入 Jinja 表达式）
+              const legend = document.getElementById('elementsLegend');
+              if (legend) {
+                entries.forEach(([k,v])=>{
+                  const wrap = document.createElement('span');
+                  wrap.style.display = 'inline-flex';
+                  wrap.style.alignItems = 'center';
+                  wrap.style.gap = '6px';
+                  const dot = document.createElement('span');
+                  dot.style.width = '10px'; dot.style.height = '10px';
+                  dot.style.borderRadius = '50%'; dot.style.background = colors[k] || '#94a3b8';
+                  const label = document.createElement('span');
+                  label.textContent = `${k}: ${Number(v).toFixed(2)}`;
+                  wrap.appendChild(dot); wrap.appendChild(label); legend.appendChild(wrap);
+                });
+              }
+            })();
+            </script>
+            <div style="margin-top:0.5rem;text-align:center;">
+              <strong>Material:</strong> {{ data['Material'] }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模块二：工艺 -->
+      <div id="sec-process" class="content-section">
+        <div class="detail-card">
+          <div class="card-header"><h3>{{ _('Process') }}</h3><i class="fas fa-chevron-down toggle-icon"></i></div>
+          <div class="card-content">
+            <div>
+              <div style="margin-bottom:0.5rem;">
+                <strong>{{ _('Process type') }}:</strong> {{ data['process_type'] }}
+              </div>
+              <div style="margin-bottom:0.25rem;"><strong>{{ _('Heat treatment process') }}:</strong></div>
+              <div style="white-space:pre-wrap;line-height:1.6;">{{ data['heat_treatment_process'] }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模块三：晶体结构 -->
+      <div id="sec-crystal" class="content-section">
+        <div class="detail-card" id="crystal-structure">
+          <div class="card-header"><h3>{{ _('Crystal structure') }}</h3><i class="fas fa-chevron-down toggle-icon"></i></div>
+          <div class="card-content">
+            <ul>
+              <li><strong>{{ _('Crystal structure') }}:</strong> {{ data['crystal_structure'] }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模块四：性能 -->
+      <div id="sec-performance" class="content-section">
+        <div class="detail-card">
+          <div class="card-header"><h3>{{ _('Performance') }}</h3><i class="fas fa-chevron-down toggle-icon"></i></div>
+          <div class="card-content">
+            <ul>
+              <li><strong>Bending Strength (MPa):</strong> {{ '%.2f'|format(data['bending_strength_mpa']|float) }}</li>
+              <li><strong>zt:</strong> {{ '%.2f'|format(data['zt']|float) }}</li>
+              <li><strong>Bending Strain:</strong> {{ '%.2f'|format(data['bending_strain']|float) }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -267,3 +267,27 @@
 .pagination a { padding: 0.3rem 1rem; border-radius: 4px; text-decoration: none; color: var(--text-color); background-color: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); transition: all 0.2s; font-weight: 500; border: 1px solid #e2e8f0; font-size: 0.9rem; }
 .pagination a:hover { background-color: #f8fafc; color: var(--primary-color); border-color: var(--primary-color); transform: translateY(-1px); }
 .pagination .active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+
+/* ===== HTA 专属表格增强：统一居中 & 列宽优化 ===== */
+#hta-table th,
+#hta-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Material 列：单行完整显示（必要时产生横向滚动，由外层容器承载） */
+#hta-table th[data-col-key="Material"],
+#hta-table td[data-col-key="Material"] {
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* 放弃列宽压缩：保留默认宽度分配，由浏览器根据内容自适应 */
+
+/* 取消对 HTA 表的全局省略号压缩，允许表格自然扩展并由外层滚动承载 */
+#hta-table td[data-col-key] {
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+}

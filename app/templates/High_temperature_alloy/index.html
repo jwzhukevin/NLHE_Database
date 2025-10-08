@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/database.css', v='20250913') }}">
+{% endblock %}
+
+{% block content %}
+<!-- ====================== 数据表格容器（完全复用 main/database.html 结构与类名） ====================== -->
+<div class="data-table-container">
+
+  <!-- ====================== 搜索表单（结构与样式一致） ====================== -->
+  <form class="search-form" id="htaSearchForm" onsubmit="return false;">
+    <canvas id="hvElectronsDb" class="hv-electrons" aria-hidden="true"></canvas>
+
+    <!-- 基本搜索（占位，样式一致；输入不会提交服务器，仅用于一致外观） -->
+    <div class="basic-search">
+      <div class="search-input-container">
+        <input type="text" name="q" id="htaSearchInput"
+               placeholder="{{ _('Search materials, MP IDs, space groups...') }}"
+               aria-label="{{ _('Search') }}" autocomplete="off">
+        <div class="search-suggestions" id="htaSearchSuggestions"></div>
+      </div>
+      <button type="button" class="btn btn-clear btn--ghost" id="htaClearSearchBtn">{{ _('Clear') }}</button>
+      <button type="button" class="btn btn--primary" id="btn-query">{{ _('Search') }}</button>
+      <button type="button" class="btn btn--secondary" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
+      <input type="hidden" name="per_page" id="per_page" value="">
+    </div>
+
+    <!-- 高级搜索（自定义字段，但沿用相同类名与网格） -->
+    <div class="advanced-search" id="advancedSearch">
+      <div class="search-group">
+        <!-- 第一行：元素范围（左右两列） -->
+        <div class="search-row">
+          <div class="filter-group" style="flex:1;">
+            <label>{{ _('Element ranges') }}</label>
+            <div class="two-column-layout">
+              <div class="column-50">
+                {% set elems_left = ['Ag','Au','Cu','I'] %}
+                {% for e in elems_left %}
+                <div class="filter-group">
+                  <label><input type="checkbox" name="{{ e }}_enable" value="1"> {{ e }}</label>
+                  <div class="range-inputs" style="display:flex; gap:.5rem;">
+                    <input type="number" step="0.01" name="{{ e|lower }}_min" placeholder="{{ _('Min') }}">
+                    <span>{{ _('to') }}</span>
+                    <input type="number" step="0.01" name="{{ e|lower }}_max" placeholder="{{ _('Max') }}">
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="column-50">
+                {% set elems_right = ['K','S','Se','Te'] %}
+                {% for e in elems_right %}
+                <div class="filter-group">
+                  <label><input type="checkbox" name="{{ e }}_enable" value="1"> {{ e }}</label>
+                  <div class="range-inputs" style="display:flex; gap:.5rem;">
+                    <input type="number" step="0.01" name="{{ e|lower }}_min" placeholder="{{ _('Min') }}">
+                    <span>{{ _('to') }}</span>
+                    <input type="number" step="0.01" name="{{ e|lower }}_max" placeholder="{{ _('Max') }}">
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第二行：类别多选（3列） -->
+        <div class="search-row">
+          <div class="filter-group" style="flex:1;">
+            <label>{{ _('Crystal structure') }}</label>
+            <select name="crystal_structure" multiple size="4"></select>
+          </div>
+          <div class="filter-group" style="flex:1;">
+            <label>{{ _('Process type') }}</label>
+            <select name="process_type" multiple size="4"></select>
+          </div>
+          <div class="filter-group" style="flex:1;">
+            <label>{{ _('Heat treatment process') }}</label>
+            <select name="heat_treatment_process" multiple size="4"></select>
+          </div>
+        </div>
+
+        <!-- 第三行：性能范围（2列） + 分页大小与操作按钮 -->
+        <div class="search-row">
+          <div class="filter-group" style="flex:1;">
+            <label>Bending Strength (MPa)</label>
+            <div class="range-inputs" style="display:flex; gap:.5rem;">
+              <input type="number" step="1" name="bending_strength_min" placeholder="{{ _('Min') }}">
+              <span>{{ _('to') }}</span>
+              <input type="number" step="1" name="bending_strength_max" placeholder="{{ _('Max') }}">
+            </div>
+          </div>
+          <div class="filter-group" style="flex:1;">
+            <div style="display:flex; gap:1rem;">
+              <div style="flex:1;">
+                <label>zt</label>
+                <div class="range-inputs" style="display:flex; gap:.5rem;">
+                  <input type="number" step="0.01" name="zt_min" placeholder="{{ _('Min') }}">
+                  <span>{{ _('to') }}</span>
+                  <input type="number" step="0.01" name="zt_max" placeholder="{{ _('Max') }}">
+                </div>
+              </div>
+              <div style="flex:1;">
+                <label>Bending Strain</label>
+                <div class="range-inputs" style="display:flex; gap:.5rem;">
+                  <input type="number" step="0.01" name="bending_strain_min" placeholder="{{ _('Min') }}">
+                  <span>{{ _('to') }}</span>
+                  <input type="number" step="0.01" name="bending_strain_max" placeholder="{{ _('Max') }}">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <a class="clear-btn" href="#" id="btn-reset"><button type="button">{{ _('Reset') }}</button></a>
+          <button type="button" class="search-btn" id="btn-query-adv">{{ _('Search') }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 搜索验证提示（保留结构以复用样式） -->
+    <div id="searchAlert" class="search-alert">
+      <i class="fas fa-exclamation-circle"></i>
+      <span>{{ _('Please enter search criteria or select at least one filter before searching.') }}</span>
+    </div>
+  </form>
+
+  <!-- ====================== 表格区域（与 main/database.html 相同外层结构） ====================== -->
+  <div class="table-outer">
+    <div class="table-inner">
+      <div class="table-stack">
+
+        <!-- 表格标题（样式一致，文案简化） -->
+        <div class="table-title">
+          <span class="title2">{{ _('Results') }}</span>
+          <div class="table-toolbar">
+            <div class="menu per-page">
+              <button type="button" class="btn btn--sm btn--secondary" id="perPageBtn" aria-expanded="false">
+                {{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">(20)</span>
+              </button>
+              <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
+                <button type="button" class="menu-item" data-per-page="20">
+                  <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                  <span class="item-text">20</span>
+                </button>
+                <button type="button" class="menu-item" data-per-page="50">
+                  <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                  <span class="item-text">50</span>
+                </button>
+                <button type="button" class="menu-item" data-per-page="100">
+                  <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                  <span class="item-text">100</span>
+                </button>
+                <button type="button" class="menu-item" data-per-page="200">
+                  <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                  <span class="item-text">200</span>
+                </button>
+              </div>
+            </div>
+            <div class="menu column-visibility">
+              <button type="button" class="btn btn--sm btn--secondary" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
+              <div class="menu-panel is-hidden" id="colMenu" role="menu" aria-labelledby="colToggleBtn">
+                <div class="menu-title">{{ _('Optional Columns') }}</div>
+                <label class="menu-check" data-field="Ag"><input type="checkbox" value="Ag" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">Ag</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="Au"><input type="checkbox" value="Au" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">Au</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="Cu"><input type="checkbox" value="Cu" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">Cu</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="I"><input type="checkbox" value="I" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">I</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="K"><input type="checkbox" value="K" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">K</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="S"><input type="checkbox" value="S" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">S</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="Se"><input type="checkbox" value="Se" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">Se</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="Te"><input type="checkbox" value="Te" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">Te</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="bending_strength_mpa"><input type="checkbox" value="bending_strength_mpa" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">Bending Strength (MPa)</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="zt"><input type="checkbox" value="zt" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">zt</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="bending_strain"><input type="checkbox" value="bending_strain" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">Bending Strain</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <div class="menu-actions">
+                  <button type="button" class="btn btn--sm btn--primary" id="applyColsBtn">{{ _('Apply') }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 表格（类名与基础样式一致） -->
+        <table class="material-data-table" id="hta-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort-key="hta_row" data-col-key="hta_id" aria-sort="none">HTA-id <span class="sort-indicator"></span></th>
+              <th class="sortable" data-sort-key="Ag" data-col-key="Ag" aria-sort="none">Ag <span class="sort-indicator"></span><button class="col-remove" data-col-key="Ag" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="Au" data-col-key="Au" aria-sort="none">Au <span class="sort-indicator"></span><button class="col-remove" data-col-key="Au" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="Cu" data-col-key="Cu" aria-sort="none">Cu <span class="sort-indicator"></span><button class="col-remove" data-col-key="Cu" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="I"  data-col-key="I"  aria-sort="none">I  <span class="sort-indicator"></span><button class="col-remove" data-col-key="I" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="K"  data-col-key="K"  aria-sort="none">K  <span class="sort-indicator"></span><button class="col-remove" data-col-key="K" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="S"  data-col-key="S"  aria-sort="none">S  <span class="sort-indicator"></span><button class="col-remove" data-col-key="S" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="Se" data-col-key="Se" aria-sort="none">Se <span class="sort-indicator"></span><button class="col-remove" data-col-key="Se" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="Te" data-col-key="Te" aria-sort="none">Te <span class="sort-indicator"></span><button class="col-remove" data-col-key="Te" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="Material" data-col-key="Material" aria-sort="none">Material <span class="sort-indicator"></span></th>
+              <th class="sortable" data-sort-key="bending_strength_mpa" data-col-key="bending_strength_mpa" aria-sort="none">Bending Strength (MPa) <span class="sort-indicator"></span><button class="col-remove" data-col-key="bending_strength_mpa" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="zt" data-col-key="zt" aria-sort="none">zt <span class="sort-indicator"></span><button class="col-remove" data-col-key="zt" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="bending_strain" data-col-key="bending_strain" aria-sort="none">Bending Strain <span class="sort-indicator"></span><button class="col-remove" data-col-key="bending_strain" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th data-col-key="actions">{{ _('Detail') }}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 分页（沿用同样类名获得相同样式） -->
+  <div id="hta-pagination" class="pagination"></div>
+
+  <!-- 工艺信息弹窗（复用 analysis-modal 样式体系） -->
+  <div class="analysis-modal" id="htaProcModal" style="display:none;">
+    <div class="analysis-content" role="dialog" aria-modal="true" aria-labelledby="htaProcTitle">
+      <div class="analysis-header">
+        <h3 id="htaProcTitle">{{ _('Process Information') }}</h3>
+        <button class="close-btn" id="htaProcClose" aria-label="{{ _('Close') }}">×</button>
+      </div>
+      <div class="analysis-body">
+        <div class="analysis-section">
+          <h4>{{ _('Process type') }}</h4>
+          <div id="htaProcType"></div>
+        </div>
+        <div class="analysis-section">
+          <h4>{{ _('Heat treatment process') }}</h4>
+          <div id="htaProcHeat"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleAdvanced() {
+  const el = document.getElementById('advancedSearch');
+  if (!el) return;
+  if (el.classList.contains('show')) el.classList.remove('show');
+  else el.classList.add('show');
+}
+</script>
+
+<script src="{{ url_for('static', filename='js/high_temperature_alloy.js') }}"></script>
+{% endblock %}

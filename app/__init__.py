@@ -498,6 +498,11 @@ def create_app():
         from .chat import chat_bp
         app.register_blueprint(chat_bp)
 
+        # 新增：注册高温合金 CSV 数据蓝图（/High_temperature_alloy）
+        # 说明：将新的 Blueprint 接入应用，使列表/查询/详情路由生效
+        from .high_temperature_alloy import high_temperature_alloy_bp
+        app.register_blueprint(high_temperature_alloy_bp)
+
         # 注册命令行命令
         register_commands(app)
 

@@ -506,8 +506,11 @@ def split_achievements(value):
 
 def load_member_profile(slug):
     """
-    在成员目录下按分类查找 profile.json：
-    优先路径：members/Teacher/<slug>/profile.json → members/Student/<slug>/profile.json → members/<slug>/profile.json。
+    在成员目录下按分类查找 profile.json（兼容新旧分类名）：
+    优先路径：
+    - 新：members/Supervisors/<slug>/profile.json → members/Students/<slug>/profile.json
+    - 旧：members/Teacher/<slug>/profile.json → members/Student/<slug>/profile.json
+    - 根：members/<slug>/profile.json
     """
     members_root = os.path.join(current_app.root_path, 'static', 'members')
 
@@ -524,19 +527,26 @@ def load_member_profile(slug):
             return None
         return None
 
-    teacher_dir = find_dir_name(os.path.join(members_root, 'Teacher'))
-    student_dir = find_dir_name(os.path.join(members_root, 'Student'))
+    # 新旧目录并存时优先新目录
+    supervisors_dir = find_dir_name(os.path.join(members_root, 'Supervisors')) or find_dir_name(os.path.join(members_root, 'Teacher'))
+    students_dir = find_dir_name(os.path.join(members_root, 'Students')) or find_dir_name(os.path.join(members_root, 'Student'))
     root_dir = find_dir_name(members_root)
 
     search_paths = []
-    if teacher_dir:
-        search_paths.append((os.path.join(members_root, 'Teacher', teacher_dir, 'profile.json'), 'Teacher'))
+    if supervisors_dir:
+        # 优先新目录名
+        search_paths.append((os.path.join(members_root, 'Supervisors', supervisors_dir, 'profile.json'), 'Supervisors'))
+        # 兼容旧目录名
+        search_paths.append((os.path.join(members_root, 'Teacher', supervisors_dir, 'profile.json'), 'Supervisors'))
     else:
-        search_paths.append((os.path.join(members_root, 'Teacher', slug, 'profile.json'), 'Teacher'))
-    if student_dir:
-        search_paths.append((os.path.join(members_root, 'Student', student_dir, 'profile.json'), 'Student'))
+        search_paths.append((os.path.join(members_root, 'Supervisors', slug, 'profile.json'), 'Supervisors'))
+        search_paths.append((os.path.join(members_root, 'Teacher', slug, 'profile.json'), 'Supervisors'))
+    if students_dir:
+        search_paths.append((os.path.join(members_root, 'Students', students_dir, 'profile.json'), 'Students'))
+        search_paths.append((os.path.join(members_root, 'Student', students_dir, 'profile.json'), 'Students'))
     else:
-        search_paths.append((os.path.join(members_root, 'Student', slug, 'profile.json'), 'Student'))
+        search_paths.append((os.path.join(members_root, 'Students', slug, 'profile.json'), 'Students'))
+        search_paths.append((os.path.join(members_root, 'Student', slug, 'profile.json'), 'Students'))
     # 兼容无分类旧结构
     if root_dir:
         search_paths.append((os.path.join(members_root, root_dir, 'profile.json'), None))
@@ -550,25 +560,32 @@ def load_member_profile(slug):
     return None, None
 
 def _list_member_dirs_by_category():
-    """扫描分类目录，返回 {category: [subdir_names]}。"""
+    """扫描分类目录，返回 {category: [subdir_names]}（兼容新旧分类名）。"""
     members_root = os.path.join(current_app.root_path, 'static', 'members')
-    result = {'Teacher': [], 'Student': []}
-    for cat in ['Teacher', 'Student']:
-        cat_dir = os.path.join(members_root, cat)
-        if os.path.isdir(cat_dir):
-            try:
-                for name in os.listdir(cat_dir):
-                    full = os.path.join(cat_dir, name)
-                    if os.path.isdir(full):
-                        result[cat].append(name)
-            except Exception:
-                pass
+    result = {'Supervisors': [], 'Students': []}
+    mapping = {
+        'Supervisors': ['Supervisors', 'Teacher'],
+        'Students': ['Students', 'Student'],
+    }
+    for norm_cat, dirs in mapping.items():
+        seen = set()
+        for d in dirs:
+            cat_dir = os.path.join(members_root, d)
+            if os.path.isdir(cat_dir):
+                try:
+                    for name in os.listdir(cat_dir):
+                        full = os.path.join(cat_dir, name)
+                        if os.path.isdir(full) and name not in seen:
+                            result[norm_cat].append(name)
+                            seen.add(name)
+                except Exception:
+                    pass
     return result
 
 def _find_member_dir_name(slug):
-    """根据 slug 在 Teacher/Student 目录中查找原始目录名，找不到返回 None。"""
+    """根据 slug 在 Supervisors/Students（含旧名 Teacher/Student）目录中查找原始目录名。"""
     members_root = os.path.join(current_app.root_path, 'static', 'members')
-    for cat in ['Teacher', 'Student']:
+    for cat in ['Supervisors', 'Teacher', 'Students', 'Student']:
         cat_dir = os.path.join(members_root, cat)
         if os.path.isdir(cat_dir):
             try:
@@ -634,7 +651,7 @@ def members_index():
         current_locale = 'en'
 
     cats = _list_member_dirs_by_category()
-    grouped = {'Teacher': [], 'Student': []}
+    grouped = {'Supervisors': [], 'Students': []}
     for cat, names in cats.items():
         for dir_name in sorted(names):
             slug = to_slug(dir_name)
@@ -648,13 +665,13 @@ def members_index():
             if not photo and m:
                 photo = (m.photo or '').strip()
             # 计算图片相对路径（供前端直接使用）
-            category = found_cat if found_cat in ('Teacher', 'Student') else cat
+            category = found_cat if found_cat in ('Supervisors', 'Students') else cat
             # 使用实际目录名以保留大小写，避免 Linux/Ubuntu 大小写敏感导致的 404
             # 若分类发生切换（罕见），尝试在目标分类下按 slug 匹配真实目录名
             real_dir = dir_name if category == cat else (_find_member_dir_name(slug) or dir_name)
             photo_rel = None
             if photo:
-                if category in ('Teacher', 'Student'):
+                if category in ('Supervisors', 'Students'):
                     photo_rel = f'members/{category}/{real_dir}/{photo}'
                 else:
                     photo_rel = f'members/{real_dir}/{photo}'
@@ -667,7 +684,7 @@ def members_index():
                 **selected,
             })
 
-    return render_template('members/index.html', teachers=grouped['Teacher'], students=grouped['Student'])
+    return render_template('members/index.html', supervisors=grouped['Supervisors'], students=grouped['Students'])
 
 @bp.route('/members/<string:slug>')
 def member_detail(slug):
@@ -719,16 +736,16 @@ def member_detail(slug):
 
     # [Deprecated 20251007] 旧逻辑：直接用 slug 拼接目录，易在大小写敏感系统上 404
     # 计算图片相对路径（使用实际目录名，避免大小写问题）
-    category = source if source in ('Teacher', 'Student') else None
+    category = source if source in ('Supervisors', 'Students') else None
     photo_rel = None
     # 使用实际目录名：分类下用 _find_member_dir_name，根目录结构回退到 dir_name
     real_dir = None
-    if category in ('Teacher', 'Student'):
+    if category in ('Supervisors', 'Students'):
         real_dir = _find_member_dir_name(slug) or slug
     else:
         real_dir = (dir_name or slug)
     if photo:
-        if category in ('Teacher', 'Student'):
+        if category in ('Supervisors', 'Students'):
             photo_rel = f'members/{category}/{real_dir}/{photo}'
         else:
             photo_rel = f'members/{real_dir}/{photo}'
