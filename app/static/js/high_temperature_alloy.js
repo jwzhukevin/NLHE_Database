@@ -11,9 +11,10 @@
 
   // ========== 工具 ==========
   function toFixed2(v) {
-    if (v === null || v === undefined || v === '') return '';
+    // 解释：将 null/undefined/空字符串/非数值/0 统一显示为 'None'
+    if (v === null || v === undefined || v === '') return 'None';
     const n = Number(v);
-    if (!isFinite(n)) return '';
+    if (!isFinite(n) || n === 0) return 'None';
     return n.toFixed(2);
   }
 

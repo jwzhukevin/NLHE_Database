@@ -167,9 +167,27 @@
           <div class="card-header"><h3>{{ _('Performance') }}</h3><i class="fas fa-chevron-down toggle-icon"></i></div>
           <div class="card-content">
             <ul>
-              <li><strong>{{ _('Bending Strength (MPa)') }}:</strong> {{ '%.2f'|format(data['bending_strength_mpa']|float) }}</li>
-              <li><strong>{{ _('zt') }}:</strong> {{ '%.2f'|format(data['zt']|float) }}</li>
-              <li><strong>{{ _('Bending Strain') }}:</strong> {{ '%.2f'|format(data['bending_strain']|float) }}</li>
+              <li><strong>{{ _('Bending Strength (MPa)') }}:</strong>
+                {% if not data['bending_strength_mpa'] or data['bending_strength_mpa'] == 0 %}
+                  None
+                {% else %}
+                  {{ '%.2f'|format(data['bending_strength_mpa']|float) }}
+                {% endif %}
+              </li>
+              <li><strong>{{ _('zt') }}:</strong>
+                {% if not data['zt'] or data['zt'] == 0 %}
+                  None
+                {% else %}
+                  {{ '%.2f'|format(data['zt']|float) }}
+                {% endif %}
+              </li>
+              <li><strong>{{ _('Bending Strain') }}:</strong>
+                {% if not data['bending_strain'] or data['bending_strain'] == 0 %}
+                  None
+                {% else %}
+                  {{ '%.2f'|format(data['bending_strain']|float) }}
+                {% endif %}
+              </li>
             </ul>
           </div>
         </div>
