@@ -157,13 +157,16 @@
                     </div>
                 </div>
                 <a href="{{ url_for('views.index') }}">
-                    <i class="fas fa-table"></i> MatdataX
-                </a>
-                <a href="{{ url_for('articles.listing') }}">
-                    <i class="fas fa-book"></i> {{ _('Contents') }}
+                    <i class="fas fa-table"></i>
+                    {% if current_locale == 'zh' %}MatdataX-1：功能材料{% else %}MatdataX-1: Functional Materials{% endif %}
                 </a>
                 <a href="{{ url_for('high_temperature_alloy.index') }}">
-                    <i class="fas fa-flask"></i> {{ _('High temperature alloy database') }}
+                    <i class="fas fa-flask"></i>
+                    {% if current_locale == 'zh' %}MatdataX-2：结构材料{% else %}MatdataX-2: Structural Materials{% endif %}
+                </a>
+                <a href="{{ url_for('articles.listing') }}">
+                    <i class="fas fa-book"></i>
+                    {% if current_locale == 'zh' %}文章{% else %}Articles{% endif %}
                 </a>
                 {% if current_user.is_authenticated %}
                 <div class="dropdown">
@@ -188,9 +191,11 @@
                 {% endif %}
                 <!-- 登录用户专用功能按钮 -->
                 {% if current_user.is_authenticated %}
+                {# [Deprecated 20251008] 导航栏程序模块暂时下线（仅注释，结构保留）
                 <a href="{{ url_for('program.index') }}">
                     <i class="fas fa-cogs"></i> {{ _('Program') }}
                 </a>
+                #}
                 {% endif %}
 
                 {# [Deprecated 20251001] 管理员新增入口已移除（只读模式） #}

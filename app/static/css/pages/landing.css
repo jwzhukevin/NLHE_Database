@@ -6,19 +6,33 @@
 .hero p { font-size: clamp(1rem, 2vw, 1.25rem); max-width: 800px; margin: 0 0 2rem; opacity: 0.9; }
 .hero .container { position: relative; z-index: 1; }
 
+/* 顶部左右角Logo条 */
+.hero .hero-logos {
+  position: absolute;
+  inset: 0 0 auto 0; /* 顶部横条 */
+  pointer-events: none; /* 装饰层，不拦截交互 */
+  z-index: 2;
+}
+.hero .hero-logos .logos-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-top: 12px; /* 仅保留顶部间距，左右与导航栏对齐 */
+}
+.hero .hero-logos img {
+  height: clamp(64px, 4vw, 56px);
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
+  opacity: 0.95;
+}
+
 /* 标题与小图标并排 */
 .hero .hero-title {
   display: flex;
   align-items: center;
   gap: 0.5rem; /* 标题与图标间距 */
   flex-wrap: nowrap;
-}
-
-.hero .hero-badge {
-  width: clamp(800px, 5vw, 64px);
-  height: auto;
-  margin: 0.5rem 0 0.75rem; /* 位于标题下、段落上，留出间距 */
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));
 }
 
 /* 英雄区装饰图：左侧偏中，半透明，自适应 */
@@ -50,7 +64,7 @@
   display: flex;
   align-items: center;
   gap: clamp(16px, 3vw, 40px);
-  min-height: clamp(280px, 28vw, 320px);
+  min-height: clamp(500px, 28vw, 620px);
 }
 .hero .hero-col { flex: 1 1 0; }
 .hero .hero-text { flex-basis: 56%; }
@@ -58,7 +72,7 @@
 
 .hero .carousel {
   position: relative;
-  width: clamp(260px, 40vw, 520px);
+  width: clamp(600px, 40vw, 800px);
   aspect-ratio: 16 / 10;
   background: rgba(255,255,255,0.06);
   border-radius: 12px;
