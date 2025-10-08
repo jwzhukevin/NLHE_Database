@@ -89,7 +89,8 @@ def _ensure_view_up_to_date() -> Tuple[str, str]:
         # 解释：使用 read_csv_auto 自动识别类型；header=True 使用首行作为表头
         sql = (
             f"CREATE OR REPLACE VIEW {_view_name} AS "
-            f"SELECT * FROM read_csv_auto('{csv_path}', header=True)"
+            f"SELECT * FROM read_csv_auto('{csv_path}', header=True, "
+            f"sample_size=-1, nullstr=['', 'None'])"
         )
         conn.execute(sql)
         _csv_mtime_cache = mtime
