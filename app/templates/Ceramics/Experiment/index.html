@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/database.css', v='20251204') }}">
+{% endblock %}
+
+{% block content %}
+<div class="data-table-container">
+  <form class="search-form" id="cerExpForm" onsubmit="return false;">
+    <div class="basic-search">
+      <div class="search-input-container">
+        <input type="text" name="q" id="cerExpSearchInput"
+               placeholder="{% if current_locale == 'zh' %}搜索 材料成分、晶体结构、工艺...{% else %}Search materials, crystal, process...{% endif %}"
+               aria-label="{{ _('Search') }}" autocomplete="off">
+      </div>
+      <button type="button" class="btn btn--primary" id="btn-query">{{ _('Search') }}</button>
+      <input type="hidden" name="per_page" id="per_page" value="">
+    </div>
+  </form>
+
+  <div class="table-outer">
+    <div class="table-inner">
+      <div class="table-stack">
+        <div class="table-title">
+          <span class="title2">{{ _('Experiment Results') }}</span>
+          <div class="table-toolbar">
+            <div class="menu per-page">
+              <button type="button" class="btn btn--sm btn--secondary" id="perPageBtn" aria-expanded="false">
+                {{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">(20)</span>
+              </button>
+              <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
+                <button type="button" class="menu-item" data-per-page="20"><span class="item-text">20</span></button>
+                <button type="button" class="menu-item" data-per-page="50"><span class="item-text">50</span></button>
+                <button type="button" class="menu-item" data-per-page="100"><span class="item-text">100</span></button>
+              </div>
+            </div>
+            <div class="menu column-visibility">
+              <button type="button" class="btn btn--sm btn--secondary" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
+              <div class="menu-panel is-hidden" id="colMenu" role="menu" aria-labelledby="colToggleBtn">
+                <div class="menu-title">{{ _('Optional Columns') }}</div>
+                <label class="menu-check" data-field="bending_strength_mpa"><input type="checkbox" value="bending_strength_mpa" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}强度 (MPa){% else %}Bending Strength (MPa){% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="bending_strain_percent"><input type="checkbox" value="bending_strain_percent" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}应变 (%) {% else %}Bending Strain (%) {% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <label class="menu-check" data-field="zt"><input type="checkbox" value="zt" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}热电优值{% else %}zT{% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
+                <div class="menu-actions">
+                  <button type="button" class="btn btn--sm btn--primary" id="applyColsBtn">{{ _('Apply') }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <table class="material-data-table" id="cer-exp-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort-key="material" data-col-key="material" aria-sort="none">{% if current_locale == 'zh' %}材料成分{% else %}Material{% endif %} <span class="sort-indicator"></span></th>
+              <th class="sortable" data-sort-key="crystal_structure" data-col-key="crystal_structure" aria-sort="none">{% if current_locale == 'zh' %}晶体结构{% else %}Crystal structure{% endif %} <span class="sort-indicator"></span></th>
+              <th class="sortable" data-sort-key="bending_strength_mpa" data-col-key="bending_strength_mpa" aria-sort="none">{% if current_locale == 'zh' %}强度 (MPa){% else %}Bending Strength (MPa){% endif %} <span class="sort-indicator"></span><button class="col-remove" data-col-key="bending_strength_mpa" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="bending_strain_percent" data-col-key="bending_strain_percent" aria-sort="none">{% if current_locale == 'zh' %}应变 (%) {% else %}Bending Strain (%) {% endif %} <span class="sort-indicator"></span><button class="col-remove" data-col-key="bending_strain_percent" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th class="sortable" data-sort-key="zt" data-col-key="zt" aria-sort="none">{% if current_locale == 'zh' %}热电优值{% else %}zT{% endif %} <span class="sort-indicator"></span><button class="col-remove" data-col-key="zt" title="{{ _('Hide this column') }}" aria-label="{{ _('Hide this column') }}">×</button></th>
+              <th data-col-key="actions">{% if current_locale == 'zh' %}工艺{% else %}Process{% endif %}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="cer-exp-pagination" class="pagination"></div>
+
+  <!-- 工艺信息弹窗（结构与 HTA 保持一致） -->
+  <div class="analysis-modal" id="expProcModal" style="display:none;">
+    <div class="analysis-content" role="dialog" aria-modal="true" aria-labelledby="expProcTitle">
+      <div class="analysis-header">
+        <h3 id="expProcTitle">{{ _('Process Information') }}</h3>
+        <button class="close-btn" id="expProcClose" aria-label="{{ _('Close') }}">×</button>
+      </div>
+      <div class="analysis-body">
+        <div class="analysis-section">
+          <h4>{% if current_locale == 'zh' %}热处理工艺{% else %}Heat treatment process{% endif %}</h4>
+          <div id="expProcText" style="white-space:pre-wrap;line-height:1.6;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ceramics_experiment.js', v='20251204-2') }}"></script>
+{% endblock %}
+

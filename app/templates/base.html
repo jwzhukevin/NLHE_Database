@@ -160,10 +160,35 @@
                     <i class="fas fa-table"></i>
                     {% if current_locale == 'zh' %}MatdataX-I：功能材料{% else %}MatdataX-I: Functional Materials{% endif %}
                 </a>
-                <a href="{{ url_for('high_temperature_alloy.index') }}">
-                    <i class="fas fa-flask"></i>
-                    {% if current_locale == 'zh' %}MatdataX-II：结构材料{% else %}MatdataX-II: Structural Materials{% endif %}
-                </a>
+                <div class="dropdown" id="structural-dropdown">
+                    <a href="#" class="dropdown-toggle" id="struct-dropdown">
+                        <i class="fas fa-flask"></i>
+                        {% if current_locale == 'zh' %}MatdataX-II：结构材料{% else %}MatdataX-II: Structural Materials{% endif %}
+                        <i class="fas fa-caret-down"></i>
+                    </a>
+                    <div class="dropdown-menu" id="struct-menu">
+                        <a href="#" class="disabled" aria-disabled="true" tabindex="-1">
+                            {% if current_locale == 'zh' %}合金{% else %}Alloy{% endif %}
+                        </a>
+                        <div class="dropdown-submenu">
+                            <a href="#" id="ceramics-item">
+                                {% if current_locale == 'zh' %}陶瓷{% else %}Ceramics{% endif %}
+                                <i class="fas fa-caret-right" style="margin-left:auto;"></i>
+                            </a>
+                            <div class="submenu-menu" id="ceramics-submenu">
+                                <a href="{{ url_for('ceramics_literature.index') }}">
+                                    {% if current_locale == 'zh' %}文献{% else %}Literature{% endif %}
+                                </a>
+                                <a href="{{ url_for('ceramics_experiment.index') }}">
+                                    {% if current_locale == 'zh' %}实验{% else %}Experiments{% endif %}
+                                </a>
+                                <a href="{{ url_for('high_temperature_alloy.index') }}">
+                                    {% if current_locale == 'zh' %}AI生成{% else %}AI Generated{% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <a href="{{ url_for('articles.listing') }}">
                     <i class="fas fa-book"></i>
                     {% if current_locale == 'zh' %}文章{% else %}Articles{% endif %}
@@ -365,6 +390,22 @@
                 document.addEventListener('click', function(e) {
                     if (!weDropdown.contains(e.target) && !weMenu.contains(e.target)) {
                         weMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // 结构材料（MatdataX-II）一级下拉交互：点击展开/收起
+            const structDropdown = document.getElementById('struct-dropdown');
+            const structMenu = document.getElementById('struct-menu');
+            const structuralContainer = document.getElementById('structural-dropdown');
+            if (structDropdown && structMenu && structuralContainer) {
+                structDropdown.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    structMenu.classList.toggle('show');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!structuralContainer.contains(e.target)) {
+                        structMenu.classList.remove('show');
                     }
                 });
             }

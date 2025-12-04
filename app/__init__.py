@@ -503,6 +503,21 @@ def create_app():
         from .high_temperature_alloy import high_temperature_alloy_bp
         app.register_blueprint(high_temperature_alloy_bp)
 
+        # 新增：注册陶瓷-实验与陶瓷-文献蓝图
+        # 路由前缀：/Ceramics/experiment 与 /Ceramics/literature
+        try:
+            from .ceramics_experiment import ceramics_experiment
+            app.register_blueprint(ceramics_experiment)
+            app.logger.info("Blueprint registered: ceramics_experiment")
+        except Exception as e:
+            app.logger.warning(f"Register ceramics_experiment failed: {e}")
+        try:
+            from .ceramics_literature import ceramics_literature
+            app.register_blueprint(ceramics_literature)
+            app.logger.info("Blueprint registered: ceramics_literature")
+        except Exception as e:
+            app.logger.warning(f"Register ceramics_literature failed: {e}")
+
         # 注册命令行命令
         register_commands(app)
 

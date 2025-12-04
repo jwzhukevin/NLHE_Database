@@ -3,7 +3,7 @@
 CSV 路径解析工具
 
 说明：
-- 按你的最新确认，CSV 路径固定为应用内：app/static/High_temperature_alloy/output_first_50000.csv
+- 按你的最新确认，CSV 路径固定为应用内：app/static/CSV_data/output_first_50000.csv
 - 本模块提供 get_csv_path(app) 用于在运行时解析并校验路径是否存在；
 - 若不存在则抛出明确异常，由上层捕获并返回友好错误提示。
 
@@ -27,7 +27,7 @@ def get_csv_path(app):
     csv_path = os.path.join(
         app.root_path,
         'static',
-        'High_temperature_alloy',
+        'CSV_data',
         'output_first_50000.csv'
     )
 
