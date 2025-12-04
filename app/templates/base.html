@@ -177,13 +177,13 @@
                             </a>
                             <div class="submenu-menu" id="ceramics-submenu">
                                 <a href="{{ url_for('ceramics_literature.index') }}">
-                                    {% if current_locale == 'zh' %}文献{% else %}Literature{% endif %}
+                                    {% if current_locale == 'zh' %}文献提取数据（{{ ceramics_literature_count|default(0) }}）{% else %}Literature Extracted Data ({{ ceramics_literature_count|default(0) }}){% endif %}
                                 </a>
                                 <a href="{{ url_for('ceramics_experiment.index') }}">
-                                    {% if current_locale == 'zh' %}实验{% else %}Experiments{% endif %}
+                                    {% if current_locale == 'zh' %}内部实验数据（{{ ceramics_experiment_count|default(0) }}）{% else %}Internal Experimental Data ({{ ceramics_experiment_count|default(0) }}){% endif %}
                                 </a>
                                 <a href="{{ url_for('high_temperature_alloy.index') }}">
-                                    {% if current_locale == 'zh' %}AI生成{% else %}AI Generated{% endif %}
+                                    {% if current_locale == 'zh' %}模型预测数据（{{ ceramics_ai_count|default(0) }}）{% else %}Model Predicted Data ({{ ceramics_ai_count|default(0) }}){% endif %}
                                 </a>
                             </div>
                         </div>

@@ -518,6 +518,53 @@ def create_app():
         except Exception as e:
             app.logger.warning(f"Register ceramics_literature failed: {e}")
 
+        # 注入陶瓷三个子模块的数据条数（带 mtime 缓存）
+        from .csv_config import get_csv_path as _get_ai_csv_path
+
+        # 使用 app.extensions 作为简单缓存容器
+        app.extensions.setdefault('csv_counts_cache', {})
+
+        def _count_csv_rows(csv_abs_path: str) -> int:
+            try:
+                if not os.path.isfile(csv_abs_path):
+                    return 0
+                cache = app.extensions['csv_counts_cache']
+                mtime = os.path.getmtime(csv_abs_path)
+                entry = cache.get(csv_abs_path)
+                if entry and entry.get('mtime') == mtime:
+                    return entry.get('count', 0)
+                # 统计行数，去掉表头
+                count = 0
+                with open(csv_abs_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    for i, _line in enumerate(f, start=0):
+                        count += 1
+                count = max(0, count - 1)
+                cache[csv_abs_path] = {'mtime': mtime, 'count': count}
+                return count
+            except Exception as _e:
+                app.logger.debug(f"CSV row count failed for {csv_abs_path}: {_e}")
+                return 0
+
+        @app.context_processor
+        def inject_ceramics_counts():
+            try:
+                lit_path = os.path.join(app.root_path, 'static', 'CSV_data', '文献数据.csv')
+                exp_path = os.path.join(app.root_path, 'static', 'CSV_data', '实验数据.csv')
+                ai_path = _get_ai_csv_path(app)
+
+                return dict(
+                    ceramics_literature_count=_count_csv_rows(lit_path),
+                    ceramics_experiment_count=_count_csv_rows(exp_path),
+                    ceramics_ai_count=_count_csv_rows(ai_path),
+                )
+            except Exception as e:
+                app.logger.debug(f"inject_ceramics_counts failed: {e}")
+                return dict(
+                    ceramics_literature_count=0,
+                    ceramics_experiment_count=0,
+                    ceramics_ai_count=0,
+                )
+
         # 注册命令行命令
         register_commands(app)
 
