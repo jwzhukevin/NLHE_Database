@@ -22,7 +22,7 @@ msgstr "应变"
 # ===== 申请页 i18n 新增条目 =====
 #: app/templates/base.html:188 app/templates/auth/apply.html:49
 msgid "Apply"
-msgstr "确认"
+msgstr "申请"
 
 #: app/templates/auth/apply.html:33
 msgid "Application Instructions (Email Channel)"
@@ -412,7 +412,6 @@ msgstr "关闭"
 msgid "Elements Pie Chart"
 msgstr "元素占比图"
 
-# ===== 新增：Landing 页新特性卡片 =====
 #: app/templates/main/landing.html
 msgid "Data Processing Tools"
 msgstr "数据处理工具"
