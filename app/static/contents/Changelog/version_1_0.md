@@ -1,59 +1,8 @@
-# Version 1.0 Release Notes
+# v1.0.0 发布说明
 
-**Release Date:** July 5, 2022
+发布日期：2025-12-23
 
-We are excited to announce the first official release of the Materials Database platform! After months of development and beta testing, version 1.0 brings a comprehensive set of features for materials researchers and engineers.
+本次为项目 1.0.0 正式发布版本。该版本围绕“材料数据管理、检索与可视化”的核心场景，完成了从数据组织、元素智能分析到前后端交互体验的一体化落地，并提供了稳健的只读访问模式与多语言支持。
 
-## Core Features
-
-### Material Management
-
-- Database storage for material structures and properties
-- Support for uploading CIF files with automatic property extraction
-- Material categorization and tagging system
-
-### Search and Discovery
-
-- Basic search functionality by material name, elements, and properties
-- Filtering by material type, crystal system, and property ranges
-- Sortable search results with customizable columns
-
-### Data Visualization
-
-- Basic crystal structure rendering
-- Property visualization with charts and graphs
-- Tabular data display with export options
-
-### User Management
-
-- User registration and authentication
-- Role-based access control
-- Personal collections for organizing materials
-
-## Technical Details
-
-- Built with Python 3.8 and Flask web framework
-- SQLite database for data storage
-- Client-side rendering with modern JavaScript
-- Responsive design for desktop and tablet devices
-
-## Known Limitations
-
-- Structure visualization limited to 1000 atoms
-- Search performance may degrade with very large result sets
-- Limited support for mobile devices
-- No API access in this initial release
-
-## Coming Soon
-
-- Advanced search capabilities
-- Interactive band structure visualization
-- Public API for programmatic access
-- Improved performance for large structures
-- Mobile app support
-
-## Acknowledgements
-
-We would like to thank our beta testers for their valuable feedback and the research community for their support in building this platform. Special thanks to the funding agencies that made this project possible.
-
-For support, bug reports, or feature requests, please contact us at support@materialsdb.example.com. 
+## 反馈与支持
+如需反馈问题与 Debug，或者你觉得功能设计的不够完善，请发送邮件至：zhujiawen@mail.ustc.edu.cn
