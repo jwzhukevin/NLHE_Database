@@ -1,21 +1,21 @@
 #!/bin/bash
-# [New] Create initial (non-admin) user interactively
-# Platform: Ubuntu/Linux
-# This script creates the first application user without any role field.
-# It runs inside the Flask app context and writes to the database securely.
+# 【新】交互式创建初始（非管理员）用户
+# 适用平台：Ubuntu/Linux
+# 用途：创建首个应用用户（无角色字段）
+# 说明：在 Flask 应用上下文中运行，安全写入数据库
 
 set -e
 
-# Try to activate local virtual environment if present
+# 若存在本地虚拟环境则尝试激活
 if [ -d "NLHE/bin" ]; then
   # shellcheck disable=SC1091
   source NLHE/bin/activate || true
 fi
 
-# Ensure FLASK_APP
+# 设置 FLASK_APP 环境变量
 export FLASK_APP="wsgi.py"
 
-# Collect inputs interactively
+# 交互式收集输入参数
 read -r -p "邮箱地址 (Email): " INIT_USER_EMAIL
 if [ -z "$INIT_USER_EMAIL" ]; then
   echo "❌ 邮箱不能为空"; exit 1
@@ -45,20 +45,20 @@ prompt_password() {
 prompt_password
 INIT_USER_PASSWORD="$PASSWORD_RESULT"
 
-# Export variables for Python heredoc
+# 为 Python heredoc 导出变量
 export INIT_USER_EMAIL_INPUT="$INIT_USER_EMAIL"
 export INIT_USER_USERNAME_INPUT="$INIT_USER_USERNAME"
 export INIT_USER_PASSWORD_INPUT="$INIT_USER_PASSWORD"
 
-# Run within Flask app context
+# 在 Flask 应用上下文中运行
 python - <<'PYCODE'
 import sys
 import getpass
 from app import create_app, db
 from app.models import User
 
-# Read env passed by shell heredoc is not needed; use pre-collected stdin variables via placeholders
-# We'll import os for environment if needed in the future.
+# 说明：无需从 heredoc 再读取标准输入；使用之前收集的变量通过环境传入
+# 备注：如需更多环境变量，未来可继续通过 os 读取
 import os
 
 email = os.environ.get('INIT_USER_EMAIL_INPUT')
