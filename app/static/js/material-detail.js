@@ -420,13 +420,25 @@ function initializeCollapsibleCards() {
         const icon = header.querySelector('.toggle-icon');
         if (!icon) return;
 
+        // 根据初始折叠状态设置图标
+        if (header.classList.contains('collapsed')) {
+            icon.className = 'fas fa-plus-square toggle-icon';
+        } else {
+            icon.className = 'fas fa-minus-square toggle-icon';
+        }
+
         // 将点击事件仅绑定到图标上
         icon.addEventListener('click', function(e) {
             e.stopPropagation(); // 阻止事件冒泡到header
 
             const currentHeader = this.closest('.card-header'); // 使用 closest 确保找到正确的 header
-            currentHeader.classList.toggle('collapsed');
-            
+            const collapsed = currentHeader.classList.toggle('collapsed');
+            // 更新图标
+            if (collapsed) {
+                icon.className = 'fas fa-plus-square toggle-icon';
+            } else {
+                icon.className = 'fas fa-minus-square toggle-icon';
+            }
             // 获取相邻的内容区域
             let content = currentHeader.nextElementSibling;
 
@@ -948,7 +960,7 @@ function generateRelationsTable(groups) {
         </div>
         <div class="relations-legend">
             <span class="same-relation"><span>●</span> Same</span>
-            <span class="opposite-relation"><span>●</span> Opppsite</span>
+            <span class="opposite-relation"><span>●</span> Opposite</span>
             <span class="zero-group"><span>●</span> Zero</span>
         </div>
         <div class="relations-table-scroll">

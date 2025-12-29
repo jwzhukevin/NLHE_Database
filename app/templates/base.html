@@ -300,38 +300,47 @@
 
     <!-- ========== 页脚 ========== -->
     <footer class="footer">
-        <div class="container footer-content">
-            <div class="footer-section">
-                <h3>MatdataX</h3>
-                <p>MatdataX</p>
-                <p>{{ _('Explore and discover novel materials') }}</p>
+        <div class="container footer-layout">
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h3>MatdataX</h3>
+                    <ul>
+                        <li><a href="{{ url_for('views.landing') }}">{{ _('Home') }}</a></li>
+                        <li><a href="{{ url_for('views.index') }}">{{ _('Materials Database') }}</a></li>
+                        <li><a href="{{ url_for('articles.listing') }}">{{ _('Articles') }}</a></li>
+                        <li><a href="{{ url_for('views.login') }}">{{ _('User Portal') }}</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>{{ _('Resources') }}</h3>
+                    <ul>
+                        <li><a href="{{ url_for('views.members') }}">{{ _('Team') }}</a></li>
+                        <li><a href="https://www.cas.cn/" target="_blank" rel="noopener">{{ _('CAS') }}</a></li>
+                        <li><a href="http://www.imr.cas.cn/" target="_blank" rel="noopener">{{ _('IMR') }}</a></li>
+                        <li><a href="https://gs.imr.ac.cn/" target="_blank" rel="noopener">{{ _('IMR Graduate School') }}</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>{{ _('Community') }}</h3>
+                    <ul>
+                        <li><a href="#">{{ _('Seminars (Coming Soon)') }}</a></li>
+                        <li><a href="#">{{ _('Documentation') }}</a></li>
+                        <li><a href="{{ url_for('chat.chat_page') }}">{{ _('AI Assistant') }}</a></li>
+                        <li><a href="#">{{ _('Support') }}</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="footer-section">
-                <h3>{{ _('We') }}</h3>
-                <ul>
-                    <li><a href="{{ url_for('views.members') }}">{{ _('Team') }}</a></li>
-                    <li><a href="#">{{ _('Publications') }}</a></li>
-                    <li><a href="#">{{ _('Achievements') }}</a></li>
-                    <li><a href="http://www.synl.ac.cn/division.asp?id=8" target="_blank" rel="noopener noreferrer">{{ _('Join Us') }}</a></li>
-                </ul>
+            <div class="footer-info">
+                <div class="footer-logos">
+                    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="MatdataX Logo">
+                </div>
+                <p class="footer-description">MatdataX</p>
+                <p class="footer-meta">
+                    {{ _('Technical Stack: Flask · Plotly · Three.js · Valkey · PostgreSQL') }}<br>
+                    {{ _('Record & Compliance: Placeholder ICP Record · All rights reserved by IMR MatdataX.') }}<br>
+                    &copy; IMR MatdataX. {{ _('Powered by') }} <a href="https://github.com/pallets/flask">Flask</a>
+                </p>
             </div>
-            <div class="footer-section">
-                <h3>{{ _('Related Links') }}</h3>
-                <ul>
-                    <li><a href="https://gs.imr.ac.cn/" target="_blank">{{ _('IMR Graduate School, CAS') }}</a></li>
-                    <li><a href="http://www.imr.cas.cn/" target="_blank">{{ _('Institute of Metal Research, CAS') }}</a></li>
-                    <li><a href="https://www.cas.cn/" target="_blank">{{ _('Chinese Academy of Sciences') }}</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>{{ _('Contact Us') }}</h3>
-                <p>{{ _('Address: 72 Wenhua Road, Shenhe District, Shenyang') }}</p>
-                <p>{{ _('Postal Code: 110016') }}</p>
-                <p>{{ _('Email: NONE') }}</p>
-            </div>
-        </div>
-        <div class="container footer-bottom">
-            <p>&copy; IMR MatdataX. {{ _('Powered by') }} <a href="https://github.com/pallets/flask">Flask</a></p>
         </div>
     </footer>
 

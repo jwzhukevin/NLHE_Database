@@ -716,13 +716,11 @@
 /* ===== SC Card - Relations Tab Styles ===== */
 #panel-sc-overview .relations-legend {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
     align-items: center;
-    margin-bottom: 1rem;
-    color: #475569;
-    font-size: 0.9rem;
-    line-height: 1.4;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: #1f2937;
 }
 
 #panel-sc-overview .relations-legend-item {
@@ -746,7 +744,32 @@
 }
 
 .relations-legend {
-    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 10px;
+    background-color: #f8fafc;
+}
+
+.relations-legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+    color: #1f2937;
+    font-weight: 400;
+}
+
+.relations-legend > span > span {
+    display: inline-flex;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
 }
 
 .relations-settings-wrapper.collapsed .relations-controls {
@@ -865,29 +888,30 @@
 }
 
 #panel-sc-overview tbody tr:nth-child(odd) {
-    background-color: #f8fafc;
+    background-color: #f9fafb;
 }
 
 #panel-sc-overview tbody tr:hover {
-    background-color: #EFF6FF;
+    background-color: #e5e7eb;
 }
 
 #panel-sc-overview .zero-group {
-    color: #6B7280;
-    font-style: italic;
+    color: #6b7280;
+    font-style: normal;
+    font-weight: 400;
 }
 
 #panel-sc-overview .same-relation {
-    color: #0047AB;
-    font-weight: 500;
+    color: #1d4ed8;
+    font-weight: 400;
 }
 
 #panel-sc-overview .opposite-relation {
-    color: #B91C1C;
-    font-weight: 500;
+    color: #dc2626;
+    font-weight: 400;
 }
 
 #panel-sc-overview .mixed-relation {
-    color: #7E22CE;
-    font-weight: 500;
+    color: #7e22ce;
+    font-weight: 400;
 }
