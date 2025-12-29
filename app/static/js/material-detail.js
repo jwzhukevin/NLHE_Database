@@ -13,6 +13,29 @@
 // 全局变量：存储材料数据，从JSON script标签中读取
 window.materialData = null;
 
+// 元素关联判定常量（单位：uA/V²）
+const ZERO_MAX_ABS_THRESHOLD = 0.1;
+
+// 关系分析全局配置（可由本地存储覆盖）
+const DEFAULT_RELATIONS_CONFIG = { zeroThreshold: ZERO_MAX_ABS_THRESHOLD, similarityScale: 1.0 };
+function loadRelationsConfig() {
+    try {
+        const raw = localStorage.getItem('relations.config');
+        if (!raw) return { ...DEFAULT_RELATIONS_CONFIG };
+        const obj = JSON.parse(raw);
+        return {
+            zeroThreshold: typeof obj.zeroThreshold === 'number' ? obj.zeroThreshold : DEFAULT_RELATIONS_CONFIG.zeroThreshold,
+            similarityScale: typeof obj.similarityScale === 'number' ? obj.similarityScale : DEFAULT_RELATIONS_CONFIG.similarityScale,
+        };
+    } catch (_) {
+        return { ...DEFAULT_RELATIONS_CONFIG };
+    }
+}
+function saveRelationsConfig(cfg) {
+    try { localStorage.setItem('relations.config', JSON.stringify(cfg)); } catch (_) {}
+}
+window.relationsConfig = loadRelationsConfig();
+
 /**
  * 从HTML页面的JSON script标签中读取材料数据
  * 这种方法避免了在JavaScript代码中使用模板语法，IDE不会报错
@@ -102,7 +125,7 @@ function setup_tabs(container_selector, storage_key) {
 
     // 事件绑定
     btns.forEach((btn, idx) => {
-        btn.addEventListener('click', () => activate(tabByBtn.get(btn), true));
+        btn.addEventListener('click', (e) => { e.stopPropagation(); activate(tabByBtn.get(btn), true); });
         btn.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 e.preventDefault();
@@ -146,6 +169,7 @@ function setupSCTabBehavior() {
                         // 绘制完成后自适应一次
                         if (window.Plotly && document.getElementById('sc-plot')) {
                             setTimeout(() => Plotly.relayout('sc-plot', { autosize: true }), 150);
+                            setTimeout(() => syncSCHeights(), 200);
                         }
                     } catch (e) {
                         console.error('绘制SC结构图失败:', e);
@@ -155,6 +179,7 @@ function setupSCTabBehavior() {
         } else if (window.Plotly && scPlotEl) {
             // 已绘制则重绘
             setTimeout(() => Plotly.relayout('sc-plot', { autosize: true }), 150);
+            setTimeout(() => syncSCHeights(), 200);
         }
     }
 
@@ -267,6 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 绘制后短延时自适应一次
             if (window.Plotly && document.getElementById('sc-plot')) {
                 setTimeout(() => Plotly.relayout('sc-plot', { autosize: true }), 200);
+                setTimeout(() => syncSCHeights(), 260);
             }
         }
     } catch (e) {
@@ -364,29 +390,46 @@ document.addEventListener('DOMContentLoaded', function() {
     // 加载晶体结构数据
     loadCrystalStructureData();
 
-    // 顶部 Tabs：接管 SC 卡片 tab 切换（记忆 key: scTabsActive）
+    // 初始化所有功能卡片的Tab切换
+    // 初始化所有功能卡片的Tab切换
     setup_tabs('#sc-card', 'scTabsActive');
+    setup_tabs('#bcd-card', 'bcdTabsActive');
+    setup_tabs('#dw-card', 'dwTabsActive');
+
+    // 为所有卡片加载元素关联数据
+    loadRelationsData('sc', window.materialData.sc_data_path);
+    // BCD and DW relations are not yet available from backend, so we skip them for now.
+    // loadRelationsData('bcd', window.materialData.bcd_dir);
+    // loadRelationsData('dw', window.materialData.dw_dir);
+    // loadRelationsData('dw', window.materialData.dw_dir);
+
+    // 同步右侧元素关联面板与左侧Plotly图高度，并在窗口变化时保持同步
+    window.addEventListener('resize', debounce(syncSCHeights, 150));
+    setTimeout(syncSCHeights, 300);
 });
 
 /**
  * 初始化可折叠卡片功能
  * 为所有卡片头部添加点击事件，实现折叠/展开效果
+{{ ... }}
  */
 function initializeCollapsibleCards() {
     const cardHeaders = document.querySelectorAll('.card-header');
     
     cardHeaders.forEach(header => {
-        // 若是“Tab 卡片”，即 header 后紧邻 .tab-header，则跳过折叠逻辑
-        const next = header.nextElementSibling;
-        if (next && next.classList.contains('tab-header')) {
-            return;
-        }
-        // 绑定点击事件切换折叠状态
-        header.addEventListener('click', function() {
-            this.classList.toggle('collapsed');
+        const icon = header.querySelector('.toggle-icon');
+        if (!icon) return;
+
+        // 将点击事件仅绑定到图标上
+        icon.addEventListener('click', function(e) {
+            e.stopPropagation(); // 阻止事件冒泡到header
+
+            const currentHeader = this.closest('.card-header'); // 使用 closest 确保找到正确的 header
+            currentHeader.classList.toggle('collapsed');
             
             // 获取相邻的内容区域
-            let content = this.nextElementSibling;
+            let content = currentHeader.nextElementSibling;
+
             
             // 处理3D结构查看器和能带图的特殊情况
             if (content.classList.contains('viewer-content')) {
@@ -428,9 +471,6 @@ function initializeCollapsibleCards() {
     // 默认展开所有卡片
     const allCards = document.querySelectorAll('.card-header');
     allCards.forEach(header => {
-        // Tab 卡片不做默认展开/折叠处理
-        const next = header.nextElementSibling;
-        if (next && next.classList.contains('tab-header')) return;
         header.classList.remove('collapsed');
         
         // 获取相邻的内容区域
@@ -687,6 +727,375 @@ function updateAtomicCoordinatesDisplay(data) {
  * 设置坐标切换功能
  * 允许用户在笛卡尔坐标和分数坐标之间切换显示
  */
+/**
+ * 为功能卡片加载并渲染元素关联数据
+ * @param {string} type - 'sc', 'bcd', 或 'dw'
+ * @param {string} dataUrl - 数据文件的URL (对于sc是sc.dat, 对于bcd/dw是目录)
+ */
+function loadRelationsData(type, dataUrl) {
+    if (!dataUrl) {
+        console.info(`未提供 ${type.toUpperCase()} 数据路径，跳过元素关联加载`);
+        return;
+    }
+
+    const containerId = `${type}-relations-container`;
+    let container = document.getElementById(containerId);
+    if (!container) {
+        // 兼容旧的唯一ID
+        container = document.getElementById(`${type}-relations-container-unique`);
+        if (!container) {
+            console.error(`容器元素 ${containerId} 或 ${type}-relations-container-unique 不存在`);
+            return;
+        }
+    }
+
+    let fetchUrl = dataUrl;
+    if (type === 'bcd' || type === 'dw') {
+        fetchUrl = `${dataUrl}/relations.json`;
+    }
+
+    fetch(fetchUrl)
+        .then(response => {
+            if (!response.ok) throw new Error('not found');
+            return type === 'sc' ? response.text() : response.json();
+        })
+        .then(data => {
+            let groups;
+            if (type === 'sc') {
+                const lines = data.trim().split('\n');
+                let header = lines[0].startsWith('#') ? lines[0].substring(1).trim() : lines[0].trim();
+                const headerParts = header.split(' ');
+                const traceNames = [];
+                for (let i = 1; i < headerParts.length; i++) {
+                    if (headerParts[i].match(/\d+-[a-z]{3}/)) {
+                        const nameParts = headerParts[i].split('-');
+                        if (nameParts.length === 2) {
+                            traceNames.push({ index: parseInt(nameParts[0]) - 1, name: nameParts[1] });
+                        }
+                    }
+                }
+                // 严格校验：SC 数据必须包含 27 条曲线
+                if (traceNames.length !== 27) {
+                    console.error(`SC relations expected 27 curves, found ${traceNames.length}`);
+                    container.innerHTML = `<p style="color:#b91c1c">Relations error: expected 27 curves, found ${traceNames.length}.</p>`;
+                    return;
+                }
+                const numericData = lines.slice(1).map(line => line.trim().split(/\s+/).map(Number));
+                // 缓存原始数据，供调参时复用
+                container._relationsData = { numericData, traceNames };
+                groups = analyzeCurveRelationships(numericData, traceNames, window.relationsConfig);
+            } else {
+                groups = data.groups;
+            }
+
+            if (groups) {
+                const tableHtml = generateRelationsTable(groups);
+                container.innerHTML = tableHtml;
+                // 绑定交互控件事件
+                bindRelationsControls(container);
+            } else {
+                container.innerHTML = '<p>No relations data found.</p>';
+            }
+        })
+        .catch(() => {
+            container.innerHTML = '<p>Could not load relations data.</p>';
+        });
+}
+
+// [Moved from sc-plot.js] 解析SC数据并找出曲线之间的关系
+function analyzeCurveRelationships(data, traceNames, opts) {
+    const curveData = {};
+    traceNames.forEach(trace => {
+        const yValues = data.map(row => row[trace.index]);
+        curveData[trace.name] = yValues;
+    });
+    
+    const avgAbsValues = {};
+    Object.keys(curveData).forEach(name => {
+        const avgAbs = curveData[name].reduce((sum, val) => sum + Math.abs(val), 0) / curveData[name].length;
+        avgAbsValues[name] = avgAbs;
+    });
+    
+    const maxAvgAbs = Math.max(...Object.values(avgAbsValues));
+    
+    // 相似度阈值仍按自适应规则
+    let similarityThreshold;
+    if (maxAvgAbs < 0.01) {
+        similarityThreshold = maxAvgAbs / 100;
+    } else if (maxAvgAbs < 0.1) {
+        similarityThreshold = maxAvgAbs / 50;
+    } else {
+        similarityThreshold = maxAvgAbs / 20;
+    }
+    // 按用户配置缩放（默认 1.0）
+    const simScale = (opts && typeof opts.similarityScale === 'number') ? opts.similarityScale : 1.0;
+    similarityThreshold = similarityThreshold * simScale;
+    
+    // 绝对阈值零曲线判定：max(|y|) < zeroTh
+    const zeroTh = (opts && typeof opts.zeroThreshold === 'number') ? opts.zeroThreshold : ZERO_MAX_ABS_THRESHOLD;
+    const maxAbsValues = {};
+    Object.keys(curveData).forEach(name => {
+        maxAbsValues[name] = curveData[name].reduce((m, v) => Math.max(m, Math.abs(v)), 0);
+    });
+    const groups = [];
+    const processed = new Set();
+    const zeroCurves = Object.keys(maxAbsValues).filter(name => maxAbsValues[name] < zeroTh);
+    if (zeroCurves.length > 0) {
+        groups.push({
+            type: 'zero',
+            curves: zeroCurves,
+            relation: zeroCurves.join("=0, ") + "=0"
+        });
+        zeroCurves.forEach(name => processed.add(name));
+    }
+    // 为相似度计算准备绝对值数据
+    const absData = {};
+    Object.keys(curveData).forEach(name => {
+        absData[name] = curveData[name].map(val => Math.abs(val));
+    });
+
+    const relationGroups = [];
+    const remainingCurves = traceNames.map(t => t.name).filter(name => !processed.has(name));
+
+    remainingCurves.forEach(name1 => {
+        if (processed.has(name1)) return;
+
+        const currentGroup = [name1];
+        processed.add(name1);
+
+        remainingCurves.forEach(name2 => {
+            if (processed.has(name2)) return;
+
+            const absValues1 = absData[name1];
+            const absValues2 = absData[name2];
+            let sumDiff = 0;
+            for (let i = 0; i < absValues1.length; i++) {
+                sumDiff += Math.abs(absValues1[i] - absValues2[i]);
+            }
+            const avgDiff = sumDiff / absValues1.length;
+
+            if (avgDiff < similarityThreshold) {
+                currentGroup.push(name2);
+                processed.add(name2);
+            }
+        });
+        relationGroups.push(currentGroup);
+    });
+
+    relationGroups.forEach(group => {
+        if (group.length === 1) {
+            groups.push({ type: 'relation', curves: group, relation: group[0] });
+            return;
+        }
+
+        const referenceCurve = group[0];
+        const refValues = curveData[referenceCurve];
+        let relationExpression = referenceCurve;
+
+        for (let i = 1; i < group.length; i++) {
+            const otherCurve = group[i];
+            const otherValues = curveData[otherCurve];
+            let sameSignCount = 0;
+            let oppositeSignCount = 0;
+
+            for (let j = 0; j < refValues.length; j++) {
+                if (Math.abs(refValues[j]) < 0.0001 || Math.abs(otherValues[j]) < 0.0001) continue;
+                if ((refValues[j] > 0 && otherValues[j] > 0) || (refValues[j] < 0 && otherValues[j] < 0)) {
+                    sameSignCount++;
+                } else {
+                    oppositeSignCount++;
+                }
+            }
+            relationExpression += (sameSignCount > oppositeSignCount) ? `=${otherCurve}` : `=-${otherCurve}`;
+        }
+        groups.push({ type: 'relation', curves: group, relation: relationExpression });
+    });
+
+    return groups;
+}
+
+// [Moved from sc-plot.js] 生成元素关系的HTML表格
+function generateRelationsTable(groups) {
+    const isCollapsed = localStorage.getItem('relations.settings.collapsed') === 'true';
+    let html = `
+        <div class="settings-header">
+            <button class="rel-settings-toggle btn btn--ghost btn--sm">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </div>
+        <div class="relations-settings-wrapper ${isCollapsed ? 'collapsed' : ''}">
+            <div class="relations-controls">
+                <div class="control-row">
+                    <label>Zero threshold (uA/V²)</label>
+                </div>
+                <div class="control-row">
+                    <input type="number" class="rel-zero-input form-input--sm" min="0" max="1" step="0.01" />
+                    <input type="range" class="rel-zero-range custom-slider" min="0" max="1" step="0.01" />
+                </div>
+                <div class="control-row">
+                    <label>Similarity scale</label>
+                </div>
+                <div class="control-row">
+                    <input type="number" class="rel-sim-input form-input--sm" min="0.5" max="2.0" step="0.05" />
+                    <input type="range" class="rel-sim-range custom-slider" min="0.5" max="2.0" step="0.05" />
+                    <span class="rel-sim-value">1.00×</span>
+                </div>
+                <div class="control-row actions">
+                    <button class="rel-reset btn btn--ghost btn--sm">Reset</button>
+                    <button class="rel-apply btn btn--secondary btn--sm">Apply</button>
+                </div>
+            </div>
+        </div>
+        <div class="relations-legend">
+            <span class="same-relation"><span>●</span> Same</span>
+            <span class="opposite-relation"><span>●</span> Opppsite</span>
+            <span class="zero-group"><span>●</span> Zero</span>
+        </div>
+        <div class="relations-table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Group</th>
+                        <th>Relations</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    groups.forEach((group, index) => {
+        let styleClass = '';
+        if (group.type === 'zero') {
+            styleClass = 'zero-group';
+        } else if (group.relation.includes('-')) {
+            styleClass = 'opposite-relation';
+        } else {
+            styleClass = 'same-relation';
+        }
+        
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td class="${styleClass}">
+                    <span>●</span> ${group.relation}
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    return html;
+}
+
+// 绑定并处理调参交互
+function bindRelationsControls(container) {
+    const settingsWrapper = container.querySelector('.relations-settings-wrapper');
+    const settingsToggle = container.querySelector('.rel-settings-toggle');
+
+    if (settingsToggle && settingsWrapper) {
+        settingsToggle.addEventListener('click', () => {
+            const isCollapsed = settingsWrapper.classList.toggle('collapsed');
+            localStorage.setItem('relations.settings.collapsed', isCollapsed);
+        });
+    }
+
+    if (!container) return;
+    const data = container._relationsData;
+    if (!data || !data.numericData || !data.traceNames) return;
+
+    // 读取并回显全局配置
+    const zeroInput = container.querySelector('.rel-zero-input');
+    const zeroRange = container.querySelector('.rel-zero-range');
+    const simInput = container.querySelector('.rel-sim-input');
+    const simRange = container.querySelector('.rel-sim-range');
+    const simValue = container.querySelector('.rel-sim-value');
+    const btnApply = container.querySelector('.rel-apply');
+    const btnReset = container.querySelector('.rel-reset');
+
+    const cfg = window.relationsConfig || { ...DEFAULT_RELATIONS_CONFIG };
+    if (zeroInput) zeroInput.value = cfg.zeroThreshold.toFixed(2);
+    if (zeroRange) zeroRange.value = cfg.zeroThreshold;
+    if (simInput) simInput.value = cfg.similarityScale.toFixed(2);
+    if (simRange) simRange.value = cfg.similarityScale;
+    if (simValue) simValue.textContent = `${Number(cfg.similarityScale).toFixed(2)}×`;
+
+    // 同步 number 与 range
+    if (zeroInput && zeroRange) {
+        zeroInput.addEventListener('input', () => { zeroRange.value = zeroInput.value; });
+        zeroRange.addEventListener('input', () => { zeroInput.value = Number(zeroRange.value).toFixed(2); });
+    }
+    if (simInput && simRange && simValue) {
+        simInput.addEventListener('input', () => { 
+            simRange.value = simInput.value; 
+            simValue.textContent = `${Number(simInput.value).toFixed(2)}×`;
+        });
+        simRange.addEventListener('input', () => { 
+            simInput.value = Number(simRange.value).toFixed(2);
+            simValue.textContent = `${Number(simRange.value).toFixed(2)}×`;
+        });
+    }
+
+    function recomputeAndRender(newCfg) {
+        window.relationsConfig = newCfg;
+        saveRelationsConfig(newCfg);
+        const groups = analyzeCurveRelationships(data.numericData, data.traceNames, newCfg);
+        container.innerHTML = generateRelationsTable(groups);
+        // 重新绑定事件
+        bindRelationsControls(container);
+    }
+
+    if (btnApply) {
+        btnApply.addEventListener('click', () => {
+            const z = Math.max(0, Math.min(1, parseFloat(zeroInput ? zeroInput.value : cfg.zeroThreshold)));
+            const s = Math.max(0.5, Math.min(2.0, parseFloat(simInput ? simInput.value : cfg.similarityScale)));
+            recomputeAndRender({ zeroThreshold: isFinite(z) ? z : cfg.zeroThreshold, similarityScale: isFinite(s) ? s : cfg.similarityScale });
+        });
+    }
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            recomputeAndRender({ ...DEFAULT_RELATIONS_CONFIG });
+        });
+    }
+}
+
+
+// ---- Layout helpers: keep SC relations panel height in sync with left plot ----
+function debounce(fn, wait) {
+    let t = null;
+    return function(...args) {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+    };
+}
+
+function syncSCHeights() {
+    try {
+        const plotEl = document.getElementById('sc-plot');
+        const rightPanel = document.getElementById('panel-sc-overview');
+        if (!plotEl || !rightPanel) return;
+        const rect = plotEl.getBoundingClientRect();
+        const h = Math.max(0, Math.round(rect.height));
+        if (h > 0) {
+            rightPanel.style.height = h + 'px';
+        }
+    } catch (e) {
+        console.warn('syncSCHeights failed:', e);
+    }
+}
+
+
+
+
+
+
+
+
+
+
 function setupCoordinateToggle() {
     const coordsToggle = document.getElementById('coords-toggle-btn');
     let showingFractional = false;

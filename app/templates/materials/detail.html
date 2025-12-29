@@ -170,8 +170,8 @@ setTimeout(function() {
     <!-- ====================== 第一栏：3D结构和晶体结构 ====================== -->
     <div id="first-section" class="content-section">
         <div class="two-column-layout">
-            <!-- 左侧：3D结构显示区域 (60%) -->
-            <div class="column-60">
+            <!-- 左侧：3D结构显示区域 (80%) -->
+            <div class="column-80">
                 <div class="viewer-container">
                     <div class="card-header">
         <h3>{{ _('3D Structure') }}</h3>
@@ -183,8 +183,8 @@ setTimeout(function() {
                 </div>
             </div>
             
-            <!-- 右侧：晶体结构信息 (40%) -->
-            <div class="column-40">
+            <!-- 右侧：晶体结构信息 (20%) -->
+            <div class="column-20">
                 <div class="detail-card" id="crystal-structure">
                     <div class="card-header">
                         <h3>{{ _('Crystal Structure') }}</h3>
@@ -251,8 +251,8 @@ setTimeout(function() {
     <!-- ====================== 第三栏：能带信息和能带性质 ====================== -->
     <div id="third-section" class="content-section">
         <div class="two-column-layout">
-            <!-- 左侧：能带图 (60%) -->
-            <div class="column-60">
+            <!-- 左侧：能带图 (70%) -->
+            <div class="column-70">
                 <div class="viewer-container">
                     <div class="card-header collapsed">
         <h3>{{ _('Band Structure') }}
@@ -270,8 +270,8 @@ setTimeout(function() {
                 </div>
             </div>
             
-            <!-- 右侧：能带结构属性 (40%) -->
-            <div class="column-40">
+            <!-- 右侧：能带结构属性 (30%) -->
+            <div class="column-30">
                 <div class="detail-card" id="band-structure">
                     <div class="card-header collapsed">
                         <h3>{{ _('Band Structure') }}</h3>
@@ -309,77 +309,60 @@ setTimeout(function() {
         <div class="detail-card" id="sc-card">
             <div class="card-header">
                 <h3>{{ _('Shift Current') }}</h3>
-                <!-- 内联 Tab 按钮，与标题同级以减少垂直空间 -->
-                <div class="tab-header inline" role="tablist" aria-label="{{ _('SC Tabs') }}">
-                    <button id="tab-sc-overview" class="tab-button active" role="tab" aria-selected="true" aria-controls="panel-sc-overview" data-tab="overview">{{ _('Relations') }}</button>
-                    <button id="tab-sc-prop" class="tab-button" role="tab" aria-selected="false" aria-controls="panel-sc-prop" data-tab="properties">{{ _('Properties') }}</button>
+                <div class="card-header-actions">
+                    <div class="card-header-extra tab-header" role="tablist" aria-label="{{ _('SC Tabs') }}">
+                        <button id="tab-sc-overview" class="tab-button active" role="tab" aria-controls="panel-sc-overview" data-tab="overview">{{ _('Relations') }}</button>
+                        <button id="tab-sc-prop" class="tab-button" role="tab" aria-controls="panel-sc-prop" data-tab="properties">{{ _('Properties') }}</button>
+                        <button id="tab-sc-matrix" class="tab-button" role="tab" aria-controls="panel-sc-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
+                    </div>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
                 </div>
             </div>
-
-            <!-- 保留隐藏占位，保障折叠逻辑跳过Tab卡片 -->
-            <div class="tab-header" role="presentation" aria-hidden="true"></div>
-
-            
-
-            <!-- 固定两列布局：左侧始终显示绘图，右侧在 Overview/Properties 间切换 -->
-            <div class="two-column-layout sc-combined-layout">
+            <div class="card-content">
+                <div class="two-column-layout sc-combined-layout">
                 <div class="column-70">
                     <div class="sc-plot-panel">
                         <div id="scStructure"></div>
                     </div>
                 </div>
                 <div class="column-30">
-                    <!-- 右侧：Relations（元素关系）作为一个 Tab 面板 -->
                     <div id="panel-sc-overview" class="tab-content active" role="tabpanel" aria-labelledby="tab-sc-overview">
-                        <div id="relations-table-container" class="relations-table-scroll">
+                        <div id="sc-relations-container-unique" class="relations-table-container relations-table-scroll">
                             <div class="loading-message">{{ _('Loading element relations...') }}</div>
                         </div>
                     </div>
-                    <!-- 右侧：Properties 作为另一个 Tab 面板 -->
                     <div id="panel-sc-prop" class="tab-content" role="tabpanel" aria-labelledby="tab-sc-prop" hidden>
                         <div class="properties-panel">
                             <ul class="properties-list">
-                                <li>
-                                    <span class="property-label">{{ _('Max SC') }}</span>
-                                    <span class="property-value">
-                                        {% if material.max_sc is not none %}
-                                            {{ "%.4f"|format(material.max_sc) }} μA/V²
-                                        {% else %}
-                                            {{ _('Unknown') }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                <li>
-                                    <span class="property-label">{{ _('Max Photon Energy') }}</span>
-                                    <span class="property-value">
-                                        {% if material.max_photon_energy is not none %}
-                                            {{ "%.4f"|format(material.max_photon_energy) }} eV
-                                        {% else %}
-                                            {{ _('Unknown') }}
-                                        {% endif %}
-                                    </span>
-                                </li>
-                                <li>
-                                    <span class="property-label">{{ _('Max Tensor Type') }}</span>
-                                    <span class="property-value">{{ material.max_tensor_type if material.max_tensor_type else _('Unknown') }}</span>
-                                </li>
+                                <li><span class="property-label">{{ _('Max SC') }}</span><span class="property-value">{% if material.max_sc is not none %}{{ "%.4f"|format(material.max_sc) }} μA/V²{% else %}{{ _('Unknown') }}{% endif %}</span></li>
+                                <li><span class="property-label">{{ _('Max Photon Energy') }}</span><span class="property-value">{% if material.max_photon_energy is not none %}{{ "%.4f"|format(material.max_photon_energy) }} eV{% else %}{{ _('Unknown') }}{% endif %}</span></li>
+                                <li><span class="property-label">{{ _('Max Tensor Type') }}</span><span class="property-value">{{ material.max_tensor_type if material.max_tensor_type else _('Unknown') }}</span></li>
                             </ul>
+                        </div>
+                    </div>
+                    <div id="panel-sc-matrix" class="tab-content" role="tabpanel" aria-labelledby="tab-sc-matrix" hidden>
+                        <div class="sc-properties-panel properties-panel">
+                            <div class="eigen-matrix-container" data-matrix-type="sc">{{ _('No matrix data for Shift Current.') }}</div>
                         </div>
                     </div>
                 </div>
             </div>
-
-        <!-- 旧位置的 Properties 面板已并入右侧列 -->
-
-        <!-- [Deprecated 20250822] 旧结构备份已移除：原双列布局（左图右详情）。如需回滚，请参照Git历史。 -->
-    </div><!-- /#sc-section -->
+        </div>
+    </div>
 
 <!-- ====================== BCD 部分：九曲线 + Eigen Matrix ====================== -->
 <div id="bcd-section" class="content-section">
     <div class="detail-card" id="bcd-card">
         <div class="card-header">
             <h3>{{ _('Berry curvature dipole (BCD)') }}</h3>
-            <span class="card-header-extra" aria-label="{{ _('Eigen Matrix') }}">{{ _('Eigen Matrix') }}</span>
+            <div class="card-header-actions">
+                <div class="card-header-extra tab-header" role="tablist" aria-label="{{ _('BCD Tabs') }}">
+                    <button id="tab-bcd-overview" class="tab-button" role="tab" aria-controls="panel-bcd-overview" data-tab="overview">{{ _('Relations') }}</button>
+                    <button id="tab-bcd-prop" class="tab-button" role="tab" aria-controls="panel-bcd-prop" data-tab="properties">{{ _('Properties') }}</button>
+                    <button id="tab-bcd-matrix" class="tab-button active" role="tab" aria-controls="panel-bcd-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
+                </div>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
         </div>
         <div class="card-content">
             <div class="two-column-layout">
@@ -390,8 +373,22 @@ setTimeout(function() {
                     </div>
                 </div>
                 <div class="column-40">
-                    <div class="sc-properties-panel">
-                        <div id="bcdEigenMatrix" class="properties-panel"></div>
+                    <div class="tab-content-wrapper">
+                        <div id="panel-bcd-overview" class="tab-content" role="tabpanel" aria-labelledby="tab-bcd-overview" hidden>
+                            <div id="bcd-relations-container" class="relations-table-container relations-table-scroll">
+                                <div class="loading-message">{{ _('Loading element relations...') }}</div>
+                            </div>
+                        </div>
+                        <div id="panel-bcd-prop" class="tab-content" role="tabpanel" aria-labelledby="tab-bcd-prop" hidden>
+                            <div class="properties-panel">
+                                <p>{{ _('BCD properties are not available yet.') }}</p>
+                            </div>
+                        </div>
+                        <div id="panel-bcd-matrix" class="tab-content active" role="tabpanel" aria-labelledby="tab-bcd-matrix">
+                            <div class="sc-properties-panel properties-panel">
+                                <div id="bcdEigenMatrix" class="eigen-matrix-container" data-matrix-type="bcd"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -406,7 +403,14 @@ setTimeout(function() {
     <div class="detail-card" id="dw-card">
         <div class="card-header">
             <h3>{{ _('Drude weight (DW)') }}</h3>
-            <span class="card-header-extra" aria-label="{{ _('Eigen Matrix') }}">{{ _('Eigen Matrix') }}</span>
+            <div class="card-header-actions">
+                <div class="card-header-extra tab-header" role="tablist" aria-label="{{ _('DW Tabs') }}">
+                    <button id="tab-dw-overview" class="tab-button" role="tab" aria-controls="panel-dw-overview" data-tab="overview">{{ _('Relations') }}</button>
+                    <button id="tab-dw-prop" class="tab-button" role="tab" aria-controls="panel-dw-prop" data-tab="properties">{{ _('Properties') }}</button>
+                    <button id="tab-dw-matrix" class="tab-button active" role="tab" aria-controls="panel-dw-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
+                </div>
+                <i class="fas fa-chevron-down toggle-icon"></i>
+            </div>
         </div>
         <div class="card-content">
             <div class="two-column-layout">
@@ -417,8 +421,22 @@ setTimeout(function() {
                     </div>
                 </div>
                 <div class="column-40">
-                    <div class="sc-properties-panel">
-                        <div id="dwEigenMatrix" class="properties-panel"></div>
+                    <div class="tab-content-wrapper">
+                        <div id="panel-dw-overview" class="tab-content" role="tabpanel" aria-labelledby="tab-dw-overview" hidden>
+                            <div id="dw-relations-container" class="relations-table-container relations-table-scroll">
+                                <div class="loading-message">{{ _('Loading element relations...') }}</div>
+                            </div>
+                        </div>
+                        <div id="panel-dw-prop" class="tab-content" role="tabpanel" aria-labelledby="tab-dw-prop" hidden>
+                            <div class="properties-panel">
+                                <p>{{ _('DW properties are not available yet.') }}</p>
+                            </div>
+                        </div>
+                        <div id="panel-dw-matrix" class="tab-content active" role="tabpanel" aria-labelledby="tab-dw-matrix">
+                            <div class="sc-properties-panel properties-panel">
+                                <div id="dwEigenMatrix" class="eigen-matrix-container" data-matrix-type="dw"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

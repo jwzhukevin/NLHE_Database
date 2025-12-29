@@ -172,7 +172,16 @@
 /* 卡片折叠/展开图标 */
 .card-header .toggle-icon {
     color: #64748b;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 50%;
+    margin: -8px; /* 抵消padding，保持布局不变 */
+    cursor: pointer;
+}
+
+.card-header .toggle-icon:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #1e293b;
 }
 
 /* 折叠状态下的图标旋转效果 */
@@ -428,67 +437,6 @@
     .sc-legend-color { width: 10px; height: 10px; margin-right: 4px; }
 }
 
-/* ===== SC Tab 样式（从 detail.html 迁移） ===== */
-#sc-card .card-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
-#sc-card .tab-header { display: flex; gap: 0; overflow-x: auto; scrollbar-width: thin; }
-#sc-card .tab-header.inline { border-bottom: none; }
-#sc-card .tab-button {
-    appearance: none;
-    background: transparent;
-    border: none;
-    padding: 0 10px;
-    margin-right: 6px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: color .2s ease, border-color .2s ease;
-    color: #0f172a;
-    font-weight: 600;
-    font-size: 1.25rem;
-    line-height: 1.2;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
-}
-#sc-card .tab-button:hover { color: #1f2937; border-bottom-color: #e5e7eb; }
-#sc-card .tab-button.active { color: #0f172a; border-bottom-color: #3b82f6; box-shadow: none; }
-#sc-card .tab-button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
-#sc-card .tab-content { padding-top: 8px; }
-#sc-card .two-column-layout { display: flex; gap: 16px; padding-right: 64px; }
-#sc-card .column-70 { flex: 0 0 70%; }
-#sc-card .column-30 { flex: 0 0 30%; }
-#sc-card .sc-plot-panel,
-#sc-card .relations-table-scroll,
-#sc-card .properties-panel { box-sizing: border-box; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 32px; margin: 0; }
-#sc-card .relations-table-scroll { padding: 32px; overflow: auto; margin-right: 0; padding-right: 32px; }
-#sc-card .properties-panel { margin-right: 0; padding-right: 32px; }
-/* 限制右侧面板高度，避免首次渲染后因内容膨胀推挤布局造成“回弹” */
-#sc-card .relations-table-scroll { max-height: 680px; overflow: auto; }
-#sc-card .properties-panel { max-height: 680px; overflow: auto; }
-#sc-card .relations-table-scroll,
-#sc-card .properties-panel { border-color: #d1d5db; }
-#sc-card .sc-plot-panel { min-height: 320px; }
-#sc-card .relations-legend { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; color: #475569; font-size: 14px; line-height: 1.4; }
-#sc-card .relations-table-scroll table { width: 100%; border-collapse: collapse; font-size: 14px; }
-#sc-card .relations-table-scroll th,
-#sc-card .relations-table-scroll td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
-#sc-card .relations-table-scroll th { background-color: #f1f5f9; color: #334155; font-weight: 600; }
-#sc-card .relations-table-scroll tr:hover { background-color: #f8fafc; }
-#sc-card .relations-table-scroll tbody tr:nth-child(odd) { background-color: #f8fafc; }
-#sc-card .relations-table-scroll tbody tr:hover { background-color: #EFF6FF; }
-#sc-card .zero-group { color: #6B7280; font-style: italic; }
-#sc-card .same-relation { color: #0047AB; font-weight: 500; }
-#sc-card .opposite-relation { color: #B91C1C; font-weight: 500; }
-#sc-card .mixed-relation { color: #7E22CE; font-weight: 500; }
-#sc-card .properties-panel { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
-#sc-card .properties-list { list-style: none; margin: 0; padding: 0; }
-#sc-card .properties-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-#sc-card .properties-list li:last-child { border-bottom: none; }
-#sc-card .property-label { color: #475569; font-weight: 500; }
-#sc-card .property-value { color: #0f172a; }
-@media (max-width: 768px) {
-    #sc-card .two-column-layout { display: block; }
-    #sc-card .column-70, #sc-card .column-30 { width: 100%; flex: 0 0 100%; }
-    #sc-card .column-30 { margin-top: 12px; }
-}
 
 /* ===== 详情页导航样式（从 detail.html 迁移） ===== */
 .material-detail-container { max-width: 1600px; margin: 2px auto 0; padding: 16px; background: #f8fafc; }
@@ -623,16 +571,52 @@
 #bcdNotice, #dwNotice { display: none; }
 #bcd-section .sc-legend-container, #dw-section .sc-legend-container { display: none; }
 
-/* 卡片标题右侧附加标签（与 h3 标题风格一致）
- * - 用途：在卡片标题栏右侧展示如 “Eigen Matrix” 等附加信息
- * - 对齐：`margin-left: auto;` 将其推到标题行最右侧
- */
+/* 卡片标题右侧附加标签（例如 “Eigen Matrix”） */
+.card-header-actions {
+    margin-left: auto; /* 将整个操作区推到最右侧 */
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* 为标签和图标之间提供间距 */
+}
+
 .card-header-extra {
-    margin-left: auto; /* 推到右侧 */
-    color: #1e293b;
-    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* BCD/DW 卡片右上角纯文本标签 */
+.card-header-extra.label-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    background-color: var(--light-bg);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--button-radius);
+}
+
+/* SC卡片头部的Tab按钮 */
+.card-header-extra .tab-button {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid transparent;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-color-light);
+    border-radius: var(--button-radius);
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.card-header-extra .tab-button:hover {
+    color: var(--color-primary-700);
+    border-bottom: 2px solid var(--color-primary-700);
+}
+
+.card-header-extra .tab-button.active {
+    background-color: #fff;
+    color: var(--primary-color);
     font-weight: 600;
-    line-height: 1.3;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 /* ===== 详情页：左侧固定侧栏布局 ===== */
@@ -727,4 +711,183 @@
     }
     .detail-sidebar { display: none; }
     .detail-main { width: 100%; }
+}
+
+/* ===== SC Card - Relations Tab Styles ===== */
+#panel-sc-overview .relations-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: #475569;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+#panel-sc-overview .relations-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#panel-sc-overview .relations-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* --- Relations Controls --- */
+.settings-header {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 8px;
+}
+
+.relations-legend {
+    margin-bottom: 8px;
+}
+
+.relations-settings-wrapper.collapsed .relations-controls {
+    display: none;
+}
+
+.relations-controls {
+    padding: 8px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.control-row label {
+    font-weight: 500;
+    color: #344054;
+}
+
+.control-row .form-input--sm {
+    width: 80px;
+}
+
+.control-row .custom-slider {
+    flex-grow: 1;
+}
+
+.control-row.actions {
+    justify-content: flex-end;
+}
+
+/* --- Custom Slider Styles --- */
+.custom-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #dee2e6;
+    border-radius: 3px;
+    outline: none;
+    opacity: 0.9;
+    transition: opacity .2s;
+}
+
+.custom-slider:hover {
+    opacity: 1;
+}
+
+.custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #0d6efd;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #fff;
+}
+
+.custom-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #0d6efd;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #fff;
+}
+
+
+
+#sc-relations-container-unique .relations-header {
+    flex-shrink: 0;
+}
+
+#sc-relations-container-unique .relations-settings-wrapper {
+    flex-shrink: 0;
+}
+
+#panel-sc-overview .relations-table-scroll {
+    flex-grow: 1;
+    min-height: 0; /* Crucial for flex-grow in a container with fixed height */
+    overflow-y: auto; /* 超出部分显示滚动条 */
+}
+
+#sc-relations-container-unique {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#panel-sc-overview table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+#panel-sc-overview th,
+#panel-sc-overview td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+#panel-sc-overview th {
+    background-color: #f1f5f9;
+    color: #334155;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+#panel-sc-overview tbody tr:nth-child(odd) {
+    background-color: #f8fafc;
+}
+
+#panel-sc-overview tbody tr:hover {
+    background-color: #EFF6FF;
+}
+
+#panel-sc-overview .zero-group {
+    color: #6B7280;
+    font-style: italic;
+}
+
+#panel-sc-overview .same-relation {
+    color: #0047AB;
+    font-weight: 500;
+}
+
+#panel-sc-overview .opposite-relation {
+    color: #B91C1C;
+    font-weight: 500;
+}
+
+#panel-sc-overview .mixed-relation {
+    color: #7E22CE;
+    font-weight: 500;
 }

@@ -14,6 +14,7 @@ let atomTooltip; // 显示原子信息的提示框元素
 let selectedAtom = null; // 当前选中的原子
 let hoveredAtom = null; // 当前悬停的原子
 let currentModelType = 'ball-and-stick'; // 默认使用球棍模型
+let _projectionMode = 'perspective'; // 视角模式：'perspective' 或 'orthographic'
 
 // 用于保存不同模型表示的对象组
 let ballsGroup = null; // 存储球模型的组
@@ -328,9 +329,22 @@ function initCrystalViewer(containerId) {
     window.addEventListener('resize', () => {
         const width = container.clientWidth;
         const height = container.clientHeight || 600;
-        
-        camera.aspect = width / height; // 更新相机宽高比
-        camera.updateProjectionMatrix(); // 更新相机投影矩阵
+        const aspect = width / height;
+        if (_projectionMode === 'perspective' && camera && camera.isPerspectiveCamera) {
+            camera.aspect = aspect; // 更新相机宽高比
+            camera.updateProjectionMatrix(); // 更新相机投影矩阵
+        } else if (_projectionMode === 'orthographic' && camera && camera.isOrthographicCamera) {
+            // 依据当前到目标点的距离与默认FOV推导正交视椎大小，保持切换一致的视觉尺度
+            const dist = camera.position.clone().sub(controls.target).length();
+            const baseFov = 45; // 与默认透视FOV一致
+            const frustumHeight = 2 * dist * Math.tan(THREE.MathUtils.degToRad(baseFov * 0.5));
+            const frustumWidth = frustumHeight * aspect;
+            camera.left = -frustumWidth / 2;
+            camera.right = frustumWidth / 2;
+            camera.top = frustumHeight / 2;
+            camera.bottom = -frustumHeight / 2;
+            camera.updateProjectionMatrix();
+        }
         renderer.setSize(width, height); // 调整渲染器尺寸
     });
     
@@ -386,6 +400,25 @@ function createToolbar(container) {
     resetViewBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
     resetViewBtn.addEventListener('click', resetView); // 添加重置视图的点击事件
     toolbar.appendChild(resetViewBtn);
+    
+    // 创建投影切换按钮（透视/正交）
+    const projectionBtn = document.createElement('button');
+    projectionBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
+    function updateProjectionBtnUI() {
+        if (_projectionMode === 'perspective') {
+            projectionBtn.innerHTML = '<i class="fas fa-border-all"></i>';
+            projectionBtn.title = 'Switch to Orthographic';
+        } else {
+            projectionBtn.innerHTML = '<i class="fas fa-cube"></i>';
+            projectionBtn.title = 'Switch to Perspective';
+        }
+    }
+    updateProjectionBtnUI();
+    projectionBtn.addEventListener('click', () => {
+        switchProjection(container);
+        updateProjectionBtnUI();
+    });
+    toolbar.appendChild(projectionBtn);
     
     // 创建模型切换按钮（带下拉菜单）
     const modelTypeContainer = document.createElement('div');
@@ -521,6 +554,76 @@ function createToolbar(container) {
     
     // 将工具栏添加到主容器中
     container.appendChild(toolbar);
+}
+
+/**
+ * 透视/正交投影切换
+ * 保留相机位置与控制器目标，尽量保持视觉尺寸一致
+ */
+function switchProjection(container) {
+    const width = container.clientWidth;
+    const height = container.clientHeight || 600;
+    const aspect = width / height;
+
+    const oldPos = camera.position.clone();
+    const oldUp = camera.up.clone();
+    const target = controls ? controls.target.clone() : new THREE.Vector3(0, 0, 0);
+    const near = camera.near || 0.1;
+    const far = camera.far || 1000;
+
+    if (_projectionMode === 'perspective') {
+        // 切换到正交
+        const dist = oldPos.clone().sub(target).length();
+        const baseFov = camera.isPerspectiveCamera ? camera.fov : 45;
+        const frustumHeight = 2 * dist * Math.tan(THREE.MathUtils.degToRad(baseFov * 0.5));
+        const frustumWidth = frustumHeight * aspect;
+        const ortho = new THREE.OrthographicCamera(
+            -frustumWidth / 2,
+            frustumWidth / 2,
+            frustumHeight / 2,
+            -frustumHeight / 2,
+            near,
+            far
+        );
+        camera = ortho;
+        camera.position.copy(oldPos);
+        camera.up.copy(oldUp);
+        camera.lookAt(target);
+        if (controls) controls.dispose();
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.25;
+        controls.screenSpacePanning = true;
+        controls.maxDistance = 50;
+        controls.minDistance = 2;
+        controls.rotateSpeed = 0.6;
+        controls.zoomSpeed = 0.8;
+        controls.panSpeed = 0.6;
+        controls.target.copy(target);
+        controls.update();
+        _projectionMode = 'orthographic';
+    } else {
+        // 切换回透视
+        const persp = new THREE.PerspectiveCamera(45, aspect, near, far);
+        camera = persp;
+        camera.position.copy(oldPos);
+        camera.up.copy(oldUp);
+        camera.lookAt(target);
+        if (controls) controls.dispose();
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.25;
+        controls.screenSpacePanning = true;
+        controls.maxDistance = 50;
+        controls.minDistance = 2;
+        controls.rotateSpeed = 0.6;
+        controls.zoomSpeed = 0.8;
+        controls.panSpeed = 0.6;
+        controls.target.copy(target);
+        controls.update();
+        _projectionMode = 'perspective';
+    }
+    camera.updateProjectionMatrix();
 }
 
 /**
