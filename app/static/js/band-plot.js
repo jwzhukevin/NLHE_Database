@@ -288,6 +288,12 @@ async function plotBandStructure(containerId, bandDataPath) {
         // 数据验证通过，开始绘图
         console.log('数据验证通过，开始绘制能带图');
         const { kpoints, bands, kLabels, kPositions, bandAnalysis } = bandData;
+
+        // 计算k点范围并添加边距，避免横坐标标签和纵坐标打架
+        const minK = Math.min(...kpoints);
+        const maxK = Math.max(...kpoints);
+        const kRange = maxK - minK;
+        const kMargin = kRange * 0.02; // 2% margin
         
         // 准备绘图数据
         const traces = [];
@@ -367,7 +373,7 @@ async function plotBandStructure(containerId, bandDataPath) {
         // 绘图布局
         const layout = {
             title: {
-                text: isExample ? 'Band Structure (Example)' : 'Band Structure',
+                text: '',
                 font: {
                     family: 'system-ui, -apple-system, sans-serif',
                     size: 20
@@ -381,8 +387,9 @@ async function plotBandStructure(containerId, bandDataPath) {
             autosize: true,  // 启用自动尺寸调整
             // 移除固定高度以实现完全自适应
             xaxis: {
+                range: [minK - kMargin, maxK + kMargin],
                 title: {
-                    text: 'High Symmetry Path',
+                    text: '',
                     font: {
                         family: 'system-ui, -apple-system, sans-serif',
                         size: 16,
@@ -439,7 +446,7 @@ async function plotBandStructure(containerId, bandDataPath) {
             plot_bgcolor: 'white',
             paper_bgcolor: 'white',
             // 调整边距，确保在小尺寸下也能正常显示
-            margin: {l: 70, r: 30, t: 50, b: 90},
+            margin: {l: 70, r: 30, t: 50, b: 60},
             font: {
                 family: 'system-ui, -apple-system, sans-serif'
             }
