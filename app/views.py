@@ -179,6 +179,10 @@ def index():
             'band_gap_max': request.args.get('band_gap_max', '').strip(),  # 带隙最大值
             'mp_id': request.args.get('mp_id', '').strip(),          # MP-ID 过滤（精确或模糊）
             'space_group': request.args.get('space_group', '').strip(),  # 空间群过滤（名称或编号）
+            # 新增：特殊性质筛选
+            'prop_sc': request.args.get('prop_sc'),
+            'prop_bcd': request.args.get('prop_bcd'),
+            'prop_dw': request.args.get('prop_dw'),
         }
 
         # 优先处理 MP 编号直达查询（形如 mp-xxxxx）
@@ -274,6 +278,14 @@ def index():
                     pass
             else:
                 additional_filters.append(Material.sg_name.ilike(f'%{sg_val}%'))
+
+        # 新增：处理特殊性质筛选
+        if search_params.get('prop_sc'):
+            additional_filters.append(Material.has_sc == True)
+        if search_params.get('prop_bcd'):
+            additional_filters.append(Material.has_bcd == True)
+        if search_params.get('prop_dw'):
+            additional_filters.append(Material.has_dw == True)
 
         # 应用额外的过滤条件（主要是元素搜索）
         if additional_filters:

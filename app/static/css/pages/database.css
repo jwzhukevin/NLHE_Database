@@ -291,3 +291,57 @@
   overflow: visible;
   text-overflow: clip;
 }
+
+/* ===== 特殊性质筛选按钮 ===== */
+.property-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* 稍微增大按钮间距 */
+  margin-top: 0.1rem; /* 缩减与上方元素的距离 */
+  padding: 0.1rem 0;
+  border-top: 1px solid #edf2f7;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.property-filters .filter-label {
+  font-size: 0.95rem; /* 增大标签字体 */
+  font-weight: 600;
+  color: #374151; /* 加深颜色 */
+  margin-right: 0.5rem;
+}
+
+.btn-prop-filter {
+  padding: 0.6rem 1.5rem; /* 增大按钮尺寸 */
+  font-size: 1rem;
+  font-weight: 700; /* 加粗字体 */
+  border: 2px solid transparent; /* 默认无边框 */
+  border-radius: 10px; /* 减小圆角，更方正 */
+  background-color: #f3f4f6; /* 更中性的背景色 */
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-prop-filter:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-2px); /* 悬浮时轻微上移 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.btn-prop-filter:active {
+  transform: translateY(0);
+  background-color: #d1d5db;
+  box-shadow: none;
+}
+
+.btn-prop-filter.active {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 5px 15px rgba(0, 71, 171, 0.25);
+  transform: translateY(-2px);
+}
+
+.btn-prop-filter:focus-visible {
+  outline: 3px solid var(--primary-color-light);
+  outline-offset: 2px;
+}

@@ -179,6 +179,14 @@
         </div>
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（analysis modal 样式已外置） -->
 
+        <!-- 特殊性质筛选按钮 -->
+        <div class="property-filters" id="propertyFilters">
+            <span class="filter-label">{{ _('Filter by Property:') }}</span>
+            <button type="button" class="btn-prop-filter {% if search_params.prop_sc %}active{% endif %}" data-prop="prop_sc">SC</button>
+            <button type="button" class="btn-prop-filter {% if search_params.prop_bcd %}active{% endif %}" data-prop="prop_bcd">BCD</button>
+            <button type="button" class="btn-prop-filter {% if search_params.prop_dw %}active{% endif %}" data-prop="prop_dw">DW</button>
+        </div>
+
         {% from 'components/periodic_table.html' import periodic_table with context %}
         {{ periodic_table(elements_value=search_params.elements, show_analyze_btn=True, default_visible=True) }}
 
@@ -264,6 +272,7 @@
                                value="{{ search_params.space_group }}">
                     </div>
                 </div>
+
             </div>
         </div>
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（advanced-search） -->
@@ -456,6 +465,8 @@
     {% endif %}
     <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（pagination） -->
 </div>
+
+<script src="{{ url_for('static', filename='js/property-filter.js', v='4') }}"></script>
 
 <!-- [Deprecated 20250913] 页面级 :root 变量已移除，统一使用 base.html 中的全局变量定义 -->
 

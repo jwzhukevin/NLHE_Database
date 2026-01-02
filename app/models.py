@@ -116,6 +116,11 @@ class Material(db.Model):
     band_gap = db.Column(db.Float)  # 带隙（eV，从能带分析计算得出）
     materials_type = db.Column(db.String(20))  # 材料类型（metal/semimetal/semiconductor/insulator/unknown）
 
+    # 特殊性质标签（用于高级搜索）
+    has_sc = db.Column(db.Boolean, default=False, nullable=False)  # 是否有 Shift Current 数据
+    has_bcd = db.Column(db.Boolean, default=False, nullable=False) # 是否有 Berry Curvature Dipole 数据
+    has_dw = db.Column(db.Boolean, default=False, nullable=False)  # 是否有 Domain Wall 数据
+
     # 数据验证方法
     def validate(self):
         """
