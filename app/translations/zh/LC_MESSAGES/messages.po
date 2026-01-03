@@ -890,6 +890,76 @@ msgstr "原子序数："
 msgid "Mass:"
 msgstr "原子量："
 
+#: app/templates/base.html:161
+msgid "MatdataX-I: Functional Materials"
+msgstr "MatdataX-I：功能材料"
+
+#: app/templates/base.html:166
+msgid "MatdataX-II: Structural Materials"
+msgstr "MatdataX-II：结构材料"
+
+#: app/templates/base.html:171
+msgid "Alloy"
+msgstr "合金"
+
+#: app/templates/base.html:175
+msgid "Ceramics"
+msgstr "陶瓷"
+
+#: app/templates/base.html:180
+msgid "Literature Extracted Data"
+msgstr "文献提取数据"
+
+#: app/templates/base.html:183
+msgid "Internal Experimental Data"
+msgstr "内部实验数据"
+
+#: app/templates/base.html:186
+msgid "Model Predicted Data"
+msgstr "模型预测数据"
+
+#: app/templates/base.html:306 app/templates/base.html:337
+msgid "MatdataX"
+msgstr "MatdataX"
+
+#: app/templates/base.html:335
+msgid "MatdataX Logo"
+msgstr "MatdataX 标志"
+
+#: app/templates/base.html:311
+msgid "User Portal"
+msgstr "用户门户"
+
+#: app/templates/base.html:315
+msgid "Resources"
+msgstr "资源"
+
+#: app/templates/base.html:324
+msgid "Community"
+msgstr "社区"
+
+#: app/templates/base.html:326
+msgid "Seminars (Coming Soon)"
+msgstr "研讨会 (即将推出)"
+
+#: app/templates/base.html:327
+msgid "Documentation"
+msgstr "文档"
+
+#: app/templates/base.html:328
+msgid "AI Assistant"
+msgstr "AI 助手"
+
+#: app/templates/base.html:329
+msgid "Support"
+msgstr "支持"
+
+#: app/templates/base.html:339
+msgid "Record & Compliance: Placeholder ICP Record · All rights reserved by IMR MatdataX."
+msgstr "备案与合规：ICP备案占位 · IMR MatdataX 保留所有权利。"
+
+
+
 #: app/templates/components/periodic_table.html:25
 #: app/templates/components/periodic_table.html:36
 #: app/templates/components/periodic_table.html:48

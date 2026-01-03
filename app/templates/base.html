@@ -158,32 +158,32 @@
                 </div>
                 <a href="{{ url_for('views.index') }}">
                     <i class="fas fa-table"></i>
-                    {% if current_locale == 'zh' %}MatdataX-I：功能材料{% else %}MatdataX-I: Functional Materials{% endif %}
+                    {{ _('MatdataX-I: Functional Materials') }}
                 </a>
                 <div class="dropdown" id="structural-dropdown">
                     <a href="#" class="dropdown-toggle" id="struct-dropdown">
                         <i class="fas fa-flask"></i>
-                        {% if current_locale == 'zh' %}MatdataX-II：结构材料{% else %}MatdataX-II: Structural Materials{% endif %}
+                        {{ _('MatdataX-II: Structural Materials') }}
                         <i class="fas fa-caret-down"></i>
                     </a>
                     <div class="dropdown-menu" id="struct-menu">
                         <a href="#" class="disabled" aria-disabled="true" tabindex="-1">
-                            {% if current_locale == 'zh' %}合金{% else %}Alloy{% endif %}
+                            {{ _('Alloy') }}
                         </a>
                         <div class="dropdown-submenu">
                             <a href="#" id="ceramics-item">
-                                {% if current_locale == 'zh' %}陶瓷{% else %}Ceramics{% endif %}
+                                {{ _('Ceramics') }}
                                 <i class="fas fa-caret-right" style="margin-left:auto;"></i>
                             </a>
                             <div class="submenu-menu" id="ceramics-submenu">
                                 <a href="{{ url_for('ceramics_literature.index') }}">
-                                    {% if current_locale == 'zh' %}文献提取数据（{{ ceramics_literature_count|default(0) }}）{% else %}Literature Extracted Data ({{ ceramics_literature_count|default(0) }}){% endif %}
+                                    {{ _('Literature Extracted Data') }} ({{ ceramics_literature_count|default(0) }})
                                 </a>
                                 <a href="{{ url_for('ceramics_experiment.index') }}">
-                                    {% if current_locale == 'zh' %}内部实验数据（{{ ceramics_experiment_count|default(0) }}）{% else %}Internal Experimental Data ({{ ceramics_experiment_count|default(0) }}){% endif %}
+                                    {{ _('Internal Experimental Data') }} ({{ ceramics_experiment_count|default(0) }})
                                 </a>
                                 <a href="{{ url_for('high_temperature_alloy.index') }}">
-                                    {% if current_locale == 'zh' %}模型预测数据（{{ ceramics_ai_count|default(0) }}）{% else %}Model Predicted Data ({{ ceramics_ai_count|default(0) }}){% endif %}
+                                    {{ _('Model Predicted Data') }} ({{ ceramics_ai_count|default(0) }})
                                 </a>
                             </div>
                         </div>
@@ -191,7 +191,7 @@
                 </div>
                 <a href="{{ url_for('articles.listing') }}">
                     <i class="fas fa-book"></i>
-                    {% if current_locale == 'zh' %}文章{% else %}Articles{% endif %}
+                    {{ _('Articles') }}
                 </a>
                 {% if current_user.is_authenticated %}
                 <div class="dropdown">
@@ -303,7 +303,7 @@
         <div class="container footer-layout">
             <div class="footer-links">
                 <div class="footer-column">
-                    <h3>MatdataX</h3>
+                    <h3>{{ _('MatdataX') }}</h3>
                     <ul>
                         <li><a href="{{ url_for('views.landing') }}">{{ _('Home') }}</a></li>
                         <li><a href="{{ url_for('views.index') }}">{{ _('Materials Database') }}</a></li>
@@ -332,11 +332,10 @@
             </div>
             <div class="footer-info">
                 <div class="footer-logos">
-                    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="MatdataX Logo">
+                    <img src="{{ url_for('static', filename='favicon.ico') }}" alt="{{ _('MatdataX Logo') }}">
                 </div>
-                <p class="footer-description">MatdataX</p>
+                <p class="footer-description">{{ _('MatdataX') }}</p>
                 <p class="footer-meta">
-                    {{ _('Technical Stack: Flask · Plotly · Three.js · Valkey · PostgreSQL') }}<br>
                     {{ _('Record & Compliance: Placeholder ICP Record · All rights reserved by IMR MatdataX.') }}<br>
                     &copy; IMR MatdataX. {{ _('Powered by') }} <a href="https://github.com/pallets/flask">Flask</a>
                 </p>
