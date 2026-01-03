@@ -21,6 +21,7 @@ from flask import current_app
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 import logging
+from . import db
 
 
 class BandAnalysisConfig:
@@ -79,13 +80,14 @@ class BandAnalyzer:
         self.fermi_tolerance = self.config.FERMI_TOLERANCE
         self.logger = logging.getLogger(__name__)
     
-    def analyze_material(self, material_path: str) -> Dict[str, Union[float, str]]:
+    def analyze_material(self, material_path: str, material=None) -> Dict[str, Union[float, str]]:
         """
         分析单个材料的能带数据
         
         Args:
             material_path: 材料数据目录路径
-            
+            material: (可选) 材料的数据库对象
+
         Returns:
             包含 band_gap 和 materials_type 的字典
         """
@@ -123,7 +125,7 @@ class BandAnalyzer:
                     material.materials_type = materials_type
                     db.session.add(material)
                     db.session.commit()
-                    current_app.logger.info(f"Updated band gap/type for material {material_id}.")
+                    current_app.logger.info(f"Updated band gap/type for material {material.id}.")
             
             return result
             
@@ -160,39 +162,37 @@ class BandAnalyzer:
         try:
             with open(filepath, 'r') as f:
                 lines = f.readlines()
-            
-            eigenvalues = []
-            current_kpoint = []
-            
+
+            all_energies = []
+            k_point_block = []
+
             for line in lines:
                 line = line.strip()
                 if not line or line.startswith('#'):
+                    if k_point_block: # 遇到空行或注释行，处理之前的数据块
+                        all_energies.append(k_point_block)
+                        k_point_block = []
                     continue
-                
+
                 try:
-                    # 尝试解析能量值
                     values = [float(x) for x in line.split()]
-                    if len(values) >= 2:  # k点坐标 + 能量值
-                        current_kpoint.extend(values[1:])  # 跳过k点坐标
-                    elif len(values) == 1:  # 只有能量值
-                        current_kpoint.append(values[0])
-                    
-                    # 检查是否是新的k点（通过空行或特定标记）
-                    if len(current_kpoint) > 0:
-                        eigenvalues.append(current_kpoint[:])
-                        current_kpoint = []
-                        
+                    # band.dat 通常第一列是k点坐标，后面是能量值
+                    if len(values) > 1:
+                        k_point_block.extend(values[1:])
+                    elif len(values) == 1:
+                        k_point_block.append(values[0])
+
                 except ValueError:
                     continue
-            
-            if current_kpoint:
-                eigenvalues.append(current_kpoint)
-            
+
+            if k_point_block: # 处理文件末尾的最后一个数据块
+                all_energies.append(k_point_block)
+
             return {
-                'eigenvalues': eigenvalues,
+                'eigenvalues': all_energies,
                 'fermi_level': 0.0  # 默认费米能级
             }
-            
+
         except Exception as e:
             self.logger.error(f"Error parsing band.dat file: {e}")
             return None
@@ -316,63 +316,40 @@ class BandAnalyzer:
             'materials_type': 'unknown'
         }
     
-    def batch_analyze(self, materials_paths: List[str], 
-                     progress_callback=None) -> Dict[str, Dict]:
+    def batch_analyze(self, materials: List, progress_callback=None) -> Dict[str, Dict]:
         """
         批量分析材料
-        
+
         Args:
-            materials_paths: 材料路径列表
+            materials: 材料对象列表
             progress_callback: 进度回调函数
-            
+
         Returns:
             分析结果字典
         """
         results = {}
-        total = len(materials_paths)
-        
-        for i, material_path in enumerate(materials_paths):
+        total = len(materials)
+
+        for i, material in enumerate(materials):
             try:
-                result = self.analyze_material(material_path)
+                if not material:
+                    self.logger.warning(f"Skipping None material object at index {i}")
+                    continue
+
+                material_path = material.get_path()
+                result = self.analyze_material(material_path, material=material)
                 results[material_path] = result
-                
+
                 if progress_callback:
                     progress_callback(i + 1, total, material_path)
                     
             except Exception as e:
-                self.logger.error(f"Error in batch analysis for {material_path}: {e}")
-                results[material_path] = self._get_default_result()
+                self.logger.error(f"Error in batch analysis for {material.name if material else 'None'}: {e}")
+                if material:
+                    results[material.name] = self._get_default_result()
         
         return results
 
 
 # 全局实例
 band_analyzer = BandAnalyzer()
-
-
-def analyze_material_bands(material_path: str) -> Dict[str, Union[float, str]]:
-    """
-    分析单个材料的能带数据（便捷函数）
-    
-    Args:
-        material_path: 材料数据目录路径
-        
-    Returns:
-        包含 band_gap 和 materials_type 的字典
-    """
-    return band_analyzer.analyze_material(material_path)
-
-
-def batch_analyze_materials(materials_paths: List[str], 
-                          progress_callback=None) -> Dict[str, Dict]:
-    """
-    批量分析材料能带数据（便捷函数）
-    
-    Args:
-        materials_paths: 材料路径列表
-        progress_callback: 进度回调函数
-        
-    Returns:
-        分析结果字典
-    """
-    return band_analyzer.batch_analyze(materials_paths, progress_callback)

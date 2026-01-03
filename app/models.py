@@ -121,6 +121,10 @@ class Material(db.Model):
     has_bcd = db.Column(db.Boolean, default=False, nullable=False) # 是否有 Berry Curvature Dipole 数据
     has_dw = db.Column(db.Boolean, default=False, nullable=False)  # 是否有 Domain Wall 数据
 
+    def get_path(self):
+        """返回材料能带数据的路径"""
+        return f"app/static/materials/{self.formatted_id}/band"
+
     # 数据验证方法
     def validate(self):
         """
