@@ -5,6 +5,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const propertyFilters = document.getElementById('propertyFilters');
     if (!propertyFilters) return;
 
+    const toggleBtn = document.getElementById('propertyFiltersToggle');
+    const optionsContainer = document.getElementById('propertyFiltersOptions');
+
+    if (toggleBtn && optionsContainer) {
+        toggleBtn.addEventListener('click', function() {
+            const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+            const nextExpanded = !isExpanded;
+
+            toggleBtn.setAttribute('aria-expanded', String(nextExpanded));
+
+            if (nextExpanded) {
+                propertyFilters.classList.remove('collapsed');
+            } else {
+                propertyFilters.classList.add('collapsed');
+            }
+        });
+    }
+
     propertyFilters.addEventListener('click', function(event) {
         const button = event.target.closest('.btn-prop-filter');
         if (!button) return;

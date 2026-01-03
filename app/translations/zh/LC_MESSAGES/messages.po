@@ -1207,6 +1207,23 @@ msgstr "元素"
 msgid "Advanced"
 msgstr "高级"
 
+#: app/templates/main/database.html:424 app/templates/main/database.html:597
+#: app/templates/main/database.html:1000
+msgid "Filter by Property:"
+msgstr "通过性质筛选"
+
+#: app/templates/main/database.html:427
+msgid "SC"
+msgstr "SC：位移电流"
+
+#: app/templates/main/database.html:430
+msgid "BCD"
+msgstr "BCD：贝里曲率偶极子"
+
+#: app/templates/main/database.html:433
+msgid "DW"
+msgstr "DW：本征电导率"
+
 #: app/templates/main/database.html:440 app/templates/materials/add.html:222
 #: app/templates/materials/edit.html:264
 msgid "Materials Type"

@@ -4,22 +4,22 @@
 {% endblock %}
 {% block content %}
 <div class="main-content program-container">
-    <h2>TXT文件格式转换</h2>
+    <h2>{{ _('TXT文件格式转换') }}</h2>
     <form method="post" enctype="multipart/form-data" class="program-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="form-row">
             <input type="file" name="file" accept=".txt" required>
         </div>
-        <button type="submit" class="btn btn-primary btn--primary">上传并转换</button>
+        <button type="submit" class="btn btn-primary btn--primary">{{ _('上传并转换') }}</button>
     </form>
     {% if dat_file or docx_file %}
     <div class="program-results">
-        <h4>下载转换结果：</h4>
+        <h4>{{ _('下载转换结果：') }}</h4>
         {% if dat_file %}
-        <a href="{{ url_for('program.download', filename=dat_file) }}" class="btn btn-outline-primary btn--secondary mr-1rem">下载 .dat 文件</a>
+        <a href="{{ url_for('program.download', filename=dat_file) }}" class="btn btn-outline-primary btn--secondary mr-1rem">{{ _('下载 .dat 文件') }}</a>
         {% endif %}
         {% if docx_file %}
-        <a href="{{ url_for('program.download', filename=docx_file) }}" class="btn btn-outline-primary btn--secondary">下载 .docx 文件</a>
+        <a href="{{ url_for('program.download', filename=docx_file) }}" class="btn btn-outline-primary btn--secondary">{{ _('下载 .docx 文件') }}</a>
         {% endif %}
     </div>
     {% endif %}

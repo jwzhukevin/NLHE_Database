@@ -180,11 +180,26 @@
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（analysis modal 样式已外置） -->
 
         <!-- 特殊性质筛选按钮 -->
-        <div class="property-filters" id="propertyFilters">
-            <span class="filter-label">{{ _('Filter by Property:') }}</span>
-            <button type="button" class="btn-prop-filter {% if search_params.prop_sc %}active{% endif %}" data-prop="prop_sc">SC</button>
-            <button type="button" class="btn-prop-filter {% if search_params.prop_bcd %}active{% endif %}" data-prop="prop_bcd">BCD</button>
-            <button type="button" class="btn-prop-filter {% if search_params.prop_dw %}active{% endif %}" data-prop="prop_dw">DW</button>
+        <div class="property-filters" id="propertyFilters" data-collapsible="true">
+            <button type="button"
+                    class="filter-label-toggle"
+                    id="propertyFiltersToggle"
+                    aria-expanded="true"
+                    aria-controls="propertyFiltersOptions">
+                <span>{{ _('Filter by Property:') }}</span>
+                <i class="fas fa-chevron-up" aria-hidden="true"></i>
+            </button>
+            <div class="property-filter-options" id="propertyFiltersOptions">
+                <button type="button"
+                        class="btn-prop-filter {% if search_params.prop_sc %}active{% endif %}"
+                        data-prop="prop_sc">{{ _('SC') }}</button>
+                <button type="button"
+                        class="btn-prop-filter {% if search_params.prop_bcd %}active{% endif %}"
+                        data-prop="prop_bcd">{{ _('BCD') }}</button>
+                <button type="button"
+                        class="btn-prop-filter {% if search_params.prop_dw %}active{% endif %}"
+                        data-prop="prop_dw">{{ _('DW') }}</button>
+            </div>
         </div>
 
         {% from 'components/periodic_table.html' import periodic_table with context %}

@@ -1,14 +1,14 @@
 # Translations template for PROJECT.
-# Copyright (C) 2025 ORGANIZATION
+# Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-13 08:13+0800\n"
+"POT-Creation-Date: 2026-01-02 18:46+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,441 +21,705 @@ msgstr ""
 msgid "Login failed due to system error. Please try again."
 msgstr ""
 
-#: app/views.py:311
-msgid "Access denied. This feature requires administrator privileges."
+#: app/views.py:376
+msgid "Unsupported language."
 msgstr ""
 
-#: app/views.py:425
-#, python-format
-msgid "Shift Current file %(filename)s uploaded successfully"
+#: app/views.py:410 app/views.py:1053 app/views.py:1183
+msgid "All fields are required."
 msgstr ""
 
-#: app/views.py:433
-msgid "Shift Current file renamed to sc.dat"
-msgstr ""
-
-#: app/views.py:438
-#, python-format
-msgid "Material %(name)s added successfully!"
-msgstr ""
-
-#: app/views.py:442 app/views.py:768
+#: app/views.py:415
 #, python-format
 msgid "Invalid data: %(error)s"
 msgstr ""
 
-#: app/views.py:445 app/views.py:772 app/views.py:1282
+#: app/views.py:415
+msgid "Email format is invalid"
+msgstr ""
+
+#: app/templates/auth/login.html:110 app/views.py:421 app/views.py:1045
+#: app/views.py:1176
+msgid "Invalid captcha code, please try again"
+msgstr ""
+
+#: app/views.py:428 app/views.py:450 app/views.py:1247
 #, python-format
 msgid "An error occurred: %(error)s"
 msgstr ""
 
-#: app/views.py:463
-msgid "Unsupported language."
+#: app/views.py:428
+msgid "Receiver mailbox is not configured"
 msgstr ""
 
-#: app/views.py:703
-msgid "Please upload a .cif format structure file!"
+#: app/views.py:450
+msgid "Failed to send application email"
 msgstr ""
 
-#: app/views.py:717
+#: app/views.py:455
+msgid "[MatdataX] We have received your application"
+msgstr ""
+
+#: app/views.py:457
 #, python-format
-msgid "Material name \"%(chemical_name)s\" already exists, please change CIF file"
+msgid "Hello %(name)s,"
 msgstr ""
 
-#: app/views.py:720
-#, python-format
-msgid "Material name updated from CIF file: %(chemical_name)s"
-msgstr ""
-
-#: app/views.py:757
-msgid "Material name cannot be empty!"
-msgstr ""
-
-#: app/views.py:765
-msgid "Material information updated successfully."
-msgstr ""
-
-#: app/views.py:789
+#: app/views.py:459
 msgid ""
-"Warning: Multiple CIF files found in structure directory. Please keep "
-"only one!"
+"We have received your application. We will review it and contact you via "
+"email."
 msgstr ""
 
-#: app/views.py:795
-msgid ""
-"Warning: Multiple band .dat files found in band directory. Please keep "
-"only one!"
+#: app/views.py:461
+msgid "Summary:"
 msgstr ""
 
-#: app/views.py:803
-msgid "Warning: Multiple SC files found in sc directory. Please keep only one!"
+#: app/templates/auth/apply.html:101 app/views.py:462
+msgid "Full Name"
 msgstr ""
 
-#: app/views.py:840
+#: app/templates/auth/apply.html:109 app/templates/auth/login.html:35
+#: app/templates/members/detail.html:22 app/views.py:463
+msgid "Email"
+msgstr ""
+
+#: app/templates/auth/apply.html:117 app/views.py:464
+msgid "Desired Username"
+msgstr ""
+
+#: app/templates/auth/apply.html:125 app/templates/members/detail.html:25
+#: app/views.py:465
+msgid "Affiliation"
+msgstr ""
+
+#: app/views.py:472
+msgid "Application submitted successfully, we will contact you via email."
+msgstr ""
+
+#: app/views.py:890
 msgid ""
 "Error: Multiple CIF files found in structure directory. Please keep only "
 "one!"
 msgstr ""
 
-#: app/views.py:849
+#: app/views.py:899
 msgid ""
 "Error: Multiple band .dat files found in band directory. Please keep only"
 " one!"
 msgstr ""
 
-#: app/views.py:858
+#: app/views.py:908
 msgid "Error: Multiple SC files found in sc directory. Please keep only one!"
 msgstr ""
 
-#: app/views.py:916
+#: app/views.py:966
 #, python-format
 msgid "Material with MP ID %(mp_id)s not found."
 msgstr ""
 
-#: app/views.py:981
-#, python-format
-msgid ""
-"Material \"%(name)s\" and all related files have been successfully "
-"deleted."
-msgstr ""
-
-#: app/views.py:1011
+#: app/views.py:1006
 msgid ""
 "Access denied. Your IP has been blocked due to multiple failed login "
 "attempts."
 msgstr ""
 
-#: app/views.py:1041
+#: app/views.py:1036
 msgid "Security token expired or invalid. Please try again."
 msgstr ""
 
-#: app/templates/auth/login.html:126 app/views.py:1050 app/views.py:1200
-msgid "Invalid captcha code, please try again"
-msgstr ""
-
-#: app/views.py:1059 app/views.py:1207
-msgid "All fields are required."
-msgstr ""
-
-#: app/views.py:1085 app/views.py:1104 app/views.py:1142 app/views.py:1229
-#: app/views.py:1242 app/views.py:1268
+#: app/views.py:1079 app/views.py:1098 app/views.py:1119 app/views.py:1205
+#: app/views.py:1218 app/views.py:1233
 msgid "Your IP has been blocked due to too many failed login attempts."
 msgstr ""
 
-#: app/views.py:1088 app/views.py:1231
+#: app/views.py:1082 app/views.py:1207
 #, python-format
 msgid ""
 "Email not found. Please check your email address. You have %(n)d attempts"
 " remaining."
 msgstr ""
 
-#: app/views.py:1107 app/views.py:1244
+#: app/views.py:1101 app/views.py:1220
 #, python-format
 msgid ""
 "Username does not match this email address. You have %(n)d attempts "
 "remaining."
 msgstr ""
 
-#: app/views.py:1123 app/views.py:1255
-msgid ""
-"Your IP has been blocked due to too many unauthorized admin login "
-"attempts."
-msgstr ""
-
-#: app/views.py:1126 app/views.py:1257
-#, python-format
-msgid ""
-"This account does not have administrator privileges. You have %(n)d "
-"attempts remaining."
-msgstr ""
-
-#: app/templates/auth/login.html:127 app/views.py:1145 app/views.py:1270
+#: app/templates/auth/login.html:111 app/views.py:1122 app/views.py:1235
 #, python-format
 msgid "Incorrect password. You have %(n)d attempts remaining."
 msgstr ""
 
-#: app/views.py:1321
+#: app/views.py:1286
 msgid "Logout completed."
 msgstr ""
 
-#: app/views.py:1389
+#: app/views.py:1350
 msgid "Session cleared successfully."
 msgstr ""
 
-#: app/views.py:2098
-#, python-format
-msgid ""
-"Band analysis completed! Analyzed: %(analyzed)d, Cached: %(cached)d, "
-"Failed: %(failed)d"
-msgstr ""
-
-#: app/views.py:2102
-#, python-format
-msgid "Batch analysis failed: %(error)s"
-msgstr ""
-
-#: app/templates/base.html:6
-msgid "NLHE Database - Nonlinear Hall Effect Materials Database"
-msgstr ""
-
-#: app/templates/base.html:137 app/templates/base.html:140
-#: app/templates/base.html:475
-msgid "Database"
-msgstr ""
-
-#: app/templates/articles/view.html:10 app/templates/articles/view.html:417
-#: app/templates/base.html:143
-msgid "Contents"
-msgstr ""
-
-#: app/templates/base.html:147
-msgid "Tools"
-msgstr ""
-
-#: app/templates/base.html:151
-msgid "MP Machine Learning"
-msgstr ""
-
-#: app/templates/base.html:154
-msgid "Materials Cloud Tools"
-msgstr ""
-
-#: app/templates/base.html:157
-msgid "NOMAD Laboratory"
-msgstr ""
-
-
-#: app/templates/base.html:167
-msgid "Program"
-msgstr ""
-
-#: app/templates/base.html:174
-msgid "Add"
-msgstr ""
-
-#: app/templates/base.html:181
-msgid "Login"
-msgstr ""
-
-#: app/templates/base.html:188
-msgid "More"
-msgstr ""
-
-#: app/templates/base.html:199 app/templates/base.html:205
-msgid "Logout"
-msgstr ""
-
-#: app/templates/base.html:209
-msgid "Guest"
-msgstr ""
-
-#: app/templates/base.html:217
+#: app/templates/base.html:152
 msgid "Language"
 msgstr ""
 
-#: app/templates/base.html:220
+#: app/templates/base.html:155
 msgid "English"
 msgstr ""
 
-#: app/templates/base.html:221
+#: app/templates/base.html:156
 msgid "中文"
 msgstr ""
 
-#: app/templates/base.html:476 app/templates/main/landing.html:7
-msgid "Materials Database"
+#: app/templates/base.html:199 app/templates/main/landing.html:54
+msgid "AI Tools"
 msgstr ""
 
-#: app/templates/base.html:477
-msgid "Explore and discover novel materials"
+#: app/templates/base.html:203
+msgid "Active Learning"
 msgstr ""
 
-#: app/templates/base.html:480
+#: app/templates/base.html:206
+msgid "Image Recognition"
+msgstr ""
+
+#: app/templates/base.html:209
+msgid "Natural Language Processing"
+msgstr ""
+
+#: app/templates/base.html:212
+msgid "LLM"
+msgstr ""
+
+#: app/templates/base.html:233
+msgid "More"
+msgstr ""
+
+#: app/templates/base.html:241
 msgid "We"
 msgstr ""
 
-#: app/templates/base.html:482 app/templates/members/index.html:6
+#: app/templates/base.html:244 app/templates/base.html:317
+#: app/templates/members/index.html:10
 msgid "Team"
 msgstr ""
 
-#: app/templates/base.html:483
+#: app/templates/base.html:245 app/templates/members/detail.html:47
 msgid "Publications"
 msgstr ""
 
-#: app/templates/base.html:484
+#: app/templates/base.html:246
 msgid "Achievements"
 msgstr ""
 
-#: app/templates/base.html:485
+#: app/templates/base.html:247
 msgid "Join Us"
 msgstr ""
 
-#: app/templates/base.html:489
-msgid "Related Links"
+#: app/templates/base.html:257
+msgid "Logout"
 msgstr ""
 
-#: app/templates/base.html:491
-msgid "IMR Graduate School, CAS"
+#: app/templates/base.html:261
+msgid "Guest"
 msgstr ""
 
-#: app/templates/base.html:492
-msgid "Institute of Metal Research, CAS"
+#: app/templates/Ceramics/Experiment/index.html:45
+#: app/templates/Ceramics/Literature/index.html:45
+#: app/templates/High_temperature_alloy/index.html:138
+#: app/templates/base.html:263 app/templates/main/database.html:374
+msgid "Apply"
 msgstr ""
 
-#: app/templates/base.html:493
-msgid "Chinese Academy of Sciences"
+#: app/templates/base.html:264
+msgid "Login"
 msgstr ""
 
-#: app/templates/base.html:497
-msgid "Contact Us"
+#: app/templates/High_temperature_alloy/detail.html:11
+#: app/templates/base.html:308 app/templates/materials/detail.html:109
+msgid "Home"
 msgstr ""
 
-#: app/templates/base.html:498
-msgid "Address: 72 Wenhua Road, Shenhe District, Shenyang"
+#: app/templates/base.html:309
+msgid "Materials Database"
 msgstr ""
 
-#: app/templates/base.html:499
-msgid "Postal Code: 110016"
-msgstr ""
-
-#: app/templates/base.html:500
-msgid "Email: contact@nlhe-database.org"
-msgstr ""
-
-#: app/templates/base.html:504
-msgid "NLHE Database."
-msgstr ""
-
-#: app/templates/base.html:504
-msgid "Powered by"
-msgstr ""
-
-#: app/templates/articles/listing.html:6
-msgid "Documentation & Contents"
-msgstr ""
-
-#: app/templates/articles/listing.html:11
-msgid "Search contents..."
-msgstr ""
-
-#: app/templates/articles/listing.html:21 app/templates/main/database.html:442
-msgid "All"
-msgstr ""
-
-#: app/templates/articles/listing.html:22
+#: app/templates/articles/listing.html:26 app/templates/articles/view.html:18
+#: app/templates/base.html:310
 msgid "Articles"
 msgstr ""
 
-#: app/templates/articles/listing.html:23
+#: app/templates/base.html:311
+msgid "User Portal"
+msgstr ""
+
+#: app/templates/base.html:315
+msgid "Resources"
+msgstr ""
+
+#: app/templates/base.html:318
+msgid "CAS"
+msgstr ""
+
+#: app/templates/base.html:319
+msgid "IMR"
+msgstr ""
+
+#: app/templates/base.html:320
+msgid "IMR Graduate School"
+msgstr ""
+
+#: app/templates/base.html:324
+msgid "Community"
+msgstr ""
+
+#: app/templates/base.html:326
+msgid "Seminars (Coming Soon)"
+msgstr ""
+
+#: app/templates/base.html:327
+msgid "Documentation"
+msgstr ""
+
+#: app/templates/base.html:328
+msgid "AI Assistant"
+msgstr ""
+
+#: app/templates/base.html:329
+msgid "Support"
+msgstr ""
+
+#: app/templates/base.html:339
+msgid "Technical Stack: Flask · Plotly · Three.js · Valkey · PostgreSQL"
+msgstr ""
+
+#: app/templates/base.html:340
+msgid ""
+"Record & Compliance: Placeholder ICP Record · All rights reserved by IMR "
+"MatdataX."
+msgstr ""
+
+#: app/templates/base.html:341
+msgid "Powered by"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:14
+#: app/templates/Ceramics/Experiment/index.html:16
+#: app/templates/Ceramics/Literature/index.html:14
+#: app/templates/Ceramics/Literature/index.html:16
+#: app/templates/High_temperature_alloy/index.html:20
+#: app/templates/High_temperature_alloy/index.html:24
+#: app/templates/High_temperature_alloy/index.html:85
+#: app/templates/main/database.html:170 app/templates/main/database.html:175
+msgid "Search"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:25
+msgid "Experiment Results"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:29
+#: app/templates/Ceramics/Literature/index.html:29
+#: app/templates/High_temperature_alloy/index.html:108
+#: app/templates/main/database.html:327
+msgid "Per Page"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:38
+#: app/templates/Ceramics/Literature/index.html:38
+#: app/templates/High_temperature_alloy/index.html:130
+#: app/templates/main/database.html:352
+msgid "Columns"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:40
+#: app/templates/Ceramics/Literature/index.html:40
+#: app/templates/High_temperature_alloy/index.html:132
+#: app/templates/main/database.html:354
+msgid "Optional Columns"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:57
+#: app/templates/Ceramics/Experiment/index.html:58
+#: app/templates/Ceramics/Experiment/index.html:59
+#: app/templates/Ceramics/Literature/index.html:56
+#: app/templates/Ceramics/Literature/index.html:57
+#: app/templates/Ceramics/Literature/index.html:58
+#: app/templates/High_temperature_alloy/index.html:151
+#: app/templates/High_temperature_alloy/index.html:152
+#: app/templates/High_temperature_alloy/index.html:153
+#: app/templates/main/database.html:391 app/templates/main/database.html:392
+#: app/templates/main/database.html:393
+msgid "Hide this column"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:74
+#: app/templates/High_temperature_alloy/index.html:171
+msgid "Process Information"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:75
+#: app/templates/High_temperature_alloy/index.html:172
+msgid "Close"
+msgstr ""
+
+#: app/templates/Ceramics/Literature/index.html:25
+msgid "Literature Results"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:21
+#: app/templates/materials/detail.html:141
+msgid "Back"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:30
+#: app/templates/materials/detail.html:154
+msgid "Material Sections Navigation"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:33
+#: app/templates/High_temperature_alloy/detail.html:46
+msgid "Elements & Formula"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:34
+#: app/templates/High_temperature_alloy/detail.html:139
+msgid "Process"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:35
+#: app/templates/High_temperature_alloy/detail.html:155
+#: app/templates/High_temperature_alloy/detail.html:158
+#: app/templates/High_temperature_alloy/index.html:38
+msgid "Crystal structure"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:36
+#: app/templates/High_temperature_alloy/detail.html:167
+msgid "Performance"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:50
+msgid "Elements Pie Chart"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:50
+msgid "All element values are 0"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:143
+#: app/templates/High_temperature_alloy/index.html:42
+#: app/templates/High_temperature_alloy/index.html:176
+msgid "Process type"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:145
+#: app/templates/High_temperature_alloy/index.html:46
+#: app/templates/High_temperature_alloy/index.html:180
+msgid "Heat treatment process"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:170
+#: app/templates/High_temperature_alloy/index.html:54
+#: app/templates/High_temperature_alloy/index.html:134
+#: app/templates/High_temperature_alloy/index.html:151
+msgid "Bending Strength (MPa)"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:177
+#: app/templates/High_temperature_alloy/index.html:64
+#: app/templates/High_temperature_alloy/index.html:135
+#: app/templates/High_temperature_alloy/index.html:152
+msgid "zt"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:184
+#: app/templates/High_temperature_alloy/index.html:72
+#: app/templates/High_temperature_alloy/index.html:136
+#: app/templates/High_temperature_alloy/index.html:153
+msgid "Bending Strain"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:19
+#: app/templates/main/database.html:168
+msgid "Search materials, MP IDs, space groups..."
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:23
+#: app/templates/chat/chat.html:16 app/templates/main/database.html:174
+msgid "Clear"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:25
+#: app/templates/main/database.html:177
+msgid "Advanced"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:56
+#: app/templates/High_temperature_alloy/index.html:66
+#: app/templates/High_temperature_alloy/index.html:74
+#: app/templates/main/database.html:218 app/templates/main/database.html:235
+#: app/templates/main/database.html:249
+msgid "Min"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:57
+#: app/templates/High_temperature_alloy/index.html:67
+#: app/templates/High_temperature_alloy/index.html:75
+#: app/templates/main/database.html:220 app/templates/main/database.html:237
+#: app/templates/main/database.html:251
+msgid "to"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:58
+#: app/templates/High_temperature_alloy/index.html:68
+#: app/templates/High_temperature_alloy/index.html:76
+#: app/templates/main/database.html:222 app/templates/main/database.html:239
+#: app/templates/main/database.html:253
+msgid "Max"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:84
+msgid "Reset"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:93
+#: app/templates/main/database.html:283
+msgid ""
+"Please enter search criteria or select at least one filter before "
+"searching."
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:104
+msgid "Results"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/index.html:154
+msgid "Detail"
+msgstr ""
+
+#: app/templates/articles/listing.html:10
+msgid "Documentation & Contents"
+msgstr ""
+
+#: app/templates/articles/listing.html:15
+msgid "Search contents..."
+msgstr ""
+
+#: app/templates/articles/listing.html:25 app/templates/main/database.html:204
+msgid "All"
+msgstr ""
+
+#: app/templates/articles/listing.html:27 app/templates/articles/view.html:17
 msgid "Instructions"
 msgstr ""
 
-#: app/templates/articles/listing.html:24
+#: app/templates/articles/listing.html:28 app/templates/articles/view.html:19
 msgid "Changelog"
 msgstr ""
 
-#: app/templates/articles/listing.html:39
+#: app/templates/articles/listing.html:43
 msgid "Read More"
 msgstr ""
 
-#: app/templates/articles/listing.html:46
+#: app/templates/articles/listing.html:50
 msgid "No content found"
 msgstr ""
 
-#: app/templates/articles/listing.html:48
+#: app/templates/articles/listing.html:52
 #, python-format
 msgid ""
 "No results found for \"%(query)s\". Try different keywords or browse by "
 "category."
 msgstr ""
 
-#: app/templates/articles/listing.html:50
+#: app/templates/articles/listing.html:54
 msgid "There is no content in this category yet."
 msgstr ""
 
-#: app/templates/articles/view.html:6
+#: app/templates/articles/view.html:10
 msgid "Table of contents"
 msgstr ""
 
-#: app/templates/articles/view.html:36
+#: app/templates/articles/view.html:14 app/templates/articles/view.html:56
+msgid "Contents"
+msgstr ""
+
+#: app/templates/articles/view.html:45
 msgid "Back to Contents"
 msgstr ""
 
-#: app/templates/auth/login.html:18
-msgid "User"
+#: app/templates/auth/apply.html:48
+msgid "Application Instructions (Email Channel)"
 msgstr ""
 
-#: app/templates/auth/login.html:22
-msgid "Administrator"
+#: app/templates/auth/apply.html:50
+msgid "You can also send your application email to:"
 msgstr ""
 
-#: app/templates/auth/login.html:28 app/templates/auth/login.html:121
-#: app/templates/auth/login.html:144 app/templates/auth/login.html:151
-msgid "Sign In"
+#: app/templates/auth/apply.html:53
+msgid ""
+"To speed up the review, please fill in the following fields completely "
+"(Required indicates mandatory):"
 msgstr ""
 
-#: app/templates/auth/login.html:41
-msgid "Email"
+#: app/templates/auth/apply.html:56
+msgid "Full Name (Required)"
 msgstr ""
 
-#: app/templates/auth/login.html:43
+#: app/templates/auth/apply.html:57
+msgid "Email (Required, used for notifications)"
+msgstr ""
+
+#: app/templates/auth/apply.html:58
+msgid "Desired Username (Required)"
+msgstr ""
+
+#: app/templates/auth/apply.html:59
+msgid "Affiliation (Optional)"
+msgstr ""
+
+#: app/templates/auth/apply.html:60
+msgid "Application Reason (Required, briefly describe purpose and scope)"
+msgstr ""
+
+#: app/templates/auth/apply.html:64
+msgid "Copy Template"
+msgstr ""
+
+#: app/templates/auth/apply.html:66
+msgid "MAIL_TEMPLATE_TEXT"
+msgstr ""
+
+#: app/templates/auth/apply.html:67
+msgid ""
+"Hint: After copying, paste into your email client, complete the "
+"information, and send."
+msgstr ""
+
+#: app/templates/auth/apply.html:71
+msgid ""
+"The online application form on the right is currently unavailable. Please"
+" use the email channel above:"
+msgstr ""
+
+#: app/templates/auth/apply.html:76 app/templates/auth/apply.html:180
+msgid "Template copied to clipboard"
+msgstr ""
+
+#: app/templates/auth/apply.html:85
+msgid ""
+"The online application form is temporarily unavailable. Please use the "
+"email channel on the left."
+msgstr ""
+
+#: app/templates/auth/apply.html:88
+msgid "Apply to Become a User"
+msgstr ""
+
+#: app/templates/auth/apply.html:103
+msgid "Enter your full name"
+msgstr ""
+
+#: app/templates/auth/apply.html:111 app/templates/auth/login.html:37
 msgid "Enter your email address"
 msgstr ""
 
-#: app/templates/auth/login.html:49
-msgid "Username"
+#: app/templates/auth/apply.html:119
+msgid "Enter your desired username"
 msgstr ""
 
-#: app/templates/auth/login.html:51
-msgid "Enter your username"
+#: app/templates/auth/apply.html:127
+msgid "Enter your affiliation (optional)"
 msgstr ""
 
-#: app/templates/auth/login.html:57 app/templates/auth/login.html:62
+#: app/templates/auth/apply.html:133
+msgid "Reason"
+msgstr ""
+
+#: app/templates/auth/apply.html:135
+msgid "Describe your purpose or need for access"
+msgstr ""
+
+#: app/templates/auth/apply.html:141 app/templates/auth/apply.html:146
+#: app/templates/auth/login.html:51 app/templates/auth/login.html:56
 msgid "Captcha"
 msgstr ""
 
-#: app/templates/auth/login.html:60
+#: app/templates/auth/apply.html:144 app/templates/auth/login.html:54
 msgid "Enter the captcha"
 msgstr ""
 
-#: app/templates/auth/login.html:65
+#: app/templates/auth/apply.html:149 app/templates/auth/login.html:59
 msgid "Click to refresh"
 msgstr ""
 
-#: app/templates/auth/login.html:74
-msgid "Password"
+#: app/templates/auth/apply.html:156
+msgid "Submit Application"
 msgstr ""
 
-#: app/templates/auth/login.html:77
-msgid "Enter your password"
+#: app/templates/auth/apply.html:157 app/templates/auth/login.html:80
+msgid "Back to Database"
 msgstr ""
 
-#: app/templates/auth/login.html:85 app/templates/auth/login.html:122
-#: app/templates/auth/login.html:145 app/templates/auth/login.html:151
+#: app/templates/auth/login.html:22 app/templates/auth/login.html:79
+#: app/templates/auth/login.html:108 app/templates/auth/login.html:125
+#: app/templates/auth/login.html:131
 msgid "Log In"
 msgstr ""
 
-#: app/templates/auth/login.html:86
-msgid "Return to Database"
+#: app/templates/auth/login.html:43
+msgid "Username"
 msgstr ""
 
-#: app/templates/auth/login.html:96
-msgid ""
-"This area is restricted to administrators only. Unauthorized access "
-"attempts are monitored."
+#: app/templates/auth/login.html:45
+msgid "Enter your username"
 msgstr ""
 
-#: app/templates/auth/login.html:123 app/templates/auth/login.html:146
-#: app/templates/auth/login.html:151
+#: app/templates/auth/login.html:68
+msgid "Password"
+msgstr ""
+
+#: app/templates/auth/login.html:71
+msgid "Enter your password"
+msgstr ""
+
+#: app/templates/auth/login.html:107 app/templates/auth/login.html:124
+#: app/templates/auth/login.html:131
+msgid "Sign In"
+msgstr ""
+
+#: app/templates/auth/login.html:109
+msgid "Login successful. Redirecting to MatdataX in 2 seconds…"
+msgstr ""
+
+#: app/templates/auth/login.html:126 app/templates/auth/login.html:131
 msgid "Administrator Sign In"
 msgstr ""
 
-#: app/templates/auth/login.html:124 app/templates/auth/login.html:147
-#: app/templates/auth/login.html:151
+#: app/templates/auth/login.html:127 app/templates/auth/login.html:131
 msgid "Log In as Administrator"
 msgstr ""
 
-#: app/templates/auth/login.html:125
-msgid "Login successful. Redirecting to database in 2 seconds…"
+#: app/templates/chat/chat.html:8
+msgid "Chat"
+msgstr ""
+
+#: app/templates/chat/chat.html:13
+msgid "Type your question here..."
+msgstr ""
+
+#: app/templates/chat/chat.html:13
+msgid "Your Message"
+msgstr ""
+
+#: app/templates/chat/chat.html:15
+msgid "Send"
+msgstr ""
+
+#: app/templates/chat/chat.html:17
+msgid "Export"
 msgstr ""
 
 #: app/templates/components/periodic_table.html:6
@@ -463,7 +727,7 @@ msgid "Periodic Table"
 msgstr ""
 
 #: app/templates/components/periodic_table.html:7
-#: app/templates/main/database.html:655
+#: app/templates/main/database.html:313
 msgid "Clear All"
 msgstr ""
 
@@ -487,116 +751,116 @@ msgstr ""
 #: app/templates/components/periodic_table.html:77
 #: app/templates/components/periodic_table.html:87
 #: app/templates/components/periodic_table.html:97
-#: app/templates/components/periodic_table.html:106
-#: app/templates/components/periodic_table.html:115
-#: app/templates/components/periodic_table.html:126
-#: app/templates/components/periodic_table.html:135
-#: app/templates/components/periodic_table.html:145
-#: app/templates/components/periodic_table.html:154
-#: app/templates/components/periodic_table.html:163
-#: app/templates/components/periodic_table.html:172
-#: app/templates/components/periodic_table.html:181
+#: app/templates/components/periodic_table.html:107
+#: app/templates/components/periodic_table.html:117
+#: app/templates/components/periodic_table.html:129
+#: app/templates/components/periodic_table.html:139
+#: app/templates/components/periodic_table.html:150
+#: app/templates/components/periodic_table.html:160
+#: app/templates/components/periodic_table.html:170
+#: app/templates/components/periodic_table.html:180
 #: app/templates/components/periodic_table.html:190
-#: app/templates/components/periodic_table.html:201
-#: app/templates/components/periodic_table.html:210
-#: app/templates/components/periodic_table.html:219
-#: app/templates/components/periodic_table.html:228
-#: app/templates/components/periodic_table.html:237
-#: app/templates/components/periodic_table.html:246
-#: app/templates/components/periodic_table.html:255
-#: app/templates/components/periodic_table.html:264
-#: app/templates/components/periodic_table.html:273
+#: app/templates/components/periodic_table.html:200
+#: app/templates/components/periodic_table.html:212
+#: app/templates/components/periodic_table.html:222
+#: app/templates/components/periodic_table.html:232
+#: app/templates/components/periodic_table.html:242
+#: app/templates/components/periodic_table.html:252
+#: app/templates/components/periodic_table.html:262
+#: app/templates/components/periodic_table.html:272
 #: app/templates/components/periodic_table.html:282
-#: app/templates/components/periodic_table.html:291
-#: app/templates/components/periodic_table.html:300
-#: app/templates/components/periodic_table.html:309
-#: app/templates/components/periodic_table.html:318
-#: app/templates/components/periodic_table.html:327
-#: app/templates/components/periodic_table.html:336
-#: app/templates/components/periodic_table.html:345
-#: app/templates/components/periodic_table.html:354
-#: app/templates/components/periodic_table.html:365
-#: app/templates/components/periodic_table.html:374
-#: app/templates/components/periodic_table.html:383
-#: app/templates/components/periodic_table.html:392
-#: app/templates/components/periodic_table.html:401
-#: app/templates/components/periodic_table.html:410
-#: app/templates/components/periodic_table.html:419
-#: app/templates/components/periodic_table.html:428
-#: app/templates/components/periodic_table.html:437
-#: app/templates/components/periodic_table.html:446
-#: app/templates/components/periodic_table.html:455
+#: app/templates/components/periodic_table.html:292
+#: app/templates/components/periodic_table.html:302
+#: app/templates/components/periodic_table.html:312
+#: app/templates/components/periodic_table.html:322
+#: app/templates/components/periodic_table.html:332
+#: app/templates/components/periodic_table.html:342
+#: app/templates/components/periodic_table.html:352
+#: app/templates/components/periodic_table.html:362
+#: app/templates/components/periodic_table.html:372
+#: app/templates/components/periodic_table.html:382
+#: app/templates/components/periodic_table.html:394
+#: app/templates/components/periodic_table.html:404
+#: app/templates/components/periodic_table.html:414
+#: app/templates/components/periodic_table.html:424
+#: app/templates/components/periodic_table.html:434
+#: app/templates/components/periodic_table.html:444
+#: app/templates/components/periodic_table.html:454
 #: app/templates/components/periodic_table.html:464
-#: app/templates/components/periodic_table.html:473
-#: app/templates/components/periodic_table.html:482
-#: app/templates/components/periodic_table.html:491
-#: app/templates/components/periodic_table.html:500
-#: app/templates/components/periodic_table.html:509
-#: app/templates/components/periodic_table.html:518
-#: app/templates/components/periodic_table.html:529
-#: app/templates/components/periodic_table.html:538
-#: app/templates/components/periodic_table.html:547
-#: app/templates/components/periodic_table.html:556
-#: app/templates/components/periodic_table.html:565
-#: app/templates/components/periodic_table.html:574
-#: app/templates/components/periodic_table.html:583
-#: app/templates/components/periodic_table.html:592
-#: app/templates/components/periodic_table.html:601
-#: app/templates/components/periodic_table.html:610
-#: app/templates/components/periodic_table.html:619
-#: app/templates/components/periodic_table.html:628
-#: app/templates/components/periodic_table.html:637
+#: app/templates/components/periodic_table.html:474
+#: app/templates/components/periodic_table.html:484
+#: app/templates/components/periodic_table.html:494
+#: app/templates/components/periodic_table.html:504
+#: app/templates/components/periodic_table.html:514
+#: app/templates/components/periodic_table.html:524
+#: app/templates/components/periodic_table.html:534
+#: app/templates/components/periodic_table.html:544
+#: app/templates/components/periodic_table.html:554
+#: app/templates/components/periodic_table.html:564
+#: app/templates/components/periodic_table.html:576
+#: app/templates/components/periodic_table.html:586
+#: app/templates/components/periodic_table.html:596
+#: app/templates/components/periodic_table.html:606
+#: app/templates/components/periodic_table.html:616
+#: app/templates/components/periodic_table.html:626
+#: app/templates/components/periodic_table.html:636
 #: app/templates/components/periodic_table.html:646
-#: app/templates/components/periodic_table.html:655
-#: app/templates/components/periodic_table.html:664
-#: app/templates/components/periodic_table.html:673
-#: app/templates/components/periodic_table.html:682
-#: app/templates/components/periodic_table.html:693
-#: app/templates/components/periodic_table.html:702
-#: app/templates/components/periodic_table.html:711
-#: app/templates/components/periodic_table.html:720
-#: app/templates/components/periodic_table.html:729
-#: app/templates/components/periodic_table.html:738
-#: app/templates/components/periodic_table.html:747
-#: app/templates/components/periodic_table.html:756
-#: app/templates/components/periodic_table.html:765
-#: app/templates/components/periodic_table.html:774
-#: app/templates/components/periodic_table.html:783
-#: app/templates/components/periodic_table.html:792
-#: app/templates/components/periodic_table.html:801
-#: app/templates/components/periodic_table.html:810
-#: app/templates/components/periodic_table.html:819
+#: app/templates/components/periodic_table.html:656
+#: app/templates/components/periodic_table.html:666
+#: app/templates/components/periodic_table.html:676
+#: app/templates/components/periodic_table.html:686
+#: app/templates/components/periodic_table.html:696
+#: app/templates/components/periodic_table.html:706
+#: app/templates/components/periodic_table.html:716
+#: app/templates/components/periodic_table.html:726
+#: app/templates/components/periodic_table.html:736
+#: app/templates/components/periodic_table.html:746
+#: app/templates/components/periodic_table.html:758
+#: app/templates/components/periodic_table.html:768
+#: app/templates/components/periodic_table.html:778
+#: app/templates/components/periodic_table.html:788
+#: app/templates/components/periodic_table.html:798
+#: app/templates/components/periodic_table.html:808
+#: app/templates/components/periodic_table.html:818
 #: app/templates/components/periodic_table.html:828
-#: app/templates/components/periodic_table.html:837
-#: app/templates/components/periodic_table.html:846
+#: app/templates/components/periodic_table.html:838
+#: app/templates/components/periodic_table.html:848
 #: app/templates/components/periodic_table.html:858
-#: app/templates/components/periodic_table.html:867
-#: app/templates/components/periodic_table.html:876
-#: app/templates/components/periodic_table.html:885
-#: app/templates/components/periodic_table.html:894
-#: app/templates/components/periodic_table.html:903
-#: app/templates/components/periodic_table.html:912
-#: app/templates/components/periodic_table.html:921
-#: app/templates/components/periodic_table.html:930
-#: app/templates/components/periodic_table.html:939
-#: app/templates/components/periodic_table.html:948
-#: app/templates/components/periodic_table.html:957
-#: app/templates/components/periodic_table.html:966
-#: app/templates/components/periodic_table.html:975
-#: app/templates/components/periodic_table.html:987
-#: app/templates/components/periodic_table.html:996
-#: app/templates/components/periodic_table.html:1005
-#: app/templates/components/periodic_table.html:1014
-#: app/templates/components/periodic_table.html:1023
-#: app/templates/components/periodic_table.html:1032
+#: app/templates/components/periodic_table.html:868
+#: app/templates/components/periodic_table.html:878
+#: app/templates/components/periodic_table.html:888
+#: app/templates/components/periodic_table.html:898
+#: app/templates/components/periodic_table.html:908
+#: app/templates/components/periodic_table.html:918
+#: app/templates/components/periodic_table.html:928
+#: app/templates/components/periodic_table.html:941
+#: app/templates/components/periodic_table.html:951
+#: app/templates/components/periodic_table.html:961
+#: app/templates/components/periodic_table.html:971
+#: app/templates/components/periodic_table.html:981
+#: app/templates/components/periodic_table.html:991
+#: app/templates/components/periodic_table.html:1001
+#: app/templates/components/periodic_table.html:1011
+#: app/templates/components/periodic_table.html:1021
+#: app/templates/components/periodic_table.html:1031
 #: app/templates/components/periodic_table.html:1041
-#: app/templates/components/periodic_table.html:1050
-#: app/templates/components/periodic_table.html:1059
-#: app/templates/components/periodic_table.html:1068
-#: app/templates/components/periodic_table.html:1077
-#: app/templates/components/periodic_table.html:1086
-#: app/templates/components/periodic_table.html:1095
+#: app/templates/components/periodic_table.html:1051
+#: app/templates/components/periodic_table.html:1061
+#: app/templates/components/periodic_table.html:1071
+#: app/templates/components/periodic_table.html:1084
+#: app/templates/components/periodic_table.html:1094
 #: app/templates/components/periodic_table.html:1104
+#: app/templates/components/periodic_table.html:1114
+#: app/templates/components/periodic_table.html:1124
+#: app/templates/components/periodic_table.html:1134
+#: app/templates/components/periodic_table.html:1144
+#: app/templates/components/periodic_table.html:1154
+#: app/templates/components/periodic_table.html:1164
+#: app/templates/components/periodic_table.html:1174
+#: app/templates/components/periodic_table.html:1184
+#: app/templates/components/periodic_table.html:1194
+#: app/templates/components/periodic_table.html:1204
+#: app/templates/components/periodic_table.html:1214
 msgid "Atomic No:"
 msgstr ""
 
@@ -608,116 +872,116 @@ msgstr ""
 #: app/templates/components/periodic_table.html:78
 #: app/templates/components/periodic_table.html:88
 #: app/templates/components/periodic_table.html:98
-#: app/templates/components/periodic_table.html:107
-#: app/templates/components/periodic_table.html:116
-#: app/templates/components/periodic_table.html:127
-#: app/templates/components/periodic_table.html:136
-#: app/templates/components/periodic_table.html:146
-#: app/templates/components/periodic_table.html:155
-#: app/templates/components/periodic_table.html:164
-#: app/templates/components/periodic_table.html:173
-#: app/templates/components/periodic_table.html:182
+#: app/templates/components/periodic_table.html:108
+#: app/templates/components/periodic_table.html:118
+#: app/templates/components/periodic_table.html:130
+#: app/templates/components/periodic_table.html:140
+#: app/templates/components/periodic_table.html:151
+#: app/templates/components/periodic_table.html:161
+#: app/templates/components/periodic_table.html:171
+#: app/templates/components/periodic_table.html:181
 #: app/templates/components/periodic_table.html:191
-#: app/templates/components/periodic_table.html:202
-#: app/templates/components/periodic_table.html:211
-#: app/templates/components/periodic_table.html:220
-#: app/templates/components/periodic_table.html:229
-#: app/templates/components/periodic_table.html:238
-#: app/templates/components/periodic_table.html:247
-#: app/templates/components/periodic_table.html:256
-#: app/templates/components/periodic_table.html:265
-#: app/templates/components/periodic_table.html:274
+#: app/templates/components/periodic_table.html:201
+#: app/templates/components/periodic_table.html:213
+#: app/templates/components/periodic_table.html:223
+#: app/templates/components/periodic_table.html:233
+#: app/templates/components/periodic_table.html:243
+#: app/templates/components/periodic_table.html:253
+#: app/templates/components/periodic_table.html:263
+#: app/templates/components/periodic_table.html:273
 #: app/templates/components/periodic_table.html:283
-#: app/templates/components/periodic_table.html:292
-#: app/templates/components/periodic_table.html:301
-#: app/templates/components/periodic_table.html:310
-#: app/templates/components/periodic_table.html:319
-#: app/templates/components/periodic_table.html:328
-#: app/templates/components/periodic_table.html:337
-#: app/templates/components/periodic_table.html:346
-#: app/templates/components/periodic_table.html:355
-#: app/templates/components/periodic_table.html:366
-#: app/templates/components/periodic_table.html:375
-#: app/templates/components/periodic_table.html:384
-#: app/templates/components/periodic_table.html:393
-#: app/templates/components/periodic_table.html:402
-#: app/templates/components/periodic_table.html:411
-#: app/templates/components/periodic_table.html:420
-#: app/templates/components/periodic_table.html:429
-#: app/templates/components/periodic_table.html:438
-#: app/templates/components/periodic_table.html:447
-#: app/templates/components/periodic_table.html:456
+#: app/templates/components/periodic_table.html:293
+#: app/templates/components/periodic_table.html:303
+#: app/templates/components/periodic_table.html:313
+#: app/templates/components/periodic_table.html:323
+#: app/templates/components/periodic_table.html:333
+#: app/templates/components/periodic_table.html:343
+#: app/templates/components/periodic_table.html:353
+#: app/templates/components/periodic_table.html:363
+#: app/templates/components/periodic_table.html:373
+#: app/templates/components/periodic_table.html:383
+#: app/templates/components/periodic_table.html:395
+#: app/templates/components/periodic_table.html:405
+#: app/templates/components/periodic_table.html:415
+#: app/templates/components/periodic_table.html:425
+#: app/templates/components/periodic_table.html:435
+#: app/templates/components/periodic_table.html:445
+#: app/templates/components/periodic_table.html:455
 #: app/templates/components/periodic_table.html:465
-#: app/templates/components/periodic_table.html:474
-#: app/templates/components/periodic_table.html:483
-#: app/templates/components/periodic_table.html:492
-#: app/templates/components/periodic_table.html:501
-#: app/templates/components/periodic_table.html:510
-#: app/templates/components/periodic_table.html:519
-#: app/templates/components/periodic_table.html:530
-#: app/templates/components/periodic_table.html:539
-#: app/templates/components/periodic_table.html:548
-#: app/templates/components/periodic_table.html:557
-#: app/templates/components/periodic_table.html:566
-#: app/templates/components/periodic_table.html:575
-#: app/templates/components/periodic_table.html:584
-#: app/templates/components/periodic_table.html:593
-#: app/templates/components/periodic_table.html:602
-#: app/templates/components/periodic_table.html:611
-#: app/templates/components/periodic_table.html:620
-#: app/templates/components/periodic_table.html:629
-#: app/templates/components/periodic_table.html:638
+#: app/templates/components/periodic_table.html:475
+#: app/templates/components/periodic_table.html:485
+#: app/templates/components/periodic_table.html:495
+#: app/templates/components/periodic_table.html:505
+#: app/templates/components/periodic_table.html:515
+#: app/templates/components/periodic_table.html:525
+#: app/templates/components/periodic_table.html:535
+#: app/templates/components/periodic_table.html:545
+#: app/templates/components/periodic_table.html:555
+#: app/templates/components/periodic_table.html:565
+#: app/templates/components/periodic_table.html:577
+#: app/templates/components/periodic_table.html:587
+#: app/templates/components/periodic_table.html:597
+#: app/templates/components/periodic_table.html:607
+#: app/templates/components/periodic_table.html:617
+#: app/templates/components/periodic_table.html:627
+#: app/templates/components/periodic_table.html:637
 #: app/templates/components/periodic_table.html:647
-#: app/templates/components/periodic_table.html:656
-#: app/templates/components/periodic_table.html:665
-#: app/templates/components/periodic_table.html:674
-#: app/templates/components/periodic_table.html:683
-#: app/templates/components/periodic_table.html:694
-#: app/templates/components/periodic_table.html:703
-#: app/templates/components/periodic_table.html:712
-#: app/templates/components/periodic_table.html:721
-#: app/templates/components/periodic_table.html:730
-#: app/templates/components/periodic_table.html:739
-#: app/templates/components/periodic_table.html:748
-#: app/templates/components/periodic_table.html:757
-#: app/templates/components/periodic_table.html:766
-#: app/templates/components/periodic_table.html:775
-#: app/templates/components/periodic_table.html:784
-#: app/templates/components/periodic_table.html:793
-#: app/templates/components/periodic_table.html:802
-#: app/templates/components/periodic_table.html:811
-#: app/templates/components/periodic_table.html:820
+#: app/templates/components/periodic_table.html:657
+#: app/templates/components/periodic_table.html:667
+#: app/templates/components/periodic_table.html:677
+#: app/templates/components/periodic_table.html:687
+#: app/templates/components/periodic_table.html:697
+#: app/templates/components/periodic_table.html:707
+#: app/templates/components/periodic_table.html:717
+#: app/templates/components/periodic_table.html:727
+#: app/templates/components/periodic_table.html:737
+#: app/templates/components/periodic_table.html:747
+#: app/templates/components/periodic_table.html:759
+#: app/templates/components/periodic_table.html:769
+#: app/templates/components/periodic_table.html:779
+#: app/templates/components/periodic_table.html:789
+#: app/templates/components/periodic_table.html:799
+#: app/templates/components/periodic_table.html:809
+#: app/templates/components/periodic_table.html:819
 #: app/templates/components/periodic_table.html:829
-#: app/templates/components/periodic_table.html:838
-#: app/templates/components/periodic_table.html:847
+#: app/templates/components/periodic_table.html:839
+#: app/templates/components/periodic_table.html:849
 #: app/templates/components/periodic_table.html:859
-#: app/templates/components/periodic_table.html:868
-#: app/templates/components/periodic_table.html:877
-#: app/templates/components/periodic_table.html:886
-#: app/templates/components/periodic_table.html:895
-#: app/templates/components/periodic_table.html:904
-#: app/templates/components/periodic_table.html:913
-#: app/templates/components/periodic_table.html:922
-#: app/templates/components/periodic_table.html:931
-#: app/templates/components/periodic_table.html:940
-#: app/templates/components/periodic_table.html:949
-#: app/templates/components/periodic_table.html:958
-#: app/templates/components/periodic_table.html:967
-#: app/templates/components/periodic_table.html:976
-#: app/templates/components/periodic_table.html:988
-#: app/templates/components/periodic_table.html:997
-#: app/templates/components/periodic_table.html:1006
-#: app/templates/components/periodic_table.html:1015
-#: app/templates/components/periodic_table.html:1024
-#: app/templates/components/periodic_table.html:1033
+#: app/templates/components/periodic_table.html:869
+#: app/templates/components/periodic_table.html:879
+#: app/templates/components/periodic_table.html:889
+#: app/templates/components/periodic_table.html:899
+#: app/templates/components/periodic_table.html:909
+#: app/templates/components/periodic_table.html:919
+#: app/templates/components/periodic_table.html:929
+#: app/templates/components/periodic_table.html:942
+#: app/templates/components/periodic_table.html:952
+#: app/templates/components/periodic_table.html:962
+#: app/templates/components/periodic_table.html:972
+#: app/templates/components/periodic_table.html:982
+#: app/templates/components/periodic_table.html:992
+#: app/templates/components/periodic_table.html:1002
+#: app/templates/components/periodic_table.html:1012
+#: app/templates/components/periodic_table.html:1022
+#: app/templates/components/periodic_table.html:1032
 #: app/templates/components/periodic_table.html:1042
-#: app/templates/components/periodic_table.html:1051
-#: app/templates/components/periodic_table.html:1060
-#: app/templates/components/periodic_table.html:1069
-#: app/templates/components/periodic_table.html:1078
-#: app/templates/components/periodic_table.html:1087
-#: app/templates/components/periodic_table.html:1096
+#: app/templates/components/periodic_table.html:1052
+#: app/templates/components/periodic_table.html:1062
+#: app/templates/components/periodic_table.html:1072
+#: app/templates/components/periodic_table.html:1085
+#: app/templates/components/periodic_table.html:1095
 #: app/templates/components/periodic_table.html:1105
+#: app/templates/components/periodic_table.html:1115
+#: app/templates/components/periodic_table.html:1125
+#: app/templates/components/periodic_table.html:1135
+#: app/templates/components/periodic_table.html:1145
+#: app/templates/components/periodic_table.html:1155
+#: app/templates/components/periodic_table.html:1165
+#: app/templates/components/periodic_table.html:1175
+#: app/templates/components/periodic_table.html:1185
+#: app/templates/components/periodic_table.html:1195
+#: app/templates/components/periodic_table.html:1205
+#: app/templates/components/periodic_table.html:1215
 msgid "Mass:"
 msgstr ""
 
@@ -729,404 +993,349 @@ msgstr ""
 #: app/templates/components/periodic_table.html:79
 #: app/templates/components/periodic_table.html:89
 #: app/templates/components/periodic_table.html:99
-#: app/templates/components/periodic_table.html:108
-#: app/templates/components/periodic_table.html:117
-#: app/templates/components/periodic_table.html:128
-#: app/templates/components/periodic_table.html:137
-#: app/templates/components/periodic_table.html:147
-#: app/templates/components/periodic_table.html:156
-#: app/templates/components/periodic_table.html:165
-#: app/templates/components/periodic_table.html:174
-#: app/templates/components/periodic_table.html:183
+#: app/templates/components/periodic_table.html:109
+#: app/templates/components/periodic_table.html:119
+#: app/templates/components/periodic_table.html:131
+#: app/templates/components/periodic_table.html:141
+#: app/templates/components/periodic_table.html:152
+#: app/templates/components/periodic_table.html:162
+#: app/templates/components/periodic_table.html:172
+#: app/templates/components/periodic_table.html:182
 #: app/templates/components/periodic_table.html:192
-#: app/templates/components/periodic_table.html:203
-#: app/templates/components/periodic_table.html:212
-#: app/templates/components/periodic_table.html:221
-#: app/templates/components/periodic_table.html:230
-#: app/templates/components/periodic_table.html:239
-#: app/templates/components/periodic_table.html:248
-#: app/templates/components/periodic_table.html:257
-#: app/templates/components/periodic_table.html:266
-#: app/templates/components/periodic_table.html:275
+#: app/templates/components/periodic_table.html:202
+#: app/templates/components/periodic_table.html:214
+#: app/templates/components/periodic_table.html:224
+#: app/templates/components/periodic_table.html:234
+#: app/templates/components/periodic_table.html:244
+#: app/templates/components/periodic_table.html:254
+#: app/templates/components/periodic_table.html:264
+#: app/templates/components/periodic_table.html:274
 #: app/templates/components/periodic_table.html:284
-#: app/templates/components/periodic_table.html:293
-#: app/templates/components/periodic_table.html:302
-#: app/templates/components/periodic_table.html:311
-#: app/templates/components/periodic_table.html:320
-#: app/templates/components/periodic_table.html:329
-#: app/templates/components/periodic_table.html:338
-#: app/templates/components/periodic_table.html:347
-#: app/templates/components/periodic_table.html:356
-#: app/templates/components/periodic_table.html:367
-#: app/templates/components/periodic_table.html:376
-#: app/templates/components/periodic_table.html:385
-#: app/templates/components/periodic_table.html:394
-#: app/templates/components/periodic_table.html:403
-#: app/templates/components/periodic_table.html:412
-#: app/templates/components/periodic_table.html:421
-#: app/templates/components/periodic_table.html:430
-#: app/templates/components/periodic_table.html:439
-#: app/templates/components/periodic_table.html:448
-#: app/templates/components/periodic_table.html:457
+#: app/templates/components/periodic_table.html:294
+#: app/templates/components/periodic_table.html:304
+#: app/templates/components/periodic_table.html:314
+#: app/templates/components/periodic_table.html:324
+#: app/templates/components/periodic_table.html:334
+#: app/templates/components/periodic_table.html:344
+#: app/templates/components/periodic_table.html:354
+#: app/templates/components/periodic_table.html:364
+#: app/templates/components/periodic_table.html:374
+#: app/templates/components/periodic_table.html:384
+#: app/templates/components/periodic_table.html:396
+#: app/templates/components/periodic_table.html:406
+#: app/templates/components/periodic_table.html:416
+#: app/templates/components/periodic_table.html:426
+#: app/templates/components/periodic_table.html:436
+#: app/templates/components/periodic_table.html:446
+#: app/templates/components/periodic_table.html:456
 #: app/templates/components/periodic_table.html:466
-#: app/templates/components/periodic_table.html:475
-#: app/templates/components/periodic_table.html:484
-#: app/templates/components/periodic_table.html:493
-#: app/templates/components/periodic_table.html:502
-#: app/templates/components/periodic_table.html:511
-#: app/templates/components/periodic_table.html:520
-#: app/templates/components/periodic_table.html:531
-#: app/templates/components/periodic_table.html:540
-#: app/templates/components/periodic_table.html:549
-#: app/templates/components/periodic_table.html:558
-#: app/templates/components/periodic_table.html:567
-#: app/templates/components/periodic_table.html:576
-#: app/templates/components/periodic_table.html:585
-#: app/templates/components/periodic_table.html:594
-#: app/templates/components/periodic_table.html:603
-#: app/templates/components/periodic_table.html:612
-#: app/templates/components/periodic_table.html:621
-#: app/templates/components/periodic_table.html:630
-#: app/templates/components/periodic_table.html:639
+#: app/templates/components/periodic_table.html:476
+#: app/templates/components/periodic_table.html:486
+#: app/templates/components/periodic_table.html:496
+#: app/templates/components/periodic_table.html:506
+#: app/templates/components/periodic_table.html:516
+#: app/templates/components/periodic_table.html:526
+#: app/templates/components/periodic_table.html:536
+#: app/templates/components/periodic_table.html:546
+#: app/templates/components/periodic_table.html:556
+#: app/templates/components/periodic_table.html:566
+#: app/templates/components/periodic_table.html:578
+#: app/templates/components/periodic_table.html:588
+#: app/templates/components/periodic_table.html:598
+#: app/templates/components/periodic_table.html:608
+#: app/templates/components/periodic_table.html:618
+#: app/templates/components/periodic_table.html:628
+#: app/templates/components/periodic_table.html:638
 #: app/templates/components/periodic_table.html:648
-#: app/templates/components/periodic_table.html:657
-#: app/templates/components/periodic_table.html:666
-#: app/templates/components/periodic_table.html:675
-#: app/templates/components/periodic_table.html:684
-#: app/templates/components/periodic_table.html:695
-#: app/templates/components/periodic_table.html:704
-#: app/templates/components/periodic_table.html:713
-#: app/templates/components/periodic_table.html:722
-#: app/templates/components/periodic_table.html:731
-#: app/templates/components/periodic_table.html:740
-#: app/templates/components/periodic_table.html:749
-#: app/templates/components/periodic_table.html:758
-#: app/templates/components/periodic_table.html:767
-#: app/templates/components/periodic_table.html:776
-#: app/templates/components/periodic_table.html:785
-#: app/templates/components/periodic_table.html:794
-#: app/templates/components/periodic_table.html:803
-#: app/templates/components/periodic_table.html:812
-#: app/templates/components/periodic_table.html:821
+#: app/templates/components/periodic_table.html:658
+#: app/templates/components/periodic_table.html:668
+#: app/templates/components/periodic_table.html:678
+#: app/templates/components/periodic_table.html:688
+#: app/templates/components/periodic_table.html:698
+#: app/templates/components/periodic_table.html:708
+#: app/templates/components/periodic_table.html:718
+#: app/templates/components/periodic_table.html:728
+#: app/templates/components/periodic_table.html:738
+#: app/templates/components/periodic_table.html:748
+#: app/templates/components/periodic_table.html:760
+#: app/templates/components/periodic_table.html:770
+#: app/templates/components/periodic_table.html:780
+#: app/templates/components/periodic_table.html:790
+#: app/templates/components/periodic_table.html:800
+#: app/templates/components/periodic_table.html:810
+#: app/templates/components/periodic_table.html:820
 #: app/templates/components/periodic_table.html:830
-#: app/templates/components/periodic_table.html:839
-#: app/templates/components/periodic_table.html:848
+#: app/templates/components/periodic_table.html:840
+#: app/templates/components/periodic_table.html:850
 #: app/templates/components/periodic_table.html:860
-#: app/templates/components/periodic_table.html:869
-#: app/templates/components/periodic_table.html:878
-#: app/templates/components/periodic_table.html:887
-#: app/templates/components/periodic_table.html:896
-#: app/templates/components/periodic_table.html:905
-#: app/templates/components/periodic_table.html:914
-#: app/templates/components/periodic_table.html:923
-#: app/templates/components/periodic_table.html:932
-#: app/templates/components/periodic_table.html:941
-#: app/templates/components/periodic_table.html:950
-#: app/templates/components/periodic_table.html:959
-#: app/templates/components/periodic_table.html:968
-#: app/templates/components/periodic_table.html:977
-#: app/templates/components/periodic_table.html:989
-#: app/templates/components/periodic_table.html:998
-#: app/templates/components/periodic_table.html:1007
-#: app/templates/components/periodic_table.html:1016
-#: app/templates/components/periodic_table.html:1025
-#: app/templates/components/periodic_table.html:1034
+#: app/templates/components/periodic_table.html:870
+#: app/templates/components/periodic_table.html:880
+#: app/templates/components/periodic_table.html:890
+#: app/templates/components/periodic_table.html:900
+#: app/templates/components/periodic_table.html:910
+#: app/templates/components/periodic_table.html:920
+#: app/templates/components/periodic_table.html:930
+#: app/templates/components/periodic_table.html:943
+#: app/templates/components/periodic_table.html:953
+#: app/templates/components/periodic_table.html:963
+#: app/templates/components/periodic_table.html:973
+#: app/templates/components/periodic_table.html:983
+#: app/templates/components/periodic_table.html:993
+#: app/templates/components/periodic_table.html:1003
+#: app/templates/components/periodic_table.html:1013
+#: app/templates/components/periodic_table.html:1023
+#: app/templates/components/periodic_table.html:1033
 #: app/templates/components/periodic_table.html:1043
-#: app/templates/components/periodic_table.html:1052
-#: app/templates/components/periodic_table.html:1061
-#: app/templates/components/periodic_table.html:1070
-#: app/templates/components/periodic_table.html:1079
-#: app/templates/components/periodic_table.html:1088
-#: app/templates/components/periodic_table.html:1097
+#: app/templates/components/periodic_table.html:1053
+#: app/templates/components/periodic_table.html:1063
+#: app/templates/components/periodic_table.html:1073
+#: app/templates/components/periodic_table.html:1086
+#: app/templates/components/periodic_table.html:1096
 #: app/templates/components/periodic_table.html:1106
+#: app/templates/components/periodic_table.html:1116
+#: app/templates/components/periodic_table.html:1126
+#: app/templates/components/periodic_table.html:1136
+#: app/templates/components/periodic_table.html:1146
+#: app/templates/components/periodic_table.html:1156
+#: app/templates/components/periodic_table.html:1166
+#: app/templates/components/periodic_table.html:1176
+#: app/templates/components/periodic_table.html:1186
+#: app/templates/components/periodic_table.html:1196
+#: app/templates/components/periodic_table.html:1206
+#: app/templates/components/periodic_table.html:1216
 msgid "Electron:"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1118
+#: app/templates/components/periodic_table.html:1228
 msgid "Alkali Metals"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1122
+#: app/templates/components/periodic_table.html:1232
 msgid "Alkaline Earth Metals"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1126
+#: app/templates/components/periodic_table.html:1236
 msgid "Transition Metals"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1130
+#: app/templates/components/periodic_table.html:1240
 msgid "Post-transition Metals"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1134
+#: app/templates/components/periodic_table.html:1244
 msgid "Metalloids"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1138
+#: app/templates/components/periodic_table.html:1248
 msgid "Nonmetals"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1142
+#: app/templates/components/periodic_table.html:1252
 msgid "Halogens"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1146
+#: app/templates/components/periodic_table.html:1256
 msgid "Noble Gases"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1150
+#: app/templates/components/periodic_table.html:1260
 msgid "Lanthanides"
 msgstr ""
 
-#: app/templates/components/periodic_table.html:1154
+#: app/templates/components/periodic_table.html:1264
 msgid "Actinides"
 msgstr ""
 
-
-#: app/templates/deepseek/chat.html:219 app/templates/main/database.html:991
-#: app/templates/materials/detail.html:156
-msgid "Delete"
+#: app/templates/errors/403.html:12
+msgid "Forbidden"
 msgstr ""
 
-#: app/templates/deepseek/chat.html:220 app/templates/main/database.html:221
-msgid "Clear"
+#: app/templates/errors/403.html:13
+msgid "You don't have permission to access this page."
 msgstr ""
 
-
-#: app/templates/deepseek/chat.html:222 app/templates/deepseek/chat.html:244
-msgid "Save"
+#: app/templates/errors/403.html:16 app/templates/errors/404.html:16
+#: app/templates/errors/410.html:16 app/templates/errors/500.html:16
+msgid "Return Home"
 msgstr ""
 
-
-
-
-
-
-#: app/templates/deepseek/chat.html:245 app/templates/deepseek/chat.html:259
-#: app/templates/materials/add.html:247
-msgid "Cancel"
-msgstr ""
-
-
-
-
-
-
-
-
-
-#: app/templates/errors/404.html:8
+#: app/templates/errors/404.html:12
 msgid "Page Not Found"
 msgstr ""
 
-#: app/templates/errors/404.html:9
+#: app/templates/errors/404.html:13
 msgid ""
 "The page you are looking for might have been removed, had its name "
 "changed, or is temporarily unavailable."
 msgstr ""
 
-#: app/templates/errors/404.html:12 app/templates/errors/500.html:12
-msgid "Return Home"
+#: app/templates/errors/410.html:12
+msgid "Resource Gone"
 msgstr ""
 
-#: app/templates/errors/404.html:15 app/templates/errors/500.html:15
-msgid "Go to Database"
+#: app/templates/errors/410.html:13
+msgid ""
+"The requested resource is no longer available. The site runs in read-only"
+" mode and write operations are disabled."
 msgstr ""
 
-#: app/templates/errors/429.html:2 app/templates/errors/429.html:11
+#: app/templates/errors/429.html:5 app/templates/errors/429.html:14
 msgid "Too Many Requests"
 msgstr ""
 
-#: app/templates/errors/429.html:12
+#: app/templates/errors/429.html:15
 msgid "You have sent too many requests in a short time."
 msgstr ""
 
-#: app/templates/errors/429.html:15
+#: app/templates/errors/429.html:18
 msgid "Please wait"
 msgstr ""
 
-#: app/templates/errors/429.html:17
+#: app/templates/errors/429.html:20
 msgid "seconds"
 msgstr ""
 
-#: app/templates/errors/429.html:27
+#: app/templates/errors/429.html:30
 msgid "Human Verification"
 msgstr ""
 
-#: app/templates/errors/429.html:29
+#: app/templates/errors/429.html:32
 msgid "Electrons are in random motion."
 msgstr ""
 
-#: app/templates/errors/429.html:39
+#: app/templates/errors/429.html:42
 msgid "Refresh"
 msgstr ""
 
-#: app/templates/errors/429.html:45
+#: app/templates/errors/429.html:48
 msgid "Enter 5 letters"
 msgstr ""
 
-#: app/templates/errors/429.html:45
+#: app/templates/errors/429.html:48
 msgid "Captcha code"
 msgstr ""
 
-#: app/templates/errors/429.html:47
+#: app/templates/errors/429.html:50
 msgid "Verify"
 msgstr ""
 
-#: app/templates/errors/429.html:54
+#: app/templates/errors/429.html:57
 msgid ""
 "Please wait until the countdown finishes, then enter the captcha to "
 "continue"
 msgstr ""
 
-#: app/templates/errors/429.html:412
+#: app/templates/errors/429.html:282
 msgid "Please enter the captcha to continue"
 msgstr ""
 
-#: app/templates/errors/429.html:438
+#: app/templates/errors/429.html:308
 msgid "Time is up. Please complete the captcha to continue"
 msgstr ""
 
-#: app/templates/errors/429.html:470
+#: app/templates/errors/429.html:340
 msgid "Please enter the captcha code"
 msgstr ""
 
-#: app/templates/errors/429.html:488
+#: app/templates/errors/429.html:358
 msgid "Verified. Redirecting..."
 msgstr ""
 
-#: app/templates/errors/429.html:495
+#: app/templates/errors/429.html:365
 msgid "seconds remaining, please wait"
 msgstr ""
 
-#: app/templates/errors/429.html:497
+#: app/templates/errors/429.html:367
 msgid "Invalid captcha, please try again"
 msgstr ""
 
-#: app/templates/errors/429.html:505
+#: app/templates/errors/429.html:375
 msgid "Please wait until the countdown finishes, then try again"
 msgstr ""
 
-#: app/templates/errors/500.html:8
+#: app/templates/errors/500.html:12
 msgid "Internal Server Error"
 msgstr ""
 
-#: app/templates/errors/500.html:9
+#: app/templates/errors/500.html:13
 msgid ""
 "We're experiencing some technical difficulties with our server. Our team "
 "has been notified and is working to fix the issue as soon as possible."
 msgstr ""
 
-#: app/templates/main/database.html:215
-msgid "Search materials, MP IDs, space groups..."
-msgstr ""
-
-#: app/templates/main/database.html:217 app/templates/main/database.html:222
-msgid "Search"
-msgstr ""
-
-#: app/templates/main/database.html:223
+#: app/templates/main/database.html:176
 msgid "Elements"
 msgstr ""
 
-#: app/templates/main/database.html:224
-msgid "Advanced"
+#: app/templates/main/database.html:184
+msgid "Filter by Property:"
 msgstr ""
 
-#: app/templates/main/database.html:440 app/templates/materials/add.html:222
-#: app/templates/materials/edit.html:264
+#: app/templates/main/database.html:202
 msgid "Materials Type"
 msgstr ""
 
-#: app/templates/main/database.html:443 app/templates/main/database.html:951
-#: app/templates/main/database.html:957 app/templates/materials/add.html:229
-#: app/templates/materials/detail.html:245
-#: app/templates/materials/detail.html:363
-#: app/templates/materials/detail.html:373
-#: app/templates/materials/detail.html:379
-#: app/templates/materials/detail.html:497
-#: app/templates/materials/detail.html:498
-#: app/templates/materials/edit.html:271
+#: app/templates/main/database.html:205 app/templates/main/database.html:401
+#: app/templates/main/database.html:407 app/templates/materials/detail.html:232
+#: app/templates/materials/detail.html:339
+#: app/templates/materials/detail.html:340
+#: app/templates/materials/detail.html:341
+#: app/templates/materials/detail.html:502
+#: app/templates/materials/detail.html:503
 msgid "Unknown"
 msgstr ""
 
-#: app/templates/main/database.html:444 app/templates/materials/add.html:225
-#: app/templates/materials/edit.html:267
+#: app/templates/main/database.html:206
 msgid "Metal"
 msgstr ""
 
-#: app/templates/main/database.html:445 app/templates/materials/add.html:226
-#: app/templates/materials/edit.html:268
+#: app/templates/main/database.html:207
 msgid "Semimetal"
 msgstr ""
 
-#: app/templates/main/database.html:446 app/templates/materials/add.html:227
-#: app/templates/materials/edit.html:269
+#: app/templates/main/database.html:208
 msgid "Semiconductor"
 msgstr ""
 
-#: app/templates/main/database.html:447 app/templates/materials/add.html:228
-#: app/templates/materials/edit.html:270
+#: app/templates/main/database.html:209
 msgid "Insulator"
 msgstr ""
 
-#: app/templates/main/database.html:453 app/templates/main/database.html:789
-#: app/templates/main/database.html:792 app/templates/main/database.html:942
-#: app/templates/materials/add.html:217 app/templates/materials/edit.html:257
+#: app/templates/main/database.html:215 app/templates/main/database.html:361
+#: app/templates/main/database.html:364 app/templates/main/database.html:392
 msgid "Band Gap (eV)"
 msgstr ""
 
-#: app/templates/main/database.html:456 app/templates/main/database.html:473
-#: app/templates/main/database.html:487
-msgid "Min"
-msgstr ""
-
-#: app/templates/main/database.html:458 app/templates/main/database.html:475
-#: app/templates/main/database.html:489
-msgid "to"
-msgstr ""
-
-#: app/templates/main/database.html:460 app/templates/main/database.html:477
-#: app/templates/main/database.html:491
-msgid "Max"
-msgstr ""
-
-#: app/templates/main/database.html:470
+#: app/templates/main/database.html:232
 msgid "Max Shift Current (μA/V²)"
 msgstr ""
 
-#: app/templates/main/database.html:484 app/templates/main/database.html:783
-#: app/templates/main/database.html:786 app/templates/main/database.html:941
+#: app/templates/main/database.html:246 app/templates/main/database.html:355
+#: app/templates/main/database.html:358 app/templates/main/database.html:391
 msgid "Fermi Level (eV)"
 msgstr ""
 
-#: app/templates/main/database.html:500 app/templates/main/database.html:938
+#: app/templates/main/database.html:262 app/templates/main/database.html:388
 msgid "MP-ID"
 msgstr ""
 
-#: app/templates/main/database.html:502
+#: app/templates/main/database.html:264
 msgid "e.g., mp-12345"
 msgstr ""
 
-#: app/templates/main/database.html:507 app/templates/main/database.html:940
+#: app/templates/main/database.html:269 app/templates/main/database.html:390
 msgid "Space Group"
 msgstr ""
 
-#: app/templates/main/database.html:509
+#: app/templates/main/database.html:271
 msgid "e.g., 194 or P6_3/mmc"
 msgstr ""
 
-#: app/templates/main/database.html:604
-msgid ""
-"Please enter search criteria or select at least one filter before "
-"searching."
-msgstr ""
-
-#: app/templates/main/database.html:641
+#: app/templates/main/database.html:299
 msgid "Searching with filters:"
 msgstr ""
 
-#: app/templates/main/database.html:747
+#: app/templates/main/database.html:319
 #, python-format
 msgid ""
 "\n"
@@ -1139,585 +1348,402 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/templates/main/database.html:755
-msgid "Per Page"
-msgstr ""
-
-#: app/templates/main/database.html:780
-msgid "Columns"
-msgstr ""
-
-#: app/templates/main/database.html:782
-msgid "Optional Columns"
-msgstr ""
-
-#: app/templates/main/database.html:795 app/templates/main/database.html:798
-#: app/templates/main/database.html:943
+#: app/templates/main/database.html:367 app/templates/main/database.html:370
+#: app/templates/main/database.html:393
 msgid "Max SC (μA/V²)"
 msgstr ""
 
-#: app/templates/main/database.html:802
-msgid "Apply"
-msgstr ""
-
-#: app/templates/main/database.html:937
+#: app/templates/main/database.html:387
 msgid "ID"
 msgstr ""
 
-#: app/templates/main/database.html:939 app/templates/materials/edit.html:29
+#: app/templates/main/database.html:389
 msgid "Material Name"
 msgstr ""
 
-#: app/templates/main/database.html:941 app/templates/main/database.html:942
-#: app/templates/main/database.html:943
-msgid "Hide this column"
-msgstr ""
-
-#: app/templates/main/database.html:944
+#: app/templates/main/database.html:394
 msgid "Actions"
 msgstr ""
 
-#: app/templates/main/database.html:957 app/templates/main/database.html:958
-#: app/templates/main/database.html:963
+#: app/templates/main/database.html:407 app/templates/main/database.html:408
+#: app/templates/main/database.html:413
 msgid "N/A"
 msgstr ""
 
-#: app/templates/main/database.html:970 app/templates/materials/detail.html:210
-#: app/templates/materials/detail.html:211
-#: app/templates/materials/detail.html:212
-#: app/templates/materials/detail.html:213
-#: app/templates/materials/detail.html:214
-#: app/templates/materials/detail.html:215
-#: app/templates/materials/detail.html:216
-#: app/templates/materials/detail.html:217
-#: app/templates/materials/detail.html:237
-#: app/templates/materials/detail.html:242
+#: app/templates/main/database.html:420 app/templates/materials/detail.html:197
+#: app/templates/materials/detail.html:198
+#: app/templates/materials/detail.html:199
+#: app/templates/materials/detail.html:200
+#: app/templates/materials/detail.html:201
+#: app/templates/materials/detail.html:202
+#: app/templates/materials/detail.html:203
+#: app/templates/materials/detail.html:204
+#: app/templates/materials/detail.html:224
+#: app/templates/materials/detail.html:229
 msgid "Loading..."
 msgstr ""
 
-#: app/templates/main/database.html:978
+#: app/templates/main/database.html:428
 msgid "View in MP"
 msgstr ""
 
-#: app/templates/main/database.html:984 app/templates/materials/detail.html:149
-msgid "Edit"
-msgstr ""
-
-#: app/templates/main/database.html:990 app/templates/materials/detail.html:153
-msgid "Delete permanently?"
-msgstr ""
-
-#: app/templates/main/database.html:1140
+#: app/templates/main/database.html:447
 msgid "Previous"
 msgstr ""
 
-#: app/templates/main/database.html:1155
+#: app/templates/main/database.html:462
 msgid "Next"
 msgstr ""
 
-#: app/templates/main/landing.html:8
+#: app/templates/main/landing.html:19
 msgid ""
 "Explore and discover materials, accelerating materials science research "
-"and innovation. Our database provides comprehensive material properties, "
-"crystal structures, and band analysis tools."
+"and innovation. We provide comprehensive data and analysis tools on "
+"material composition, structure, preparation processes, and "
+"physicochemical properties."
 msgstr ""
 
-#: app/templates/main/landing.html:9
+#: app/templates/main/landing.html:21
 msgid "Start Exploring"
 msgstr ""
 
-#: app/templates/main/landing.html:235
+#: app/templates/main/landing.html:39
 msgid "Comprehensive Material Data"
 msgstr ""
 
-#: app/templates/main/landing.html:236
+#: app/templates/main/landing.html:40
 msgid ""
 "Providing detailed material properties, crystal structures, and "
 "electronic structure data to support in-depth materials research."
 msgstr ""
 
-#: app/templates/main/landing.html:240
+#: app/templates/main/landing.html:44
 msgid "3D Crystal Structure Visualization"
 msgstr ""
 
-#: app/templates/main/landing.html:241
+#: app/templates/main/landing.html:45
 msgid ""
 "Using advanced three-dimensional visualization technology to intuitively "
 "display material crystal structures."
 msgstr ""
 
-#: app/templates/main/landing.html:245
-msgid "Band Structure Analysis"
+#: app/templates/main/landing.html:49
+msgid "Data Processing Tools"
 msgstr ""
 
-#: app/templates/main/landing.html:246
+#: app/templates/main/landing.html:50
+msgid "Providing data visualization, data cleaning, and data labeling tools."
+msgstr ""
+
+#: app/templates/main/landing.html:55
 msgid ""
-"Providing detailed band structure analysis tools to help understand "
-"material electronic properties."
+"Providing active learning deployment tools, self-trained large language "
+"models, and multimodal models."
 msgstr ""
 
-#: app/templates/main/landing.html:250
+#: app/templates/main/landing.html:59
 msgid "Advanced Search Features"
 msgstr ""
 
-#: app/templates/main/landing.html:251
+#: app/templates/main/landing.html:60
 msgid ""
 "Powerful search and filtering capabilities to quickly find the required "
 "material data."
 msgstr ""
 
-#: app/templates/main/landing.html:302
+#: app/templates/main/landing.html:73
 msgid "Material Data"
 msgstr ""
 
-#: app/templates/main/landing.html:306
+#: app/templates/main/landing.html:77
 msgid "Physical Properties"
 msgstr ""
 
-#: app/templates/main/landing.html:310
+#: app/templates/main/landing.html:81
 msgid "Online Service"
 msgstr ""
 
-#: app/templates/materials/add.html:18
-msgid "Add New Material"
+#: app/templates/materials/detail.html:114
+msgid "MatdataX-I：功能材料"
 msgstr ""
 
-#: app/templates/materials/add.html:23 app/templates/materials/edit.html:26
-msgid "Core Properties"
+#: app/templates/materials/detail.html:134
+msgid "MP"
 msgstr ""
 
-#: app/templates/materials/add.html:26
-msgid "Material Name (From CIF)"
-msgstr ""
-
-#: app/templates/materials/add.html:27
-msgid "Will be extracted from CIF file"
-msgstr ""
-
-#: app/templates/materials/add.html:28
-msgid "Name will be automatically extracted from the CIF file"
-msgstr ""
-
-#: app/templates/materials/add.html:31 app/templates/materials/edit.html:37
-msgid "Structure File (CIF)"
-msgstr ""
-
-#: app/templates/materials/add.html:33
-msgid "Required. CIF structure file for crystal visualization"
-msgstr ""
-
-#: app/templates/materials/add.html:34 app/templates/materials/add.html:40
-#: app/templates/materials/add.html:53 app/templates/materials/add.html:60
-#: app/templates/materials/edit.html:6 app/templates/materials/edit.html:50
-#: app/templates/materials/edit.html:66 app/templates/materials/edit.html:82
-msgid "No file selected"
-msgstr ""
-
-#: app/templates/materials/add.html:37
-msgid "Band Structure File (DAT)"
-msgstr ""
-
-#: app/templates/materials/add.html:39
-msgid "Optional. For band structure visualization"
-msgstr ""
-
-#: app/templates/materials/add.html:47 app/templates/materials/edit.html:73
-msgid "Additional Files"
-msgstr ""
-
-#: app/templates/materials/add.html:50 app/templates/materials/edit.html:76
-msgid "Material Properties (JSON)"
-msgstr ""
-
-#: app/templates/materials/add.html:52
-msgid "Optional. JSON file with material properties"
-msgstr ""
-
-#: app/templates/materials/add.html:56 app/templates/materials/edit.html:85
-msgid "Shift Current File (DAT)"
-msgstr ""
-
-#: app/templates/materials/add.html:59
-msgid "Optional. DAT file for Shift Current visualization"
-msgstr ""
-
-#: app/templates/materials/add.html:156 app/templates/materials/add.html:178
-msgid "Browse"
-msgstr ""
-
-#: app/templates/materials/add.html:202 app/templates/materials/edit.html:240
-msgid "Energy Properties (eV)"
-msgstr ""
-
-#: app/templates/materials/add.html:205 app/templates/materials/edit.html:243
-msgid "Fermi Level"
-msgstr ""
-
-#: app/templates/materials/add.html:207 app/templates/materials/edit.html:247
-msgid "Fermi energy level in eV"
-msgstr ""
-
-#: app/templates/materials/add.html:214 app/templates/materials/edit.html:254
-msgid "Electronic Properties"
-msgstr ""
-
-#: app/templates/materials/add.html:219
-msgid "Will be automatically calculated from band data"
-msgstr ""
-
-#: app/templates/materials/add.html:224
-msgid "Will be determined automatically"
-msgstr ""
-
-#: app/templates/materials/add.html:231
-msgid "Will be automatically determined from band gap"
-msgstr ""
-
-#: app/templates/materials/add.html:241 app/templates/materials/edit.html:283
-msgid "Confirm Save?"
-msgstr ""
-
-#: app/templates/materials/add.html:243
-msgid "Create Material"
-msgstr ""
-
-#: app/templates/materials/add.html:253 app/templates/materials/edit.html:294
-msgid "Data Synchronization Feature"
-msgstr ""
-
-#: app/templates/materials/add.html:254 app/templates/materials/edit.html:295
-msgid ""
-"After submitting the material, the system will automatically create the "
-"following directory structure:"
-msgstr ""
-
-#: app/templates/materials/add.html:265
-msgid ""
-"All uploaded files will be automatically organized into appropriate "
-"locations for further processing and analysis."
-msgstr ""
-
-#: app/templates/materials/add.html:383 app/templates/materials/edit.html:7
-msgid "File:"
-msgstr ""
-
-#: app/templates/materials/add.html:384
-msgid "Required name:"
-msgstr ""
-
-#: app/templates/materials/add.html:385
-msgid "Target path:"
-msgstr ""
-
-#: app/templates/materials/add.html:386 app/templates/materials/edit.html:8
-msgid "Size:"
-msgstr ""
-
-#: app/templates/materials/add.html:390
-msgid "Warning: File name must be"
-msgstr ""
-
-#: app/templates/materials/detail.html:108
-msgid "Home"
-msgstr ""
-
-#: app/templates/materials/detail.html:113
-msgid "Materials"
-msgstr ""
-
-#: app/templates/materials/detail.html:140
-msgid "Back"
-msgstr ""
-
-#: app/templates/materials/detail.html:167
-msgid "Material Sections Navigation"
-msgstr ""
-
-#: app/templates/materials/detail.html:170
+#: app/templates/materials/detail.html:157
 msgid "Structure"
 msgstr ""
 
-#: app/templates/materials/detail.html:171
+#: app/templates/materials/detail.html:158
 msgid "Crystal Data"
 msgstr ""
 
-#: app/templates/materials/detail.html:172
-#: app/templates/materials/detail.html:273
-#: app/templates/materials/detail.html:292
+#: app/templates/materials/detail.html:159
+#: app/templates/materials/detail.html:260
+#: app/templates/materials/detail.html:279
 msgid "Band Structure"
 msgstr ""
 
-#: app/templates/materials/detail.html:173
+#: app/templates/materials/detail.html:160
 msgid "SC"
 msgstr ""
 
-#: app/templates/materials/detail.html:174
+#: app/templates/materials/detail.html:161
 msgid "Berry curvature dipole"
 msgstr ""
 
-#: app/templates/materials/detail.html:175
+#: app/templates/materials/detail.html:162
 msgid "Drude weight"
 msgstr ""
 
-#: app/templates/materials/detail.html:176
-#: app/templates/materials/detail.html:330
+#: app/templates/materials/detail.html:163
+#: app/templates/materials/detail.html:317
+#: app/templates/materials/detail.html:363
+#: app/templates/materials/detail.html:411
 msgid "Properties"
 msgstr ""
 
-#: app/templates/materials/detail.html:192
+#: app/templates/materials/detail.html:179
 msgid "3D Structure"
 msgstr ""
 
-#: app/templates/materials/detail.html:205
+#: app/templates/materials/detail.html:183
+msgid ""
+"3D crystal structure function is temporarily unavailable (network "
+"connection issue)"
+msgstr ""
+
+#: app/templates/materials/detail.html:192
 msgid "Crystal Structure"
 msgstr ""
 
-#: app/templates/materials/detail.html:210
+#: app/templates/materials/detail.html:197
 msgid "Lattice a:"
 msgstr ""
 
-#: app/templates/materials/detail.html:211
+#: app/templates/materials/detail.html:198
 msgid "Lattice b:"
 msgstr ""
 
-#: app/templates/materials/detail.html:212
+#: app/templates/materials/detail.html:199
 msgid "Lattice c:"
 msgstr ""
 
-#: app/templates/materials/detail.html:213
+#: app/templates/materials/detail.html:200
 msgid "Alpha:"
 msgstr ""
 
-#: app/templates/materials/detail.html:214
+#: app/templates/materials/detail.html:201
 msgid "Beta:"
 msgstr ""
 
-#: app/templates/materials/detail.html:215
+#: app/templates/materials/detail.html:202
 msgid "Gamma:"
 msgstr ""
 
-#: app/templates/materials/detail.html:216
+#: app/templates/materials/detail.html:203
 msgid "Volume:"
 msgstr ""
 
-#: app/templates/materials/detail.html:217
+#: app/templates/materials/detail.html:204
 msgid "Density:"
 msgstr ""
 
-#: app/templates/materials/detail.html:232
+#: app/templates/materials/detail.html:219
 msgid "Crystal Symmetry"
 msgstr ""
 
-#: app/templates/materials/detail.html:237
+#: app/templates/materials/detail.html:224
 msgid "Crystal System:"
 msgstr ""
 
-#: app/templates/materials/detail.html:238
+#: app/templates/materials/detail.html:225
 msgid "Space Group:"
 msgstr ""
 
-#: app/templates/materials/detail.html:245
+#: app/templates/materials/detail.html:232
 msgid "MP-ID:"
 msgstr ""
 
-#: app/templates/materials/detail.html:255
+#: app/templates/materials/detail.html:242
 msgid "Atomic Coordinates"
 msgstr ""
 
-#: app/templates/materials/detail.html:259
+#: app/templates/materials/detail.html:246
 msgid "Loading atomic coordinates..."
 msgstr ""
 
-#: app/templates/materials/detail.html:275
+#: app/templates/materials/detail.html:262
 msgid "Download band data"
 msgstr ""
 
-#: app/templates/materials/detail.html:297
+#: app/templates/materials/detail.html:284
 msgid "Band Gap:"
 msgstr ""
 
-#: app/templates/materials/detail.html:302
-#: app/templates/materials/detail.html:311
+#: app/templates/materials/detail.html:289
+#: app/templates/materials/detail.html:298
 msgid "Analyzing..."
 msgstr ""
 
-#: app/templates/materials/detail.html:306
+#: app/templates/materials/detail.html:293
 msgid "Materials Type:"
 msgstr ""
 
-#: app/templates/materials/detail.html:326
+#: app/templates/materials/detail.html:313
 msgid "Shift Current"
 msgstr ""
 
-#: app/templates/materials/detail.html:328
+#: app/templates/materials/detail.html:315
 msgid "SC Tabs"
 msgstr ""
 
-#: app/templates/materials/detail.html:329
+#: app/templates/materials/detail.html:316
+#: app/templates/materials/detail.html:362
+#: app/templates/materials/detail.html:410
 msgid "Relations"
 msgstr ""
 
-#: app/templates/materials/detail.html:350
-msgid "Loading element relations..."
-msgstr ""
-
-#: app/templates/materials/detail.html:358
-msgid "Max SC"
-msgstr ""
-
-#: app/templates/materials/detail.html:368
-msgid "Max Photon Energy"
-msgstr ""
-
-#: app/templates/materials/detail.html:378
-msgid "Max Tensor Type"
-msgstr ""
-
-#: app/templates/materials/detail.html:396
-msgid "Berry curvature dipole (BCD)"
-msgstr ""
-
-#: app/templates/materials/detail.html:397
-#: app/templates/materials/detail.html:424
+#: app/templates/materials/detail.html:318
+#: app/templates/materials/detail.html:364
+#: app/templates/materials/detail.html:412
 msgid "Eigen Matrix"
 msgstr ""
 
-#: app/templates/materials/detail.html:416
+#: app/templates/materials/detail.html:327
+msgid "Chart function is temporarily unavailable (network connection issue)"
+msgstr ""
+
+#: app/templates/materials/detail.html:333
+#: app/templates/materials/detail.html:381
+#: app/templates/materials/detail.html:429
+msgid "Loading element relations..."
+msgstr ""
+
+#: app/templates/materials/detail.html:339
+msgid "Max SC"
+msgstr ""
+
+#: app/templates/materials/detail.html:340
+msgid "Max Photon Energy"
+msgstr ""
+
+#: app/templates/materials/detail.html:341
+msgid "Max Tensor Type"
+msgstr ""
+
+#: app/templates/materials/detail.html:347
+msgid "No matrix data for Shift Current."
+msgstr ""
+
+#: app/templates/materials/detail.html:359
+msgid "Berry curvature dipole (BCD)"
+msgstr ""
+
+#: app/templates/materials/detail.html:361
+msgid "BCD Tabs"
+msgstr ""
+
+#: app/templates/materials/detail.html:386
+msgid "BCD properties are not available yet."
+msgstr ""
+
+#: app/templates/materials/detail.html:400
 msgid "BCD Legend"
 msgstr ""
 
-#: app/templates/materials/detail.html:423
+#: app/templates/materials/detail.html:407
 msgid "Drude weight (DW)"
 msgstr ""
 
-#: app/templates/materials/detail.html:443
+#: app/templates/materials/detail.html:409
+msgid "DW Tabs"
+msgstr ""
+
+#: app/templates/materials/detail.html:434
+msgid "DW properties are not available yet."
+msgstr ""
+
+#: app/templates/materials/detail.html:448
 msgid "DW Legend"
 msgstr ""
 
-#: app/templates/materials/detail.html:453
-msgid "Basic Properties"
+#: app/templates/materials/detail.html:456
+msgid "热力学性质"
 msgstr ""
 
 #: app/templates/materials/detail.html:458
+msgid "Basic Properties"
+msgstr ""
+
+#: app/templates/materials/detail.html:463
 msgid "ID:"
 msgstr ""
 
-#: app/templates/materials/detail.html:459
+#: app/templates/materials/detail.html:464
 msgid "Fermi Level:"
 msgstr ""
 
-#: app/templates/materials/detail.html:459
-#: app/templates/materials/detail.html:474
-#: app/templates/materials/detail.html:475
+#: app/templates/materials/detail.html:464
+#: app/templates/materials/detail.html:479
+#: app/templates/materials/detail.html:480
 msgid "Not available yet"
 msgstr ""
 
-#: app/templates/materials/detail.html:469
+#: app/templates/materials/detail.html:474
 msgid "Surface Properties"
 msgstr ""
 
-#: app/templates/materials/detail.html:474
+#: app/templates/materials/detail.html:479
 msgid "Vacuum Level:"
 msgstr ""
 
-#: app/templates/materials/detail.html:475
+#: app/templates/materials/detail.html:480
 msgid "Work Function:"
 msgstr ""
 
-#: app/templates/materials/edit.html:21
-#, python-format
-msgid "Editing %(name)s"
+#: app/templates/members/detail.html:16
+msgid "Title"
 msgstr ""
 
-#: app/templates/materials/edit.html:34
-msgid "2-120 characters"
+#: app/templates/members/detail.html:19
+msgid "Phone"
 msgstr ""
 
-#: app/templates/materials/edit.html:40
-msgid "Current CIF file(s):"
+#: app/templates/members/detail.html:37
+msgid "Research Interests"
 msgstr ""
 
-#: app/templates/materials/edit.html:42 app/templates/materials/edit.html:59
-#: app/templates/materials/edit.html:80 app/templates/materials/edit.html:93
-msgid "Path:"
+#: app/templates/members/detail.html:60
+msgid "Back to Team"
 msgstr ""
 
-#: app/templates/materials/edit.html:45
-msgid "Warning: 存在多个.cif文件，请只保留一个！"
+#: app/templates/members/index.html:17
+msgid "Supervisors"
 msgstr ""
 
-#: app/templates/materials/edit.html:49
-msgid "支持.cif格式，文件名不限，若有多个.cif文件将报错"
+#: app/templates/members/index.html:35
+msgid "Students"
 msgstr ""
 
-#: app/templates/materials/edit.html:53
-msgid "Band Structure File (DAT/JSON)"
+#: app/templates/program/index.html:7
+msgid "TXT文件格式转换"
 msgstr ""
 
-#: app/templates/materials/edit.html:55
-msgid "支持.dat/.json格式，文件名不限，若有多个同类文件将报错"
+#: app/templates/program/index.html:13
+msgid "上传并转换"
 msgstr ""
 
-#: app/templates/materials/edit.html:57
-msgid "Current band file(s):"
+#: app/templates/program/index.html:17
+msgid "下载转换结果："
 msgstr ""
 
-#: app/templates/materials/edit.html:62
-msgid "Warning: 存在多个能带文件，请只保留一个！"
+#: app/templates/program/index.html:19
+msgid "下载 .dat 文件"
 msgstr ""
 
-#: app/templates/materials/edit.html:78
-msgid "JSON file with material properties"
-msgstr ""
-
-#: app/templates/materials/edit.html:80
-msgid "Current file:"
-msgstr ""
-
-#: app/templates/materials/edit.html:80
-msgid "Required name: material.json"
-msgstr ""
-
-#: app/templates/materials/edit.html:88
-msgid "支持.dat格式，文件名不限，若有多个同类文件将报错"
-msgstr ""
-
-#: app/templates/materials/edit.html:94
-msgid "删除"
-msgstr ""
-
-#: app/templates/materials/edit.html:97
-msgid "无Shift Current文件"
-msgstr ""
-
-#: app/templates/materials/edit.html:261
-msgid "Automatically calculated from band data"
-msgstr ""
-
-#: app/templates/materials/edit.html:266
-msgid "Select Type"
-msgstr ""
-
-#: app/templates/materials/edit.html:273
-msgid "Automatically determined from band gap"
-msgstr ""
-
-#: app/templates/materials/edit.html:284
-msgid "Update Material"
-msgstr ""
-
-#: app/templates/materials/edit.html:288
-msgid "Discard Changes"
-msgstr ""
-
-#: app/templates/members/index.html:7
-msgid ""
-"Meet our talented researchers dedicated to cutting-edge materials science"
-" and computational design at the Department of Materials Computation and "
-"Design, Institute of Metal Research, Chinese Academy of Sciences."
-msgstr ""
-
-#: app/templates/members/index.html:25
-msgid "Achievements:"
+#: app/templates/program/index.html:22
+msgid "下载 .docx 文件"
 msgstr ""
 
