@@ -12,26 +12,28 @@ from app import create_app, db
 from app.models import Material
 
 def update_sc_tags():
-    """根据 max_sc 字段更新 has_sc 标签。"""
+    """根据 'sc' 文件夹是否存在来更新 has_sc 标签。"""
     print("开始更新 has_sc 标签...")
-    materials_to_update = Material.query.filter(Material.max_sc.isnot(None)).all()
+    all_materials = Material.query.all()
     updated_count = 0
-    for material in materials_to_update:
-        if not material.has_sc:
-            material.has_sc = True
-            updated_count += 1
-    
-    # 将所有 max_sc 为 NULL 的材料的 has_sc 设为 False
-    materials_to_reset = Material.query.filter(Material.max_sc.is_(None), Material.has_sc == True).all()
-    reset_count = 0
-    for material in materials_to_reset:
-        material.has_sc = False
-        reset_count += 1
 
-    if updated_count > 0 or reset_count > 0:
+    # 获取项目根目录的绝对路径
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    materials_base_dir = os.path.join(project_root, 'app', 'static', 'materials')
+
+    for material in all_materials:
+        material_dir = os.path.join(materials_base_dir, f'IMR-{material.id}')
+        sc_dir_path = os.path.join(material_dir, 'sc')
+        
+        should_have_sc = os.path.isdir(sc_dir_path)
+        
+        if material.has_sc != should_have_sc:
+            material.has_sc = should_have_sc
+            updated_count += 1
+
+    if updated_count > 0:
         db.session.commit()
-        print(f"更新了 {updated_count} 个材料的 has_sc 标签为 True。")
-        print(f"重置了 {reset_count} 个材料的 has_sc 标签为 False。")
+        print(f"更新了 {updated_count} 个材料的 has_sc 标签状态。")
     else:
         print("没有需要更新的 has_sc 标签。")
 
