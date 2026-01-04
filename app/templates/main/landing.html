@@ -23,8 +23,15 @@
             </div>
             <div class="hero-col hero-media">
                 <div id="heroCarousel" class="carousel" aria-label="Landing pictures carousel">
+                    <button class="carousel-arrow carousel-arrow-prev" aria-label="Previous slide">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-arrow carousel-arrow-next" aria-label="Next slide">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                     <div class="carousel-stage" id="carouselStage"></div>
                     <div class="carousel-dots" id="carouselDots" role="tablist"></div>
+                    <div class="carousel-thumbnail" id="carouselThumbnail"></div>
                 </div>
             </div>
         </div>
@@ -33,31 +40,33 @@
     <!-- ========== 特性区域 ========== -->
     <section class="features">
         <div class="container">
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-database feature-icon"></i>
-                    <h3>{{ _('Comprehensive Material Data') }}</h3>
-                    <p>{{ _('Providing detailed material properties, crystal structures, and electronic structure data to support in-depth materials research.') }}</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-cube feature-icon"></i>
-                    <h3>{{ _('3D Crystal Structure Visualization') }}</h3>
-                    <p>{{ _('Using advanced three-dimensional visualization technology to intuitively display material crystal structures.') }}</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-sliders-h feature-icon"></i>
-                    <h3>{{ _('Data Processing Tools') }}</h3>
-                    <p>{{ _('Providing data visualization, data cleaning, and data labeling tools.') }}</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-robot feature-icon"></i>
-                    <h3>{{ _('AI Tools') }}</h3>
-                    <p>{{ _('Providing active learning deployment tools, self-trained large language models, and multimodal models.') }}</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-search feature-icon"></i>
-                    <h3>{{ _('Advanced Search Features') }}</h3>
-                    <p>{{ _('Powerful search and filtering capabilities to quickly find the required material data.') }}</p>
+            <div class="features-scroll-container">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-database feature-icon"></i>
+                        <h3>{{ _('Comprehensive Material Data') }}</h3>
+                        <p>{{ _('Providing detailed material properties, crystal structures, and electronic structure data to support in-depth materials research.') }}</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-cube feature-icon"></i>
+                        <h3>{{ _('3D Crystal Structure Visualization') }}</h3>
+                        <p>{{ _('Using advanced three-dimensional visualization technology to intuitively display material crystal structures.') }}</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-sliders-h feature-icon"></i>
+                        <h3>{{ _('Data Processing Tools') }}</h3>
+                        <p>{{ _('Providing data visualization, data cleaning, and data labeling tools.') }}</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-robot feature-icon"></i>
+                        <h3>{{ _('AI Tools') }}</h3>
+                        <p>{{ _('Providing active learning deployment tools, self-trained large language models, and multimodal models.') }}</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-search feature-icon"></i>
+                        <h3>{{ _('Advanced Search Features') }}</h3>
+                        <p>{{ _('Powerful search and filtering capabilities to quickly find the required material data.') }}</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -69,15 +78,24 @@
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number">100k+</div>
+                    <div class="stat-number">
+                        <span class="stat-value" data-target="100000">0</span>
+                        <span class="stat-unit">k+</span>
+                    </div>
                     <p>{{ _('Material Data') }}</p>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">50+</div>
+                    <div class="stat-number">
+                        <span class="stat-value" data-target="50">0</span>
+                        <span class="stat-unit">+</span>
+                    </div>
                     <p>{{ _('Physical Properties') }}</p>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">24/7</div>
+                    <div class="stat-number">
+                        <span class="stat-value" data-target="24">0</span>
+                        <span class="stat-unit">/7</span>
+                    </div>
                     <p>{{ _('Online Service') }}</p>
                 </div>
             </div>

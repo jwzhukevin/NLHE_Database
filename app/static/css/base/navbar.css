@@ -1,5 +1,11 @@
 /* [base/navbar.css] 由 base.html 内联样式迁移。导航栏与相关下拉/用户指示样式 */
 
+/* 确保 Font Awesome 图标正确显示 */
+.nav-links i, .dropdown-menu i, .user-avatar i {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important;
+    font-weight: 900;
+}
+
 /* ========== 导航栏样式 ========== */
 /* 导航栏容器,固定在页面顶部 */
 .navbar {

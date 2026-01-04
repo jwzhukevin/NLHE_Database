@@ -66,9 +66,14 @@
             color: var(--text-color);
             background-color: var(--light-bg);
         }
+        
+        /* 确保 Font Awesome 图标不被覆盖 */
+        .fas, .far, .fal, .fab, .fa {
+            font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important;
+        }
 
         .container {
-            max-width: 1400px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 0 10px;
         }

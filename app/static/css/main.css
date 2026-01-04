@@ -13,6 +13,11 @@ html, body {
     font-family: 'Inter', sans-serif;
 }
 
+/* 确保 Font Awesome 图标不被覆盖 */
+.fas, .far, .fal, .fab, .fa, i[class^="fa-"], i[class*=" fa-"] {
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important;
+}
+
 /* ========== Search Component Styles ========== */
 
 /* Advanced Search Styles */
