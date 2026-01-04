@@ -1,0 +1,173 @@
+/* [components/alerts.css] Flash消息与提示框样式 */
+
+/* Flash 消息容器（只在有消息时才由模板渲染） */
+.flash-messages {
+    padding: 0.75rem 0;
+}
+
+.flash-messages .container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* 单条 Flash 消息 */
+.flash-message {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+
+    /* 默认 info 样式 */
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e3a8a;
+
+    animation: flash-slide-in 0.3s ease-out;
+}
+
+@keyframes flash-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.flash-message .message-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    flex: 1;
+}
+
+.flash-message .message-content i {
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    margin-top: 1px;
+
+    /* 默认 info 图标样式 */
+    background-color: #1d4ed8;
+    color: #ffffff;
+}
+
+.flash-message .message-content span {
+    flex: 1;
+}
+
+/* 关闭按钮 */
+.flash-message .close-flash {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flash-message .close-flash:hover {
+    opacity: 1;
+}
+
+/* ========== 语义类型样式 ========== */
+
+/* Info (默认) */
+.flash-message.info {
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e3a8a;
+}
+
+.flash-message.info .message-content i {
+    background-color: #1d4ed8;
+    color: #ffffff;
+}
+
+/* Success */
+.flash-message.success {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #166534;
+}
+
+.flash-message.success .message-content i {
+    background-color: #16a34a;
+    color: #ffffff;
+}
+
+/* Error / Danger */
+.flash-message.error,
+.flash-message.danger {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+.flash-message.error .message-content i,
+.flash-message.danger .message-content i {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+/* Warning */
+.flash-message.warning {
+    background-color: #fffbeb;
+    border-color: #fed7aa;
+    color: #92400e;
+}
+
+.flash-message.warning .message-content i {
+    background-color: #f59e0b;
+    color: #ffffff;
+}
+
+/* 隐藏动画 */
+.flash-message.hide {
+    animation: flash-slide-out 0.25s ease-in forwards;
+}
+
+@keyframes flash-slide-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .flash-message {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .flash-message .message-content i {
+        width: 1.25rem;
+        height: 1.25rem;
+        font-size: 0.7rem;
+    }
+}

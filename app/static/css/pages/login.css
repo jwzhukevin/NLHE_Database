@@ -222,6 +222,58 @@
     outline: none;
 }
 
+/* 登录提示信息样式（登录前提示、错误信息等） */
+.login-message {
+    margin-bottom: 0.85rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+
+    display: none;  /* 默认隐藏，JS 显示时会设置 display */
+    align-items: flex-start;
+    gap: 0.55rem;
+
+    background-color: #eff6ff;           /* 浅蓝背景，呼应站点主色 */
+    border: 1px solid #bfdbfe;           /* 边框略深一点 */
+    color: #1e3a8a;                      /* 深蓝文字 */
+}
+
+.login-message::before {
+    content: '\f05a';                  /* Font Awesome info-circle */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    flex-shrink: 0;
+    margin-top: 1px;
+
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #1d4ed8;          /* 用导航/主按钮的蓝色 */
+    color: #ffffff;
+    font-size: 0.75rem;
+}
+
+/* 错误态：用于密码错误、验证码错误等 */
+.login-message.error {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+.login-message.error::before {
+    background-color: #b91c1c;
+}
+
+/* 信息态（默认）：需要登录才能访问等提示 */
+.login-message.info {
+    /* 保持与 .login-message 主色一致，这里主要是语义 class */
+}
+
 /* Captcha styles */
 .captcha-container {
     display: flex;
@@ -398,7 +450,7 @@
         outline: none;
     }
 
-    /* Captcha styles */
+/* Captcha styles */
     .captcha-container {
         display: flex;
         align-items: flex-start;

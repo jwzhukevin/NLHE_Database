@@ -17,9 +17,13 @@
             <div class="hero-col hero-text">
                 <h1>MatdataX</h1>
                 <p>{{ _('Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties.') }}</p>
-                <form method="GET" action="{{ url_for('views.index') }}" class="cta-form">
-                    <button type="submit" class="btn btn--primary">{{ _('Start Exploring') }}</button>
-                </form>
+                <div class="cta-group">
+                    <form method="GET" action="{{ url_for('views.index') }}" class="cta-form">
+                        <button type="submit" class="btn btn--primary btn--hero-main">
+                            {{ _('Start Exploring') }}
+                        </button>
+                    </form>
+                </div>
             </div>
             <div class="hero-col hero-media">
                 <div id="heroCarousel" class="carousel" aria-label="Landing pictures carousel">

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/tables.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/periodic_table.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/utilities.css', v='20250913') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/alerts.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base/navbar.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base/footer.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base/loader.css', v='20250913') }}">
@@ -282,23 +283,23 @@
     <!-- ========== 主内容区域 ========== -->
     <div class="main-content">
         <!-- Flash Messages -->
-        <div class="flash-messages">
-            <div class="container">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="flash-message {{ category }}">
-                                <div class="message-content">
-                                    <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
-                                    <span>{{ message }}</span>
-                                </div>
-                                <button class="close-flash">&times;</button>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                <div class="container">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <div class="message-content">
+                                <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                                <span>{{ message }}</span>
                             </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                            <button class="close-flash">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
+            {% endif %}
+        {% endwith %}
 
         {% block content %}{% endblock %}
     </div>
