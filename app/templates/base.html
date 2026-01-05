@@ -222,11 +222,6 @@
                 {% endif %}
                 <!-- 登录用户专用功能按钮 -->
                 {% if current_user.is_authenticated %}
-                {# [Deprecated 20251008] 导航栏程序模块暂时下线（仅注释，结构保留）
-                <a href="{{ url_for('program.index') }}">
-                    <i class="fas fa-cogs"></i> {{ _('Program') }}
-                </a>
-                #}
                 {% endif %}
 
                 {# [Deprecated 20251001] 管理员新增入口已移除（只读模式） #}

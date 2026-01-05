@@ -1727,23 +1727,3 @@ msgstr ""
 msgid "Students"
 msgstr ""
 
-#: app/templates/program/index.html:7
-msgid "TXT文件格式转换"
-msgstr ""
-
-#: app/templates/program/index.html:13
-msgid "上传并转换"
-msgstr ""
-
-#: app/templates/program/index.html:17
-msgid "下载转换结果："
-msgstr ""
-
-#: app/templates/program/index.html:19
-msgid "下载 .dat 文件"
-msgstr ""
-
-#: app/templates/program/index.html:22
-msgid "下载 .docx 文件"
-msgstr ""
-

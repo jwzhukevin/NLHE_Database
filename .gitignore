@@ -13,6 +13,7 @@ instance/*
 # Directories
 NLHE/
 README/
+docs/
 
 # Materials data directory - contains large material files and user data
 app/static/materials/

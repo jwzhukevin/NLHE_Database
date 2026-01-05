@@ -881,71 +881,7 @@ def register_commands(app):
    flask import-json --dir=app/static/structures --test # 测试模式导入
    ``` 
 
-### 4.8 文件格式转换模块
 
-#### 4.8.1 功能描述
-
-文件格式转换模块提供简单实用的文本文件格式转换功能，支持将TXT文本文件转换为DAT数据文件和DOCX文档文件，方便用户进行数据处理和文档编辑。
-
-#### 4.8.2 技术实现
-
-- **核心组件**：
-  - 文件上传：基于Flask的安全文件上传机制
-  - 格式转换：使用python-docx库实现TXT到DOCX的转换
-  - 文件下载：支持转换结果的直接下载
-- **安全措施**：
-  - 文件类型验证：限制只接受TXT文件
-  - 安全文件名：使用secure_filename防止路径遍历攻击
-  - 访问控制：要求用户登录才能使用转换功能
-
-#### 4.8.3 关键代码
-
-```python
-# 文件格式转换实现
-@program_bp.route('/', methods=['GET', 'POST'])
-@login_required
-def index():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('没有文件被上传', 'danger')
-            return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '' or not allowed_file(file.filename):
-            flash('请上传txt文件', 'danger')
-            return redirect(request.url)
-        filename = secure_filename(file.filename)
-        save_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(save_path)
-        # 转换为dat
-        dat_filename = filename.rsplit('.', 1)[0] + '.dat'
-        dat_path = os.path.join(UPLOAD_FOLDER, dat_filename)
-        with open(save_path, 'r', encoding='utf-8') as fin, open(dat_path, 'w', encoding='utf-8') as fout:
-            fout.write(fin.read())
-        # 转换为word
-        docx_filename = filename.rsplit('.', 1)[0] + '.docx'
-        docx_path = os.path.join(UPLOAD_FOLDER, docx_filename)
-        doc = Document()
-        with open(save_path, 'r', encoding='utf-8') as fin:
-            for line in fin:
-                doc.add_paragraph(line.rstrip())
-        doc.save(docx_path)
-        flash('转换成功！', 'success')
-        return render_template('program_index.html', dat_file=dat_filename, docx_file=docx_filename)
-    return render_template('program_index.html')
-```
-
-```python
-# 文件下载实现
-@program_bp.route('/download/<filename>')
-@login_required
-def download(filename):
-    abs_folder = os.path.join(current_app.root_path, 'static', 'functions', 'trans_txt')
-    return send_from_directory(abs_folder, filename, as_attachment=True)
-```
-
-#### 4.8.4 界面展示
-
-文件转换界面设计简洁直观，包含文件上传区域和转换按钮。转换成功后显示下载链接，用户可以直接下载转换后的DAT和DOCX文件。界面提供清晰的操作反馈，包括成功提示和错误信息。
 
 ## 五、技术实现
 
