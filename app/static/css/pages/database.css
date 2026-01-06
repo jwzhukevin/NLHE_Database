@@ -143,7 +143,6 @@
 }
 .analysis-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #e5e7eb; }
 .analysis-header h3 { margin: 0; color: #374151; }
-.close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280; }
 .analysis-body { padding: 1.5rem; }
 .analysis-section { margin-bottom: 1.5rem; }
 .analysis-section h4 { margin: 0 0 0.5rem 0; color: #374151; font-size: 1.1rem; }
@@ -159,12 +158,6 @@
 .search-row { display: flex; flex-direction: row; gap: 1.5rem; margin-bottom: 1rem; }
 .search-row .search-group { flex: 1; }
 .search-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem; }
-.search-actions button, .search-actions .clear-btn button { padding: 0.5rem 1.25rem; font-size: 0.95rem; border-radius: 4px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
-.search-actions .search-btn { background-color: var(--primary-color); color: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-.search-actions .search-btn:hover { background-color: var(--secondary-color); transform: translateY(-1px); }
-.search-actions .clear-btn { text-decoration: none; }
-.search-actions .clear-btn button { background-color: #f5f5f5; color: #555; border: 1px solid #e0e0e0; }
-.search-actions .clear-btn button:hover { background-color: #e8e8e8; transform: translateY(-1px); }
 /* 范围输入框 */
 .range-inputs input { flex: 1; }
 .range-inputs span { color: #666; font-weight: 500; }
@@ -347,47 +340,6 @@
   display: none;
 }
 
-.btn-prop-filter {
-  /* Rebuilding base styles */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  text-decoration: none;
-  user-select: none;
-  
-  /* Applying new design */
-  position: relative;
-  min-width: 6.25rem;
-  padding: 0.55rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid transparent;
-  background-color: #ffffff;
-  color: var(--primary-color);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, font-weight 0.18s ease;
-}
-
-.btn-prop-filter:hover:not(.active) {
-  font-weight: 700;
-  border-color: var(--primary-color);
-}
-
-.btn-prop-filter.active {
-  background-color: rgba(154, 132, 204, 0.92);
-  color: #ffffff;
-  font-weight: 700;
-  border-color: transparent;
-  box-shadow: 0 4px 12px rgba(122, 94, 184, 0.22);
-}
-
-.btn-prop-filter.active:hover {
-  background-color: rgba(140, 115, 198, 0.95);
-  border-color: transparent;
-}
-
-.btn-prop-filter:focus-visible {
-  outline: 2px solid transparent;
-  box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.24);
+.property-filters.collapsed .property-filter-options {
+  display: none;
 }

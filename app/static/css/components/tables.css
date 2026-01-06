@@ -55,6 +55,6 @@
 /* 文本与对齐的基础（页面可覆盖具体列对齐与特殊列） */
 .table-basic th, .table-basic td,
 .material-data-table th, .material-data-table td {
-  text-align: left;
+  text-align: center; /* 改为居中对齐 */
   vertical-align: middle;
 }

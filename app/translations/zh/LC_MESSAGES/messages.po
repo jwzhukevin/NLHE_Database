@@ -2016,11 +2016,27 @@ msgstr "成果："
 #~ msgstr "状态："
 
 #~ msgid "BCD"
-#~ msgstr ""
+#~ msgstr "贝里曲率偶极"
 
 #~ msgid "DW"
-#~ msgstr "本征电导率"
+#~ msgstr "德鲁德权重"
 
 #: app/templates/main/landing.html:12
 msgid "Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties."
 msgstr "探索与发现材料，加速材料科学研究与创新。我们提供全面的材料成分、结构、制备工艺、物理化学性能数据与分析工具。"
+
+#: app/templates/main/landing.html:19
+msgid "Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties."
+msgstr "探索和发现材料，加速材料科学的研究与创新。我们提供关于材料成分、结构、制备工艺和物理化学性质的全面数据及分析工具。"
+
+#: app/templates/main/landing.html:68
+msgid "Large Language Model"
+msgstr "大语言模型"
+
+#: app/templates/main/landing.html:69
+msgid "A large language model for the materials database, providing professional guidance."
+msgstr "材料语库的大语言模型，提供专业的指导"
+
+#: app/templates/main/landing.html:70
+msgid "Language"
+msgstr "语言"

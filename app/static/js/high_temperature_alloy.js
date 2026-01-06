@@ -132,70 +132,6 @@
     // 本期：先留空，等用户首次查询后根据结果填充多选项（避免额外端点）。
   }
 
-  function buildRow(item) {
-    // 解释：构造表格行，首列为 HTA-id（HTA-<row>）
-    const tr = document.createElement('tr');
-    const cells = [
-      { key: 'hta_id', value: item.hta_display_id },
-      // Material 渲染为可点击，跳转详情（列顺序前移到编号后）
-      { key: 'Material', value: item.Material, clickableDetail: true },
-      { key: 'bending_strength_mpa', value: toFixed2(item.bending_strength_mpa) },
-      { key: 'zt', value: toFixed2(item.zt) },
-      { key: 'bending_strain', value: toFixed2(item.bending_strain) },
-    ];
-    cells.forEach(c => {
-      const td = document.createElement('td');
-      td.setAttribute('data-col-key', c.key);
-      if (c.clickableDetail) {
-        const a = document.createElement('a');
-        a.className = 'material-link';
-        const row = item.hta_row;
-        const hash10 = (item.hta_hash || '').slice(-10);
-        a.href = `/High_temperature_alloy/detail/HTA-${row}-${hash10}`;
-        a.textContent = c.value === undefined ? '' : c.value;
-        td.appendChild(a);
-      } else {
-        td.textContent = c.value === undefined ? '' : c.value;
-      }
-      tr.appendChild(td);
-    });
-
-    // 详情按钮
-    const tdAct = document.createElement('td');
-    tdAct.setAttribute('data-col-key', 'actions');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn btn--secondary';
-    btn.innerHTML = '<i class="fas fa-info-circle"></i> ' + (window._ ? _('Detail') : 'Detail');
-    btn.addEventListener('click', () => {
-      openProcModal(item.process_type, item.heat_treatment_process);
-    });
-    tdAct.appendChild(btn);
-    tr.appendChild(tdAct);
-
-    return tr;
-  }
-
-  function renderTable(items) {
-    const tbody = document.querySelector('#hta-table tbody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    if (!items || !items.length) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      // 动态计算列数，避免列调整后空结果合并列数不匹配
-      const colCount = document.querySelectorAll('#hta-table thead th').length || 6;
-      td.colSpan = colCount;
-      td.textContent = (window._ ? _('No results') : 'No results');
-      tr.appendChild(td);
-      tbody.appendChild(tr);
-      return;
-    }
-    items.forEach(it => tbody.appendChild(buildRow(it)));
-    // 应用列显隐
-    applyColumnVisibility(getVisibleCols());
-    // 应用排序（仅重绘当前页时设置表头状态，不在此处重排数据，因为分页回调内已处理）
-  }
 
   function renderPagination(total, page, pageSize, onPage) {
     const el = document.getElementById('hta-pagination');
@@ -380,74 +316,79 @@
     } catch {}
   }
 
-  async function loadPage(form, page=1) {
-    const params = qs(form);
-    params.set('page', String(page));
+  function renderPagination(total, page, pageSize, onPage) {
+    const el = document.getElementById('hta-pagination');
+    if (!el) return;
+    el.innerHTML = '';
+    const pages = Math.max(1, Math.ceil(total / pageSize));
+    const makeBtn = (p, label, disabled) => {
+      const b = document.createElement('button');
+      b.className = 'button-tool-small' + (disabled ? ' disabled' : '');
+      b.disabled = !!disabled;
+      b.textContent = label;
+      b.addEventListener('click', () => onPage(p));
+      return b;
+    };
+    el.appendChild(makeBtn(1, '<<', page === 1));
+    el.appendChild(makeBtn(Math.max(1, page - 1), '<', page === 1));
+    const span = document.createElement('span');
+    span.style.margin = '0 0.5rem';
+    span.textContent = `${page} / ${pages}`;
+    el.appendChild(span);
+    el.appendChild(makeBtn(Math.min(pages, page + 1), '>', page === pages));
+    el.appendChild(makeBtn(pages, '>>', page === pages));
+  }
 
-    const url = '/High_temperature_alloy/query?' + params.toString();
-    let data;
-    try {
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) {
-        const text = await res.text();
-        console.error('HTA query failed', res.status, text);
-        renderTable([]);
-        renderPagination(0, 1, Number(params.get('page_size') || '20'), ()=>{});
-        return;
+  function restoreState(form, searchParams) {
+    const state = searchParams || {};
+    setInputValue(form.querySelector('[name="q"]'), state.q);
+    ['crystal_structure','process_type','heat_treatment_process'].forEach(k => {
+      if (state[k]) {
+        const arr = String(state[k]).split(',').filter(Boolean);
+        ensureMultiSelectOptions(form.querySelector(`select[name="${k}"]`), arr);
       }
-      data = await res.json();
-    } catch (err) {
-      console.error('HTA query network/error', err);
-      renderTable([]);
-      renderPagination(0, 1, Number(params.get('page_size') || '20'), ()=>{});
-      return;
-    }
-    renderTable(data.items || []);
-    renderPagination(data.total || 0, data.page || 1, data.page_size || 20, p=>{ saveState(form, p); loadPage(form, p); });
-    // 若存在排序偏好，应用一次排序
-    try {
-      const raw = localStorage.getItem('hta_sort');
-      if (raw) {
-        const { key, order } = JSON.parse(raw);
-        if (key && order) sortCurrentTbody(key, order);
-      }
-    } catch {}
+    });
+    setInputValue(form.querySelector('[name="bending_strength_min"]'), state.bending_strength_min);
+    setInputValue(form.querySelector('[name="bending_strength_max"]'), state.bending_strength_max);
+    setInputValue(form.querySelector('[name="zt_min"]'), state.zt_min);
+    setInputValue(form.querySelector('[name="zt_max"]'), state.zt_max);
+    setInputValue(form.querySelector('[name="bending_strain_min"]'), state.bending_strain_min);
+    setInputValue(form.querySelector('[name="bending_strain_max"]'), state.bending_strain_max);
   }
 
   document.addEventListener('DOMContentLoaded', function(){
     const form = document.getElementById('htaSearchForm');
-    const btnQuery = document.getElementById('btn-query');
-    const btnQueryAdv = document.getElementById('btn-query-adv');
-    const btnReset = document.getElementById('btn-reset');
-
     if (!form) return;
 
-    const runSearch = () => { saveState(form, 1); loadPage(form, 1); };
-    btnQuery && btnQuery.addEventListener('click', runSearch);
-    btnQueryAdv && btnQueryAdv.addEventListener('click', runSearch);
+    const runSearch = (page = 1) => {
+        const params = qs(form);
+        params.set('page', String(page));
+        window.location.search = params.toString();
+    };
 
-    // 在输入框按 Enter 时触发搜索
-    const qInput = document.getElementById('htaSearchInput');
-    if (qInput) {
-      qInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); runSearch(); }
-      });
-    }
-
-    btnReset && btnReset.addEventListener('click', function(){
-      // 重置后清空表格与分页
-      renderTable([]);
-      renderPagination(0, 1, Number((new FormData(form)).get('page_size') || '20'), ()=>{});
-      try { localStorage.removeItem(STORAGE_KEY); } catch {}
-      // 重置后自动回到全量第一页
-      loadPage(form, 1);
+    document.getElementById('btn-query')?.addEventListener('click', () => runSearch(1));
+    document.getElementById('btn-query-adv')?.addEventListener('click', () => runSearch(1));
+    document.getElementById('htaSearchInput')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); runSearch(1); }
     });
 
-    // 初始化表格工具栏与列显隐、排序
+    document.getElementById('btn-reset')?.addEventListener('click', () => {
+        window.location.href = window.location.pathname;
+    });
+
+    if (window.initialData) {
+        renderPagination(window.initialData.total, window.initialData.page, window.initialData.page_size, p => {
+            runSearch(p);
+        });
+    }
+
+    if (window.searchParams) {
+        restoreState(form, window.searchParams);
+    }
+
     initToolbar(form);
     initSorting();
     initProcModal();
-    // 绑定表头删除列按钮
     document.querySelectorAll('#hta-table th .col-remove').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -459,8 +400,5 @@
         applyColumnVisibility(set);
       });
     });
-    // 恢复上次筛选与页码并自动加载；若无历史则加载第一页
-    const { page } = restoreState(form);
-    loadPage(form, page || 1);
   });
 })();

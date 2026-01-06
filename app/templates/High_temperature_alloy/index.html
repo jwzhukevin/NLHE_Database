@@ -20,9 +20,9 @@
                aria-label="{{ _('Search') }}" autocomplete="off">
         <div class="search-suggestions" id="htaSearchSuggestions"></div>
       </div>
-      <button type="button" class="btn btn-clear btn--ghost" id="htaClearSearchBtn">{{ _('Clear') }}</button>
-      <button type="button" class="btn btn--primary" id="btn-query">{{ _('Search') }}</button>
-      <button type="button" class="btn btn--secondary" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
+      <button type="button" class="button-tool" id="htaClearSearchBtn">{{ _('Clear') }}</button>
+      <button type="button" class="button-search" id="btn-query">{{ _('Search') }}</button>
+      <button type="button" class="button-tool" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
       <input type="hidden" name="per_page" id="per_page" value="">
     </div>
 
@@ -81,8 +81,8 @@
         </div>
 
         <div class="search-actions">
-          <a class="clear-btn" href="#" id="btn-reset"><button type="button">{{ _('Reset') }}</button></a>
-          <button type="button" class="search-btn" id="btn-query-adv">{{ _('Search') }}</button>
+          <button type="button" class="button-tool" id="btn-reset">{{ _('Reset') }}</button>
+          <button type="button" class="button-search" id="btn-query-adv">{{ _('Search') }}</button>
         </div>
       </div>
     </div>
@@ -104,7 +104,7 @@
           <span class="title2">{{ _('Results') }}</span>
           <div class="table-toolbar">
             <div class="menu per-page">
-              <button type="button" class="btn btn--sm btn--secondary" id="perPageBtn" aria-expanded="false">
+              <button type="button" class="button-tool-small" id="perPageBtn" aria-expanded="false">
                 {{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">(20)</span>
               </button>
               <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
@@ -127,7 +127,7 @@
               </div>
             </div>
             <div class="menu column-visibility">
-              <button type="button" class="btn btn--sm btn--secondary" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
+              <button type="button" class="button-tool-small" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
               <div class="menu-panel is-hidden" id="colMenu" role="menu" aria-labelledby="colToggleBtn">
                 <div class="menu-title">{{ _('Optional Columns') }}</div>
                 <!-- [Deprecated 20251008] 元素可选列（Ag/Au/Cu/I/K/S/Se/Te）已移除 -->
@@ -135,7 +135,7 @@
                 <label class="menu-check" data-field="zt"><input type="checkbox" value="zt" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{{ _('zt') }}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <label class="menu-check" data-field="bending_strain"><input type="checkbox" value="bending_strain" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{{ _('Bending Strain') }}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <div class="menu-actions">
-                  <button type="button" class="btn btn--sm btn--primary" id="applyColsBtn">{{ _('Apply') }}</button>
+                  <button type="button" class="button-primary" id="applyColsBtn" style="padding: 0.3rem 0.6rem; font-size: 0.875rem;">{{ _('Apply') }}</button>
                 </div>
               </div>
             </div>
@@ -154,7 +154,32 @@
               <th data-col-key="actions">{{ _('Detail') }}</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            {% if items %}
+              {% for item in items %}
+                <tr>
+                  <td data-col-key="hta_id">{{ item.hta_display_id }}</td>
+                  <td data-col-key="Material">
+                    <a class="material-link" href="{{ url_for('high_temperature_alloy.detail', hta_id=item.hta_display_id ~ '-' ~ item.hta_hash[-10:]) }}">
+                      {{ item.Material }}
+                    </a>
+                  </td>
+                  <td data-col-key="bending_strength_mpa">{{ "%.2f"|format(item.bending_strength_mpa|float) if item.bending_strength_mpa is not none else 'None' }}</td>
+                  <td data-col-key="zt">{{ "%.2f"|format(item.zt|float) if item.zt is not none else 'None' }}</td>
+                  <td data-col-key="bending_strain">{{ "%.2f"|format(item.bending_strain|float) if item.bending_strain is not none else 'None' }}</td>
+                  <td data-col-key="actions">
+                                        <button type="button" class="button-detail-action" onclick="openProcModal('{{ item.process_type }}', '{{ item.heat_treatment_process }}')">
+                      <i class="fas fa-info-circle"></i> {{ _('Detail') }}
+                    </button>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6">{{ _('No results found.') }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
         </table>
 
       </div>
@@ -195,5 +220,22 @@ function toggleAdvanced() {
 }
 </script>
 
+<script>
+  // 将服务端初始加载的数据暴露给 JS
+  window.initialData = JSON.parse('{{ data|tojson|safe }}'.replace(/&quot;/g, '"'));
+  // 将搜索参数也暴露出来，用于JS恢复表单状态
+  window.searchParams = JSON.parse('{{ search_params|tojson|safe }}'.replace(/&quot;/g, '"'));
+
+  // 定义全局函数供模板中的 onclick 调用
+  function openProcModal(procType, procHeat) {
+    const modal = document.getElementById('htaProcModal');
+    if (!modal) return;
+    const typeEl = document.getElementById('htaProcType');
+    const heatEl = document.getElementById('htaProcHeat');
+    if (typeEl) typeEl.textContent = procType || '';
+    if (heatEl) heatEl.textContent = procHeat || '';
+    modal.style.display = 'flex';
+  }
+</script>
 <script src="{{ url_for('static', filename='js/high_temperature_alloy.js') }}"></script>
 {% endblock %}

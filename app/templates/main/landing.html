@@ -17,12 +17,8 @@
             <div class="hero-col hero-text">
                 <h1>MatdataX</h1>
                 <p>{{ _('Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties.') }}</p>
-                <div class="cta-group">
-                    <form method="GET" action="{{ url_for('views.index') }}" class="cta-form">
-                        <button type="submit" class="btn btn--primary btn--hero-main">
-                            {{ _('Start Exploring') }}
-                        </button>
-                    </form>
+                <div class="hero-buttons">
+                    <a href="{{ url_for('views.index') }}" class="button-explore">{{ _('Explore More') }}</a>
                 </div>
             </div>
             <div class="hero-col hero-media">
@@ -46,30 +42,31 @@
         <div class="container">
             <div class="features-scroll-container">
                 <div class="features-grid">
+                    <a href="{{ url_for('views.index') }}" class="feature-card-link">
+                        <div class="feature-card">
+                            <i class="fas fa-database feature-icon"></i>
+                            <h3>{{ _('Comprehensive Material Data') }}</h3>
+                            <p>{{ _('Providing detailed material properties, crystal structures, and electronic structure data to support in-depth materials research.') }}</p>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('static', filename='Package') }}" class="feature-card-link">
+                        <div class="feature-card">
+                            <i class="fas fa-sliders-h feature-icon"></i>
+                            <h3>{{ _('Data Processing Tools') }}</h3>
+                            <p>{{ _('Providing data visualization, data cleaning, and data labeling tools.') }}</p>
+                        </div>
+                    </a>
+                    <a href="{{ url_for('static', filename='Package') }}" class="feature-card-link">
+                        <div class="feature-card">
+                            <i class="fas fa-robot feature-icon"></i>
+                            <h3>{{ _('AI Tools') }}</h3>
+                            <p>{{ _('Providing active learning deployment tools, self-trained large language models, and multimodal models.') }}</p>
+                        </div>
+                    </a>
                     <div class="feature-card">
-                        <i class="fas fa-database feature-icon"></i>
-                        <h3>{{ _('Comprehensive Material Data') }}</h3>
-                        <p>{{ _('Providing detailed material properties, crystal structures, and electronic structure data to support in-depth materials research.') }}</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-cube feature-icon"></i>
-                        <h3>{{ _('3D Crystal Structure Visualization') }}</h3>
-                        <p>{{ _('Using advanced three-dimensional visualization technology to intuitively display material crystal structures.') }}</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-sliders-h feature-icon"></i>
-                        <h3>{{ _('Data Processing Tools') }}</h3>
-                        <p>{{ _('Providing data visualization, data cleaning, and data labeling tools.') }}</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-robot feature-icon"></i>
-                        <h3>{{ _('AI Tools') }}</h3>
-                        <p>{{ _('Providing active learning deployment tools, self-trained large language models, and multimodal models.') }}</p>
-                    </div>
-                    <div class="feature-card">
-                        <i class="fas fa-search feature-icon"></i>
-                        <h3>{{ _('Advanced Search Features') }}</h3>
-                        <p>{{ _('Powerful search and filtering capabilities to quickly find the required material data.') }}</p>
+                        <i class="fas fa-brain feature-icon"></i>
+                        <h3>{{ _('Large Language Model') }}</h3>
+                        <p>{{ _('A large language model for the materials database, providing professional guidance.') }}</p>
                     </div>
                 </div>
             </div>
@@ -105,6 +102,8 @@
             </div>
         </div>
     </section>
+
+    <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
 
     <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/landing.css（stats 与响应式） -->
 {% endblock %}

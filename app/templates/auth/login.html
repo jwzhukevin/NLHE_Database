@@ -76,8 +76,13 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn btn--primary" id="login-button">{{ _('Log In') }}</button>
-                        <a href="{{ url_for('views.index') }}" class="btn btn--link">{{ _('Back to Database') }}</a>
+                        <button type="submit" class="button-login">{{ _('Login') }}</button>
+                        <a href="{{ url_for('views.index') }}" class="button-return">
+                            <svg class="svg-icon" viewBox="0 0 20 20" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.5 10c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5-3.806 8.5-8.5 8.5-8.5-3.806-8.5-8.5zm8.5 7.5c4.142 0 7.5-3.358 7.5-7.5s-3.358-7.5-7.5-7.5-7.5 3.358-7.5 7.5 3.358 7.5 7.5 7.5zm-2-10.5l-2.5 3h1.5v1h2v-1h1.5l-2.5-3zm4 4l2.5-3h-1.5v-1h-2v1h-1.5l2.5 3z"></path>
+                            </svg>
+                            <span class="label">{{ _('Back to Database') }}</span>
+                        </a>
                     </div>
                 </form>
                 

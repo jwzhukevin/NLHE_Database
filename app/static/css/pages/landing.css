@@ -9,38 +9,11 @@
     gap: 1.4rem;
 }
 
-/* 主按钮：蓝绿色背景 + 白色字体，字号为之前的一半 */
-.hero .btn--hero-main {
-    font-size: 1.8rem !important;  /* 强制覆盖全局 .btn 字号 */
-    font-weight: 700;
-    padding: 1.1rem 3.2rem;
-    border-radius: 1.2rem;
-    background: linear-gradient(135deg, #0ea5e9, #22c55e);
-    border: none;
-    color: #ffffff;
-    box-shadow: 0 20px 55px rgba(15, 23, 42, 0.8);
-    transform: translateY(0);
-    transition: transform 0.16s ease-out, box-shadow 0.16s ease-out, filter 0.16s ease-out;
-}
-
-.hero .btn--hero-main:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 28px 80px rgba(15, 23, 42, 0.9);
-    filter: brightness(1.03);
-}
-
-/* 次级按钮：尺寸更紧凑，颜色沿用 .btn--primary */
+/* 主按钮与次级按钮样式已迁移至 components/buttons.css */
 .cta-auth-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-}
-
-.hero .btn--hero-secondary {
-    font-size: 1.8rem !important; /* 与主按钮相同字号，并提高优先级 */
-    padding: 0.55rem 1.8rem;
-    border-radius: 0.8rem;
-    font-weight: 600;
 }
 
 @media (max-width: 768px) {
@@ -146,9 +119,15 @@
 
 .features-grid { 
     display: grid; 
-    grid-template-columns: repeat(5, 1fr); 
+    grid-template-columns: repeat(4, 1fr); 
     gap: 1.5rem; 
     margin-top: 3rem; 
+}
+
+.feature-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
 .feature-card { 
@@ -178,6 +157,7 @@
     font-size: 2.2rem; 
     background: linear-gradient(135deg, #0ea5e9, #22c55e);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
     margin-bottom: 1rem; 
@@ -369,6 +349,7 @@
     letter-spacing: -0.02em;
     background: linear-gradient(135deg, #0ea5e9, #22c55e);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     display: inline-block;
 }

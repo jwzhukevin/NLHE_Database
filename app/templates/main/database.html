@@ -171,10 +171,10 @@
                        autocomplete="off">
                 <div class="search-suggestions" id="searchSuggestions"></div>
             </div>
-            <button type="button" class="btn btn-clear btn--ghost" id="clearSearchBtn">{{ _('Clear') }}</button>
-            <button type="submit" class="btn btn--primary">{{ _('Search') }}</button>
-            <button type="button" class="btn btn--secondary" id="elementsToggleBtn" aria-controls="periodicTableWrapper" aria-expanded="true">{{ _('Elements') }}</button>
-            <button type="button" class="btn btn--secondary" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
+            <button type="button" class="button-tool" id="clearSearchBtn">{{ _('Clear') }}</button>
+            <button type="submit" class="button-search">{{ _('Search') }}</button>
+            <button type="button" class="button-tool" id="elementsToggleBtn" aria-controls="periodicTableWrapper" aria-expanded="true">{{ _('Elements') }}</button>
+            <button type="button" class="button-tool" onclick="toggleAdvanced()">{{ _('Advanced') }}</button>
             <input type="hidden" name="per_page" id="per_page" value="">
         </div>
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（analysis modal 样式已外置） -->
@@ -191,13 +191,13 @@
             </button>
             <div class="property-filter-options" id="propertyFiltersOptions">
                 <button type="button"
-                        class="btn-prop-filter {% if search_params.prop_sc %}active{% endif %}"
+                        class="button-filter {% if search_params.prop_sc %}active{% endif %}"
                         data-prop="prop_sc">{{ _('SC') }}</button>
                 <button type="button"
-                        class="btn-prop-filter {% if search_params.prop_bcd %}active{% endif %}"
+                        class="button-filter {% if search_params.prop_bcd %}active{% endif %}"
                         data-prop="prop_bcd">{{ _('BCD') }}</button>
                 <button type="button"
-                        class="btn-prop-filter {% if search_params.prop_dw %}active{% endif %}"
+                        class="button-filter {% if search_params.prop_dw %}active{% endif %}"
                         data-prop="prop_dw">{{ _('DW') }}</button>
             </div>
         </div>
@@ -319,13 +319,13 @@
                         <span class="filter-tag">
                             <span class="filter-key">{{ key|title }}</span>
                             <span class="filter-value">{{ value }}</span>
-                            <a href="{{ url_for('views.index', **(search_params|remove_key(key))) }}" class="remove-filter btn btn--link btn--sm" title="Remove this filter">
+                            <a href="{{ url_for('views.index', **(search_params|remove_key(key))) }}" class="remove-filter button-link" title="Remove this filter">
                                 <i class="fas fa-times"></i>
                             </a>
                         </span>
                     {% endif %}
                 {% endfor %}
-                <a href="{{ url_for('views.index') }}" class="clear-all-filters btn btn--link btn--sm">{{ _('Clear All') }}</a>
+                <a href="{{ url_for('views.index') }}" class="clear-all-filters button-link">{{ _('Clear All') }}</a>
             </div>
         {% endif %}
     </div>
@@ -339,7 +339,7 @@
         </span>
         <div class="table-toolbar">
             <div class="menu per-page">
-                <button type="button" class="btn small btn--sm btn--secondary" id="perPageBtn" aria-expanded="false">{{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">({{ pagination.per_page if pagination else 10 }})</span></button>
+                <button type="button" class="button-tool-small" id="perPageBtn" aria-expanded="false">{{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">({{ pagination.per_page if pagination else 10 }})</span></button>
                 <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
                     <button type="button" class="menu-item" data-per-page="10">
                       <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
@@ -364,7 +364,7 @@
                 </div>
             </div>
             <div class="menu column-visibility">
-                <button type="button" class="btn small btn--sm btn--secondary" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
+                <button type="button" class="button-tool-small" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
                 <div class="menu-panel is-hidden" id="colMenu" role="menu" aria-labelledby="colToggleBtn">
                     <div class="menu-title">{{ _('Optional Columns') }}</div>
                     <label class="menu-check" data-field="fermi_level" title="{{ _('Fermi Level (eV)') }}">
@@ -386,7 +386,7 @@
                       <i class="far fa-eye field-visibility" aria-hidden="true"></i>
                     </label>
                     <div class="menu-actions">
-                        <button type="button" class="btn small btn--sm btn--primary" id="applyColsBtn">{{ _('Apply') }}</button>
+                        <button type="button" class="button-primary" id="applyColsBtn" style="padding: 0.3rem 0.6rem; font-size: 0.875rem;">{{ _('Apply') }}</button>
                     </div>
                 </div>
             </div>
@@ -420,28 +420,28 @@
                     </a>
                 </td>
                 <td data-col-key="space_group">{{ material.sg_name if material.sg_name else _('Unknown') }} ({{ material.sg_num if material.sg_num else _('N/A') }})</td>
-                <td data-col-key="fermi_level">{{ material.fermi_level if material.fermi_level is not none else _('N/A') }}</td>
+                <td data-col-key="fermi_level">{{ "%.2f"|format(material.fermi_level|float) if material.fermi_level is not none else _('N/A') }}</td>
                 <td class="band-gap-cell" data-col-key="band_gap" data-material-id="{{ material.id }}">
                     {% if material.band_gap is not none %}
-                        {{ "%.4f"|format(material.band_gap) }}
+                        {{ "%.2f"|format(material.band_gap) }}
                     {% else %}
                         {{ _('N/A') }}
                     {% endif %}
                 </td>
                 <td class="max-sc-cell" data-col-key="max_sc" data-material-id="{{ material.id }}">
                     {% if material.max_sc is not none %}
-                        {{ "%.4f"|format(material.max_sc) }}
+                        {{ "%.2f"|format(material.max_sc) }}
                     {% else %}
                         {{ _('Loading...') }}
                     {% endif %}
                 </td>
                 <td data-col-key="actions">
                     <div class="action-buttons">
-                        <a class="btn btn--ghost btn--sm" 
-                           href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" 
+                        <a href="https://next-gen.materialsproject.org/materials?formula={{ material.name }}" 
                            target="_blank"
-                           title="{{ _('View in MP') }}">
-                           MP
+                           title="{{ _('View in MP') }}"
+                           class="button-external-link">
+                           <span>MP</span>
                         </a>
                         {# [Deprecated 20251001] 行级编辑/删除入口已移除（只读模式） #}
                     </div>
@@ -1092,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="analysis-content">
                 <div class="analysis-header">
                     <h3>Element Analysis Results</h3>
-                    <button class="close-btn" onclick="this.closest('.analysis-modal').remove()">&times;</button>
+                    <button class="button-close" onclick="this.closest('.analysis-modal').remove()">&times;</button>
                 </div>
                 <div class="analysis-body">
                     <div class="analysis-section">

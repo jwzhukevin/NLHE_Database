@@ -129,14 +129,14 @@ scContainer.innerHTML = `<div class="alert alert-warning">${errorMessage}</div>`
                 <!-- Materials Project外部链接 -->
                 <a href="{% if material.mp_id %}https://next-gen.materialsproject.org/materials/{{ material.mp_id }}{% else %}https://next-gen.materialsproject.org/materials?formula={{ material.name }}{% endif %}"
                    target="_blank"
-                   class="btn btn--ghost">
+                   class="button-secondary">
                     <i class="fas fa-external-link-alt"></i>
                     <span>{{ _('MP') }}</span>
                 </a>
 
                 <!-- 搜索返回按钮 -->
                 {% if request.referrer and 'q=' in request.referrer %}
-                <a href="{{ request.referrer }}" class="btn btn--secondary">
+                <a href="{{ request.referrer }}" class="button-secondary">
                     <i class="fas fa-arrow-left"></i>
                     <span>{{ _('Back') }}</span>
                 </a>
@@ -259,7 +259,7 @@ scContainer.innerHTML = `<div class="alert alert-warning">${errorMessage}</div>`
                     <div class="card-header collapsed">
         <h3>{{ _('Band Structure') }}
             {% if current_user.is_authenticated %}
-            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/band/band.dat') }}" download class="download-btn" title="{{ _('Download band data') }}">
+            <a href="{{ url_for('static', filename='materials/' + material.formatted_id + '/band/band.dat') }}" download class="button-download" title="{{ _('Download band data') }}">
                 <i class="fas fa-download"></i>
             </a>
             {% endif %}

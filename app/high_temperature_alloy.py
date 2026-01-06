@@ -122,157 +122,124 @@ def _parse_multi_select(arg_val: str) -> List[str]:
     return [s for s in (arg_val.split(',') if isinstance(arg_val, str) else []) if s != '']
 
 
-@high_temperature_alloy_bp.route('')
-def index():
-    """列表页容器（模板在后续批次添加）。"""
-    return render_template('High_temperature_alloy/index.html')
-
-
-@high_temperature_alloy_bp.route('/query')
-def query():
-    """JSON 查询接口：支持元素范围、类别多选、数值范围与分页。"""
+def _fetch_hta_data(args: Dict[str, Any]) -> Dict[str, Any]:
+    """从 CSV 查询高温合金数据的核心逻辑。"""
     _, view = _ensure_view_up_to_date()
     conn = _get_conn()
 
-    # 解释：从查询参数读取筛选条件
-    q = request.args
-
-    # 数值范围参数解析工具
     def rng(name: str) -> Tuple[Any, Any]:
-        lo = q.get(f'{name}_min', type=float)
-        hi = q.get(f'{name}_max', type=float)
-        return lo, hi
+        try:
+            lo = float(args.get(f'{name}_min')) if args.get(f'{name}_min') else None
+            hi = float(args.get(f'{name}_max')) if args.get(f'{name}_max') else None
+            return lo, hi
+        except (ValueError, TypeError):
+            return None, None
 
-    # 元素范围
     elem_cols = ['Ag', 'Au', 'Cu', 'I', 'K', 'S', 'Se', 'Te']
-    # 类别多选
     multi_cats = {
-        'crystal_structure': _parse_multi_select(q.get('crystal_structure')),
-        'process_type': _parse_multi_select(q.get('process_type')),
-        'heat_treatment_process': _parse_multi_select(q.get('heat_treatment_process')),
+        'crystal_structure': _parse_multi_select(args.get('crystal_structure')),
+        'process_type': _parse_multi_select(args.get('process_type')),
+        'heat_treatment_process': _parse_multi_select(args.get('heat_treatment_process')),
     }
-    # 三项性能范围
-    bs_lo, bs_hi = rng('bending_strength')  # 对应 "Bending Strength (MPa)"
+    bs_lo, bs_hi = rng('bending_strength')
     zt_lo, zt_hi = rng('zt')
-    bs_strain_lo, bs_strain_hi = rng('bending_strain')  # 对应 "Bending Strain"
+    bs_strain_lo, bs_strain_hi = rng('bending_strain')
 
-    # 分页
-    page = max(1, q.get('page', default=1, type=int) or 1)
-    page_size = min(200, max(1, q.get('page_size', default=20, type=int) or 20))
+    try:
+        page = max(1, int(args.get('page', '1')))
+        page_size = min(200, max(1, int(args.get('page_size', '20'))))
+    except (ValueError, TypeError):
+        page = 1
+        page_size = 20
     offset = (page - 1) * page_size
 
-    # 解释：动态构造 WHERE 子句与绑定参数
     where_clauses: List[str] = []
     params: List[Any] = []
 
-    # 元素范围
     for col in elem_cols:
-        lo, hi = rng(col.lower())  # 参数名约定为小写，如 ag_min
-        if lo is not None:
-            where_clauses.append(f'"{col}" >= ?')
-            params.append(lo)
-        if hi is not None:
-            where_clauses.append(f'"{col}" <= ?')
-            params.append(hi)
+        lo, hi = rng(col.lower())
+        if lo is not None: where_clauses.append(f'"{col}" >= ?'); params.append(lo)
+        if hi is not None: where_clauses.append(f'"{col}" <= ?'); params.append(hi)
 
-    # 类别多选（IN 查询）
     for cat_col, values in multi_cats.items():
         if values:
-            # 解释：DuckDB 参数占位符仅支持 ?，因此构造 (?,?,...) 占位序列
             placeholders = ','.join(['?'] * len(values))
             where_clauses.append(f'"{cat_col}" IN ({placeholders})')
             params.extend(values)
 
-    # 文本搜索 q：对 Material/process_type/heat_treatment_process 进行 ILIKE 模糊匹配
-    q_text = (q.get('q') or '').strip()
+    q_text = str(args.get('q', '')).strip()
     if q_text:
         like = f"%{q_text}%"
         where_clauses.append('("Material" ILIKE ? OR "process_type" ILIKE ? OR "heat_treatment_process" ILIKE ?)')
         params.extend([like, like, like])
 
-    # 性能范围
-    if bs_lo is not None:
-        where_clauses.append('"Bending Strength (MPa)" >= ?')
-        params.append(bs_lo)
-    if bs_hi is not None:
-        where_clauses.append('"Bending Strength (MPa)" <= ?')
-        params.append(bs_hi)
-
-    if zt_lo is not None:
-        where_clauses.append('"zt" >= ?')
-        params.append(zt_lo)
-    if zt_hi is not None:
-        where_clauses.append('"zt" <= ?')
-        params.append(zt_hi)
-
-    if bs_strain_lo is not None:
-        where_clauses.append('"Bending Strain" >= ?')
-        params.append(bs_strain_lo)
-    if bs_strain_hi is not None:
-        where_clauses.append('"Bending Strain" <= ?')
-        params.append(bs_strain_hi)
+    if bs_lo is not None: where_clauses.append('"Bending Strength (MPa)" >= ?'); params.append(bs_lo)
+    if bs_hi is not None: where_clauses.append('"Bending Strength (MPa)" <= ?'); params.append(bs_hi)
+    if zt_lo is not None: where_clauses.append('"zt" >= ?'); params.append(zt_lo)
+    if zt_hi is not None: where_clauses.append('"zt" <= ?'); params.append(zt_hi)
+    if bs_strain_lo is not None: where_clauses.append('"Bending Strain" >= ?'); params.append(bs_strain_lo)
+    if bs_strain_hi is not None: where_clauses.append('"Bending Strain" <= ?'); params.append(bs_strain_hi)
 
     where_sql = (' WHERE ' + ' AND '.join(where_clauses)) if where_clauses else ''
 
-    # 解释：先查询总数
     count_sql = f'SELECT COUNT(*) FROM {view}{where_sql}'
     total = conn.execute(count_sql, params).fetchone()[0]
 
-    # 解释：选择仅列表所需列
-    select_cols = (
-        'Ag, Au, Cu, I, K, S, Se, Te,'
-        ' Material,'
-        ' crystal_structure, process_type, heat_treatment_process,'
-        ' "Bending Strength (MPa)", zt, "Bending Strain"'
-    )
-
-    data_sql = (
-        f'SELECT {select_cols} FROM {view}{where_sql} '
-        f'LIMIT ? OFFSET ?'
-    )
+    select_cols = 'Ag, Au, Cu, I, K, S, Se, Te, Material, crystal_structure, process_type, heat_treatment_process, "Bending Strength (MPa)", zt, "Bending Strain"'
+    data_sql = f'SELECT {select_cols} FROM {view}{where_sql} LIMIT ? OFFSET ?'
     rows = conn.execute(data_sql, params + [page_size, offset]).fetchall()
-    col_names = [
-        'Ag', 'Au', 'Cu', 'I', 'K', 'S', 'Se', 'Te',
-        'Material', 'crystal_structure', 'process_type', 'heat_treatment_process',
-        'Bending Strength (MPa)', 'zt', 'Bending Strain'
-    ]
+    col_names = [c.strip().replace('"', '') for c in select_cols.split(',')]
 
     items: List[Dict[str, Any]] = []
     for idx, row in enumerate(rows):
         row_dict = {col_names[i]: row[i] for i in range(len(col_names))}
         hta_hash = _hash_row(row_dict)
-        # A 规则：全局序号（跨分页）
         hta_row = offset + idx + 1
-        hta_display_id = f'HTA-{hta_row}'
-
-        # 解释：构造返回对象。三项性能字段转为蛇形命名键。
+        
         item = {
             'hta_row': hta_row,
-            'hta_display_id': hta_display_id,
+            'hta_display_id': f'HTA-{hta_row}',
             'hta_hash': hta_hash,
-            'Ag': row_dict['Ag'],
-            'Au': row_dict['Au'],
-            'Cu': row_dict['Cu'],
-            'I': row_dict['I'],
-            'K': row_dict['K'],
-            'S': row_dict['S'],
-            'Se': row_dict['Se'],
-            'Te': row_dict['Te'],
-            'Material': row_dict['Material'],
-            'process_type': row_dict['process_type'],
-            'heat_treatment_process': row_dict['heat_treatment_process'],
-            'bending_strength_mpa': row_dict['Bending Strength (MPa)'],
-            'zt': row_dict['zt'],
-            'bending_strain': row_dict['Bending Strain'],
+            'Ag': row_dict.get('Ag'),
+            'Au': row_dict.get('Au'),
+            'Cu': row_dict.get('Cu'),
+            'I': row_dict.get('I'),
+            'K': row_dict.get('K'),
+            'S': row_dict.get('S'),
+            'Se': row_dict.get('Se'),
+            'Te': row_dict.get('Te'),
+            'Material': row_dict.get('Material'),
+            'crystal_structure': row_dict.get('crystal_structure'),
+            'process_type': row_dict.get('process_type'),
+            'heat_treatment_process': row_dict.get('heat_treatment_process'),
+            'bending_strength_mpa': row_dict.get('Bending Strength (MPa)'),
+            'zt': row_dict.get('zt'),
+            'bending_strain': row_dict.get('Bending Strain'),
         }
         items.append(item)
 
-    return jsonify({
-        'items': items,
-        'total': total,
-        'page': page,
-        'page_size': page_size,
-    })
+    return {'items': items, 'total': total, 'page': page, 'page_size': page_size}
+
+
+@high_temperature_alloy_bp.route('')
+def index():
+    """列表页，支持服务端预渲染。"""
+    # 将请求参数转换为普通字典以传递给辅助函数
+    search_params = {k: v for k, v in request.args.items()}
+    initial_data = _fetch_hta_data(search_params)
+    return render_template(
+        'High_temperature_alloy/index.html',
+        items=initial_data.get('items', []),
+        data=initial_data,
+        search_params=search_params
+    )
+
+
+@high_temperature_alloy_bp.route('/query')
+def query():
+    """JSON 查询接口。"""
+    data = _fetch_hta_data(request.args.to_dict())
+    return jsonify(data)
 
 
 @high_temperature_alloy_bp.route('/detail/<hta_id>')

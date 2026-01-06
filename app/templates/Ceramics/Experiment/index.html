@@ -13,7 +13,7 @@
                placeholder="{% if current_locale == 'zh' %}搜索 材料成分、晶体结构、工艺...{% else %}Search materials, crystal, process...{% endif %}"
                aria-label="{{ _('Search') }}" autocomplete="off">
       </div>
-      <button type="button" class="btn btn--primary" id="btn-query">{{ _('Search') }}</button>
+      <button type="button" class="button-search" id="btn-query">{{ _('Search') }}</button>
       <input type="hidden" name="per_page" id="per_page" value="">
     </div>
   </form>
@@ -25,7 +25,7 @@
           <span class="title2">{{ _('Experiment Results') }}</span>
           <div class="table-toolbar">
             <div class="menu per-page">
-              <button type="button" class="btn btn--sm btn--secondary" id="perPageBtn" aria-expanded="false">
+              <button type="button" class="button-tool-small" id="perPageBtn" aria-expanded="false">
                 {{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">(20)</span>
               </button>
               <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
@@ -35,14 +35,14 @@
               </div>
             </div>
             <div class="menu column-visibility">
-              <button type="button" class="btn btn--sm btn--secondary" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
+              <button type="button" class="button-tool-small" id="colToggleBtn" aria-expanded="false">{{ _('Columns') }}</button>
               <div class="menu-panel is-hidden" id="colMenu" role="menu" aria-labelledby="colToggleBtn">
                 <div class="menu-title">{{ _('Optional Columns') }}</div>
                 <label class="menu-check" data-field="bending_strength_mpa"><input type="checkbox" value="bending_strength_mpa" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}强度 (MPa){% else %}Bending Strength (MPa){% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <label class="menu-check" data-field="bending_strain_percent"><input type="checkbox" value="bending_strain_percent" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}应变 (%) {% else %}Bending Strain (%) {% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <label class="menu-check" data-field="zt"><input type="checkbox" value="zt" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}热电优值{% else %}zT{% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <div class="menu-actions">
-                  <button type="button" class="btn btn--sm btn--primary" id="applyColsBtn">{{ _('Apply') }}</button>
+                  <button type="button" class="button-primary" id="applyColsBtn" style="padding: 0.3rem 0.6rem; font-size: 0.875rem;">{{ _('Apply') }}</button>
                 </div>
               </div>
             </div>
@@ -60,7 +60,28 @@
               <th data-col-key="actions">{% if current_locale == 'zh' %}工艺{% else %}Process{% endif %}</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody>
+            {% if items %}
+              {% for item in items %}
+                <tr>
+                  <td data-col-key="material">{{ item.material }}</td>
+                  <td data-col-key="crystal_structure">{{ item.crystal_structure }}</td>
+                  <td data-col-key="bending_strength_mpa">{{ "%.2f"|format(item.bending_strength_mpa|float) if item.bending_strength_mpa is not none else 'None' }}</td>
+                  <td data-col-key="bending_strain_percent">{{ "%.2f"|format(item.bending_strain_percent|float) if item.bending_strain_percent is not none else 'None' }}</td>
+                  <td data-col-key="zt">{{ "%.2f"|format(item.zt|float) if item.zt is not none else 'None' }}</td>
+                  <td data-col-key="actions">
+                    <button type="button" class="button-detail-action" onclick="openProcModal('{{ item.heat_treatment_process }}')">
+                      <i class="fas fa-info-circle"></i> {{ _('Detail') }}
+                    </button>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="6">{{ _('No results found.') }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
         </table>
       </div>
     </div>
@@ -84,6 +105,23 @@
   </div>
 </div>
 
+<script>
+  // 将服务端初始加载的数据暴露给 JS
+  window.initialData = JSON.parse('{{ data|tojson|safe }}'.replace(/&quot;/g, '"'));
+  window.searchParams = JSON.parse('{{ search_params|tojson|safe }}'.replace(/&quot;/g, '"'));
+
+  // 定义全局函数供模板中的 onclick 调用
+  function openProcModal(text) {
+    const modal = document.getElementById('expProcModal');
+    if (!modal) return;
+    const txt = document.getElementById('expProcText');
+    if (txt) txt.textContent = text || '';
+    modal.style.display = 'flex';
+    const closeBtn = document.getElementById('expProcClose');
+    closeBtn && closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+  }
+</script>
 <script src="{{ url_for('static', filename='js/ceramics_experiment.js', v='20251204-2') }}"></script>
 {% endblock %}
 
