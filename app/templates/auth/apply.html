@@ -60,7 +60,7 @@
             <li>{{ _('Application Reason (Required, briefly describe purpose and scope)') }}</li>
           </ul>
           <div class="mail-template" style="background: rgba(255,255,255,.85); border-radius: 8px; padding: .75rem; box-shadow: 0 1px 3px rgba(0,0,0,.08);">
-            <div class="template-actions" style="display:flex; justify-content:flex-end; margin-bottom: .5rem;">
+            <div class="template-actions" style="display:flex; justify-content:flex-end; margin-bottom: .5rem; position: relative;">
               <button type="button" class="button-primary" id="copy-mail-template">{{ _('Copy Template') }}</button>
             </div>
             <textarea id="mail-template-text" readonly rows="10" style="width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: .95rem; color:#0b3a6d; background:#f8fbff; border: 1px solid rgba(11,58,109,.15); border-radius: 6px; padding: .5rem .6rem;">{{ _('MAIL_TEMPLATE_TEXT') }}</textarea>
@@ -70,11 +70,6 @@
             <i class="fas fa-info-circle" style="color:#ef4444;"></i>
             <span>{{ _('The online application form on the right is currently unavailable. Please use the email channel above:') }} <strong>matdatax@163.com</strong>.</span>
           </p>
-          <!-- 左侧复制提示（默认隐藏） -->
-          <div id="apply-copy-message" class="login-message success" role="status" aria-live="polite" style="display:none; margin-top: .5rem;">
-            <i class="fas fa-check-circle" style="margin-right:.4rem;"></i>
-            <span>{{ _('Template copied to clipboard') }}</span>
-          </div>
         </div>
       </div>
 
@@ -180,36 +175,46 @@
     // 一键复制邮件模板
     const copyBtn = document.getElementById('copy-mail-template');
     const tpl = document.getElementById('mail-template-text');
-    const leftMsg = document.getElementById('apply-copy-message');
-    // 本地化文案（避免在 JS 中写死中文）
-    const copiedMsgText = "{{ _('Template copied to clipboard') }}";
     if (copyBtn && tpl) {
-      copyBtn.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(tpl.value);
-          if (leftMsg) {
-            leftMsg.style.display = '';
-            leftMsg.style.opacity = '1';
-            leftMsg.className = 'login-message success';
-            const span = leftMsg.querySelector('span');
-            if (span) span.textContent = copiedMsgText;
-            setTimeout(() => { leftMsg.style.opacity = '0'; }, 1100);
-            setTimeout(() => { leftMsg.style.display = 'none'; leftMsg.style.opacity = '1'; }, 1500);
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(tpl.value).then(() => {
+          // --- Create and show the flash message ---
+          const messageText = "{{ _('Template copied to clipboard') }}";
+          
+          let flashContainer = document.querySelector('.flash-messages .container');
+          if (!flashContainer) {
+            const mainContent = document.querySelector('.main-content');
+            const flashMessagesDiv = document.createElement('div');
+            flashMessagesDiv.className = 'flash-messages';
+            flashContainer = document.createElement('div');
+            flashContainer.className = 'container';
+            flashMessagesDiv.appendChild(flashContainer);
+            mainContent.insertBefore(flashMessagesDiv, mainContent.firstChild);
           }
-        } catch (e) {
-          // 旧浏览器回退
-          tpl.select();
-          document.execCommand('copy');
-          if (leftMsg) {
-            leftMsg.style.display = '';
-            leftMsg.style.opacity = '1';
-            leftMsg.className = 'login-message success';
-            const span = leftMsg.querySelector('span');
-            if (span) span.textContent = copiedMsgText;
-            setTimeout(() => { leftMsg.style.opacity = '0'; }, 1100);
-            setTimeout(() => { leftMsg.style.display = 'none'; leftMsg.style.opacity = '1'; }, 1500);
-          }
-        }
+
+          const flashMessage = document.createElement('div');
+          flashMessage.className = 'flash-message success';
+          flashMessage.innerHTML = `
+            <div class="message-content">
+              <i class="fas fa-check-circle"></i>
+              <span>${messageText}</span>
+            </div>
+            <button class="close-flash">&times;</button>
+          `;
+
+          flashContainer.appendChild(flashMessage);
+
+          const removeMessage = () => {
+            flashMessage.classList.add('hide');
+            setTimeout(() => { flashMessage.remove(); }, 300);
+          };
+
+          flashMessage.querySelector('.close-flash').addEventListener('click', removeMessage);
+          setTimeout(removeMessage, 3000);
+
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+        });
       });
     }
     // 可选：如需接入动画，复用登录页初始化逻辑；默认保持静态以降低干扰

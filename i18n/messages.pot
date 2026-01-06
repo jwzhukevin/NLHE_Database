@@ -1396,7 +1396,7 @@ msgid "Language"
 msgstr ""
 
 #: app/templates/main/landing.html:19
-msgid "Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties."
+msgid "A large language model for the materials database, providing professional guidance."
 msgstr ""
 
 #: app/templates/main/landing.html:21

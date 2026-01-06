@@ -2037,6 +2037,10 @@ msgstr "大语言模型"
 msgid "A large language model for the materials database, providing professional guidance."
 msgstr "材料语库的大语言模型，提供专业的指导"
 
+#: app/templates/auth/apply.html:66
+msgid "Copied!"
+msgstr "已复制！"
+
 #: app/templates/main/landing.html:70
 msgid "Language"
 msgstr "语言"

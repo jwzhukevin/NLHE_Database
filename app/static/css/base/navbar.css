@@ -9,7 +9,7 @@
 /* ========== 导航栏样式 ========== */
 /* 导航栏容器,固定在页面顶部 */
 .navbar {
-    background-color: rgb(181, 222, 253);
+    background-color: rgb(189, 227, 255);
     box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* 更柔和现代的阴影 */
     padding: var(--spacing-md) 0;          /* 上下内边距 */
     position: fixed;                       /* 固定定位 */
