@@ -9,6 +9,14 @@
 
     <div id="messages" class="messages" role="log"></div>
 
+    <div class="model-selector">
+        <label for="model-select">{{ _('Model') }}:</label>
+        <select id="model-select">
+            <option value="qwen25-7b-gpu">Qwen2.5 (Local)</option>
+            <option value="tencent/Hunyuan-MT-7B" selected>Hunyuan (Cloud)</option>
+        </select>
+    </div>
+
     <div class="chat-input">
         <textarea id="user-input" rows="3" placeholder="{{ _('Type your question here...') }}" aria-label="{{ _('Your Message') }}"></textarea>
         <div class="actions">

@@ -33,3 +33,6 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+# API Keys
+app/static/chat_api/

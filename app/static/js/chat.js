@@ -10,6 +10,7 @@
   const btnSend = document.getElementById('send-btn');
   const btnClear = document.getElementById('clear-btn');
   const btnExport = document.getElementById('export-btn');
+  const elModelSelect = document.getElementById('model-select');
 
   let history = [];
   let inFlight = false;
@@ -57,7 +58,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: history,
-          model: 'tencent/Hunyuan-MT-7B',
+          model: elModelSelect ? elModelSelect.value : 'tencent/Hunyuan-MT-7B',
           lang: window.CURRENT_LOCALE || 'en'
         })
       });

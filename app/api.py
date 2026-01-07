@@ -421,56 +421,9 @@ def update_material_metal_type(material_id):
         return jsonify({"error": str(e)}), 500
 
 # ===================== Chat Streaming Endpoint =====================
-@bp.route('/chat/stream', methods=['POST'])
-@login_required
-def chat_stream():
-    """
-    流式聊天端点：对接硅基流动 DeepSeek（OpenAI 兼容接口）。
 
-    输入（JSON）：
-      - messages: [{role: 'user'|'assistant'|'system', content: str}, ...]
-      - model: 默认 'deepseek-chat'
-      - lang: 'zh'|'en'（可选）
-    """
-    data = request.get_json(silent=True) or {}
-    messages = data.get('messages') or []
-    raw_model = (data.get('model') or '').strip()
-    # 兼容旧值：deepseek-chat/deepseek 统一映射为 Hunyuan V3
-    if not raw_model or raw_model.lower() in ('deepseek-chat', 'deepseek'):
-        model = 'tencent/Hunyuan-MT-7B'
-    else:
-        model = raw_model
-    lang = data.get('lang') or 'en'
-
-    # 不做并发席位限制；仅组织存档路径
-    username = getattr(current_user, 'username', 'user') or 'user'
-
-    # 目录与标题
-    base_dir = os.path.join(current_app.root_path, 'static', 'chat', username)
-    try:
-        os.makedirs(base_dir, exist_ok=True)
-    except Exception:
-        pass
-
-    # 使用会话固定文件名：进入聊天页时生成，整场会话复用
-    session_filename = session.get('chat_session_file')
-    if not session_filename:
-        session_filename = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
-        session['chat_session_file'] = session_filename
-    file_path = os.path.join(base_dir, session_filename)
-    # 生成审计文件按日期聚合
-    ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-    audit_path = os.path.join(base_dir, f"audit-{datetime.now().strftime('%Y%m%d')}.log")
-
-    # 优先：代码内密钥；兜底：环境变量
-    try:
-        from .credentials import SILICONFLOW_API_KEY as CODE_API_KEY
-    except Exception:
-        CODE_API_KEY = ''
-    api_key = CODE_API_KEY or os.getenv('SILICONFLOW_API_KEY', '')
-    if not api_key:
-        return Response('Server missing SILICONFLOW_API_KEY', status=500, mimetype='text/plain; charset=utf-8')
-
+def _stream_siliconflow(model, messages, api_key):
+    """流式调用云端模型 (SiliconFlow) 并返回生成器。"""
     url = 'https://api.siliconflow.cn/v1/chat/completions'
     headers = {
         'Authorization': f'Bearer {api_key}',
@@ -482,96 +435,171 @@ def chat_stream():
         'stream': True
     }
 
-    # 预取可跨上下文使用的信息（避免生成器 finally 阶段访问上下文）
-    try:
-        logger_ref = current_app.logger
-    except Exception:
-        logger_ref = None
+    with requests.post(url, headers=headers, json=payload, stream=True, timeout=60) as resp:
+        if resp.status_code != 200:
+            err = resp.text
+            err_text = f'Upstream {resp.status_code}: {err}'
+            yield err_text, None, err_text
+            return
+        
+        resp.encoding = 'utf-8'
+        assistant_acc = ''
+        for raw_line in resp.iter_lines(decode_unicode=False):
+            if not raw_line:
+                continue
+            line = raw_line.decode('utf-8', 'ignore').strip()
+            if line == 'data: [DONE]':
+                break
+            if not line.startswith('data:'):
+                continue
+            try:
+                j = json.loads(line[len('data:'):].strip())
+                choices = j.get('choices') or []
+                delta = (choices[0].get('delta') if choices else {}) or {}
+                content = delta.get('content')
+                if content:
+                    assistant_acc += content
+                    yield content, assistant_acc, None
+            except Exception:
+                continue
+
+def _stream_ollama(model, messages):
+    """流式调用本地 Ollama 模型并返回生成器。"""
+    url = 'http://127.0.0.1:11434/api/chat'
+    payload = {
+        'model': model,
+        'messages': messages,
+        'stream': True
+    }
+
+    with requests.post(url, json=payload, stream=True, timeout=60) as resp:
+        if resp.status_code != 200:
+            err = resp.text
+            err_text = f'Ollama {resp.status_code}: {err}'
+            yield err_text, None, err_text
+            return
+
+        resp.encoding = 'utf-8'
+        assistant_acc = ''
+        for raw_line in resp.iter_lines(decode_unicode=False):
+            if not raw_line:
+                continue
+            line = raw_line.decode('utf-8', 'ignore').strip()
+            try:
+                j = json.loads(line)
+                content = j.get('message', {}).get('content', '')
+                if content:
+                    assistant_acc += content
+                    yield content, assistant_acc, None
+                if j.get('done'):
+                    break
+            except json.JSONDecodeError:
+                continue
+
+@bp.route('/chat/stream', methods=['POST'])
+@login_required
+def chat_stream():
+    """
+    流式聊天端点，支持多模型后端（云端/本地 Ollama）。
+
+    输入（JSON）：
+      - messages: [{role: 'user'|'assistant'|'system', content: str}, ...]
+      - model: 'qwen25-7b-gpu' (本地), 'tencent/Hunyuan-MT-7B' (云端) 等
+      - lang: 'zh'|'en'（可选）
+    """
+    data = request.get_json(silent=True) or {}
+    messages = data.get('messages') or []
+    raw_model = (data.get('model') or '').strip()
+    lang = data.get('lang') or 'en'
+
+    # --- 模型与后端路由 --- #
+    is_ollama = 'qwen' in raw_model.lower()
+    if is_ollama:
+        model = raw_model
+    elif not raw_model or raw_model.lower() in ('deepseek-chat', 'deepseek'):
+        model = 'tencent/Hunyuan-MT-7B'
+    else:
+        model = raw_model
+
+    # --- 日志与存档设置 --- #
+    username = getattr(current_user, 'username', 'user') or 'user'
+    base_dir = os.path.join(current_app.root_path, 'static', 'chat', username)
+    os.makedirs(base_dir, exist_ok=True)
+
+    session_filename = session.get('chat_session_file')
+    if not session_filename:
+        session_filename = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
+        session['chat_session_file'] = session_filename
+    file_path = os.path.join(base_dir, session_filename)
+    audit_path = os.path.join(base_dir, f"audit-{datetime.now().strftime('%Y%m%d')}.log")
+
+    # --- API Key (仅云端需要) --- #
+    api_key = ''
+    if not is_ollama:
+        key_path = os.path.join(current_app.root_path, 'static', 'chat_api', 'siliconflow_cloud.key')
+        try:
+            with open(key_path, 'r') as f:
+                api_key = f.read().strip()
+        except FileNotFoundError:
+            api_key = os.getenv('SILICONFLOW_API_KEY', '')
+        
+        if not api_key:
+            return Response('Server missing SILICONFLOW_API_KEY for cloud models', status=500, mimetype='text/plain; charset=utf-8')
+
+    # --- 预取上下文信息 --- #
+    logger_ref = current_app.logger
     ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
 
-    # 写入 meta 与历史到存档（仅在文件为空时写入 meta）
+    # --- 写入请求历史 --- #
     try:
         file_exists = os.path.exists(file_path)
         file_empty = (not file_exists) or (os.path.getsize(file_path) == 0)
         with open(file_path, 'a', encoding='utf-8') as f:
             if file_empty:
-                meta = {
-                    'type': 'meta',
-                    'timestamp': ts,
-                    'user': username,
-                    'model': model,
-                    'lang': lang,
-                    'session_file': session_filename
-                }
-                f.write(json.dumps(meta, ensure_ascii=False) + '\n')
+                f.write(json.dumps({'type': 'meta', 'timestamp': datetime.now().strftime('%Y%m%d_%H%M%S'), 'user': username, 'model': model, 'lang': lang, 'session_file': session_filename}, ensure_ascii=False) + '\n')
             for m in messages:
                 f.write(json.dumps({'type': 'message', **m}, ensure_ascii=False) + '\n')
     except Exception as e:
-        if logger_ref:
-            logger_ref.warning(f'failed to write chat meta/messages: {e}')
+        logger_ref.warning(f'failed to write chat meta/messages: {e}')
 
+    # --- 流式生成器 --- #
     def stream_generator():
         total_len = 0
         err_text = None
-        try:
-            with requests.post(url, headers=headers, json=payload, stream=True, timeout=60) as resp:
-                if resp.status_code != 200:
-                    err = resp.text
-                    err_text = f'Upstream {resp.status_code}: {err}'
-                    yield err_text
-                    return
-                # 强制按 UTF-8 处理，避免编码猜测导致乱码
-                resp.encoding = 'utf-8'
-                assistant_acc = ''
-                for raw_line in resp.iter_lines(decode_unicode=False):
-                    if not raw_line:
-                        continue
-                    # 明确以 UTF-8 解码，忽略异常字节
-                    line = raw_line.decode('utf-8', 'ignore').strip()
-                    if line == 'data: [DONE]':
-                        break
-                    if not line.startswith('data:'):
-                        continue
-                    try:
-                        j = json.loads(line[len('data:'):].strip())
-                        choices = j.get('choices') or []
-                        delta = (choices[0].get('delta') if choices else {}) or {}
-                        content = delta.get('content')
-                        if content:
-                            assistant_acc += content
-                            total_len += len(content)
-                            yield content
-                    except Exception:
-                        # 解析失败：不透传原始行，避免将 "data: {...}" 泄漏到前端
-                        continue
+        final_assistant_message = ''
 
-                # 写入 assistant 最终回复
-                try:
-                    with open(file_path, 'a', encoding='utf-8') as f:
-                        f.write(json.dumps({'type': 'message', 'role': 'assistant', 'content': assistant_acc}, ensure_ascii=False) + '\n')
-                except Exception as e:
-                    if logger_ref:
-                        logger_ref.warning(f'failed to write assistant message: {e}')
+        try:
+            if is_ollama:
+                streamer = _stream_ollama(model, messages)
+            else:
+                streamer = _stream_siliconflow(model, messages, api_key)
+
+            for chunk, full_text, error in streamer:
+                if error:
+                    err_text = error
+                    yield error
+                    return
+                if chunk:
+                    total_len += len(chunk)
+                    final_assistant_message = full_text
+                    yield chunk
+
+            # 写入 assistant 最终回复
+            if final_assistant_message:
+                with open(file_path, 'a', encoding='utf-8') as f:
+                    f.write(json.dumps({'type': 'message', 'role': 'assistant', 'content': final_assistant_message}, ensure_ascii=False) + '\n')
+        except requests.exceptions.RequestException as e:
+            err_text = f"Connection error to model backend: {e}"
+            yield err_text
         finally:
             # 审计
             try:
                 with open(audit_path, 'a', encoding='utf-8') as af:
-                    stamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    logline = {
-                        'time': stamp,
-                        'user': username,
-                        'ip': ip,
-                        'model': model,
-                        'title': session_filename,
-                        'resp_length': total_len,
-                        'error': err_text
-                    }
+                    logline = {'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'user': username, 'ip': ip, 'model': model, 'title': session_filename, 'resp_length': total_len, 'error': err_text}
                     af.write(json.dumps(logline, ensure_ascii=False) + '\n')
             except Exception as e:
-                if logger_ref:
-                    logger_ref.warning(f'failed to write audit log: {e}')
+                logger_ref.warning(f'failed to write audit log: {e}')
 
-    
     return Response(stream_generator(), mimetype='text/plain; charset=utf-8')
 
 # 为流式端点豁免 CSRF（仅此端点）
