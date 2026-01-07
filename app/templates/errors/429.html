@@ -38,7 +38,7 @@
 
                     <div class="captcha-row hv-action">
                         <img id="captchaImg429" class="captcha-img" src="{{ url_for('views.captcha429') }}" alt="CAPTCHA" width="220" height="48" />
-                        <button id="refreshCaptcha429" class="captcha-btn btn btn--secondary btn--sm" type="button" disabled>
+                        <button id="refreshCaptcha429" class="button-secondary" type="button" disabled>
                             <i class="fas fa-sync"></i> {{ _('Refresh') }}
                         </button>
                     </div>
@@ -46,7 +46,7 @@
                     <div class="captcha-input hv-action">
                         <input id="captchaInput429" type="text" maxlength="5" inputmode="latin" autocomplete="one-time-code"
                                placeholder="{{ _('Enter 5 letters') }}" aria-label="{{ _('Captcha code') }}" disabled />
-                        <button id="submitCaptcha429" class="captcha-btn primary btn btn--primary btn--sm" type="button" disabled>
+                        <button id="submitCaptcha429" class="button-primary" type="button" disabled>
                             <i class="fas fa-check-circle"></i> {{ _('Verify') }}
                         </button>
                     </div>

@@ -45,6 +45,61 @@
     border-color: #3b82f6; /* blue-500 */
 }
 
+.button-primary-small {
+    /* 布局与对齐 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    /* 字体与文本 */
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    /* 尺寸与边框 */
+    border-radius: 0.5rem;
+    border: 1px solid #60a5fa; /* blue-400 */
+    /* 颜色 */
+    background-color: #eff6ff; /* blue-50 */
+    color: #1e40af; /* blue-800 */
+    /* 交互 */
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 150ms ease, border-color 150ms ease;
+
+    /* 覆盖为小号尺寸 */
+    padding: 0.3rem 0.8rem; /* 减小垂直和水平内边距 */
+    font-size: 0.85rem;    /* 减小字体大小 */
+    line-height: 1.4;      /* 调整行高以适应新尺寸 */
+}
+
+/* ====================================
+ * 轮廓按钮 (常用于返回、取消等次要操作)
+ * ==================================== */
+.button-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 16px;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    transition: all 0.3s;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.button-outline:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.button-primary-small:hover {
+    background-color: #dbeafe; /* blue-100 */
+    border-color: #3b82f6; /* blue-500 */
+}
+
 /* ====================================================================
    2. 次要操作按钮 (Secondary Button)
    - 用途: 取消、返回等次级操作。

@@ -42,7 +42,7 @@
                 <label class="menu-check" data-field="bending_strain_percent"><input type="checkbox" value="bending_strain_percent" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}应变 (%) {% else %}Bending Strain (%) {% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <label class="menu-check" data-field="zt"><input type="checkbox" value="zt" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}热电优值{% else %}zT{% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <div class="menu-actions">
-                  <button type="button" class="button-primary" id="applyColsBtn" style="padding: 0.3rem 0.6rem; font-size: 0.875rem;">{{ _('Apply') }}</button>
+                  <button type="button" class="button-primary-small" id="applyColsBtn">{{ _('Apply') }}</button>
                 </div>
               </div>
             </div>
@@ -93,7 +93,7 @@
     <div class="analysis-content" role="dialog" aria-modal="true" aria-labelledby="expProcTitle">
       <div class="analysis-header">
         <h3 id="expProcTitle">{{ _('Process Information') }}</h3>
-        <button class="close-btn" id="expProcClose" aria-label="{{ _('Close') }}">×</button>
+        <button class="button-close" id="expProcClose" aria-label="{{ _('Close') }}">×</button>
       </div>
       <div class="analysis-body">
         <div class="analysis-section">

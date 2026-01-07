@@ -44,9 +44,6 @@
 
 /* Article Footer */
 .article-footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
-.back-button { display: inline-flex; align-items: center; color: #3498db; text-decoration: none; font-weight: 500; padding: 8px 16px; border: 1px solid #3498db; border-radius: 4px; transition: all 0.3s; }
-.back-button i { margin-right: 8px; }
-.back-button:hover { background-color: #3498db; color: white; }
 
 /* Responsive Styles */
 @media (max-width: 1200px) { .article-container { max-width: 100%; padding: 18px; } }

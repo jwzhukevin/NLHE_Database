@@ -1,7 +1,15 @@
-/* [components/periodic_table.css] 元素周期表组件样式（由 components/periodic_table.html 内联样式迁移） */
+/*
+ * [components/periodic_table.css]
+ * 元素周期表组件样式
+ * 原始样式由 components/periodic_table.html 内联样式迁移而来
+ */
 
+/* ====================================
+ * 通用与容器
+ * ==================================== */
 .is-hidden { display: none !important; }
 
+/* 组件最外层容器 */
 .periodic-table-wrapper {
     margin-top: 1rem;
     border: 1px solid #D9E2F0;
@@ -10,45 +18,60 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* ====================================
+ * 顶部头部区域
+ * ==================================== */
 .periodic-table-wrapper .elements-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem; /* 使用gap替代分散的margin */
     padding: 1rem 1.2rem;
     background-color: #f1f5f9;
     border-bottom: 1px solid #D9E2F0;
-    font-weight: 500;
     border-radius: 6px 6px 0 0;
 }
 
-.periodic-table-wrapper .header-left { display: flex; align-items: center; gap: 10px; }
-.periodic-table-wrapper .header-right { display: flex; align-items: center; gap: 10px; }
-
-.periodic-table-wrapper .elements-header span:first-child { font-weight: 600; color: var(--primary-color); font-size: 1.05rem; }
-
-.periodic-table-wrapper .elements-header #clearElements {
-    font-size: 0.8rem;
-    padding: 0.25rem 0.7rem;
-    background-color: rgba(0, 71, 171, 0.08);
-    color: var(--primary-color);
-    border: 1px solid rgba(0, 71, 171, 0.15);
-    border-radius: 4px;
-    margin-left: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
+/* 头部左右区域flex布局 */
+.periodic-table-wrapper .header-left,
+.periodic-table-wrapper .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
-.periodic-table-wrapper .elements-header #clearElements:hover { background-color: rgba(0, 71, 171, 0.15); transform: translateY(-1px); }
-.periodic-table-wrapper .elements-header #clearElements:active { background-color: rgba(0, 71, 171, 0.25); transform: translateY(0); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-.periodic-table-wrapper .elements-header span#selectedElementsCount { background-color: var(--primary-color); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
+/* 头部标题 */
+.periodic-table-wrapper .elements-header span:first-child {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 1.05rem;
+}
+
+/* 已选元素计数角标 */
+.periodic-table-wrapper .elements-header span#selectedElementsCount {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* ====================================
+ * 元素网格与交互
+ * ==================================== */
 .periodic-table-wrapper .periodic-table-container { padding: 1.2rem; position: relative; }
 
+/* 18列网格布局 */
 .periodic-table-wrapper .periodic-table { display: grid; grid-template-columns: repeat(18, minmax(40px, 1fr)); gap: 4px; width: 100%; }
 
+/* 元素格子基础样式 */
 .periodic-table-wrapper .element {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
     padding: 6px;
     font-size: 1rem;
     font-weight: 600;
@@ -57,22 +80,40 @@
     transition: all 0.2s;
     aspect-ratio: 1/1;
     border: 1px solid rgba(0,0,0,0.06);
-    position: relative;
 }
+
+/* 原子序数（右上角小字） */
 .periodic-table-wrapper .atomic-number { position: absolute; top: 2px; right: 3px; font-size: 0.7rem; font-weight: normal; opacity: 0.7; }
+
+/* 鼠标悬浮效果：放大、阴影 */
 .periodic-table-wrapper .element:hover { transform: scale(1.08); z-index: 2; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12); }
-.periodic-table-wrapper .element.selected { box-shadow: 0 0 0 2px var(--primary-color); color: white; background-color: var(--primary-color); transform: scale(1.05); animation: elementSelected 0.3s ease-out; }
+
+/* 选中效果：边框、背景色、动画 */
+.periodic-table-wrapper .element.selected {
+    box-shadow: 0 0 0 2px var(--primary-color);
+    color: white;
+    background-color: var(--primary-color);
+    transform: scale(1.05);
+    animation: elementSelected 0.3s ease-out;
+}
+
+/* 选中时的弹跳动画 */
 @keyframes elementSelected { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1.05); } }
 
+/* 废弃规则，已无对应DOM */
 .periodic-table-wrapper .element-controls { display: none; }
-.periodic-table-wrapper #clearElements:not(.elements-header #clearElements) { display: none; }
 
+/* ====================================
+ * 元素信息提示框 (Tooltip)
+ * ==================================== */
 .periodic-table-wrapper .element .tooltip {
-    visibility: hidden;
+    visibility: hidden; /* 默认隐藏 */
+    opacity: 0;
     position: absolute;
     top: 110%;
     left: 50%;
     transform: translateX(-50%);
+    z-index: 1000;
     background-color: rgba(0, 0, 0, 0.9);
     color: white;
     text-align: center;
@@ -81,36 +122,60 @@
     white-space: nowrap;
     font-size: 0.75rem;
     line-height: 1.4;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
-    z-index: 1000;
-    pointer-events: none;
+    pointer-events: none; /* 穿透鼠标事件 */
     width: max-content;
     max-width: 220px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
-.periodic-table-wrapper .element .tooltip::after { content: ""; position: absolute; bottom: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: transparent transparent rgba(0, 0, 0, 0.9) transparent; }
-.periodic-table-wrapper .element:hover .tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(2px); }
+
+/* Tooltip小三角 */
+.periodic-table-wrapper .element .tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent rgba(0, 0, 0, 0.9) transparent;
+}
+
+/* 鼠标悬浮于元素上时显示Tooltip */
+.periodic-table-wrapper .element:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(2px);
+}
+
+/* Tooltip内高亮文字 */
 .periodic-table-wrapper .element .tooltip strong { color: #6ee7ff; font-size: 0.85rem; }
 
-.periodic-table-wrapper .element-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 10px 0; border-top: 1px solid #edf2f7; justify-content: center; }
-.periodic-table-wrapper .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; margin-right: 8px; margin-bottom: 8px; }
+/* ====================================
+ * 底部图例
+ * ==================================== */
+.periodic-table-wrapper .element-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; padding: 10px 0; border-top: 1px solid #edf2f7; justify-content: center; }
+.periodic-table-wrapper .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.8rem; }
 .periodic-table-wrapper .legend-color { width: 16px; height: 16px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); }
 
-/* 元素类型颜色样式 */
-.alkali { background-color: #ffcdd2; }
-.alkaline { background-color: #f8bbd0; }
-.transition { background-color: #bbdefb; }
+/* ====================================
+ * 元素类型背景色
+ * ==================================== */
+.alkali          { background-color: #ffcdd2; }
+.alkaline        { background-color: #f8bbd0; }
+.transition      { background-color: #bbdefb; }
 .post-transition { background-color: #b2dfdb; }
-.metalloid { background-color: #c8e6c9; }
-.nonmetal { background-color: #dcedc8; }
-.halogen { background-color: #f0f4c3; }
-.noble { background-color: #d1c4e9; }
-.lanthanoid { background-color: #ffe0b2; }
-.actinoid { background-color: #ffccbc; }
+.metalloid       { background-color: #c8e6c9; }
+.nonmetal        { background-color: #dcedc8; }
+.halogen         { background-color: #f0f4c3; }
+.noble           { background-color: #d1c4e9; }
+.lanthanoid      { background-color: #ffe0b2; }
+.actinoid        { background-color: #ffccbc; }
 
-/* ===== 辅助类：替代模板中的行内样式 ===== */
-.periodic-table-wrapper .pt-tip { color: #666; margin-right: 10px; }
+/* ====================================
+ * 辅助工具类 (替代内联样式)
+ * ==================================== */
+.periodic-table-wrapper .pt-tip { color: #666; }
 .periodic-table-wrapper .mr-10 { margin-right: 10px; }
 .periodic-table-wrapper .grid-span-16 { grid-column: span 16; }
 .periodic-table-wrapper .grid-span-10 { grid-column: span 10; }

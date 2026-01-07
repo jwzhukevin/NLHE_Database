@@ -135,7 +135,7 @@
                 <label class="menu-check" data-field="zt"><input type="checkbox" value="zt" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{{ _('zt') }}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <label class="menu-check" data-field="bending_strain"><input type="checkbox" value="bending_strain" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{{ _('Bending Strain') }}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <div class="menu-actions">
-                  <button type="button" class="button-primary" id="applyColsBtn" style="padding: 0.3rem 0.6rem; font-size: 0.875rem;">{{ _('Apply') }}</button>
+                  <button type="button" class="button-primary-small" onclick="addColumn()">{{ _('Add Property') }}</button>
                 </div>
               </div>
             </div>
@@ -194,7 +194,7 @@
     <div class="analysis-content" role="dialog" aria-modal="true" aria-labelledby="htaProcTitle">
       <div class="analysis-header">
         <h3 id="htaProcTitle">{{ _('Process Information') }}</h3>
-        <button class="close-btn" id="htaProcClose" aria-label="{{ _('Close') }}">×</button>
+        <button class="button-close" id="htaProcClose" aria-label="{{ _('Close') }}">×</button>
       </div>
       <div class="analysis-body">
         <div class="analysis-section">

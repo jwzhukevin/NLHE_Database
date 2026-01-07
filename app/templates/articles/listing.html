@@ -13,7 +13,7 @@
         <div class="search-container">
             <form method="GET" action="{{ url_for('articles.listing') }}" class="search-form">
                 <input type="text" name="q" placeholder="{{ _('Search contents...') }}" value="{{ query if query else '' }}">
-                <button type="submit" class="search-button btn btn--secondary btn--icon btn--sm">
+                <button type="submit" class="button-search">
                     <i class="fas fa-search"></i>
                 </button>
             </form>

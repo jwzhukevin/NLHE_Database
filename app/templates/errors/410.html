@@ -12,10 +12,10 @@
             <h1>{{ _('Resource Gone') }}</h1>
             <p>{{ _('The requested resource is no longer available. The site runs in read-only mode and write operations are disabled.') }}</p>
             <div class="error-actions">
-                <a href="{{ url_for('views.landing') }}" class="btn btn--primary btn--lg">
+                <a href="{{ url_for('views.landing') }}" class="button-primary">
                     <i class="fas fa-home"></i> {{ _('Return Home') }}
                 </a>
-                <a href="{{ url_for('views.index') }}" class="btn btn--ghost btn--lg">
+                <a href="{{ url_for('views.index') }}" class="button-secondary">
                     <i class="fas fa-database"></i> Go to MatdataX
                 </a>
             </div>
