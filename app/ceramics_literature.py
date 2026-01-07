@@ -54,7 +54,7 @@ _view = CsvDuckView(
     column_map=_COLUMN_MAP,
 )
 
-ceramics_literature = Blueprint('ceramics_literature', __name__, url_prefix='/Ceramics/literature')
+ceramics_literature = Blueprint('ceramics_literature', __name__, url_prefix='/database/structural_materials/ceramics/literature')
 
 
 @ceramics_literature.route('')

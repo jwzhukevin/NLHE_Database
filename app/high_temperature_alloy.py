@@ -32,7 +32,7 @@ from .csv_config import get_csv_path
 # 蓝图定义
 # --------------------------
 high_temperature_alloy_bp = Blueprint(
-    'high_temperature_alloy', __name__, url_prefix='/High_temperature_alloy'
+    'high_temperature_alloy', __name__, url_prefix='/database/structural_materials/ceramics/model_prediction'
 )
 
 # --------------------------

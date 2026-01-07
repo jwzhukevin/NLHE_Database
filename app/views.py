@@ -152,7 +152,7 @@ def api_landing_pictures():
         current_app.logger.error(f"/api/landing-pictures error: {e}")
         return jsonify({ 'images': [] })
 
-@bp.route('/database')
+@bp.route('/database/functional_materials')
 @performance_monitor
 @cached_search(cache_enabled=True)
 def index():

@@ -174,7 +174,7 @@
 
   async function loadPage(form, page=1){
     const params=qs(form); params.set('page', String(page));
-    const url='/Ceramics/literature/query?'+params.toString(); let data;
+    const url='/database/structural_materials/ceramics/literature/query?'+params.toString(); let data;
     try { const res=await fetch(url, { headers: { 'Accept':'application/json' } }); if (!res.ok) throw new Error(String(res.status)); data = await res.json(); }
     catch (e) { console.error('ceramics literature query failed', e); renderTable([]); renderPagination(0,1,Number(params.get('page_size')||'20'), ()=>{}); return; }
     renderTable(data.items||[]);
