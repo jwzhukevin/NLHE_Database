@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     propertyFilters.addEventListener('click', function(event) {
-        const button = event.target.closest('.btn-prop-filter');
+        const button = event.target.closest('.button-filter');
         if (!button) return;
 
         const propName = button.dataset.prop;

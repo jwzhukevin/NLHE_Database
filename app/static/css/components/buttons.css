@@ -377,15 +377,15 @@
     border-color: #1d4ed8; /* blue-700 */
 }
 .button-filter.active {
-    background-color: rgba(154, 132, 204, 0.92);
+    background-color: #2563eb; /* blue-600 */
     color: #ffffff;
     font-weight: 700;
-    border-color: transparent;
-    box-shadow: 0 4px 12px rgba(122, 94, 184, 0.22);
+    border-color: #1d4ed8; /* blue-700 */
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.2);
 }
 .button-filter.active:hover {
-    background-color: rgba(140, 115, 198, 0.95);
-    border-color: transparent;
+    background-color: #1d4ed8; /* blue-700 */
+    border-color: #1e40af; /* blue-800 */
 }
 
 /* ====================================================================
