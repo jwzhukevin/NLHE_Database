@@ -313,9 +313,9 @@ scContainer.innerHTML = `<div class="alert alert-warning">${errorMessage}</div>`
                 <h3>{{ _('Shift Current') }}</h3>
                 <div class="card-header-actions">
                     <div class="card-header-extra tab-header" role="tablist" aria-label="{{ _('SC Tabs') }}">
-                        <button id="tab-sc-overview" class="tab-button active" role="tab" aria-controls="panel-sc-overview" data-tab="overview">{{ _('Relations') }}</button>
-                        <button id="tab-sc-prop" class="tab-button" role="tab" aria-controls="panel-sc-prop" data-tab="properties">{{ _('Properties') }}</button>
-                        <button id="tab-sc-matrix" class="tab-button" role="tab" aria-controls="panel-sc-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
+                        <button id="tab-sc-overview" class="button-filter active" role="tab" aria-controls="panel-sc-overview" data-tab="overview">{{ _('Relations') }}</button>
+                        <button id="tab-sc-prop" class="button-filter" role="tab" aria-controls="panel-sc-prop" data-tab="properties">{{ _('Properties') }}</button>
+                        <button id="tab-sc-matrix" class="button-filter" role="tab" aria-controls="panel-sc-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
                     </div>
                     <i class="fas fa-chevron-down toggle-icon"></i>
                 </div>
@@ -359,9 +359,9 @@ scContainer.innerHTML = `<div class="alert alert-warning">${errorMessage}</div>`
             <h3>{{ _('Berry curvature dipole (BCD)') }}</h3>
             <div class="card-header-actions">
                 <div class="card-header-extra tab-header" role="tablist" aria-label="{{ _('BCD Tabs') }}">
-                    <button id="tab-bcd-overview" class="tab-button" role="tab" aria-controls="panel-bcd-overview" data-tab="overview">{{ _('Relations') }}</button>
-                    <button id="tab-bcd-prop" class="tab-button" role="tab" aria-controls="panel-bcd-prop" data-tab="properties">{{ _('Properties') }}</button>
-                    <button id="tab-bcd-matrix" class="tab-button active" role="tab" aria-controls="panel-bcd-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
+                    <button id="tab-bcd-overview" class="button-filter" role="tab" aria-controls="panel-bcd-overview" data-tab="overview">{{ _('Relations') }}</button>
+                    <button id="tab-bcd-prop" class="button-filter" role="tab" aria-controls="panel-bcd-prop" data-tab="properties">{{ _('Properties') }}</button>
+                    <button id="tab-bcd-matrix" class="button-filter active" role="tab" aria-controls="panel-bcd-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
                 </div>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
@@ -407,9 +407,9 @@ scContainer.innerHTML = `<div class="alert alert-warning">${errorMessage}</div>`
             <h3>{{ _('Drude weight (DW)') }}</h3>
             <div class="card-header-actions">
                 <div class="card-header-extra tab-header" role="tablist" aria-label="{{ _('DW Tabs') }}">
-                    <button id="tab-dw-overview" class="tab-button" role="tab" aria-controls="panel-dw-overview" data-tab="overview">{{ _('Relations') }}</button>
-                    <button id="tab-dw-prop" class="tab-button" role="tab" aria-controls="panel-dw-prop" data-tab="properties">{{ _('Properties') }}</button>
-                    <button id="tab-dw-matrix" class="tab-button active" role="tab" aria-controls="panel-dw-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
+                    <button id="tab-dw-overview" class="button-filter" role="tab" aria-controls="panel-dw-overview" data-tab="overview">{{ _('Relations') }}</button>
+                    <button id="tab-dw-prop" class="button-filter" role="tab" aria-controls="panel-dw-prop" data-tab="properties">{{ _('Properties') }}</button>
+                    <button id="tab-dw-matrix" class="button-filter active" role="tab" aria-controls="panel-dw-matrix" data-tab="matrix">{{ _('Eigen Matrix') }}</button>
                 </div>
                 <i class="fas fa-chevron-down toggle-icon"></i>
             </div>
@@ -453,7 +453,6 @@ scContainer.innerHTML = `<div class="alert alert-warning">${errorMessage}</div>`
     <div class="two-column-layout">
         <!-- 左侧：基本属性 -->
         <div class="column-40">
-            <h2 class="major-section-title" id="thermodynamic-properties">{{ _('热力学性质') }}</h2>
                 <div class="card-header collapsed">
                     <h3>{{ _('Basic Properties') }}</h3>
                     <i class="fas fa-chevron-down toggle-icon"></i>

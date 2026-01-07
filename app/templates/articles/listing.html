@@ -26,6 +26,7 @@
         <a href="{{ url_for('articles.listing', category='articles') }}" class="tab {% if selected_category == 'articles' %}active{% endif %}">{{ _('Articles') }}</a>
         <a href="{{ url_for('articles.listing', category='instructions') }}" class="tab {% if selected_category == 'instructions' %}active{% endif %}">{{ _('Instructions') }}</a>
         <a href="{{ url_for('articles.listing', category='changelog') }}" class="tab {% if selected_category == 'changelog' %}active{% endif %}">{{ _('Changelog') }}</a>
+        <a href="{{ url_for('articles.listing', category='legal') }}" class="tab {% if selected_category == 'legal' %}active{% endif %}">{{ _('Legal') }}</a>
     </div>
     
     <!-- Articles List -->
@@ -38,8 +39,19 @@
                         <a href="{{ url_for('articles.view', category=article.category.lower(), filename=article.filename) }}">{{ article.title }}</a>
                     </h2>
                     <p class="article-summary">{{ article.summary }}</p>
+                    
+                    <!-- Keywords -->
+                    {% if article.keywords %}
+                    <div class="article-keywords">
+                        {% for keyword in article.keywords %}
+                            <span class="keyword-tag">{{ keyword }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
                     <div class="article-meta">
-                        <span class="article-date">{{ article.date }}</span>
+                        <span class="article-author"><i class="far fa-user"></i> {{ article.author }}</span>
+                        <span class="article-date"><i class="far fa-calendar-alt"></i> {{ article.date }}</span>
                         <a href="{{ url_for('articles.view', category=article.category.lower(), filename=article.filename) }}" class="read-more">{{ _('Read More') }}</a>
                     </div>
                 </div>

@@ -1,3 +1,15 @@
+---
+title: "Data Export Guide"
+date: "2025-11-05 09:00"
+author: "Admin"
+summary: "The Materials Database allows you to export data in several formats, including CSV, JSON, and CIF files for various analysis needs."
+keywords:
+  - Export
+  - CSV
+  - JSON
+  - API
+---
+
 # Data Export Guide
 
 ## Export Options

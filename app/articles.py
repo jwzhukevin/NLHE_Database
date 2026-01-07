@@ -1,6 +1,7 @@
 import os
 import re
 import markdown
+import yaml
 from datetime import datetime
 from flask import Blueprint, render_template, request, abort, current_app
 
@@ -10,45 +11,65 @@ articles = Blueprint('articles', __name__)
 # 内容文件的基础目录（相对项目根目录）
 CONTENT_BASE_PATH = os.path.join('app', 'static', 'contents')
 
-# 元数据抽取：从 Markdown 内容中提取标题/日期/摘要
+# 元数据抽取：从 Markdown 内容中提取标题/日期/摘要等
 def extract_metadata(content, filename):
     """
-    从 Markdown 内容中提取元数据（标题、日期、摘要）。
+    从 Markdown 内容中提取元数据。
+    优先解析 YAML Front Matter，然后回退到正则匹配。
 
     参数：
-        content: Markdown 文本内容
-        filename: 文件名（用于在缺失标题时生成默认标题）
+        content: Markdown 文本内容。
+        filename: 文件名，用于生成默认标题和文件名。
 
     返回：
-        dict，包含 title/date/summary/filename 字段
+        tuple: (dict, str)，包含元数据字典和去除 Front Matter 后的内容。
     """
-    # Default metadata
+    # 默认元数据
     metadata = {
         'title': filename.replace('_', ' ').replace('.md', '').title(),
         'date': None,
+        'author': 'Anonymous',
         'summary': '',
+        'keywords': [],
         'filename': filename.replace('.md', '')
     }
     
-    # Extract title from first h1
-    title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
-    if title_match:
-        metadata['title'] = title_match.group(1).strip()
-    
-    # Extract date from "Release Date:" lines in changelogs or estimate from file stats
-    date_match = re.search(r'\*\*Release Date:\*\* (.+)$', content, re.MULTILINE)
-    if date_match:
-        metadata['date'] = date_match.group(1).strip()
-    
-    # Generate summary from first paragraph after the title or first 150 chars
-    summary_match = re.search(r'^# .+\n+(.+)', content, re.MULTILINE)
-    if summary_match:
-        summary = summary_match.group(1).strip()
-        # Clean up markdown symbols
-        summary = re.sub(r'\*\*|\*|__|\||_', '', summary)
-        metadata['summary'] = summary[:150] + ('...' if len(summary) > 150 else '')
-    
-    return metadata
+    # 尝试解析 YAML Front Matter
+    try:
+        match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+        if match:
+            front_matter_str = match.group(1)
+            front_matter = yaml.safe_load(front_matter_str)
+            if isinstance(front_matter, dict):
+                metadata.update(front_matter)
+            # 移除 Front Matter 部分，得到纯净的 Markdown 内容
+            content = content[match.end():]
+    except yaml.YAMLError:
+        # YAML 解析失败，忽略
+        pass
+
+    # --- 向后兼容与回退逻辑 ---
+    # 如果 YAML 中没有标题，则从第一个 H1 提取
+    if not metadata.get('title') or metadata['title'] == filename.replace('_', ' ').replace('.md', '').title():
+        title_match = re.search(r'^# (.+)$', content, re.MULTILINE)
+        if title_match:
+            metadata['title'] = title_match.group(1).strip()
+            
+    # 如果 YAML 中没有日期，则从 "Release Date:" 提取
+    if not metadata.get('date'):
+        date_match = re.search(r'\*\*Release Date:\*\* (.+)$', content, re.MULTILINE)
+        if date_match:
+            metadata['date'] = date_match.group(1).strip()
+            
+    # 如果 YAML 中没有摘要，则从第一个段落生成
+    if not metadata.get('summary'):
+        summary_match = re.search(r'^# .+\n+([^\n]+)', content, re.MULTILINE)
+        if summary_match:
+            summary = summary_match.group(1).strip()
+            summary = re.sub(r'\*\*|\*|__|\||_', '', summary) # 清理 Markdown 符号
+            metadata['summary'] = summary[:150] + ('...' if len(summary) > 150 else '')
+
+    return metadata, content
 
 # 列表页：按分类（Articles/Instructions/Changelog）与查询参数展示文章
 @articles.route('/articles')
@@ -65,12 +86,14 @@ def listing(category=None):
     
     # 根据分类参数确定要遍历的文件夹集合
     if selected_category == 'all':
-        categories = ['Articles', 'Instructions', 'Changelog']
+        categories = ['Articles', 'Instructions', 'Changelog', 'Legal']
     else:
         # 将URL参数映射为文件夹名（首字母大写）
         folder_name = selected_category.capitalize()
-        if folder_name == 'Changelog':  # 特殊大小写
-            folder_name = 'Changelog'
+        if folder_name in ['Changelog', 'Legal']:
+            pass # 保留特殊大小写
+        else:
+            folder_name = selected_category.capitalize()
         categories = [folder_name]
     
     articles_list = []
@@ -92,8 +115,8 @@ def listing(category=None):
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
-                # 先提取元数据（得到标题等）
-                metadata = extract_metadata(content, filename)
+                # 提取元数据
+                metadata, _ = extract_metadata(content, filename)
                 metadata['category'] = cat
                 
                 # 若查询关键字不在标题中则跳过
@@ -130,13 +153,16 @@ def view(category, filename):
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    # 提取元数据
-    metadata = extract_metadata(content, f"{filename}.md")
+    # 提取元数据，并获取移除 Front Matter 后的内容
+    metadata, content_body = extract_metadata(content, f"{filename}.md")
     metadata['category'] = folder_name
     
     # Markdown 转 HTML（启用常用扩展）
+    # 注意：为了让 toc 扩展能够正确生成目录（它需要扫描全文的标题），
+    # 我们需要将包含 Front Matter 的原始内容传递给它。
+    # markdown 库会自动忽略 YAML Front Matter 部分，不会将其渲染到 HTML 中。
     html_content = markdown.markdown(
-        content,
+        content_body, # 使用移除 Front Matter 后的纯净内容
         extensions=['extra', 'codehilite', 'toc', 'fenced_code']
     )
     

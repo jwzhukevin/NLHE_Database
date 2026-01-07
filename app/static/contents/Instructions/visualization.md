@@ -1,3 +1,15 @@
+---
+title: "Material Visualization Guide"
+date: "2025-11-10 09:00"
+author: "Admin"
+summary: "The Materials Database offers several visualization tools to help you understand and analyze material properties, including a Crystal Structure Viewer, Band Structure Plot, and Density of States (DOS) Viewer."
+keywords:
+  - Visualization
+  - Plotting
+  - Crystal Structure
+  - Band Structure
+---
+
 # Material Visualization Guide
 
 ## Available Visualization Tools

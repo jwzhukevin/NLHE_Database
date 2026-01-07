@@ -1,3 +1,15 @@
+---
+title: "Advanced Search Techniques"
+date: "2025-11-15 09:00"
+author: "Admin"
+summary: "The Materials Database offers powerful search capabilities beyond basic keyword searching. This article explains how to use advanced search features to find exactly what you need."
+keywords:
+  - Search
+  - Boolean
+  - Query
+  - Filter
+---
+
 # Advanced Search Techniques
 
 ## Introduction

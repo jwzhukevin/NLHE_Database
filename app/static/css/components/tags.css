@@ -1,0 +1,42 @@
+/* static/css/components/tags.css */
+
+/* General Keyword Tag Styling */
+.keyword-tag {
+    display: inline-block;
+    background-color: #eef2f7; /* A light, neutral background */
+    color: #334155; /* Darker text for better readability */
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    padding: 0.25rem 0.6rem; /* Vertical and horizontal padding */
+    margin: 0.2rem 0.2rem; /* Spacing between tags */
+    border-radius: 12px; /* Pill-shaped tags */
+    border: 1px solid #dce4ed;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+}
+
+.keyword-tag:hover {
+    background-color: #dce4ed; /* Slightly darker on hover */
+    color: #1e293b;
+    border-color: #c8d3e0;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Container for keywords on the article list page */
+.article-keywords {
+    margin-top: 0.75rem; /* Space above the keywords section */
+    padding-bottom: 0.5rem;
+}
+
+/* Container for keywords on the article view page footer */
+.article-keywords-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.article-keywords-footer strong {
+    margin-right: 0.5rem;
+    color: #475569;
+}

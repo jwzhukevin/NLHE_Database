@@ -155,7 +155,7 @@ function parseAndPlotSCData(dataText, container) {
                 <i class="fas fa-info-circle"></i> <span class="control-tip-text">Single-click to toggle curves, double-click to isolate (hide all others).</span>
             </div>
             <div class="sc-control-item">
-                <button id="resetBtn" class="sc-control-btn btn btn--secondary btn--sm">Reset Chart</button>
+                <button id="resetBtn" class="button-tool-small">Reset Chart</button>
             </div>
             <div class="sc-control-status">
                 <span class="visible-count-text">Visible: <span id="visibleCount">${traces.length}</span>/${traces.length} curves</span>

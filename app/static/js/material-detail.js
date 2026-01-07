@@ -531,7 +531,7 @@ function loadCrystalStructureData() {
     const materialName = window.materialData.name;
 
     // 创建API请求URL
-    let url = `/api/structure?material_id=${materialId}`;
+    let url = `/api/database/functional_materials/structure?material_id=${materialId}`;
     if (!materialId && materialName) {
         url = `/api/structure?material_name=${materialName}`;
     }
@@ -664,7 +664,7 @@ function updateAtomicCoordinatesDisplay(data) {
                 <div class="coordinates-controls">
                     <div class="coordinates-toggle">
                         <!-- [Fix 20251001] 文本显示不全：移除 btn--icon 固定尺寸，避免裁切 -->
-                        <button class="coords-toggle-btn btn btn--secondary btn--sm" id="coords-toggle-btn">
+                        <button class="coords-toggle-btn button-secondary" id="coords-toggle-btn">
                             <i class="fas fa-sync-alt"></i>
                             <span id="toggle-btn-text">Show Fractional</span>
                         </button>
@@ -931,7 +931,7 @@ function generateRelationsTable(groups) {
     const isCollapsed = localStorage.getItem('relations.settings.collapsed') === 'true';
     let html = `
         <div class="settings-header">
-            <button class="rel-settings-toggle btn btn--ghost btn--sm">
+            <button class="button-tool-small rel-settings-toggle">
                 <i class="fas fa-cog"></i> Settings
             </button>
         </div>
@@ -953,8 +953,8 @@ function generateRelationsTable(groups) {
                     <span class="rel-sim-value">1.00×</span>
                 </div>
                 <div class="control-row actions">
-                    <button class="rel-reset btn btn--ghost btn--sm">Reset</button>
-                    <button class="rel-apply btn btn--secondary btn--sm">Apply</button>
+                    <button class="button-secondary rel-reset-btn">Reset</button>
+                    <button class="button-secondary rel-apply-btn">Apply</button>
                 </div>
             </div>
         </div>

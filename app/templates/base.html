@@ -282,8 +282,9 @@
                 <div class="footer-column">
                     <h3>{{ _('MatdataX') }}</h3>
                     <ul>
+                        <li><a href="{{ url_for('articles.view', category='legal', filename='copyright_statement') }}">{{ _('Copyright') }}</a></li>
                         <li><a href="{{ url_for('views.landing') }}">{{ _('Home') }}</a></li>
-                                                <li><a href="{{ url_for('views.index') }}">{{ _('Functional Materials') }}</a></li>
+                        <li><a href="{{ url_for('views.index') }}">{{ _('Functional Materials') }}</a></li>
                         <li><a href="{{ url_for('articles.listing') }}">{{ _('Articles') }}</a></li>
                         <li><a href="{{ url_for('views.login') }}">{{ _('User Portal') }}</a></li>
                     </ul>

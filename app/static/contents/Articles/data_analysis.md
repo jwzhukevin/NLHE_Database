@@ -1,3 +1,15 @@
+---
+title: "Advanced Data Analysis Techniques"
+date: "2025-11-20 09:00"
+author: "Admin"
+summary: "This article covers advanced techniques for analyzing material data in our database. These methods can help researchers extract meaningful insights from the available datasets."
+keywords:
+  - Analysis
+  - Statistics
+  - Machine Learning
+  - Visualization
+---
+
 # Advanced Data Analysis Techniques
 
 ## Overview

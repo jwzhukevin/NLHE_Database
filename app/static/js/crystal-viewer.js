@@ -381,7 +381,7 @@ function createToolbar(container) {
     const screenshotBtn = document.createElement('button');
     screenshotBtn.innerHTML = '<i class="fas fa-camera"></i>'; // 使用Font Awesome图标
     screenshotBtn.title = '截图'; // 设置鼠标悬停提示文字
-    screenshotBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon'; // 统一按钮体系，保留原类
+    screenshotBtn.className = 'button-tool-small'; // 统一按钮体系，保留原类
     screenshotBtn.addEventListener('click', takeScreenshot); // 添加点击事件监听器
     toolbar.appendChild(screenshotBtn); // 将按钮添加到工具栏
     
@@ -389,7 +389,7 @@ function createToolbar(container) {
     const downloadCIFBtn = document.createElement('button');
     downloadCIFBtn.innerHTML = '<i class="fas fa-download"></i>'; // 使用下载图标
     downloadCIFBtn.title = '下载CIF文件'; // 设置提示文字
-    downloadCIFBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
+    downloadCIFBtn.className = 'button-tool-small';
     downloadCIFBtn.addEventListener('click', downloadCIFFile); // 添加下载CIF文件的点击事件
     toolbar.appendChild(downloadCIFBtn);
     
@@ -397,13 +397,13 @@ function createToolbar(container) {
     const resetViewBtn = document.createElement('button');
     resetViewBtn.innerHTML = '<i class="fas fa-redo-alt"></i>'; // 使用重置图标
     resetViewBtn.title = '重置视图'; // 设置提示文字
-    resetViewBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
+    resetViewBtn.className = 'button-tool-small';
     resetViewBtn.addEventListener('click', resetView); // 添加重置视图的点击事件
     toolbar.appendChild(resetViewBtn);
     
     // 创建投影切换按钮（透视/正交）
     const projectionBtn = document.createElement('button');
-    projectionBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
+    projectionBtn.className = 'button-tool-small';
     function updateProjectionBtnUI() {
         if (_projectionMode === 'perspective') {
             projectionBtn.innerHTML = '<i class="fas fa-border-all"></i>';
@@ -429,7 +429,7 @@ function createToolbar(container) {
     const modelTypeBtn = document.createElement('button');
     modelTypeBtn.innerHTML = '<i class="fas fa-cubes"></i>'; // 使用立方体图标
     modelTypeBtn.title = 'Switch Model Type'; // 设置提示文字
-    modelTypeBtn.className = 'toolbar-btn btn btn--secondary btn--sm btn--icon';
+    modelTypeBtn.className = 'button-tool-small';
     
     // 创建模型类型下拉菜单
     const modelTypeDropdown = document.createElement('div');
@@ -2096,7 +2096,7 @@ function downloadCIFFile() {
     const cellType = document.querySelector('input[name="cellType"]:checked')?.value || 'primitive';
     
     // Build URL for download
-    let url = `/api/structure/${materialId}/cif`;
+    let url = `/api/database/functional_materials/structure/${materialId}/cif`;
     
     // Add supercell parameters if they're not all 1
     if (expansionValues.a > 1 || expansionValues.b > 1 || expansionValues.c > 1) {
@@ -2218,9 +2218,8 @@ function createSupercellPanel(container) {
 
     // 创建转换按钮
     const transformBtn = document.createElement('button');
-    transformBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Transform';
-    /* [Fix 20251001] 文本被截断：移除 btn--icon 固定尺寸限制 */
-    transformBtn.className = 'transform-btn btn btn--secondary btn--sm';
+    transformBtn.textContent = 'Transform';
+    transformBtn.className = 'button-secondary';
     // 视觉交由 .btn 控制
     transformBtn.style.gap = '3px';
     panel.appendChild(transformBtn);
@@ -2296,25 +2295,23 @@ function createSupercellPanel(container) {
     // 创建显示原胞按钮
     const primitiveBtn = document.createElement('button');
     primitiveBtn.textContent = 'Primitive Cell';
-    primitiveBtn.className = 'cell-btn btn btn--secondary btn--sm';
-    primitiveBtn.style.width = '100%'; // [Fix 20251001] 全宽，避免文本折断
+    primitiveBtn.className = 'button-secondary';
+    primitiveBtn.style.width = '100%';
     primitiveBtn.style.whiteSpace = 'nowrap';
 
     // 创建显示传统胞按钮
     const conventionalBtn = document.createElement('button');
     conventionalBtn.textContent = 'Conventional Cell';
-    conventionalBtn.className = 'cell-btn btn btn--secondary btn--sm';
-    conventionalBtn.style.width = '100%'; // [Fix 20251001] 全宽，避免文本折断
+    conventionalBtn.className = 'button-secondary';
+    conventionalBtn.style.width = '100%';
     conventionalBtn.style.whiteSpace = 'nowrap';
 
     // 创建完成按钮
     const doneBtn = document.createElement('button');
     doneBtn.textContent = 'Cell expansion';
-    doneBtn.className = 'cell-btn btn btn--primary btn--sm';
-    doneBtn.style.width = '100%'; // [Fix 20251001] 全宽，避免文本折断
+    doneBtn.className = 'button-secondary';
+    doneBtn.style.width = '100%';
     doneBtn.style.whiteSpace = 'nowrap';
-    
-    // 视觉 hover 效果交由 .btn 控制
 
     buttonGroup.appendChild(primitiveBtn);
     buttonGroup.appendChild(conventionalBtn);
@@ -2349,7 +2346,7 @@ function createSupercellPanel(container) {
         showLoadingIndicator();
 
         // 调用原胞API
-        fetch(`/api/structure/${materialId}/primitive`)
+        fetch(`/api/database/functional_materials/structure/${materialId}/primitive`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP错误! 状态码: ${response.status}`);
@@ -2394,7 +2391,7 @@ function createSupercellPanel(container) {
         showLoadingIndicator();
 
         // 调用传统胞API
-        fetch(`/api/structure/${materialId}/conventional`)
+        fetch(`/api/database/functional_materials/structure/${materialId}/conventional`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP错误! 状态码: ${response.status}`);
@@ -2456,7 +2453,7 @@ function convertToPrimitiveCell() {
     showLoadingIndicator();
     
     // 构建请求URL，请求原胞数据
-    const url = `/api/structure/${materialId}/primitive`;
+    const url = `/api/database/functional_materials/structure/${materialId}/primitive`;
     
     console.log(`请求原胞数据: 材料ID=${materialId}`);
     
@@ -2665,7 +2662,7 @@ function updateSupercell(a, b, c, cellType) {
     console.log(`Updating supercell: Material ID=${materialId}, a=${a}, b=${b}, c=${c}, Cell Type=${cellType}`);
     
     // 构建请求URL
-    let url = `/api/structure/${materialId}/supercell?a=${a}&b=${b}&c=${c}`;
+    let url = `/api/database/functional_materials/structure/${materialId}/supercell?a=${a}&b=${b}&c=${c}`;
     
     // 如果提供了晶胞类型，添加到URL参数中
     if (cellType) {

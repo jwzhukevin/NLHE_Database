@@ -1,3 +1,15 @@
+---
+title: "Getting Started with Materials Database"
+date: "2025-10-01 09:00"
+author: "Admin"
+summary: "This article provides an overview of how to get started with our Materials Database. The database contains a wide range of materials and their properties, organized for easy access and analysis."
+keywords:
+  - Guide
+  - Beginner
+  - Introduction
+  - Basics
+---
+
 # Getting Started with Materials Database
 
 ## Introduction

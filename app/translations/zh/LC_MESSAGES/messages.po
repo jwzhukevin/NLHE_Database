@@ -1,85 +1,3 @@
-# ===== 新增：导航、AI 菜单与 HTA 列头翻译 =====
-#: app/templates/base.html
-msgid "High temperature alloy database"
-msgstr "高温合金数据库"
-
-#: app/templates/base.html
-msgid "LLM"
-msgstr "大语言模型"
-
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "Bending Strength (MPa)"
-msgstr "强度"
-
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "zt"
-msgstr "热电优值"
-
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "Bending Strain"
-msgstr "应变"
-# Chinese translations for PROJECT.
-# ===== 申请页 i18n 新增条目 =====
-#: app/templates/base.html:188 app/templates/auth/apply.html:49
-msgid "Apply"
-msgstr "申请"
-
-#: app/templates/auth/apply.html:33
-msgid "Application Instructions (Email Channel)"
-msgstr "申请说明（邮件申请通道）"
-
-#: app/templates/auth/apply.html:35
-msgid "You can also send your application email to:"
-msgstr "您也可以将申请邮件发送至："
-
-#: app/templates/auth/apply.html:38
-msgid "To speed up the review, please fill in the following fields completely (Required indicates mandatory):"
-msgstr "为加快审核，请完整填写以下字段（标注“必填”的为必填项）："
-
-#: app/templates/auth/apply.html:41
-msgid "Full Name (Required)"
-msgstr "姓名（必填）"
-
-#: app/templates/auth/apply.html:42
-msgid "Email (Required, used for notifications)"
-msgstr "邮箱（必填，用于接收通知）"
-
-#: app/templates/auth/apply.html:43
-msgid "Desired Username (Required)"
-msgstr "期望用户名（必填）"
-
-#: app/templates/auth/apply.html:44
-msgid "Affiliation (Optional)"
-msgstr "单位/机构（可选）"
-
-#: app/templates/auth/apply.html:45
-msgid "Application Reason (Required, briefly describe purpose and scope)"
-msgstr "申请理由（必填，简要说明用途与范围）"
-
-#: app/templates/auth/apply.html:49
-msgid "Copy Template"
-msgstr "一键复制模板"
-
-#: app/templates/auth/apply.html:51
-msgid "MAIL_TEMPLATE_TEXT"
-msgstr "收件人：matdatax@163.com\n主题：申请开通 MatdataX 用户\n\n正文：\n姓名：________________\n邮箱：________________\n期望用户名：__________\n单位/机构（可选）：____\n申请理由（用途与范围）：\n________________________________"
-
-#: app/templates/auth/apply.html:52
-msgid "Hint: After copying, paste into your email client, complete the information, and send."
-msgstr "提示：复制后粘贴到您的邮件客户端，完善信息并发送。"
-
-#: app/templates/auth/apply.html:54
-msgid "The online application form on the right is currently unavailable. Please use the email channel above:"
-msgstr "右侧在线申请表单当前暂不可用。请使用上方的邮件通道："
-
-#: app/templates/auth/apply.html:58
-msgid "Template copied to clipboard"
-msgstr "模板已复制到剪贴板"
-
-#: app/templates/auth/apply.html:67
-msgid "The online application form is temporarily unavailable. Please use the email channel on the left."
-msgstr "在线申请表单暂不可用，请使用左侧邮件通道"
-
 # Copyright (C) 2025 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
@@ -88,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-09-13 08:13+0800\n"
+"POT-Creation-Date: 2026-01-07 20:41+0800\n"
 "PO-Revision-Date: 2025-08-19 17:01+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -103,536 +21,791 @@ msgstr ""
 msgid "Login failed due to system error. Please try again."
 msgstr "登录失败，系统错误。请重试。"
 
-#: app/views.py:311
-msgid "Access denied. This feature requires administrator privileges."
-msgstr "访问被拒绝。此功能需要管理员权限。"
+#: app/views.py:376
+msgid "Unsupported language."
+msgstr "不支持的语言。"
 
-#: app/views.py:425
-#, python-format
-msgid "Shift Current file %(filename)s uploaded successfully"
-msgstr "Shift Current 文件 %(filename)s 上传成功"
+#: app/views.py:410 app/views.py:1053 app/views.py:1183
+msgid "All fields are required."
+msgstr "所有字段均为必填。"
 
-#: app/views.py:433
-msgid "Shift Current file renamed to sc.dat"
-msgstr "Shift Current 文件已重命名为 sc.dat"
-
-#: app/views.py:438
-#, python-format
-msgid "Material %(name)s added successfully!"
-msgstr "材料 %(name)s 添加成功！"
-
-#: app/views.py:442 app/views.py:768
+#: app/views.py:415
 #, python-format
 msgid "Invalid data: %(error)s"
 msgstr "无效数据：%(error)s"
 
-#: app/views.py:445 app/views.py:772 app/views.py:1282
+#: app/views.py:415
+msgid "Email format is invalid"
+msgstr "邮箱格式无效"
+
+#: app/templates/auth/login.html:115 app/views.py:421 app/views.py:1045
+#: app/views.py:1176
+msgid "Invalid captcha code, please try again"
+msgstr "验证码错误，请重试"
+
+#: app/views.py:428 app/views.py:450 app/views.py:1247
 #, python-format
 msgid "An error occurred: %(error)s"
 msgstr "发生错误：%(error)s"
 
-#: app/views.py:463
-msgid "Unsupported language."
-msgstr "不支持的语言。"
+#: app/views.py:428
+msgid "Receiver mailbox is not configured"
+msgstr "接收者的邮箱未配置"
 
-#: app/views.py:703
-msgid "Please upload a .cif format structure file!"
-msgstr "请上传 .cif 格式的结构文件！"
+#: app/views.py:450
+msgid "Failed to send application email"
+msgstr "您也可以将申请邮件发送至："
 
-#: app/views.py:717
-#, python-format
-msgid "Material name \"%(chemical_name)s\" already exists, please change CIF file"
-msgstr "材料名称“%(chemical_name)s”已存在，请更换 CIF 文件"
+#: app/views.py:455
+msgid "[MatdataX] We have received your application"
+msgstr "[MatdataX] 我们已经收到了您的申请"
 
-#: app/views.py:720
-#, python-format
-msgid "Material name updated from CIF file: %(chemical_name)s"
-msgstr "材料名称已从 CIF 文件更新为：%(chemical_name)s"
+#: app/views.py:457
+msgid "Hello %(name)s,"
+msgstr "你好 %(name)s"
 
-#: app/views.py:757
-msgid "Material name cannot be empty!"
-msgstr "材料名称不能为空！"
-
-#: app/views.py:765
-msgid "Material information updated successfully."
-msgstr "材料信息更新成功。"
-
-#: app/views.py:789
+#: app/views.py:459
 msgid ""
-"Warning: Multiple CIF files found in structure directory. Please keep "
-"only one!"
-msgstr "警告：在 structure 目录中发现多个 CIF 文件，请仅保留一个！"
+"We have received your application. We will review it and contact you via "
+"email."
+msgstr "我们已经收到了您的申请。我们将审查它，并通过电子邮件与您联系。"
 
-#: app/views.py:795
-msgid ""
-"Warning: Multiple band .dat files found in band directory. Please keep "
-"only one!"
-msgstr "警告：在 band 目录中发现多个 .dat 文件，请仅保留一个！"
+#: app/views.py:461
+msgid "Summary:"
+msgstr "摘要"
 
-#: app/views.py:803
-msgid "Warning: Multiple SC files found in sc directory. Please keep only one!"
-msgstr "警告：在 sc 目录中发现多个 SC 文件，请仅保留一个！"
+#: app/templates/auth/apply.html:96 app/views.py:462
+msgid "Full Name"
+msgstr "姓名（必填）"
 
-#: app/views.py:840
+#: app/templates/auth/apply.html:104 app/templates/auth/login.html:35
+#: app/templates/members/detail.html:22 app/views.py:463
+msgid "Email"
+msgstr "邮箱"
+
+#: app/templates/auth/apply.html:112 app/views.py:464
+msgid "Desired Username"
+msgstr "期望用户名（必填）"
+
+#: app/templates/auth/apply.html:120 app/templates/members/detail.html:25
+#: app/views.py:465
+msgid "Affiliation"
+msgstr "部门"
+
+#: app/views.py:472
+msgid "Application submitted successfully, we will contact you via email."
+msgstr "申请已成功提交，我们将通过电子邮件与您联系。"
+
+#: app/views.py:890
 msgid ""
 "Error: Multiple CIF files found in structure directory. Please keep only "
 "one!"
 msgstr "错误：在 structure 目录中发现多个 CIF 文件，请仅保留一个！"
 
-#: app/views.py:849
+#: app/views.py:899
 msgid ""
 "Error: Multiple band .dat files found in band directory. Please keep only"
 " one!"
 msgstr "错误：在 band 目录中发现多个 .dat 文件，请仅保留一个！"
 
-#: app/views.py:858
+#: app/views.py:908
 msgid "Error: Multiple SC files found in sc directory. Please keep only one!"
 msgstr "错误：在 sc 目录中发现多个 SC 文件，请仅保留一个！"
 
-#: app/views.py:916
+#: app/views.py:966
 #, python-format
 msgid "Material with MP ID %(mp_id)s not found."
 msgstr "未找到指定的 MP 编号 %(mp_id)s 对应的材料。"
 
-#: app/views.py:981
-#, python-format
-msgid ""
-"Material \"%(name)s\" and all related files have been successfully "
-"deleted."
-msgstr "材料“%(name)s”及其所有相关文件已成功删除。"
-
-#: app/views.py:1011
+#: app/views.py:1006
 msgid ""
 "Access denied. Your IP has been blocked due to multiple failed login "
 "attempts."
 msgstr "访问被拒绝。由于多次登录失败，你的 IP 已被封禁。"
 
-#: app/views.py:1041
+#: app/views.py:1036
 msgid "Security token expired or invalid. Please try again."
 msgstr "安全令牌已过期或无效，请重试。"
 
-#: app/templates/auth/login.html:126 app/views.py:1050 app/views.py:1200
-msgid "Invalid captcha code, please try again"
-msgstr "验证码错误，请重试"
-
-#: app/views.py:1059 app/views.py:1207
-msgid "All fields are required."
-msgstr "所有字段均为必填。"
-
-#: app/views.py:1085 app/views.py:1104 app/views.py:1142 app/views.py:1229
-#: app/views.py:1242 app/views.py:1268
+#: app/views.py:1079 app/views.py:1098 app/views.py:1119 app/views.py:1205
+#: app/views.py:1218 app/views.py:1233
 msgid "Your IP has been blocked due to too many failed login attempts."
 msgstr "由于多次登录失败，你的 IP 已被封禁。"
 
-#: app/views.py:1088 app/views.py:1231
+#: app/views.py:1082 app/views.py:1207
 #, python-format
 msgid ""
 "Email not found. Please check your email address. You have %(n)d attempts"
 " remaining."
 msgstr "未找到该邮箱，请检查邮箱地址。你还剩余 %(n)d 次尝试。"
 
-#: app/views.py:1107 app/views.py:1244
+#: app/views.py:1101 app/views.py:1220
 #, python-format
 msgid ""
 "Username does not match this email address. You have %(n)d attempts "
 "remaining."
 msgstr "用户名与该邮箱不匹配。你还剩余 %(n)d 次尝试。"
 
-#: app/views.py:1123 app/views.py:1255
-msgid ""
-"Your IP has been blocked due to too many unauthorized admin login "
-"attempts."
-msgstr "由于多次未授权的管理员登录尝试，你的 IP 已被封禁。"
-
-#: app/views.py:1126 app/views.py:1257
-#, python-format
-msgid ""
-"This account does not have administrator privileges. You have %(n)d "
-"attempts remaining."
-msgstr "该账户不具备管理员权限。你还剩余 %(n)d 次尝试。"
-
-#: app/templates/auth/login.html:127 app/views.py:1145 app/views.py:1270
+#: app/templates/auth/login.html:116 app/views.py:1122 app/views.py:1235
 #, python-format
 msgid "Incorrect password. You have %(n)d attempts remaining."
 msgstr "密码错误。你还剩余 %(n)d 次尝试。"
-#: app/views.py:1321
+
+#: app/views.py:1286
 msgid "Logout completed."
 msgstr "已退出登录。"
 
-#: app/views.py:1389
-msgid "Forbidden"
-msgstr "无权限访问"
+#: app/views.py:1350
+#, fuzzy
+msgid "Session cleared successfully."
+msgstr "材料信息更新成功。"
 
-msgid "You don't have permission to access this page."
-msgstr "您没有权限访问此页面。"
-
-msgid "Resource Gone"
-msgstr "资源已失效"
-
-msgid "The requested resource is no longer available. The site runs in read-only mode and write operations are disabled."
-msgstr "请求的资源已不再可用。站点当前处于只读模式，写入操作已被禁用。"
-
-msgid "Go to MatdataX"
-msgstr "进入数据库"
-
-msgid "Back to Database"
-msgstr "返回数据库"
-
-#: app/views.py:2098
-#, python-format
-msgid ""
-"Band analysis completed! Analyzed: %(analyzed)d, Cached: %(cached)d, "
-"Failed: %(failed)d"
-msgstr "能带分析完成！已分析：%(analyzed)d，已缓存：%(cached)d，失败：%(failed)d"
-
-#: app/views.py:2102
-#, python-format
-msgid "Batch analysis failed: %(error)s"
-msgstr "批量分析失败：%(error)s"
-
-#: app/templates/base.html:147
-msgid "Tools"
-msgstr "工具"
-
-# ==== AI Tools 菜单（新增）====
-#: app/templates/base.html:168
-msgid "AI Tools"
-msgstr "AI 工具"
-
-#: app/templates/base.html:172
-msgid "Active Learning"
-msgstr "主动学习"
-
-#: app/templates/base.html:175
-msgid "Image Recognition"
-msgstr "图像识别"
-
-#: app/templates/base.html:178
-msgid "Natural Language Processing"
-msgstr "自然语言处理"
-
-#: app/templates/base.html:167
-msgid "Program"
-msgstr "程序"
-
-#: app/templates/base.html:174
-msgid "Add"
-msgstr "新增"
-
-#: app/templates/base.html:181
-msgid "Login"
-msgstr "登录"
-
-#: app/templates/base.html:188
-msgid "More"
-msgstr "更多"
-
-#: app/templates/base.html:199 app/templates/base.html:205
-msgid "Logout"
-msgstr "登出"
-
-#: app/templates/base.html:209
-msgid "Guest"
-msgstr "游客"
-
-#: app/templates/base.html:217
+#: app/templates/base.html:134
 msgid "Language"
 msgstr "语言"
 
-#: app/templates/base.html:220
+#: app/templates/base.html:137
 msgid "English"
 msgstr "英文"
 
-#: app/templates/base.html:221
+#: app/templates/base.html:138
 msgid "中文"
 msgstr "中文"
 
-#: app/templates/base.html:476 app/templates/main/landing.html:7
-msgid "Materials Database"
-msgstr "材料数据库"
+#: app/templates/base.html:143 app/templates/materials/detail.html:114
+msgid "MatdataX-I: Functional Materials"
+msgstr "MatdataX-I：功能材料"
 
-# ===== 新增：High Temperature Alloy 数据库与详情页 =====
-#: app/templates/High_temperature_alloy/index.html
-msgid "Results"
-msgstr "结果"
+#: app/templates/High_temperature_alloy/detail.html:14
+#: app/templates/base.html:148
+msgid "MatdataX-II: Structural Materials"
+msgstr "MatdataX-II：结构材料"
 
-#: app/templates/High_temperature_alloy/index.html
-msgid "Per Page"
-msgstr "每页"
+#: app/templates/base.html:153
+msgid "Alloy"
+msgstr "合金"
 
-#: app/templates/High_temperature_alloy/index.html
-msgid "Columns"
-msgstr "列"
+#: app/templates/base.html:157
+msgid "Ceramics"
+msgstr "陶瓷"
 
-#: app/templates/High_temperature_alloy/index.html
-msgid "Optional Columns"
-msgstr "可选列"
+#: app/templates/base.html:162
+msgid "Literature Extracted Data"
+msgstr "文献提取数据"
 
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "Elements & Formula"
-msgstr "元素与化学式"
+#: app/templates/base.html:165
+msgid "Internal Experimental Data"
+msgstr "内部实验数据"
 
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "Process"
-msgstr "工艺"
+#: app/templates/base.html:168
+msgid "Model Predicted Data"
+msgstr "模型预测数据"
 
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "Crystal structure"
-msgstr "晶体结构"
+#: app/templates/articles/listing.html:26 app/templates/articles/view.html:18
+#: app/templates/base.html:176 app/templates/base.html:288
+msgid "Articles"
+msgstr "文章"
 
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "Performance"
-msgstr "性能"
-
-#: app/templates/High_temperature_alloy/index.html app/templates/High_temperature_alloy/detail.html
-msgid "Detail"
-msgstr "详情"
-
-#: app/templates/High_temperature_alloy/detail.html
-msgid "Process type"
-msgstr "工艺类型"
-
-#: app/templates/High_temperature_alloy/detail.html
-msgid "Heat treatment process"
-msgstr "热处理工艺"
-
-#: app/templates/High_temperature_alloy/detail.html
-msgid "Material Sections Navigation"
-msgstr "材料章节导航"
-
-#: app/templates/High_temperature_alloy/index.html (modal)
-msgid "Process Information"
-msgstr "工艺信息"
-
-#: app/templates/High_temperature_alloy/index.html (modal)
-msgid "Close"
-msgstr "关闭"
-
-#: app/templates/High_temperature_alloy/detail.html (chart)
-msgid "Elements Pie Chart"
-msgstr "元素占比图"
-
-#: app/templates/main/landing.html
-msgid "Data Processing Tools"
-msgstr "数据处理工具"
-
-#: app/templates/main/landing.html
-msgid "Providing data visualization, data cleaning, and data labeling tools."
-msgstr "提供数据可视化、数据清洗、数据标注等处理工具。"
-
-#: app/templates/main/landing.html
+# ==== AI Tools 菜单（新增）====
+#: app/templates/base.html:181 app/templates/main/landing.html:62
 msgid "AI Tools"
 msgstr "AI 工具"
 
-#: app/templates/main/landing.html
-msgid "Providing active learning deployment tools, self-trained large language models, and multimodal models."
-msgstr "提供主动学习部署工具、自训练的大语言模型与多模态模型。"
+#: app/templates/base.html:185
+msgid "Active Learning"
+msgstr "主动学习"
 
-#: app/templates/base.html:477
-msgid "Explore and discover novel materials"
-msgstr "探索与发现新材料"
+#: app/templates/base.html:188
+msgid "Image Recognition"
+msgstr "图像识别"
 
-#: app/templates/base.html:480
+#: app/templates/base.html:191
+msgid "Natural Language Processing"
+msgstr "自然语言处理"
+
+#: app/templates/base.html:194
+msgid "LLM"
+msgstr "大语言模型"
+
+#: app/templates/base.html:210
+msgid "More"
+msgstr "更多"
+
+#: app/templates/base.html:218
 msgid "We"
 msgstr "我们"
 
 # 新增：模块重命名为 Team
-#: app/templates/base.html:482 app/templates/members/index.html:6
+#: app/templates/base.html:221 app/templates/base.html:295
+#: app/templates/members/index.html:10
 msgid "Team"
 msgstr "团队"
 
-#: app/templates/base.html:483
+#: app/templates/base.html:222 app/templates/members/detail.html:47
 msgid "Publications"
 msgstr "学术成果"
 
-#: app/templates/base.html:484
+#: app/templates/base.html:223
 msgid "Achievements"
 msgstr "成果"
 
-#: app/templates/base.html:485
+#: app/templates/base.html:224
 msgid "Join Us"
 msgstr "加入我们"
 
-#: app/templates/base.html:489
-msgid "Related Links"
-msgstr "相关链接"
+#: app/templates/base.html:234
+msgid "Logout"
+msgstr "登出"
 
-#: app/templates/base.html:491
-msgid "IMR Graduate School, CAS"
-msgstr "中科院金属所研究生院"
+#: app/templates/base.html:238
+msgid "Guest"
+msgstr "游客"
 
-#: app/templates/base.html:492
-msgid "Institute of Metal Research, CAS"
-msgstr "中国科学院金属研究所"
+# Chinese translations for PROJECT.
+# ===== 申请页 i18n 新增条目 =====
+#: app/templates/Ceramics/Experiment/index.html:45
+#: app/templates/Ceramics/Literature/index.html:45 app/templates/base.html:240
+#: app/templates/main/database.html:389
+msgid "Apply"
+msgstr "申请"
 
-#: app/templates/base.html:493
-msgid "Chinese Academy of Sciences"
+#: app/templates/auth/login.html:79 app/templates/base.html:241
+msgid "Login"
+msgstr "登录"
+
+#: app/templates/base.html:283 app/templates/base.html:315
+msgid "MatdataX"
+msgstr "MatdataX"
+
+#: app/templates/base.html:285
+msgid "Copyright"
+msgstr "版权说明"
+
+#: app/templates/High_temperature_alloy/detail.html:11
+#: app/templates/base.html:286 app/templates/materials/detail.html:109
+msgid "Home"
+msgstr "首页"
+
+#: app/templates/base.html:287
+msgid "Functional Materials"
+msgstr "MatdataX-I：功能材料"
+
+#: app/templates/base.html:289
+msgid "User Portal"
+msgstr "用户门户"
+
+#: app/templates/base.html:293
+msgid "Resources"
+msgstr "资源"
+
+#: app/templates/base.html:296
+msgid "CAS"
 msgstr "中国科学院"
 
-#: app/templates/base.html:497
-msgid "Contact Us"
-msgstr "联系我们"
+#: app/templates/base.html:297
+msgid "IMR"
+msgstr "中国科学院金属研究所"
 
-#: app/templates/base.html:498
-msgid "Address: 72 Wenhua Road, Shenhe District, Shenyang"
-msgstr "地址：沈阳市沈河区文化路72号"
+#: app/templates/base.html:298
+msgid "IMR Graduate School"
+msgstr "中科大材料科学与工程学院"
 
-#: app/templates/base.html:499
-msgid "Postal Code: 110016"
-msgstr "邮编：110016"
+#: app/templates/base.html:302
+msgid "Community"
+msgstr "社区"
 
-#: app/templates/base.html:500
-msgid "Email: contact@nlhe-database.org"
-msgstr "邮箱：contact@nlhe-database.org"
+#: app/templates/base.html:304
+msgid "Seminars (Coming Soon)"
+msgstr "研讨会 (即将推出)"
 
-#: app/templates/base.html:504
-msgid "NLHE Database."
-msgstr "NLHE 数据库。"
+#: app/templates/base.html:305
+msgid "Documentation"
+msgstr "文档"
 
-#: app/templates/base.html:504
+#: app/templates/base.html:306
+msgid "AI Assistant"
+msgstr "AI 助手"
+
+#: app/templates/base.html:307
+msgid "Support"
+msgstr "支持"
+
+#: app/templates/base.html:313
+msgid "MatdataX Logo"
+msgstr "MatdataX 标志"
+
+#: app/templates/base.html:317
+msgid ""
+"Record & Compliance: Placeholder ICP Record · All rights reserved by IMR "
+"MatdataX."
+msgstr "备案与合规：ICP备案占位 · IMR MatdataX 保留所有权利."
+
+#: app/templates/base.html:318
 msgid "Powered by"
 msgstr "技术支持"
 
-#: app/templates/articles/listing.html:6
+#: app/templates/Ceramics/Experiment/index.html:14
+#: app/templates/Ceramics/Experiment/index.html:16
+#: app/templates/Ceramics/Literature/index.html:14
+#: app/templates/Ceramics/Literature/index.html:16
+#: app/templates/High_temperature_alloy/index.html:20
+#: app/templates/High_temperature_alloy/index.html:24
+#: app/templates/High_temperature_alloy/index.html:85
+#: app/templates/main/database.html:170 app/templates/main/database.html:175
+msgid "Search"
+msgstr "搜索"
+
+#: app/templates/Ceramics/Experiment/index.html:25
+msgid "Experiment Results"
+msgstr "实验结果"
+
+#: app/templates/Ceramics/Experiment/index.html:29
+#: app/templates/Ceramics/Literature/index.html:29
+#: app/templates/High_temperature_alloy/index.html:108
+#: app/templates/main/database.html:342
+msgid "Per Page"
+msgstr "每页"
+
+#: app/templates/Ceramics/Experiment/index.html:38
+#: app/templates/Ceramics/Literature/index.html:38
+#: app/templates/High_temperature_alloy/index.html:130
+#: app/templates/main/database.html:367
+msgid "Columns"
+msgstr "列"
+
+#: app/templates/Ceramics/Experiment/index.html:40
+#: app/templates/Ceramics/Literature/index.html:40
+#: app/templates/High_temperature_alloy/index.html:132
+#: app/templates/main/database.html:369
+msgid "Optional Columns"
+msgstr "可选列"
+
+#: app/templates/Ceramics/Experiment/index.html:57
+#: app/templates/Ceramics/Experiment/index.html:58
+#: app/templates/Ceramics/Experiment/index.html:59
+#: app/templates/Ceramics/Literature/index.html:56
+#: app/templates/Ceramics/Literature/index.html:57
+#: app/templates/Ceramics/Literature/index.html:58
+#: app/templates/High_temperature_alloy/index.html:151
+#: app/templates/High_temperature_alloy/index.html:152
+#: app/templates/High_temperature_alloy/index.html:153
+#: app/templates/main/database.html:406 app/templates/main/database.html:407
+#: app/templates/main/database.html:408
+msgid "Hide this column"
+msgstr "隐藏此列"
+
+#: app/templates/Ceramics/Experiment/index.html:74
+#: app/templates/High_temperature_alloy/index.html:154
+#: app/templates/High_temperature_alloy/index.html:172
+msgid "Detail"
+msgstr "详情"
+
+#: app/templates/Ceramics/Experiment/index.html:81
+#: app/templates/High_temperature_alloy/index.html:179
+#, fuzzy
+msgid "No results found."
+msgstr "未找到内容"
+
+#: app/templates/Ceramics/Experiment/index.html:95
+#: app/templates/High_temperature_alloy/index.html:196
+msgid "Process Information"
+msgstr "工艺信息"
+
+#: app/templates/Ceramics/Experiment/index.html:96
+#: app/templates/High_temperature_alloy/index.html:197
+msgid "Close"
+msgstr "关闭"
+
+#: app/templates/Ceramics/Literature/index.html:25
+msgid "Literature Results"
+msgstr "文献提取数据"
+
+#: app/templates/High_temperature_alloy/detail.html:21
+#: app/templates/materials/detail.html:141
+msgid "Back"
+msgstr "返回"
+
+#: app/templates/High_temperature_alloy/detail.html:30
+#: app/templates/materials/detail.html:154
+msgid "Material Sections Navigation"
+msgstr "材料章节导航"
+
+#: app/templates/High_temperature_alloy/detail.html:33
+#: app/templates/High_temperature_alloy/detail.html:46
+msgid "Elements & Formula"
+msgstr "元素与化学式"
+
+#: app/templates/High_temperature_alloy/detail.html:34
+#: app/templates/High_temperature_alloy/detail.html:139
+msgid "Process"
+msgstr "工艺"
+
+#: app/templates/High_temperature_alloy/detail.html:35
+#: app/templates/High_temperature_alloy/detail.html:155
+#: app/templates/High_temperature_alloy/detail.html:158
+#: app/templates/High_temperature_alloy/index.html:38
+msgid "Crystal structure"
+msgstr "晶体结构"
+
+#: app/templates/High_temperature_alloy/detail.html:36
+#: app/templates/High_temperature_alloy/detail.html:167
+msgid "Performance"
+msgstr "性能"
+
+#: app/templates/High_temperature_alloy/detail.html:50
+msgid "Elements Pie Chart"
+msgstr "元素占比图"
+
+#: app/templates/High_temperature_alloy/detail.html:50
+msgid "All element values are 0"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:143
+#: app/templates/High_temperature_alloy/index.html:42
+#: app/templates/High_temperature_alloy/index.html:201
+msgid "Process type"
+msgstr "工艺类型"
+
+#: app/templates/High_temperature_alloy/detail.html:145
+#: app/templates/High_temperature_alloy/index.html:46
+#: app/templates/High_temperature_alloy/index.html:205
+msgid "Heat treatment process"
+msgstr "热处理工艺"
+
+#: app/templates/High_temperature_alloy/detail.html:170
+#: app/templates/High_temperature_alloy/index.html:54
+#: app/templates/High_temperature_alloy/index.html:134
+#: app/templates/High_temperature_alloy/index.html:151
+msgid "Bending Strength (MPa)"
+msgstr "强度"
+
+#: app/templates/High_temperature_alloy/detail.html:177
+#: app/templates/High_temperature_alloy/index.html:64
+#: app/templates/High_temperature_alloy/index.html:135
+#: app/templates/High_temperature_alloy/index.html:152
+msgid "zt"
+msgstr "热电优值"
+
+#: app/templates/High_temperature_alloy/detail.html:184
+#: app/templates/High_temperature_alloy/index.html:72
+#: app/templates/High_temperature_alloy/index.html:136
+#: app/templates/High_temperature_alloy/index.html:153
+msgid "Bending Strain"
+msgstr "应变"
+
+#: app/templates/High_temperature_alloy/index.html:19
+#: app/templates/main/database.html:168
+msgid "Search materials, MP IDs, space groups..."
+msgstr "搜索材料、MP ID、空间群..."
+
+#: app/templates/High_temperature_alloy/index.html:23
+#: app/templates/chat/chat.html:24 app/templates/main/database.html:174
+msgid "Clear"
+msgstr "清空"
+
+#: app/templates/High_temperature_alloy/index.html:25
+#: app/templates/main/database.html:177
+msgid "Advanced"
+msgstr "高级"
+
+#: app/templates/High_temperature_alloy/index.html:56
+#: app/templates/High_temperature_alloy/index.html:66
+#: app/templates/High_temperature_alloy/index.html:74
+#: app/templates/main/database.html:233 app/templates/main/database.html:250
+#: app/templates/main/database.html:264
+msgid "Min"
+msgstr "最小值"
+
+#: app/templates/High_temperature_alloy/index.html:57
+#: app/templates/High_temperature_alloy/index.html:67
+#: app/templates/High_temperature_alloy/index.html:75
+#: app/templates/main/database.html:235 app/templates/main/database.html:252
+#: app/templates/main/database.html:266
+msgid "to"
+msgstr "至"
+
+#: app/templates/High_temperature_alloy/index.html:58
+#: app/templates/High_temperature_alloy/index.html:68
+#: app/templates/High_temperature_alloy/index.html:76
+#: app/templates/main/database.html:237 app/templates/main/database.html:254
+#: app/templates/main/database.html:268
+msgid "Max"
+msgstr "最大值"
+
+# ===== 新增：High Temperature Alloy 数据库与详情页 =====
+#: app/templates/High_temperature_alloy/index.html:84
+#, fuzzy
+msgid "Reset"
+msgstr "结果"
+
+#: app/templates/High_temperature_alloy/index.html:93
+#: app/templates/main/database.html:298
+msgid ""
+"Please enter search criteria or select at least one filter before "
+"searching."
+msgstr "在搜索前请输入条件或至少选择一个筛选项。"
+
+# ===== 新增：High Temperature Alloy 数据库与详情页 =====
+#: app/templates/High_temperature_alloy/index.html:104
+msgid "Results"
+msgstr "结果"
+
+#: app/templates/High_temperature_alloy/index.html:138
+#, fuzzy
+msgid "Add Property"
+msgstr "基本性质"
+
+#: app/templates/articles/listing.html:10
 msgid "Documentation & Contents"
 msgstr "文档与内容"
 
-#: app/templates/articles/listing.html:11
+#: app/templates/articles/listing.html:15
 msgid "Search contents..."
 msgstr "搜索内容..."
 
-#: app/templates/articles/listing.html:21 app/templates/main/database.html:442
+#: app/templates/articles/listing.html:25 app/templates/main/database.html:219
 msgid "All"
 msgstr "全部"
 
-#: app/templates/articles/listing.html:22
-msgid "Articles"
-msgstr "文章"
-
-#: app/templates/articles/listing.html:23
+#: app/templates/articles/listing.html:27 app/templates/articles/view.html:17
 msgid "Instructions"
 msgstr "使用说明"
 
-#: app/templates/articles/listing.html:24
+#: app/templates/articles/listing.html:28 app/templates/articles/view.html:19
 msgid "Changelog"
 msgstr "更新日志"
 
-#: app/templates/articles/listing.html:39
+#: app/templates/articles/listing.html:29 app/templates/articles/view.html:20
+msgid "Legal"
+msgstr "法律声明"
+
+#: app/templates/articles/listing.html:55
 msgid "Read More"
 msgstr "阅读更多"
 
-#: app/templates/articles/listing.html:46
+#: app/templates/articles/listing.html:62
 msgid "No content found"
 msgstr "未找到内容"
 
-#: app/templates/articles/listing.html:48
+#: app/templates/articles/listing.html:64
 #, python-format
 msgid ""
 "No results found for \"%(query)s\". Try different keywords or browse by "
 "category."
 msgstr "未找到“%(query)s”的结果。尝试其他关键词或按分类浏览。"
 
-#: app/templates/articles/listing.html:50
+#: app/templates/articles/listing.html:66
 msgid "There is no content in this category yet."
 msgstr "该分类下暂时没有内容。"
 
-#: app/templates/articles/view.html:6
+#: app/templates/articles/view.html:10
 msgid "Table of contents"
 msgstr "目录"
 
 # 补充：文章详情页与 TOC 使用的“Contents”键
-#: app/templates/articles/view.html
+#: app/templates/articles/view.html:14 app/templates/articles/view.html:72
 msgid "Contents"
 msgstr "目录"
 
-#: app/templates/articles/view.html:36
+#: app/templates/articles/view.html:51
+msgid "Keywords"
+msgstr "关键词"
+
+#: app/templates/articles/view.html:61
 msgid "Back to Contents"
 msgstr "返回目录"
 
-#: app/templates/auth/login.html:18
-msgid "User"
-msgstr "普通用户"
+#: app/templates/auth/apply.html:48
+msgid "Application Instructions (Email Channel)"
+msgstr "申请说明（邮件申请通道）"
 
-#: app/templates/auth/login.html:22
-msgid "Administrator"
-msgstr "管理员"
+#: app/templates/auth/apply.html:50
+msgid "You can also send your application email to:"
+msgstr "您也可以将申请邮件发送至："
 
-#: app/templates/auth/login.html:28 app/templates/auth/login.html:121
-#: app/templates/auth/login.html:144 app/templates/auth/login.html:151
-msgid "Sign In"
-msgstr "登录"
+#: app/templates/auth/apply.html:53
+msgid ""
+"To speed up the review, please fill in the following fields completely "
+"(Required indicates mandatory):"
+msgstr "为加快审核，请完整填写以下字段（标注“必填”的为必填项）："
 
-#: app/templates/auth/login.html:41
-msgid "Email"
-msgstr "邮箱"
+#: app/templates/auth/apply.html:56
+msgid "Full Name (Required)"
+msgstr "姓名（必填）"
 
-#: app/templates/auth/login.html:43
+#: app/templates/auth/apply.html:57
+msgid "Email (Required, used for notifications)"
+msgstr "邮箱（必填，用于接收通知）"
+
+#: app/templates/auth/apply.html:58
+msgid "Desired Username (Required)"
+msgstr "期望用户名（必填）"
+
+#: app/templates/auth/apply.html:59
+msgid "Affiliation (Optional)"
+msgstr "单位/机构（可选）"
+
+#: app/templates/auth/apply.html:60
+msgid "Application Reason (Required, briefly describe purpose and scope)"
+msgstr "申请理由（必填，简要说明用途与范围）"
+
+#: app/templates/auth/apply.html:64
+msgid "Copy Template"
+msgstr "一键复制模板"
+
+#: app/templates/auth/apply.html:66
+msgid "MAIL_TEMPLATE_TEXT"
+msgstr ""
+"收件人：matdatax@163.com\n"
+"主题：申请开通 MatdataX 用户\n"
+"\n"
+"正文：\n"
+"姓名：________________\n"
+"邮箱：________________\n"
+"期望用户名：__________\n"
+"单位/机构（可选）：____\n"
+"申请理由（用途与范围）：\n"
+"________________________________"
+
+#: app/templates/auth/apply.html:67
+msgid ""
+"Hint: After copying, paste into your email client, complete the "
+"information, and send."
+msgstr "提示：复制后粘贴到您的邮件客户端，完善信息并发送。"
+
+#: app/templates/auth/apply.html:71
+msgid ""
+"The online application form on the right is currently unavailable. Please"
+" use the email channel above:"
+msgstr "右侧在线申请表单当前暂不可用。请使用上方的邮件通道："
+
+#: app/templates/auth/apply.html:80
+msgid ""
+"The online application form is temporarily unavailable. Please use the "
+"email channel on the left."
+msgstr "在线申请表单暂不可用，请使用左侧邮件通道"
+
+#: app/templates/auth/apply.html:83
+msgid "Apply to Become a User"
+msgstr ""
+
+#: app/templates/auth/apply.html:98
+msgid "Enter your full name"
+msgstr "输入你的用户名"
+
+#: app/templates/auth/apply.html:106 app/templates/auth/login.html:37
 msgid "Enter your email address"
 msgstr "输入你的邮箱地址"
 
-#: app/templates/auth/login.html:49
-msgid "Username"
-msgstr "用户名"
-
-#: app/templates/auth/login.html:51
-msgid "Enter your username"
+#: app/templates/auth/apply.html:114
+msgid "Enter your desired username"
 msgstr "输入你的用户名"
 
-#: app/templates/auth/login.html:57 app/templates/auth/login.html:62
+#: app/templates/auth/apply.html:122
+msgid "Enter your affiliation (optional)"
+msgstr "单位/机构（可选）"
+
+#: app/templates/auth/apply.html:128
+msgid "Reason"
+msgstr "元素关联"
+
+#: app/templates/auth/apply.html:130
+msgid "Describe your purpose or need for access"
+msgstr ""
+
+#: app/templates/auth/apply.html:136 app/templates/auth/apply.html:141
+#: app/templates/auth/login.html:51 app/templates/auth/login.html:56
 msgid "Captcha"
 msgstr "验证码"
 
-#: app/templates/auth/login.html:60
+#: app/templates/auth/apply.html:139 app/templates/auth/login.html:54
 msgid "Enter the captcha"
 msgstr "输入验证码"
 
-#: app/templates/auth/login.html:65
+#: app/templates/auth/apply.html:144 app/templates/auth/login.html:59
 msgid "Click to refresh"
 msgstr "点击刷新"
 
-#: app/templates/auth/login.html:74
-msgid "Password"
-msgstr "密码"
+#: app/templates/auth/apply.html:151
+msgid "Submit Application"
+msgstr "提交申请"
 
-#: app/templates/auth/login.html:77
-msgid "Enter your password"
-msgstr "输入你的密码"
+#: app/templates/auth/apply.html:156 app/templates/auth/login.html:84
+msgid "Back to Database"
+msgstr "返回数据库"
 
-#: app/templates/auth/login.html:85 app/templates/auth/login.html:122
-#: app/templates/auth/login.html:145 app/templates/auth/login.html:151
+#: app/templates/auth/apply.html:182
+msgid "Template copied to clipboard"
+msgstr "模板已复制到剪贴板"
+
+#: app/templates/auth/login.html:22 app/templates/auth/login.html:113
+#: app/templates/auth/login.html:130 app/templates/auth/login.html:136
 msgid "Log In"
 msgstr "登录"
 
-#: app/templates/auth/login.html:86
-msgid "Return to Database"
-msgstr "返回数据库"
+#: app/templates/auth/login.html:43
+msgid "Username"
+msgstr "用户名"
 
-#: app/templates/auth/login.html:96
-msgid ""
-"This area is restricted to administrators only. Unauthorized access "
-"attempts are monitored."
-msgstr "本区域仅限管理员访问，未授权访问将被监控。"
+#: app/templates/auth/login.html:45
+msgid "Enter your username"
+msgstr "输入你的用户名"
 
-#: app/templates/auth/login.html:123 app/templates/auth/login.html:146
-#: app/templates/auth/login.html:151
+#: app/templates/auth/login.html:68
+msgid "Password"
+msgstr "密码"
+
+#: app/templates/auth/login.html:71
+msgid "Enter your password"
+msgstr "输入你的密码"
+
+#: app/templates/auth/login.html:112 app/templates/auth/login.html:129
+#: app/templates/auth/login.html:136
+msgid "Sign In"
+msgstr "登录"
+
+#: app/templates/auth/login.html:114
+msgid "Login successful. Redirecting to MatdataX in 2 seconds…"
+msgstr "登录成功，2 秒后跳转到数据库页面…"
+
+#: app/templates/auth/login.html:131 app/templates/auth/login.html:136
 msgid "Administrator Sign In"
 msgstr "管理员登录"
 
-#: app/templates/auth/login.html:124 app/templates/auth/login.html:147
-#: app/templates/auth/login.html:151
+#: app/templates/auth/login.html:132 app/templates/auth/login.html:136
 msgid "Log In as Administrator"
 msgstr "以管理员身份登录"
 
-#: app/templates/auth/login.html:125
-msgid "Login successful. Redirecting to database in 2 seconds…"
-msgstr "登录成功，2 秒后跳转到数据库页面…"
+#: app/templates/chat/chat.html:8
+msgid "Chat"
+msgstr "大语音模型"
+
+#: app/templates/chat/chat.html:13
+msgid "Model"
+msgstr "模型"
+
+#: app/templates/chat/chat.html:21
+msgid "Type your question here..."
+msgstr "输入你的问题"
+
+#: app/templates/chat/chat.html:21
+msgid "Your Message"
+msgstr "你的输入"
+
+#: app/templates/chat/chat.html:23
+msgid "Send"
+msgstr "发送"
+
+#: app/templates/chat/chat.html:25
+msgid "Export"
+msgstr "导出"
 
 #: app/templates/components/periodic_table.html:6
 msgid "Periodic Table"
 msgstr "元素周期表"
 
 #: app/templates/components/periodic_table.html:7
-#: app/templates/main/database.html:655
+#: app/templates/main/database.html:328
 msgid "Clear All"
 msgstr "清空全部"
 
@@ -656,116 +829,116 @@ msgstr "已选 0 个"
 #: app/templates/components/periodic_table.html:77
 #: app/templates/components/periodic_table.html:87
 #: app/templates/components/periodic_table.html:97
-#: app/templates/components/periodic_table.html:106
-#: app/templates/components/periodic_table.html:115
-#: app/templates/components/periodic_table.html:126
-#: app/templates/components/periodic_table.html:135
-#: app/templates/components/periodic_table.html:145
-#: app/templates/components/periodic_table.html:154
-#: app/templates/components/periodic_table.html:163
-#: app/templates/components/periodic_table.html:172
-#: app/templates/components/periodic_table.html:181
+#: app/templates/components/periodic_table.html:107
+#: app/templates/components/periodic_table.html:117
+#: app/templates/components/periodic_table.html:129
+#: app/templates/components/periodic_table.html:139
+#: app/templates/components/periodic_table.html:150
+#: app/templates/components/periodic_table.html:160
+#: app/templates/components/periodic_table.html:170
+#: app/templates/components/periodic_table.html:180
 #: app/templates/components/periodic_table.html:190
-#: app/templates/components/periodic_table.html:201
-#: app/templates/components/periodic_table.html:210
-#: app/templates/components/periodic_table.html:219
-#: app/templates/components/periodic_table.html:228
-#: app/templates/components/periodic_table.html:237
-#: app/templates/components/periodic_table.html:246
-#: app/templates/components/periodic_table.html:255
-#: app/templates/components/periodic_table.html:264
-#: app/templates/components/periodic_table.html:273
+#: app/templates/components/periodic_table.html:200
+#: app/templates/components/periodic_table.html:212
+#: app/templates/components/periodic_table.html:222
+#: app/templates/components/periodic_table.html:232
+#: app/templates/components/periodic_table.html:242
+#: app/templates/components/periodic_table.html:252
+#: app/templates/components/periodic_table.html:262
+#: app/templates/components/periodic_table.html:272
 #: app/templates/components/periodic_table.html:282
-#: app/templates/components/periodic_table.html:291
-#: app/templates/components/periodic_table.html:300
-#: app/templates/components/periodic_table.html:309
-#: app/templates/components/periodic_table.html:318
-#: app/templates/components/periodic_table.html:327
-#: app/templates/components/periodic_table.html:336
-#: app/templates/components/periodic_table.html:345
-#: app/templates/components/periodic_table.html:354
-#: app/templates/components/periodic_table.html:365
-#: app/templates/components/periodic_table.html:374
-#: app/templates/components/periodic_table.html:383
-#: app/templates/components/periodic_table.html:392
-#: app/templates/components/periodic_table.html:401
-#: app/templates/components/periodic_table.html:410
-#: app/templates/components/periodic_table.html:419
-#: app/templates/components/periodic_table.html:428
-#: app/templates/components/periodic_table.html:437
-#: app/templates/components/periodic_table.html:446
-#: app/templates/components/periodic_table.html:455
+#: app/templates/components/periodic_table.html:292
+#: app/templates/components/periodic_table.html:302
+#: app/templates/components/periodic_table.html:312
+#: app/templates/components/periodic_table.html:322
+#: app/templates/components/periodic_table.html:332
+#: app/templates/components/periodic_table.html:342
+#: app/templates/components/periodic_table.html:352
+#: app/templates/components/periodic_table.html:362
+#: app/templates/components/periodic_table.html:372
+#: app/templates/components/periodic_table.html:382
+#: app/templates/components/periodic_table.html:394
+#: app/templates/components/periodic_table.html:404
+#: app/templates/components/periodic_table.html:414
+#: app/templates/components/periodic_table.html:424
+#: app/templates/components/periodic_table.html:434
+#: app/templates/components/periodic_table.html:444
+#: app/templates/components/periodic_table.html:454
 #: app/templates/components/periodic_table.html:464
-#: app/templates/components/periodic_table.html:473
-#: app/templates/components/periodic_table.html:482
-#: app/templates/components/periodic_table.html:491
-#: app/templates/components/periodic_table.html:500
-#: app/templates/components/periodic_table.html:509
-#: app/templates/components/periodic_table.html:518
-#: app/templates/components/periodic_table.html:529
-#: app/templates/components/periodic_table.html:538
-#: app/templates/components/periodic_table.html:547
-#: app/templates/components/periodic_table.html:556
-#: app/templates/components/periodic_table.html:565
-#: app/templates/components/periodic_table.html:574
-#: app/templates/components/periodic_table.html:583
-#: app/templates/components/periodic_table.html:592
-#: app/templates/components/periodic_table.html:601
-#: app/templates/components/periodic_table.html:610
-#: app/templates/components/periodic_table.html:619
-#: app/templates/components/periodic_table.html:628
-#: app/templates/components/periodic_table.html:637
+#: app/templates/components/periodic_table.html:474
+#: app/templates/components/periodic_table.html:484
+#: app/templates/components/periodic_table.html:494
+#: app/templates/components/periodic_table.html:504
+#: app/templates/components/periodic_table.html:514
+#: app/templates/components/periodic_table.html:524
+#: app/templates/components/periodic_table.html:534
+#: app/templates/components/periodic_table.html:544
+#: app/templates/components/periodic_table.html:554
+#: app/templates/components/periodic_table.html:564
+#: app/templates/components/periodic_table.html:576
+#: app/templates/components/periodic_table.html:586
+#: app/templates/components/periodic_table.html:596
+#: app/templates/components/periodic_table.html:606
+#: app/templates/components/periodic_table.html:616
+#: app/templates/components/periodic_table.html:626
+#: app/templates/components/periodic_table.html:636
 #: app/templates/components/periodic_table.html:646
-#: app/templates/components/periodic_table.html:655
-#: app/templates/components/periodic_table.html:664
-#: app/templates/components/periodic_table.html:673
-#: app/templates/components/periodic_table.html:682
-#: app/templates/components/periodic_table.html:693
-#: app/templates/components/periodic_table.html:702
-#: app/templates/components/periodic_table.html:711
-#: app/templates/components/periodic_table.html:720
-#: app/templates/components/periodic_table.html:729
-#: app/templates/components/periodic_table.html:738
-#: app/templates/components/periodic_table.html:747
-#: app/templates/components/periodic_table.html:756
-#: app/templates/components/periodic_table.html:765
-#: app/templates/components/periodic_table.html:774
-#: app/templates/components/periodic_table.html:783
-#: app/templates/components/periodic_table.html:792
-#: app/templates/components/periodic_table.html:801
-#: app/templates/components/periodic_table.html:810
-#: app/templates/components/periodic_table.html:819
+#: app/templates/components/periodic_table.html:656
+#: app/templates/components/periodic_table.html:666
+#: app/templates/components/periodic_table.html:676
+#: app/templates/components/periodic_table.html:686
+#: app/templates/components/periodic_table.html:696
+#: app/templates/components/periodic_table.html:706
+#: app/templates/components/periodic_table.html:716
+#: app/templates/components/periodic_table.html:726
+#: app/templates/components/periodic_table.html:736
+#: app/templates/components/periodic_table.html:746
+#: app/templates/components/periodic_table.html:758
+#: app/templates/components/periodic_table.html:768
+#: app/templates/components/periodic_table.html:778
+#: app/templates/components/periodic_table.html:788
+#: app/templates/components/periodic_table.html:798
+#: app/templates/components/periodic_table.html:808
+#: app/templates/components/periodic_table.html:818
 #: app/templates/components/periodic_table.html:828
-#: app/templates/components/periodic_table.html:837
-#: app/templates/components/periodic_table.html:846
+#: app/templates/components/periodic_table.html:838
+#: app/templates/components/periodic_table.html:848
 #: app/templates/components/periodic_table.html:858
-#: app/templates/components/periodic_table.html:867
-#: app/templates/components/periodic_table.html:876
-#: app/templates/components/periodic_table.html:885
-#: app/templates/components/periodic_table.html:894
-#: app/templates/components/periodic_table.html:903
-#: app/templates/components/periodic_table.html:912
-#: app/templates/components/periodic_table.html:921
-#: app/templates/components/periodic_table.html:930
-#: app/templates/components/periodic_table.html:939
-#: app/templates/components/periodic_table.html:948
-#: app/templates/components/periodic_table.html:957
-#: app/templates/components/periodic_table.html:966
-#: app/templates/components/periodic_table.html:975
-#: app/templates/components/periodic_table.html:987
-#: app/templates/components/periodic_table.html:996
-#: app/templates/components/periodic_table.html:1005
-#: app/templates/components/periodic_table.html:1014
-#: app/templates/components/periodic_table.html:1023
-#: app/templates/components/periodic_table.html:1032
+#: app/templates/components/periodic_table.html:868
+#: app/templates/components/periodic_table.html:878
+#: app/templates/components/periodic_table.html:888
+#: app/templates/components/periodic_table.html:898
+#: app/templates/components/periodic_table.html:908
+#: app/templates/components/periodic_table.html:918
+#: app/templates/components/periodic_table.html:928
+#: app/templates/components/periodic_table.html:941
+#: app/templates/components/periodic_table.html:951
+#: app/templates/components/periodic_table.html:961
+#: app/templates/components/periodic_table.html:971
+#: app/templates/components/periodic_table.html:981
+#: app/templates/components/periodic_table.html:991
+#: app/templates/components/periodic_table.html:1001
+#: app/templates/components/periodic_table.html:1011
+#: app/templates/components/periodic_table.html:1021
+#: app/templates/components/periodic_table.html:1031
 #: app/templates/components/periodic_table.html:1041
-#: app/templates/components/periodic_table.html:1050
-#: app/templates/components/periodic_table.html:1059
-#: app/templates/components/periodic_table.html:1068
-#: app/templates/components/periodic_table.html:1077
-#: app/templates/components/periodic_table.html:1086
-#: app/templates/components/periodic_table.html:1095
+#: app/templates/components/periodic_table.html:1051
+#: app/templates/components/periodic_table.html:1061
+#: app/templates/components/periodic_table.html:1071
+#: app/templates/components/periodic_table.html:1084
+#: app/templates/components/periodic_table.html:1094
 #: app/templates/components/periodic_table.html:1104
+#: app/templates/components/periodic_table.html:1114
+#: app/templates/components/periodic_table.html:1124
+#: app/templates/components/periodic_table.html:1134
+#: app/templates/components/periodic_table.html:1144
+#: app/templates/components/periodic_table.html:1154
+#: app/templates/components/periodic_table.html:1164
+#: app/templates/components/periodic_table.html:1174
+#: app/templates/components/periodic_table.html:1184
+#: app/templates/components/periodic_table.html:1194
+#: app/templates/components/periodic_table.html:1204
+#: app/templates/components/periodic_table.html:1214
 msgid "Atomic No:"
 msgstr "原子序数："
 
@@ -777,188 +950,118 @@ msgstr "原子序数："
 #: app/templates/components/periodic_table.html:78
 #: app/templates/components/periodic_table.html:88
 #: app/templates/components/periodic_table.html:98
-#: app/templates/components/periodic_table.html:107
-#: app/templates/components/periodic_table.html:116
-#: app/templates/components/periodic_table.html:127
-#: app/templates/components/periodic_table.html:136
-#: app/templates/components/periodic_table.html:146
-#: app/templates/components/periodic_table.html:155
-#: app/templates/components/periodic_table.html:164
-#: app/templates/components/periodic_table.html:173
-#: app/templates/components/periodic_table.html:182
+#: app/templates/components/periodic_table.html:108
+#: app/templates/components/periodic_table.html:118
+#: app/templates/components/periodic_table.html:130
+#: app/templates/components/periodic_table.html:140
+#: app/templates/components/periodic_table.html:151
+#: app/templates/components/periodic_table.html:161
+#: app/templates/components/periodic_table.html:171
+#: app/templates/components/periodic_table.html:181
 #: app/templates/components/periodic_table.html:191
-#: app/templates/components/periodic_table.html:202
-#: app/templates/components/periodic_table.html:211
-#: app/templates/components/periodic_table.html:220
-#: app/templates/components/periodic_table.html:229
-#: app/templates/components/periodic_table.html:238
-#: app/templates/components/periodic_table.html:247
-#: app/templates/components/periodic_table.html:256
-#: app/templates/components/periodic_table.html:265
-#: app/templates/components/periodic_table.html:274
+#: app/templates/components/periodic_table.html:201
+#: app/templates/components/periodic_table.html:213
+#: app/templates/components/periodic_table.html:223
+#: app/templates/components/periodic_table.html:233
+#: app/templates/components/periodic_table.html:243
+#: app/templates/components/periodic_table.html:253
+#: app/templates/components/periodic_table.html:263
+#: app/templates/components/periodic_table.html:273
 #: app/templates/components/periodic_table.html:283
-#: app/templates/components/periodic_table.html:292
-#: app/templates/components/periodic_table.html:301
-#: app/templates/components/periodic_table.html:310
-#: app/templates/components/periodic_table.html:319
-#: app/templates/components/periodic_table.html:328
-#: app/templates/components/periodic_table.html:337
-#: app/templates/components/periodic_table.html:346
-#: app/templates/components/periodic_table.html:355
-#: app/templates/components/periodic_table.html:366
-#: app/templates/components/periodic_table.html:375
-#: app/templates/components/periodic_table.html:384
-#: app/templates/components/periodic_table.html:393
-#: app/templates/components/periodic_table.html:402
-#: app/templates/components/periodic_table.html:411
-#: app/templates/components/periodic_table.html:420
-#: app/templates/components/periodic_table.html:429
-#: app/templates/components/periodic_table.html:438
-#: app/templates/components/periodic_table.html:447
-#: app/templates/components/periodic_table.html:456
+#: app/templates/components/periodic_table.html:293
+#: app/templates/components/periodic_table.html:303
+#: app/templates/components/periodic_table.html:313
+#: app/templates/components/periodic_table.html:323
+#: app/templates/components/periodic_table.html:333
+#: app/templates/components/periodic_table.html:343
+#: app/templates/components/periodic_table.html:353
+#: app/templates/components/periodic_table.html:363
+#: app/templates/components/periodic_table.html:373
+#: app/templates/components/periodic_table.html:383
+#: app/templates/components/periodic_table.html:395
+#: app/templates/components/periodic_table.html:405
+#: app/templates/components/periodic_table.html:415
+#: app/templates/components/periodic_table.html:425
+#: app/templates/components/periodic_table.html:435
+#: app/templates/components/periodic_table.html:445
+#: app/templates/components/periodic_table.html:455
 #: app/templates/components/periodic_table.html:465
-#: app/templates/components/periodic_table.html:474
-#: app/templates/components/periodic_table.html:483
-#: app/templates/components/periodic_table.html:492
-#: app/templates/components/periodic_table.html:501
-#: app/templates/components/periodic_table.html:510
-#: app/templates/components/periodic_table.html:519
-#: app/templates/components/periodic_table.html:530
-#: app/templates/components/periodic_table.html:539
-#: app/templates/components/periodic_table.html:548
-#: app/templates/components/periodic_table.html:557
-#: app/templates/components/periodic_table.html:566
-#: app/templates/components/periodic_table.html:575
-#: app/templates/components/periodic_table.html:584
-#: app/templates/components/periodic_table.html:593
-#: app/templates/components/periodic_table.html:602
-#: app/templates/components/periodic_table.html:611
-#: app/templates/components/periodic_table.html:620
-#: app/templates/components/periodic_table.html:629
-#: app/templates/components/periodic_table.html:638
+#: app/templates/components/periodic_table.html:475
+#: app/templates/components/periodic_table.html:485
+#: app/templates/components/periodic_table.html:495
+#: app/templates/components/periodic_table.html:505
+#: app/templates/components/periodic_table.html:515
+#: app/templates/components/periodic_table.html:525
+#: app/templates/components/periodic_table.html:535
+#: app/templates/components/periodic_table.html:545
+#: app/templates/components/periodic_table.html:555
+#: app/templates/components/periodic_table.html:565
+#: app/templates/components/periodic_table.html:577
+#: app/templates/components/periodic_table.html:587
+#: app/templates/components/periodic_table.html:597
+#: app/templates/components/periodic_table.html:607
+#: app/templates/components/periodic_table.html:617
+#: app/templates/components/periodic_table.html:627
+#: app/templates/components/periodic_table.html:637
 #: app/templates/components/periodic_table.html:647
-#: app/templates/components/periodic_table.html:656
-#: app/templates/components/periodic_table.html:665
-#: app/templates/components/periodic_table.html:674
-#: app/templates/components/periodic_table.html:683
-#: app/templates/components/periodic_table.html:694
-#: app/templates/components/periodic_table.html:703
-#: app/templates/components/periodic_table.html:712
-#: app/templates/components/periodic_table.html:721
-#: app/templates/components/periodic_table.html:730
-#: app/templates/components/periodic_table.html:739
-#: app/templates/components/periodic_table.html:748
-#: app/templates/components/periodic_table.html:757
-#: app/templates/components/periodic_table.html:766
-#: app/templates/components/periodic_table.html:775
-#: app/templates/components/periodic_table.html:784
-#: app/templates/components/periodic_table.html:793
-#: app/templates/components/periodic_table.html:802
-#: app/templates/components/periodic_table.html:811
-#: app/templates/components/periodic_table.html:820
+#: app/templates/components/periodic_table.html:657
+#: app/templates/components/periodic_table.html:667
+#: app/templates/components/periodic_table.html:677
+#: app/templates/components/periodic_table.html:687
+#: app/templates/components/periodic_table.html:697
+#: app/templates/components/periodic_table.html:707
+#: app/templates/components/periodic_table.html:717
+#: app/templates/components/periodic_table.html:727
+#: app/templates/components/periodic_table.html:737
+#: app/templates/components/periodic_table.html:747
+#: app/templates/components/periodic_table.html:759
+#: app/templates/components/periodic_table.html:769
+#: app/templates/components/periodic_table.html:779
+#: app/templates/components/periodic_table.html:789
+#: app/templates/components/periodic_table.html:799
+#: app/templates/components/periodic_table.html:809
+#: app/templates/components/periodic_table.html:819
 #: app/templates/components/periodic_table.html:829
-#: app/templates/components/periodic_table.html:838
-#: app/templates/components/periodic_table.html:847
+#: app/templates/components/periodic_table.html:839
+#: app/templates/components/periodic_table.html:849
 #: app/templates/components/periodic_table.html:859
-#: app/templates/components/periodic_table.html:868
-#: app/templates/components/periodic_table.html:877
-#: app/templates/components/periodic_table.html:886
-#: app/templates/components/periodic_table.html:895
-#: app/templates/components/periodic_table.html:904
-#: app/templates/components/periodic_table.html:913
-#: app/templates/components/periodic_table.html:922
-#: app/templates/components/periodic_table.html:931
-#: app/templates/components/periodic_table.html:940
-#: app/templates/components/periodic_table.html:949
-#: app/templates/components/periodic_table.html:958
-#: app/templates/components/periodic_table.html:967
-#: app/templates/components/periodic_table.html:976
-#: app/templates/components/periodic_table.html:988
-#: app/templates/components/periodic_table.html:997
-#: app/templates/components/periodic_table.html:1006
-#: app/templates/components/periodic_table.html:1015
-#: app/templates/components/periodic_table.html:1024
-#: app/templates/components/periodic_table.html:1033
+#: app/templates/components/periodic_table.html:869
+#: app/templates/components/periodic_table.html:879
+#: app/templates/components/periodic_table.html:889
+#: app/templates/components/periodic_table.html:899
+#: app/templates/components/periodic_table.html:909
+#: app/templates/components/periodic_table.html:919
+#: app/templates/components/periodic_table.html:929
+#: app/templates/components/periodic_table.html:942
+#: app/templates/components/periodic_table.html:952
+#: app/templates/components/periodic_table.html:962
+#: app/templates/components/periodic_table.html:972
+#: app/templates/components/periodic_table.html:982
+#: app/templates/components/periodic_table.html:992
+#: app/templates/components/periodic_table.html:1002
+#: app/templates/components/periodic_table.html:1012
+#: app/templates/components/periodic_table.html:1022
+#: app/templates/components/periodic_table.html:1032
 #: app/templates/components/periodic_table.html:1042
-#: app/templates/components/periodic_table.html:1051
-#: app/templates/components/periodic_table.html:1060
-#: app/templates/components/periodic_table.html:1069
-#: app/templates/components/periodic_table.html:1078
-#: app/templates/components/periodic_table.html:1087
-#: app/templates/components/periodic_table.html:1096
+#: app/templates/components/periodic_table.html:1052
+#: app/templates/components/periodic_table.html:1062
+#: app/templates/components/periodic_table.html:1072
+#: app/templates/components/periodic_table.html:1085
+#: app/templates/components/periodic_table.html:1095
 #: app/templates/components/periodic_table.html:1105
+#: app/templates/components/periodic_table.html:1115
+#: app/templates/components/periodic_table.html:1125
+#: app/templates/components/periodic_table.html:1135
+#: app/templates/components/periodic_table.html:1145
+#: app/templates/components/periodic_table.html:1155
+#: app/templates/components/periodic_table.html:1165
+#: app/templates/components/periodic_table.html:1175
+#: app/templates/components/periodic_table.html:1185
+#: app/templates/components/periodic_table.html:1195
+#: app/templates/components/periodic_table.html:1205
+#: app/templates/components/periodic_table.html:1215
 msgid "Mass:"
 msgstr "原子量："
-
-#: app/templates/base.html:161
-msgid "MatdataX-I: Functional Materials"
-msgstr "MatdataX-I：功能材料"
-
-#: app/templates/base.html:166
-msgid "MatdataX-II: Structural Materials"
-msgstr "MatdataX-II：结构材料"
-
-#: app/templates/base.html:171
-msgid "Alloy"
-msgstr "合金"
-
-#: app/templates/base.html:175
-msgid "Ceramics"
-msgstr "陶瓷"
-
-#: app/templates/base.html:180
-msgid "Literature Extracted Data"
-msgstr "文献提取数据"
-
-#: app/templates/base.html:183
-msgid "Internal Experimental Data"
-msgstr "内部实验数据"
-
-#: app/templates/base.html:186
-msgid "Model Predicted Data"
-msgstr "模型预测数据"
-
-#: app/templates/base.html:306 app/templates/base.html:337
-msgid "MatdataX"
-msgstr "MatdataX"
-
-#: app/templates/base.html:335
-msgid "MatdataX Logo"
-msgstr "MatdataX 标志"
-
-#: app/templates/base.html:311
-msgid "User Portal"
-msgstr "用户门户"
-
-#: app/templates/base.html:315
-msgid "Resources"
-msgstr "资源"
-
-#: app/templates/base.html:324
-msgid "Community"
-msgstr "社区"
-
-#: app/templates/base.html:326
-msgid "Seminars (Coming Soon)"
-msgstr "研讨会 (即将推出)"
-
-#: app/templates/base.html:327
-msgid "Documentation"
-msgstr "文档"
-
-#: app/templates/base.html:328
-msgid "AI Assistant"
-msgstr "AI 助手"
-
-#: app/templates/base.html:329
-msgid "Support"
-msgstr "支持"
-
-#: app/templates/base.html:339
-msgid "Record & Compliance: Placeholder ICP Record · All rights reserved by IMR MatdataX."
-msgstr "备案与合规：ICP备案占位 · IMR MatdataX 保留所有权利。"
-
-
 
 #: app/templates/components/periodic_table.html:25
 #: app/templates/components/periodic_table.html:36
@@ -968,426 +1071,363 @@ msgstr "备案与合规：ICP备案占位 · IMR MatdataX 保留所有权利。"
 #: app/templates/components/periodic_table.html:79
 #: app/templates/components/periodic_table.html:89
 #: app/templates/components/periodic_table.html:99
-#: app/templates/components/periodic_table.html:108
-#: app/templates/components/periodic_table.html:117
-#: app/templates/components/periodic_table.html:128
-#: app/templates/components/periodic_table.html:137
-#: app/templates/components/periodic_table.html:147
-#: app/templates/components/periodic_table.html:156
-#: app/templates/components/periodic_table.html:165
-#: app/templates/components/periodic_table.html:174
-#: app/templates/components/periodic_table.html:183
+#: app/templates/components/periodic_table.html:109
+#: app/templates/components/periodic_table.html:119
+#: app/templates/components/periodic_table.html:131
+#: app/templates/components/periodic_table.html:141
+#: app/templates/components/periodic_table.html:152
+#: app/templates/components/periodic_table.html:162
+#: app/templates/components/periodic_table.html:172
+#: app/templates/components/periodic_table.html:182
 #: app/templates/components/periodic_table.html:192
-#: app/templates/components/periodic_table.html:203
-#: app/templates/components/periodic_table.html:212
-#: app/templates/components/periodic_table.html:221
-#: app/templates/components/periodic_table.html:230
-#: app/templates/components/periodic_table.html:239
-#: app/templates/components/periodic_table.html:248
-#: app/templates/components/periodic_table.html:257
-#: app/templates/components/periodic_table.html:266
-#: app/templates/components/periodic_table.html:275
+#: app/templates/components/periodic_table.html:202
+#: app/templates/components/periodic_table.html:214
+#: app/templates/components/periodic_table.html:224
+#: app/templates/components/periodic_table.html:234
+#: app/templates/components/periodic_table.html:244
+#: app/templates/components/periodic_table.html:254
+#: app/templates/components/periodic_table.html:264
+#: app/templates/components/periodic_table.html:274
 #: app/templates/components/periodic_table.html:284
-#: app/templates/components/periodic_table.html:293
-#: app/templates/components/periodic_table.html:302
-#: app/templates/components/periodic_table.html:311
-#: app/templates/components/periodic_table.html:320
-#: app/templates/components/periodic_table.html:329
-#: app/templates/components/periodic_table.html:338
-#: app/templates/components/periodic_table.html:347
-#: app/templates/components/periodic_table.html:356
-#: app/templates/components/periodic_table.html:367
-#: app/templates/components/periodic_table.html:376
-#: app/templates/components/periodic_table.html:385
-#: app/templates/components/periodic_table.html:394
-#: app/templates/components/periodic_table.html:403
-#: app/templates/components/periodic_table.html:412
-#: app/templates/components/periodic_table.html:421
-#: app/templates/components/periodic_table.html:430
-#: app/templates/components/periodic_table.html:439
-#: app/templates/components/periodic_table.html:448
-#: app/templates/components/periodic_table.html:457
+#: app/templates/components/periodic_table.html:294
+#: app/templates/components/periodic_table.html:304
+#: app/templates/components/periodic_table.html:314
+#: app/templates/components/periodic_table.html:324
+#: app/templates/components/periodic_table.html:334
+#: app/templates/components/periodic_table.html:344
+#: app/templates/components/periodic_table.html:354
+#: app/templates/components/periodic_table.html:364
+#: app/templates/components/periodic_table.html:374
+#: app/templates/components/periodic_table.html:384
+#: app/templates/components/periodic_table.html:396
+#: app/templates/components/periodic_table.html:406
+#: app/templates/components/periodic_table.html:416
+#: app/templates/components/periodic_table.html:426
+#: app/templates/components/periodic_table.html:436
+#: app/templates/components/periodic_table.html:446
+#: app/templates/components/periodic_table.html:456
 #: app/templates/components/periodic_table.html:466
-#: app/templates/components/periodic_table.html:475
-#: app/templates/components/periodic_table.html:484
-#: app/templates/components/periodic_table.html:493
-#: app/templates/components/periodic_table.html:502
-#: app/templates/components/periodic_table.html:511
-#: app/templates/components/periodic_table.html:520
-#: app/templates/components/periodic_table.html:531
-#: app/templates/components/periodic_table.html:540
-#: app/templates/components/periodic_table.html:549
-#: app/templates/components/periodic_table.html:558
-#: app/templates/components/periodic_table.html:567
-#: app/templates/components/periodic_table.html:576
-#: app/templates/components/periodic_table.html:585
-#: app/templates/components/periodic_table.html:594
-#: app/templates/components/periodic_table.html:603
-#: app/templates/components/periodic_table.html:612
-#: app/templates/components/periodic_table.html:621
-#: app/templates/components/periodic_table.html:630
-#: app/templates/components/periodic_table.html:639
+#: app/templates/components/periodic_table.html:476
+#: app/templates/components/periodic_table.html:486
+#: app/templates/components/periodic_table.html:496
+#: app/templates/components/periodic_table.html:506
+#: app/templates/components/periodic_table.html:516
+#: app/templates/components/periodic_table.html:526
+#: app/templates/components/periodic_table.html:536
+#: app/templates/components/periodic_table.html:546
+#: app/templates/components/periodic_table.html:556
+#: app/templates/components/periodic_table.html:566
+#: app/templates/components/periodic_table.html:578
+#: app/templates/components/periodic_table.html:588
+#: app/templates/components/periodic_table.html:598
+#: app/templates/components/periodic_table.html:608
+#: app/templates/components/periodic_table.html:618
+#: app/templates/components/periodic_table.html:628
+#: app/templates/components/periodic_table.html:638
 #: app/templates/components/periodic_table.html:648
-#: app/templates/components/periodic_table.html:657
-#: app/templates/components/periodic_table.html:666
-#: app/templates/components/periodic_table.html:675
-#: app/templates/components/periodic_table.html:684
-#: app/templates/components/periodic_table.html:695
-#: app/templates/components/periodic_table.html:704
-#: app/templates/components/periodic_table.html:713
-#: app/templates/components/periodic_table.html:722
-#: app/templates/components/periodic_table.html:731
-#: app/templates/components/periodic_table.html:740
-#: app/templates/components/periodic_table.html:749
-#: app/templates/components/periodic_table.html:758
-#: app/templates/components/periodic_table.html:767
-#: app/templates/components/periodic_table.html:776
-#: app/templates/components/periodic_table.html:785
-#: app/templates/components/periodic_table.html:794
-#: app/templates/components/periodic_table.html:803
-#: app/templates/components/periodic_table.html:812
-#: app/templates/components/periodic_table.html:821
+#: app/templates/components/periodic_table.html:658
+#: app/templates/components/periodic_table.html:668
+#: app/templates/components/periodic_table.html:678
+#: app/templates/components/periodic_table.html:688
+#: app/templates/components/periodic_table.html:698
+#: app/templates/components/periodic_table.html:708
+#: app/templates/components/periodic_table.html:718
+#: app/templates/components/periodic_table.html:728
+#: app/templates/components/periodic_table.html:738
+#: app/templates/components/periodic_table.html:748
+#: app/templates/components/periodic_table.html:760
+#: app/templates/components/periodic_table.html:770
+#: app/templates/components/periodic_table.html:780
+#: app/templates/components/periodic_table.html:790
+#: app/templates/components/periodic_table.html:800
+#: app/templates/components/periodic_table.html:810
+#: app/templates/components/periodic_table.html:820
 #: app/templates/components/periodic_table.html:830
-#: app/templates/components/periodic_table.html:839
-#: app/templates/components/periodic_table.html:848
+#: app/templates/components/periodic_table.html:840
+#: app/templates/components/periodic_table.html:850
 #: app/templates/components/periodic_table.html:860
-#: app/templates/components/periodic_table.html:869
-#: app/templates/components/periodic_table.html:878
-#: app/templates/components/periodic_table.html:887
-#: app/templates/components/periodic_table.html:896
-#: app/templates/components/periodic_table.html:905
-#: app/templates/components/periodic_table.html:914
-#: app/templates/components/periodic_table.html:923
-#: app/templates/components/periodic_table.html:932
-#: app/templates/components/periodic_table.html:941
-#: app/templates/components/periodic_table.html:950
-#: app/templates/components/periodic_table.html:959
-#: app/templates/components/periodic_table.html:968
-#: app/templates/components/periodic_table.html:977
-#: app/templates/components/periodic_table.html:989
-#: app/templates/components/periodic_table.html:998
-#: app/templates/components/periodic_table.html:1007
-#: app/templates/components/periodic_table.html:1016
-#: app/templates/components/periodic_table.html:1025
-#: app/templates/components/periodic_table.html:1034
+#: app/templates/components/periodic_table.html:870
+#: app/templates/components/periodic_table.html:880
+#: app/templates/components/periodic_table.html:890
+#: app/templates/components/periodic_table.html:900
+#: app/templates/components/periodic_table.html:910
+#: app/templates/components/periodic_table.html:920
+#: app/templates/components/periodic_table.html:930
+#: app/templates/components/periodic_table.html:943
+#: app/templates/components/periodic_table.html:953
+#: app/templates/components/periodic_table.html:963
+#: app/templates/components/periodic_table.html:973
+#: app/templates/components/periodic_table.html:983
+#: app/templates/components/periodic_table.html:993
+#: app/templates/components/periodic_table.html:1003
+#: app/templates/components/periodic_table.html:1013
+#: app/templates/components/periodic_table.html:1023
+#: app/templates/components/periodic_table.html:1033
 #: app/templates/components/periodic_table.html:1043
-#: app/templates/components/periodic_table.html:1052
-#: app/templates/components/periodic_table.html:1061
-#: app/templates/components/periodic_table.html:1070
-#: app/templates/components/periodic_table.html:1079
-#: app/templates/components/periodic_table.html:1088
-#: app/templates/components/periodic_table.html:1097
+#: app/templates/components/periodic_table.html:1053
+#: app/templates/components/periodic_table.html:1063
+#: app/templates/components/periodic_table.html:1073
+#: app/templates/components/periodic_table.html:1086
+#: app/templates/components/periodic_table.html:1096
 #: app/templates/components/periodic_table.html:1106
+#: app/templates/components/periodic_table.html:1116
+#: app/templates/components/periodic_table.html:1126
+#: app/templates/components/periodic_table.html:1136
+#: app/templates/components/periodic_table.html:1146
+#: app/templates/components/periodic_table.html:1156
+#: app/templates/components/periodic_table.html:1166
+#: app/templates/components/periodic_table.html:1176
+#: app/templates/components/periodic_table.html:1186
+#: app/templates/components/periodic_table.html:1196
+#: app/templates/components/periodic_table.html:1206
+#: app/templates/components/periodic_table.html:1216
 msgid "Electron:"
 msgstr "电子数："
 
-#: app/templates/components/periodic_table.html:1118
+#: app/templates/components/periodic_table.html:1228
 msgid "Alkali Metals"
 msgstr "碱金属"
 
-#: app/templates/components/periodic_table.html:1122
+#: app/templates/components/periodic_table.html:1232
 msgid "Alkaline Earth Metals"
 msgstr "碱土金属"
 
-#: app/templates/components/periodic_table.html:1126
+#: app/templates/components/periodic_table.html:1236
 msgid "Transition Metals"
 msgstr "过渡金属"
 
-#: app/templates/components/periodic_table.html:1130
+#: app/templates/components/periodic_table.html:1240
 msgid "Post-transition Metals"
 msgstr "后过渡金属"
 
-#: app/templates/components/periodic_table.html:1134
+#: app/templates/components/periodic_table.html:1244
 msgid "Metalloids"
 msgstr "准金属"
 
-#: app/templates/components/periodic_table.html:1138
+#: app/templates/components/periodic_table.html:1248
 msgid "Nonmetals"
 msgstr "非金属"
 
-#: app/templates/components/periodic_table.html:1142
+#: app/templates/components/periodic_table.html:1252
 msgid "Halogens"
 msgstr "卤素"
 
-#: app/templates/components/periodic_table.html:1146
+#: app/templates/components/periodic_table.html:1256
 msgid "Noble Gases"
 msgstr "稀有气体"
 
-#: app/templates/components/periodic_table.html:1150
+#: app/templates/components/periodic_table.html:1260
 msgid "Lanthanides"
 msgstr "镧系元素"
 
-#: app/templates/components/periodic_table.html:1154
+#: app/templates/components/periodic_table.html:1264
 msgid "Actinides"
 msgstr "锕系元素"
 
+#: app/templates/errors/403.html:12
+msgid "Forbidden"
+msgstr "无权限访问"
 
-#: app/templates/deepseek/chat.html:219 app/templates/main/database.html:991
-#: app/templates/materials/detail.html:156
-msgid "Delete"
-msgstr "删除"
+#: app/templates/errors/403.html:13
+msgid "You don't have permission to access this page."
+msgstr "您没有权限访问此页面。"
 
-#: app/templates/deepseek/chat.html:220 app/templates/main/database.html:221
-msgid "Clear"
-msgstr "清空"
+#: app/templates/errors/403.html:16 app/templates/errors/404.html:16
+#: app/templates/errors/410.html:16 app/templates/errors/500.html:16
+msgid "Return Home"
+msgstr "返回首页"
 
-
-#: app/templates/deepseek/chat.html:222 app/templates/deepseek/chat.html:244
-msgid "Save"
-msgstr "保存"
-
-
-
-
-
-
-#: app/templates/deepseek/chat.html:245 app/templates/deepseek/chat.html:259
-#: app/templates/materials/add.html:247
-msgid "Cancel"
-msgstr "取消"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#: app/templates/errors/404.html:8
+#: app/templates/errors/404.html:12
 msgid "Page Not Found"
 msgstr "页面未找到"
 
-#: app/templates/errors/404.html:9
+#: app/templates/errors/404.html:13
 msgid ""
 "The page you are looking for might have been removed, had its name "
 "changed, or is temporarily unavailable."
 msgstr "你要访问的页面可能已被移除、名称已更改或暂时不可用。"
 
-#: app/templates/errors/404.html:12 app/templates/errors/500.html:12
-msgid "Return Home"
-msgstr "返回首页"
+#: app/templates/errors/410.html:12
+msgid "Resource Gone"
+msgstr "资源已失效"
 
-#: app/templates/errors/404.html:15 app/templates/errors/500.html:15
-msgid "Go to Database"
-msgstr "进入数据库"
+#: app/templates/errors/410.html:13
+msgid ""
+"The requested resource is no longer available. The site runs in read-only"
+" mode and write operations are disabled."
+msgstr "请求的资源已不再可用。站点当前处于只读模式，写入操作已被禁用。"
 
-#: app/templates/errors/429.html:2 app/templates/errors/429.html:11
+#: app/templates/errors/429.html:5 app/templates/errors/429.html:14
 msgid "Too Many Requests"
 msgstr "请求过于频繁"
 
-#: app/templates/errors/429.html:12
+#: app/templates/errors/429.html:15
 msgid "You have sent too many requests in a short time."
 msgstr "您在短时间内发送了过多请求。"
 
-#: app/templates/errors/429.html:15
+#: app/templates/errors/429.html:18
 msgid "Please wait"
 msgstr "请稍候"
 
-#: app/templates/errors/429.html:17
+#: app/templates/errors/429.html:20
+#, fuzzy
 msgid "seconds"
-msgstr "秒"
+msgstr "半导体"
 
-#: app/templates/errors/429.html:27
+#: app/templates/errors/429.html:30
 msgid "Human Verification"
 msgstr "人机验证"
 
-#: app/templates/errors/429.html:29
+#: app/templates/errors/429.html:32
 msgid "Electrons are in random motion."
 msgstr "电子在随机运动中。"
 
-#: app/templates/errors/429.html:39
+#: app/templates/errors/429.html:42
 msgid "Refresh"
 msgstr "刷新"
 
-#: app/templates/errors/429.html:45
+#: app/templates/errors/429.html:48
 msgid "Enter 5 letters"
 msgstr "请输入 5 个字母"
 
-#: app/templates/errors/429.html:45
+#: app/templates/errors/429.html:48
 msgid "Captcha code"
 msgstr "验证码"
 
-#: app/templates/errors/429.html:47
+#: app/templates/errors/429.html:50
 msgid "Verify"
 msgstr "验证"
 
-#: app/templates/errors/429.html:54
+#: app/templates/errors/429.html:57
 msgid ""
 "Please wait until the countdown finishes, then enter the captcha to "
 "continue"
 msgstr "请等待倒计时结束后输入验证码以继续"
 
-#: app/templates/errors/429.html:412
+#: app/templates/errors/429.html:282
 msgid "Please enter the captcha to continue"
 msgstr "请输入验证码以继续"
 
-#: app/templates/errors/429.html:438
+#: app/templates/errors/429.html:308
 msgid "Time is up. Please complete the captcha to continue"
 msgstr "倒计时已结束，请完成验证码以继续"
 
-#: app/templates/errors/429.html:470
+#: app/templates/errors/429.html:340
 msgid "Please enter the captcha code"
 msgstr "请输入验证码"
 
-#: app/templates/errors/429.html:488
+#: app/templates/errors/429.html:358
 msgid "Verified. Redirecting..."
 msgstr "验证通过，正在跳转…"
 
-#: app/templates/errors/429.html:495
+#: app/templates/errors/429.html:365
 msgid "seconds remaining, please wait"
 msgstr "秒后完成，请稍候"
 
-#: app/templates/errors/429.html:497
+#: app/templates/errors/429.html:367
 msgid "Invalid captcha, please try again"
 msgstr "验证码错误，请重试"
 
-#: app/templates/errors/429.html:505
+#: app/templates/errors/429.html:375
 msgid "Please wait until the countdown finishes, then try again"
 msgstr "请等待倒计时结束后再试"
 
-#: app/templates/errors/500.html:8
+#: app/templates/errors/500.html:12
 msgid "Internal Server Error"
 msgstr "服务器内部错误"
 
-#: app/templates/errors/500.html:9
+#: app/templates/errors/500.html:13
 msgid ""
 "We're experiencing some technical difficulties with our server. Our team "
 "has been notified and is working to fix the issue as soon as possible."
 msgstr "服务器遇到技术问题。我们的团队已收到通知，将尽快修复。"
 
-#: app/templates/main/database.html:215
-msgid "Search materials, MP IDs, space groups..."
-msgstr "搜索材料、MP ID、空间群..."
-
-#: app/templates/main/database.html:217 app/templates/main/database.html:222
-msgid "Search"
-msgstr "搜索"
-
-#: app/templates/main/database.html:223
+#: app/templates/main/database.html:176
 msgid "Elements"
 msgstr "元素"
 
-#: app/templates/main/database.html:224
-msgid "Advanced"
-msgstr "高级"
-
-#: app/templates/main/database.html:424 app/templates/main/database.html:597
-#: app/templates/main/database.html:1000
+#: app/templates/main/database.html:189
 msgid "Filter by Property:"
 msgstr "通过性质筛选"
 
-#: app/templates/main/database.html:427
+#: app/templates/main/database.html:195 app/templates/materials/detail.html:160
 msgid "SC"
 msgstr "SC：位移电流"
 
-#: app/templates/main/database.html:430
+#: app/templates/main/database.html:198
 msgid "BCD"
 msgstr "BCD：贝里曲率偶极子"
 
-#: app/templates/main/database.html:433
+#: app/templates/main/database.html:201
 msgid "DW"
 msgstr "DW：本征电导率"
 
-#: app/templates/main/database.html:440 app/templates/materials/add.html:222
-#: app/templates/materials/edit.html:264
+#: app/templates/main/database.html:217
 msgid "Materials Type"
 msgstr "材料类型"
 
-#: app/templates/main/database.html:443 app/templates/main/database.html:951
-#: app/templates/main/database.html:957 app/templates/materials/add.html:229
-#: app/templates/materials/detail.html:245
-#: app/templates/materials/detail.html:363
-#: app/templates/materials/detail.html:373
-#: app/templates/materials/detail.html:379
-#: app/templates/materials/detail.html:497
-#: app/templates/materials/detail.html:498
-#: app/templates/materials/edit.html:271
+#: app/templates/main/database.html:220 app/templates/main/database.html:416
+#: app/templates/main/database.html:422 app/templates/materials/detail.html:232
+#: app/templates/materials/detail.html:339
+#: app/templates/materials/detail.html:340
+#: app/templates/materials/detail.html:341
+#: app/templates/materials/detail.html:502
+#: app/templates/materials/detail.html:503
 msgid "Unknown"
 msgstr "未知"
 
-#: app/templates/main/database.html:444 app/templates/materials/add.html:225
-#: app/templates/materials/edit.html:267
+#: app/templates/main/database.html:221
+#, fuzzy
 msgid "Metal"
-msgstr "金属"
+msgstr "详情"
 
-#: app/templates/main/database.html:445 app/templates/materials/add.html:226
-#: app/templates/materials/edit.html:268
+#: app/templates/main/database.html:222
 msgid "Semimetal"
 msgstr "半金属"
 
-#: app/templates/main/database.html:446 app/templates/materials/add.html:227
-#: app/templates/materials/edit.html:269
+#: app/templates/main/database.html:223
 msgid "Semiconductor"
 msgstr "半导体"
 
-#: app/templates/main/database.html:447 app/templates/materials/add.html:228
-#: app/templates/materials/edit.html:270
+#: app/templates/main/database.html:224
 msgid "Insulator"
 msgstr "绝缘体"
 
-#: app/templates/main/database.html:453 app/templates/main/database.html:789
-#: app/templates/main/database.html:792 app/templates/main/database.html:942
-#: app/templates/materials/add.html:217 app/templates/materials/edit.html:257
+#: app/templates/main/database.html:230 app/templates/main/database.html:376
+#: app/templates/main/database.html:379 app/templates/main/database.html:407
 msgid "Band Gap (eV)"
 msgstr "带隙 (eV)"
 
-#: app/templates/main/database.html:456 app/templates/main/database.html:473
-#: app/templates/main/database.html:487
-msgid "Min"
-msgstr "最小值"
-
-#: app/templates/main/database.html:458 app/templates/main/database.html:475
-#: app/templates/main/database.html:489
-msgid "to"
-msgstr "至"
-
-#: app/templates/main/database.html:460 app/templates/main/database.html:477
-#: app/templates/main/database.html:491
-msgid "Max"
-msgstr "最大值"
-
-#: app/templates/main/database.html:470
+#: app/templates/main/database.html:247
 msgid "Max Shift Current (μA/V²)"
 msgstr "最大位移电流 (μA/V²)"
 
-#: app/templates/main/database.html:484 app/templates/main/database.html:783
-#: app/templates/main/database.html:786 app/templates/main/database.html:941
+#: app/templates/main/database.html:261 app/templates/main/database.html:370
+#: app/templates/main/database.html:373 app/templates/main/database.html:406
 msgid "Fermi Level (eV)"
 msgstr "费米能级 (eV)"
 
-#: app/templates/main/database.html:500 app/templates/main/database.html:938
+#: app/templates/main/database.html:277 app/templates/main/database.html:403
 msgid "MP-ID"
 msgstr "MP-ID"
 
-#: app/templates/main/database.html:502
+#: app/templates/main/database.html:279
 msgid "e.g., mp-12345"
 msgstr "例如：mp-12345"
 
-#: app/templates/main/database.html:507 app/templates/main/database.html:940
+#: app/templates/main/database.html:284 app/templates/main/database.html:405
 msgid "Space Group"
 msgstr "空间群"
 
-#: app/templates/main/database.html:509
+#: app/templates/main/database.html:286
 msgid "e.g., 194 or P6_3/mmc"
 msgstr "例如：194 或 P6_3/mmc"
 
-#: app/templates/main/database.html:604
-msgid ""
-"Please enter search criteria or select at least one filter before "
-"searching."
-msgstr "在搜索前请输入条件或至少选择一个筛选项。"
-
-#: app/templates/main/database.html:641
+#: app/templates/main/database.html:314
 msgid "Searching with filters:"
 msgstr "当前筛选条件："
 
-#: app/templates/main/database.html:747
+#: app/templates/main/database.html:334
 #, python-format
 msgid ""
 "\n"
@@ -1399,648 +1439,364 @@ msgid_plural ""
 "            "
 msgstr[0] "本页共 %(count)s 条材料"
 
-#: app/templates/main/database.html:755
-msgid "Per Page"
-msgstr "每页"
-
-#: app/templates/main/database.html:780
-msgid "Columns"
-msgstr "列"
-
-#: app/templates/main/database.html:782
-msgid "Optional Columns"
-msgstr "可选列"
-
-#: app/templates/main/database.html:795 app/templates/main/database.html:798
-#: app/templates/main/database.html:943
+#: app/templates/main/database.html:382 app/templates/main/database.html:385
+#: app/templates/main/database.html:408
 msgid "Max SC (μA/V²)"
 msgstr "最大位移电流 (μA/V²)"
 
-#: app/templates/main/database.html:802
-msgid "Apply"
-msgstr "应用"
-
-#: app/templates/main/database.html:937
+#: app/templates/main/database.html:402
 msgid "ID"
 msgstr "编号"
 
-#: app/templates/main/database.html:939 app/templates/materials/edit.html:29
+#: app/templates/main/database.html:404
 msgid "Material Name"
 msgstr "材料名称"
 
-#: app/templates/main/database.html:941 app/templates/main/database.html:942
-#: app/templates/main/database.html:943
-msgid "Hide this column"
-msgstr "隐藏此列"
-
-#: app/templates/main/database.html:944
+#: app/templates/main/database.html:409
 msgid "Actions"
 msgstr "操作"
 
-#: app/templates/main/database.html:957 app/templates/main/database.html:958
-#: app/templates/main/database.html:963
+#: app/templates/main/database.html:422 app/templates/main/database.html:423
+#: app/templates/main/database.html:428
 msgid "N/A"
 msgstr "无"
 
-#: app/templates/main/database.html:970 app/templates/materials/detail.html:210
-#: app/templates/materials/detail.html:211
-#: app/templates/materials/detail.html:212
-#: app/templates/materials/detail.html:213
-#: app/templates/materials/detail.html:214
-#: app/templates/materials/detail.html:215
-#: app/templates/materials/detail.html:216
-#: app/templates/materials/detail.html:217
-#: app/templates/materials/detail.html:237
-#: app/templates/materials/detail.html:242
+#: app/templates/main/database.html:435 app/templates/materials/detail.html:197
+#: app/templates/materials/detail.html:198
+#: app/templates/materials/detail.html:199
+#: app/templates/materials/detail.html:200
+#: app/templates/materials/detail.html:201
+#: app/templates/materials/detail.html:202
+#: app/templates/materials/detail.html:203
+#: app/templates/materials/detail.html:204
+#: app/templates/materials/detail.html:224
+#: app/templates/materials/detail.html:229
 msgid "Loading..."
 msgstr "加载中..."
 
-#: app/templates/main/database.html:978
+#: app/templates/main/database.html:442
 msgid "View in MP"
 msgstr "在 MP 查看"
 
-#: app/templates/main/database.html:984 app/templates/materials/detail.html:149
-msgid "Edit"
-msgstr "编辑"
-
-#: app/templates/main/database.html:990 app/templates/materials/detail.html:153
-msgid "Delete permanently?"
-msgstr "永久删除？"
-
-#: app/templates/main/database.html:1140
+#: app/templates/main/database.html:462
 msgid "Previous"
 msgstr "上一页"
 
-#: app/templates/main/database.html:1155
+#: app/templates/main/database.html:477
 msgid "Next"
 msgstr "下一页"
 
-#: app/templates/main/landing.html:8
+#: app/templates/main/landing.html:19
 msgid ""
 "Explore and discover materials, accelerating materials science research "
-"and innovation. Our database provides comprehensive material properties, "
-"crystal structures, and band analysis tools."
-msgstr "探索与发现材料，加速材料科学研究与创新。我们的数据库提供全面的材料性质、晶体结构与能带分析工具。"
+"and innovation. We provide comprehensive data and analysis tools on "
+"material composition, structure, preparation processes, and "
+"physicochemical properties."
+msgstr "探索与发现新材料，加速材料科学的研究与创新。我们提供全面的材料成分、结构、制备工艺和物理化学性质的数据与分析工具。"
 
-#: app/templates/main/landing.html:9
-msgid "Start Exploring"
-msgstr "开始探索"
+#: app/templates/main/landing.html:21
+msgid "Explore More"
+msgstr "探索"
 
-#: app/templates/main/landing.html:235
+#: app/templates/main/landing.html:48
 msgid "Comprehensive Material Data"
 msgstr "全面的材料数据"
 
-#: app/templates/main/landing.html:236
+#: app/templates/main/landing.html:49
 msgid ""
 "Providing detailed material properties, crystal structures, and "
 "electronic structure data to support in-depth materials research."
-msgstr "提供详尽的材料性质、晶体结构与电子结构数据，支持深入研究。"
+msgstr "提供详细的材料属性、晶体结构和电子结构数据，以支持深入的材料研究。"
 
-#: app/templates/main/landing.html:240
-msgid "3D Crystal Structure Visualization"
-msgstr "三维晶体结构可视化"
+#: app/templates/main/landing.html:55
+msgid "Data Processing Tools"
+msgstr "数据处理工具"
 
-#: app/templates/main/landing.html:241
+#: app/templates/main/landing.html:56
+msgid "Providing data visualization, data cleaning, and data labeling tools."
+msgstr "提供数据可视化、数据清洗、数据标注等处理工具。"
+
+#: app/templates/main/landing.html:63
 msgid ""
-"Using advanced three-dimensional visualization technology to intuitively "
-"display material crystal structures."
-msgstr "使用先进的三维可视化技术直观展示材料晶体结构。"
-
-#: app/templates/main/landing.html:245
-msgid "Band Structure Analysis"
-msgstr "能带结构分析"
-
-#: app/templates/main/landing.html:246
-msgid ""
-"Providing detailed band structure analysis tools to help understand "
-"material electronic properties."
-msgstr "提供详尽的能带结构分析工具，帮助理解材料电子性质。"
-
-#: app/templates/main/landing.html:250
-msgid "Advanced Search Features"
-msgstr "高级搜索功能"
-
-#: app/templates/main/landing.html:251
-msgid ""
-"Powerful search and filtering capabilities to quickly find the required "
-"material data."
-msgstr "强大的搜索与筛选能力，帮助快速找到所需材料数据。"
-
-#: app/templates/main/landing.html:302
-msgid "Material Data"
-msgstr "材料数据"
-
-#: app/templates/main/landing.html:306
-msgid "Physical Properties"
-msgstr "物理性质"
-
-#: app/templates/main/landing.html:310
-msgid "Online Service"
-msgstr "在线服务"
-
-#: app/templates/materials/add.html:18
-msgid "Add New Material"
-msgstr "新增材料"
-
-#: app/templates/materials/add.html:23 app/templates/materials/edit.html:26
-msgid "Core Properties"
-msgstr "核心属性"
-
-#: app/templates/materials/add.html:26
-msgid "Material Name (From CIF)"
-msgstr "材料名称（来自 CIF）"
-
-#: app/templates/materials/add.html:27
-msgid "Will be extracted from CIF file"
-msgstr "将从 CIF 文件中提取"
-
-#: app/templates/materials/add.html:28
-msgid "Name will be automatically extracted from the CIF file"
-msgstr "名称将自动从 CIF 文件提取"
-
-#: app/templates/materials/add.html:31 app/templates/materials/edit.html:37
-msgid "Structure File (CIF)"
-msgstr "结构文件（CIF）"
-
-#: app/templates/materials/add.html:33
-msgid "Required. CIF structure file for crystal visualization"
-msgstr "必填。用于晶体结构可视化的 CIF 文件"
-
-#: app/templates/materials/add.html:34 app/templates/materials/add.html:40
-#: app/templates/materials/add.html:53 app/templates/materials/add.html:60
-#: app/templates/materials/edit.html:6 app/templates/materials/edit.html:50
-#: app/templates/materials/edit.html:66 app/templates/materials/edit.html:82
-msgid "No file selected"
-msgstr "未选择文件"
-
-#: app/templates/materials/add.html:37
-msgid "Band Structure File (DAT)"
-msgstr "能带结构文件（DAT）"
-
-#: app/templates/materials/add.html:39
-msgid "Optional. For band structure visualization"
-msgstr "可选。用于能带结构可视化"
-
-#: app/templates/materials/add.html:47 app/templates/materials/edit.html:73
-msgid "Additional Files"
-msgstr "附加文件"
-
-#: app/templates/materials/add.html:50 app/templates/materials/edit.html:76
-msgid "Material Properties (JSON)"
-msgstr "材料属性（JSON）"
-
-#: app/templates/materials/add.html:52
-msgid "Optional. JSON file with material properties"
-msgstr "可选。包含材料属性的 JSON 文件"
-
-#: app/templates/materials/add.html:56 app/templates/materials/edit.html:85
-msgid "Shift Current File (DAT)"
-msgstr "Shift Current 文件（DAT）"
-
-#: app/templates/materials/add.html:59
-msgid "Optional. DAT file for Shift Current visualization"
-msgstr "可选。用于 Shift Current 可视化的 DAT 文件"
-
-#: app/templates/materials/add.html:156 app/templates/materials/add.html:178
-msgid "Browse"
-msgstr "Browse"
-
-#: app/templates/materials/add.html:202 app/templates/materials/edit.html:240
-msgid "Energy Properties (eV)"
-msgstr "能量性质 (eV)"
-
-#: app/templates/materials/add.html:205 app/templates/materials/edit.html:243
-msgid "Fermi Level"
-msgstr "费米能级"
-
-#: app/templates/materials/add.html:207 app/templates/materials/edit.html:247
-msgid "Fermi energy level in eV"
-msgstr "以 eV 为单位的费米能级"
-
-#: app/templates/materials/add.html:214 app/templates/materials/edit.html:254
-msgid "Electronic Properties"
-msgstr "电子性质"
-
-#: app/templates/materials/add.html:219
-msgid "Will be automatically calculated from band data"
-msgstr "将根据能带数据自动计算"
-
-#: app/templates/materials/add.html:224
-msgid "Will be determined automatically"
-msgstr "将自动判定"
-
-#: app/templates/materials/add.html:231
-msgid "Will be automatically determined from band gap"
-msgstr "将根据带隙自动判定"
-
-#: app/templates/materials/add.html:241 app/templates/materials/edit.html:283
-msgid "Confirm Save?"
-msgstr "确认保存？"
-
-#: app/templates/materials/add.html:243
-msgid "Create Material"
-msgstr "创建材料"
-
-#: app/templates/materials/add.html:253 app/templates/materials/edit.html:294
-msgid "Data Synchronization Feature"
-msgstr "数据同步功能"
-
-#: app/templates/materials/add.html:254 app/templates/materials/edit.html:295
-msgid ""
-"After submitting the material, the system will automatically create the "
-"following directory structure:"
-msgstr "提交材料后，系统将自动创建以下目录结构："
-
-#: app/templates/materials/add.html:265
-msgid ""
-"All uploaded files will be automatically organized into appropriate "
-"locations for further processing and analysis."
-msgstr "所有上传的文件将自动组织到适当的位置，以便进一步处理和分析。"
-
-#: app/templates/materials/add.html:383 app/templates/materials/edit.html:7
-msgid "File:"
-msgstr "文件："
-
-#: app/templates/materials/add.html:384
-msgid "Required name:"
-msgstr "必填名称："
-
-#: app/templates/materials/add.html:385
-msgid "Target path:"
-msgstr "目标路径："
-
-#: app/templates/materials/add.html:386 app/templates/materials/edit.html:8
-msgid "Size:"
-msgstr "大小："
-
-#: app/templates/materials/add.html:390
-msgid "Warning: File name must be"
-msgstr "警告：文件名必须为"
-
-#: app/templates/materials/detail.html:108
-msgid "Home"
-msgstr "首页"
-
-#: app/templates/materials/detail.html:113
-msgid "Materials"
-msgstr "材料"
-
-#: app/templates/materials/detail.html:140
-msgid "Back"
-msgstr "返回"
-
-#: app/templates/materials/detail.html:167
-msgid "Material Sections Navigation"
-msgstr "页面章节导航"
-
-#: app/templates/materials/detail.html:170
-msgid "Structure"
-msgstr "结构"
-
-#: app/templates/materials/detail.html:171
-msgid "Crystal Data"
-msgstr "晶体数据"
-
-#: app/templates/materials/detail.html:172
-#: app/templates/materials/detail.html:273
-#: app/templates/materials/detail.html:292
-msgid "Band Structure"
-msgstr "能带结构"
-
-#: app/templates/materials/detail.html:173
-msgid "SC"
-msgstr "位移电流"
-
-# 导航：仅中文全称
-#: app/templates/materials/detail.html:174
-msgid "Berry curvature dipole"
-msgstr "贝里曲率偶极"
-
-#: app/templates/materials/detail.html:175
-msgid "Drude weight"
-msgstr "德鲁德权重"
-
-#: app/templates/materials/detail.html:176
-#: app/templates/materials/detail.html:330
-msgid "Properties"
-msgstr "属性"
-
-#: app/templates/materials/detail.html:192
-msgid "3D Structure"
-msgstr "三维结构"
-
-#: app/templates/materials/detail.html:205
-msgid "Crystal Structure"
-msgstr "晶体结构"
-
-#: app/templates/materials/detail.html:210
-msgid "Lattice a:"
-msgstr "晶格 a："
-
-#: app/templates/materials/detail.html:211
-msgid "Lattice b:"
-msgstr "晶格 b："
-
-#: app/templates/materials/detail.html:212
-msgid "Lattice c:"
-msgstr "晶格 c："
-
-#: app/templates/materials/detail.html:213
-msgid "Alpha:"
-msgstr "α："
-
-#: app/templates/materials/detail.html:214
-msgid "Beta:"
-msgstr "β："
-
-#: app/templates/materials/detail.html:215
-msgid "Gamma:"
-msgstr "γ："
-
-#: app/templates/materials/detail.html:216
-msgid "Volume:"
-msgstr "体积："
-
-#: app/templates/materials/detail.html:217
-msgid "Density:"
-msgstr "密度："
-
-#: app/templates/materials/detail.html:232
-msgid "Crystal Symmetry"
-msgstr "晶体对称性"
-
-#: app/templates/materials/detail.html:237
-msgid "Crystal System:"
-msgstr "晶体系统："
-
-#: app/templates/materials/detail.html:238
-msgid "Space Group:"
-msgstr "空间群："
-
-#: app/templates/materials/detail.html:245
-msgid "MP-ID:"
-msgstr "MP-ID："
-
-#: app/templates/materials/detail.html:255
-msgid "Atomic Coordinates"
-msgstr "原子坐标"
-
-#: app/templates/materials/detail.html:259
-msgid "Loading atomic coordinates..."
-msgstr "正在加载原子坐标..."
-
-#: app/templates/materials/detail.html:275
-msgid "Download band data"
-msgstr "下载能带数据"
-
-#: app/templates/materials/detail.html:297
-msgid "Band Gap:"
-msgstr "带隙："
-
-#: app/templates/materials/detail.html:302
-#: app/templates/materials/detail.html:311
-msgid "Analyzing..."
-msgstr "分析中..."
-
-#: app/templates/materials/detail.html:306
-msgid "Materials Type:"
-msgstr "材料类型："
-
-#: app/templates/materials/detail.html:326
-msgid "Shift Current"
-msgstr "位移电流"
-
-#: app/templates/materials/detail.html:328
-msgid "SC Tabs"
-msgstr "SC 选项卡"
-
-#: app/templates/materials/detail.html:329
-msgid "Relations"
-msgstr "元素关联"
-
-#: app/templates/materials/detail.html:350
-msgid "Loading element relations..."
-msgstr "正在加载元素关联..."
-
-#: app/templates/materials/detail.html:358
-msgid "Max SC"
-msgstr "最大位移电流"
-
-#: app/templates/materials/detail.html:368
-msgid "Max Photon Energy"
-msgstr "最大光子能量"
-
-#: app/templates/materials/detail.html:378
-msgid "Max Tensor Type"
-msgstr "最大张量类型"
-
-#: app/templates/materials/detail.html:396
-msgid "Berry curvature dipole (BCD)"
-msgstr "贝里曲率偶极（BCD）"
-
-#: app/templates/materials/detail.html:397
-#: app/templates/materials/detail.html:424
-msgid "Eigen Matrix"
-msgstr "特征矩阵"
-
-#: app/templates/materials/detail.html:416
-msgid "BCD Legend"
-msgstr "BCD 图例"
-
-#: app/templates/materials/detail.html:423
-msgid "Drude weight (DW)"
-msgstr "德鲁德权重（DW）"
-
-#: app/templates/materials/detail.html:443
-msgid "DW Legend"
-msgstr "DW 图例"
-
-#: app/templates/materials/detail.html:453
-msgid "Basic Properties"
-msgstr "基本性质"
-
-#: app/templates/materials/detail.html:458
-msgid "ID:"
-msgstr "编号："
-
-#: app/templates/materials/detail.html:459
-msgid "Fermi Level:"
-msgstr "费米能级："
-
-#: app/templates/materials/detail.html:459
-#: app/templates/materials/detail.html:474
-#: app/templates/materials/detail.html:475
-msgid "Not available yet"
-msgstr "暂无数据"
-
-#: app/templates/materials/detail.html:469
-msgid "Surface Properties"
-msgstr "表面性质"
-
-#: app/templates/materials/detail.html:474
-msgid "Vacuum Level:"
-msgstr "真空能级："
-
-#: app/templates/materials/detail.html:475
-msgid "Work Function:"
-msgstr "功函数："
-
-#: app/templates/materials/edit.html:21
-#, python-format
-msgid "Editing %(name)s"
-msgstr "正在编辑 %(name)s"
-
-#: app/templates/materials/edit.html:34
-msgid "2-120 characters"
-msgstr "2-120 个字符"
-
-#: app/templates/materials/edit.html:40
-msgid "Current CIF file(s):"
-msgstr "当前 CIF 文件："
-
-#: app/templates/materials/edit.html:42 app/templates/materials/edit.html:59
-#: app/templates/materials/edit.html:80 app/templates/materials/edit.html:93
-msgid "Path:"
-msgstr "路径："
-
-#: app/templates/materials/edit.html:45
-msgid "Warning: 存在多个.cif文件，请只保留一个！"
-msgstr "Warning: 存在多个.cif文件，请只保留一个！"
-
-#: app/templates/materials/edit.html:49
-msgid "支持.cif格式，文件名不限，若有多个.cif文件将报错"
-msgstr "支持.cif格式，文件名不限，若有多个.cif文件将报错"
-
-#: app/templates/materials/edit.html:53
-msgid "Band Structure File (DAT/JSON)"
-msgstr "能带结构文件（DAT/JSON）"
-
-#: app/templates/materials/edit.html:55
-msgid "支持.dat/.json格式，文件名不限，若有多个同类文件将报错"
-msgstr "支持.dat/.json格式，文件名不限，若有多个同类文件将报错"
-
-#: app/templates/materials/edit.html:57
-msgid "Current band file(s):"
-msgstr "当前能带文件："
-
-#: app/templates/materials/edit.html:62
-msgid "Warning: 存在多个能带文件，请只保留一个！"
-msgstr "Warning: 存在多个能带文件，请只保留一个！"
-
-#: app/templates/materials/edit.html:78
-msgid "JSON file with material properties"
-msgstr "包含材料属性的 JSON 文件"
-
-#: app/templates/materials/edit.html:80
-msgid "Current file:"
-msgstr "当前文件："
-
-#: app/templates/materials/edit.html:80
-msgid "Required name: material.json"
-msgstr "要求的文件名：material.json"
-
-#: app/templates/materials/edit.html:88
-msgid "支持.dat格式，文件名不限，若有多个同类文件将报错"
-msgstr "支持.dat格式，文件名不限，若有多个同类文件将报错"
-
-#: app/templates/materials/edit.html:94
-msgid "删除"
-msgstr "删除"
-
-#: app/templates/materials/edit.html:97
-msgid "无Shift Current文件"
-msgstr "无位移电流文件"
-
-#: app/templates/materials/edit.html:261
-msgid "Automatically calculated from band data"
-msgstr "将根据能带数据自动计算"
-
-#: app/templates/materials/edit.html:266
-msgid "Select Type"
-msgstr "选择类型"
-
-#: app/templates/materials/edit.html:273
-msgid "Automatically determined from band gap"
-msgstr "根据带隙自动判定"
-
-#: app/templates/materials/edit.html:284
-msgid "Update Material"
-msgstr "更新材料"
-
-#: app/templates/materials/edit.html:288
-msgid "Discard Changes"
-msgstr "放弃更改"
-
-#: app/templates/members/index.html:7
-msgid ""
-"Meet our talented researchers dedicated to cutting-edge materials science"
-" and computational design at the Department of Materials Computation and "
-"Design, Institute of Metal Research, Chinese Academy of Sciences."
-msgstr "欢迎认识我们才华横溢的研究团队，他们致力于材料科学前沿与计算设计，隶属于中国科学院金属研究所材料计算与设计部。"
-
-#: app/templates/members/index.html:25
-msgid "Achievements:"
-msgstr "成果："
-
-#~ msgid "Research Team"
-#~ msgstr "研究团队"
-
-#~ msgid "Done"
-#~ msgstr "完成"
-
-#~ msgid "Unconverged"
-#~ msgstr "未收敛"
-
-#~ msgid "Error"
-#~ msgstr "错误"
-
-#~ msgid "Download Shift Current data"
-#~ msgstr "下载位移电流数据"
-
-#~ msgid "Element Relations"
-#~ msgstr "元素关联"
-
-#~ msgid "Shift Current Properties"
-#~ msgstr "位移电流性质"
-
-#~ msgid "Zero"
-#~ msgstr "零"
-
-#~ msgid "Same"
-#~ msgstr "相同"
-
-#~ msgid "Opposite"
-#~ msgstr "相反"
-
-#~ msgid "Status:"
-#~ msgstr "状态："
-
-#~ msgid "BCD"
-#~ msgstr "贝里曲率偶极"
-
-#~ msgid "DW"
-#~ msgstr "德鲁德权重"
-
-#: app/templates/main/landing.html:12
-msgid "Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties."
-msgstr "探索与发现材料，加速材料科学研究与创新。我们提供全面的材料成分、结构、制备工艺、物理化学性能数据与分析工具。"
-
-#: app/templates/main/landing.html:19
-msgid "Explore and discover materials, accelerating materials science research and innovation. We provide comprehensive data and analysis tools on material composition, structure, preparation processes, and physicochemical properties."
-msgstr "探索和发现材料，加速材料科学的研究与创新。我们提供关于材料成分、结构、制备工艺和物理化学性质的全面数据及分析工具。"
-
-#: app/templates/main/landing.html:68
+"Providing active learning deployment tools, self-trained large language "
+"models, and multimodal models."
+msgstr "提供主动学习部署工具、自训练的大语言模型与多模态模型。"
+
+#: app/templates/main/landing.html:69
 msgid "Large Language Model"
 msgstr "大语言模型"
 
-#: app/templates/main/landing.html:69
-msgid "A large language model for the materials database, providing professional guidance."
+#: app/templates/main/landing.html:70
+msgid ""
+"A large language model for the materials database, providing professional"
+" guidance."
 msgstr "材料语库的大语言模型，提供专业的指导"
 
-#: app/templates/auth/apply.html:66
-msgid "Copied!"
-msgstr "已复制！"
+#: app/templates/main/landing.html:88
+msgid "Material Data"
+msgstr "材料数据量"
 
-#: app/templates/main/landing.html:70
-msgid "Language"
-msgstr "语言"
+#: app/templates/main/landing.html:95
+msgid "Physical Properties"
+msgstr "物理性质"
+
+#: app/templates/main/landing.html:102
+msgid "Online Service"
+msgstr "在线服务"
+
+#: app/templates/materials/detail.html:134
+msgid "MP"
+msgstr "MP数据库"
+
+#: app/templates/materials/detail.html:157
+msgid "Structure"
+msgstr "结构"
+
+#: app/templates/materials/detail.html:158
+msgid "Crystal Data"
+msgstr "晶体数据"
+
+#: app/templates/materials/detail.html:159
+#: app/templates/materials/detail.html:260
+#: app/templates/materials/detail.html:279
+msgid "Band Structure"
+msgstr "能带结构"
+
+#: app/templates/materials/detail.html:161
+msgid "Berry curvature dipole"
+msgstr "贝里曲率偶极"
+
+#: app/templates/materials/detail.html:162
+msgid "Drude weight"
+msgstr "德鲁德权重"
+
+#: app/templates/materials/detail.html:163
+#: app/templates/materials/detail.html:317
+#: app/templates/materials/detail.html:363
+#: app/templates/materials/detail.html:411
+msgid "Properties"
+msgstr "属性"
+
+#: app/templates/materials/detail.html:179
+msgid "3D Structure"
+msgstr "三维结构"
+
+#: app/templates/materials/detail.html:183
+msgid ""
+"3D crystal structure function is temporarily unavailable (network "
+"connection issue)"
+msgstr "三维晶体结构功能暂时不可用（网络连接问题）"
+
+#: app/templates/materials/detail.html:192
+msgid "Crystal Structure"
+msgstr "晶体结构"
+
+#: app/templates/materials/detail.html:197
+msgid "Lattice a:"
+msgstr "晶格 a："
+
+#: app/templates/materials/detail.html:198
+msgid "Lattice b:"
+msgstr "晶格 b："
+
+#: app/templates/materials/detail.html:199
+msgid "Lattice c:"
+msgstr "晶格 c："
+
+#: app/templates/materials/detail.html:200
+msgid "Alpha:"
+msgstr "α："
+
+#: app/templates/materials/detail.html:201
+msgid "Beta:"
+msgstr "β："
+
+#: app/templates/materials/detail.html:202
+msgid "Gamma:"
+msgstr "γ："
+
+#: app/templates/materials/detail.html:203
+msgid "Volume:"
+msgstr "体积："
+
+#: app/templates/materials/detail.html:204
+msgid "Density:"
+msgstr "密度："
+
+#: app/templates/materials/detail.html:219
+msgid "Crystal Symmetry"
+msgstr "晶体对称性"
+
+#: app/templates/materials/detail.html:224
+msgid "Crystal System:"
+msgstr "晶体系统："
+
+#: app/templates/materials/detail.html:225
+msgid "Space Group:"
+msgstr "空间群："
+
+#: app/templates/materials/detail.html:232
+msgid "MP-ID:"
+msgstr "MP-ID："
+
+#: app/templates/materials/detail.html:242
+msgid "Atomic Coordinates"
+msgstr "原子坐标"
+
+#: app/templates/materials/detail.html:246
+msgid "Loading atomic coordinates..."
+msgstr "正在加载原子坐标..."
+
+#: app/templates/materials/detail.html:262
+msgid "Download band data"
+msgstr "下载能带数据"
+
+#: app/templates/materials/detail.html:284
+msgid "Band Gap:"
+msgstr "带隙："
+
+#: app/templates/materials/detail.html:289
+#: app/templates/materials/detail.html:298
+msgid "Analyzing..."
+msgstr "分析中..."
+
+#: app/templates/materials/detail.html:293
+msgid "Materials Type:"
+msgstr "材料类型："
+
+#: app/templates/materials/detail.html:313
+msgid "Shift Current"
+msgstr "位移电流"
+
+#: app/templates/materials/detail.html:315
+msgid "SC Tabs"
+msgstr "SC 选项卡"
+
+#: app/templates/materials/detail.html:316
+#: app/templates/materials/detail.html:362
+#: app/templates/materials/detail.html:410
+msgid "Relations"
+msgstr "元素关联"
+
+#: app/templates/materials/detail.html:318
+#: app/templates/materials/detail.html:364
+#: app/templates/materials/detail.html:412
+msgid "Eigen Matrix"
+msgstr "特征矩阵"
+
+#: app/templates/materials/detail.html:327
+msgid "Chart function is temporarily unavailable (network connection issue)"
+msgstr "图表函数暂时不可用（网络连接问题）"
+
+#: app/templates/materials/detail.html:333
+#: app/templates/materials/detail.html:381
+#: app/templates/materials/detail.html:429
+msgid "Loading element relations..."
+msgstr "正在加载元素关联..."
+
+#: app/templates/materials/detail.html:339
+msgid "Max SC"
+msgstr "最大位移电流"
+
+#: app/templates/materials/detail.html:340
+msgid "Max Photon Energy"
+msgstr "最大光子能量"
+
+#: app/templates/materials/detail.html:341
+msgid "Max Tensor Type"
+msgstr "最大张量类型"
+
+#: app/templates/materials/detail.html:347
+msgid "No matrix data for Shift Current."
+msgstr "无位移电流数据"
+
+#: app/templates/materials/detail.html:359
+msgid "Berry curvature dipole (BCD)"
+msgstr "贝里曲率偶极（BCD）"
+
+#: app/templates/materials/detail.html:361
+msgid "BCD Tabs"
+msgstr "BCD 选项卡"
+
+#: app/templates/materials/detail.html:386
+msgid "BCD properties are not available yet."
+msgstr "暂无数据"
+
+#: app/templates/materials/detail.html:400
+msgid "BCD Legend"
+msgstr "BCD 图例"
+
+#: app/templates/materials/detail.html:407
+msgid "Drude weight (DW)"
+msgstr "德鲁德权重（DW）"
+
+#: app/templates/materials/detail.html:409
+msgid "DW Tabs"
+msgstr "DW 选项卡"
+
+#: app/templates/materials/detail.html:434
+msgid "DW properties are not available yet."
+msgstr "暂无数据"
+
+#: app/templates/materials/detail.html:448
+msgid "DW Legend"
+msgstr "DW 图例"
+
+#: app/templates/materials/detail.html:456
+msgid "热力学性质"
+msgstr "热力学性质"
+
+#: app/templates/materials/detail.html:458
+msgid "Basic Properties"
+msgstr "基本性质"
+
+#: app/templates/materials/detail.html:463
+msgid "ID:"
+msgstr "编号："
+
+#: app/templates/materials/detail.html:464
+msgid "Fermi Level:"
+msgstr "费米能级："
+
+#: app/templates/materials/detail.html:464
+#: app/templates/materials/detail.html:479
+#: app/templates/materials/detail.html:480
+msgid "Not available yet"
+msgstr "暂无数据"
+
+#: app/templates/materials/detail.html:474
+msgid "Surface Properties"
+msgstr "表面性质"
+
+#: app/templates/materials/detail.html:479
+msgid "Vacuum Level:"
+msgstr "真空能级："
+
+#: app/templates/materials/detail.html:480
+msgid "Work Function:"
+msgstr "功函数："
+
+#: app/templates/members/detail.html:16
+msgid "Title"
+msgstr "文章"
+
+#: app/templates/members/detail.html:19
+msgid "Phone"
+msgstr "电话"
+
+#: app/templates/members/detail.html:37
+msgid "Research Interests"
+msgstr "研究方向"
+
+#: app/templates/members/detail.html:60
+msgid "Back to Team"
+msgstr "返回目录"
+
+#: app/templates/members/index.html:17
+msgid "Supervisors"
+msgstr "导师"
+
+# 补充：文章详情页与 TOC 使用的“Contents”键
+#: app/templates/members/index.html:35
+msgid "Students"
+msgstr "学生"

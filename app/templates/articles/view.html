@@ -17,6 +17,7 @@
           {% if category|lower == 'instructions' %}{{ _('Instructions') }}
           {% elif category|lower == 'articles' %}{{ _('Articles') }}
           {% elif category|lower == 'changelog' %}{{ _('Changelog') }}
+          {% elif category|lower == 'legal' %}{{ _('Legal') }}
           {% else %}{{ category|title }}{% endif %}
         </a>
         <span class="separator">&gt;</span>
@@ -28,6 +29,11 @@
         <div class="article-category {{ category|lower }}">{{ category|title }}</div>
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-meta">
+            {% if article.author %}
+            <span class="article-author">
+                <i class="far fa-user"></i> {{ article.author }}
+            </span>
+            {% endif %}
             {% if article.date %}
             <span class="article-date">
                 <i class="far fa-calendar-alt"></i> {{ article.date }}
@@ -39,12 +45,22 @@
     <div class="article-content markdown-body">
         {{ content|safe }}
     </div>
+    <!-- Keywords -->
+    {% if article.keywords %}
+    <div class="article-keywords-footer">
+        <strong>{{ _('Keywords') }}:</strong>
+        {% for keyword in article.keywords %}
+            <span class="keyword-tag">{{ keyword }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Article Footer -->
     <div class="article-footer">
         <a href="{{ url_for('articles.listing') }}" class="button-outline">
             <i class="fas fa-arrow-left"></i> {{ _('Back to Contents') }}
         </a>
-            </div>
+    </div>
         </div>
     </div>
 </div>

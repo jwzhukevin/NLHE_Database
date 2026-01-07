@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-02 18:46+0800\n"
+"POT-Creation-Date: 2026-01-07 21:30+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,7 +38,7 @@ msgstr ""
 msgid "Email format is invalid"
 msgstr ""
 
-#: app/templates/auth/login.html:110 app/views.py:421 app/views.py:1045
+#: app/templates/auth/login.html:115 app/views.py:421 app/views.py:1045
 #: app/views.py:1176
 msgid "Invalid captcha code, please try again"
 msgstr ""
@@ -75,20 +75,20 @@ msgstr ""
 msgid "Summary:"
 msgstr ""
 
-#: app/templates/auth/apply.html:101 app/views.py:462
+#: app/templates/auth/apply.html:96 app/views.py:462
 msgid "Full Name"
 msgstr ""
 
-#: app/templates/auth/apply.html:109 app/templates/auth/login.html:35
+#: app/templates/auth/apply.html:104 app/templates/auth/login.html:35
 #: app/templates/members/detail.html:22 app/views.py:463
 msgid "Email"
 msgstr ""
 
-#: app/templates/auth/apply.html:117 app/views.py:464
+#: app/templates/auth/apply.html:112 app/views.py:464
 msgid "Desired Username"
 msgstr ""
 
-#: app/templates/auth/apply.html:125 app/templates/members/detail.html:25
+#: app/templates/auth/apply.html:120 app/templates/members/detail.html:25
 #: app/views.py:465
 msgid "Affiliation"
 msgstr ""
@@ -147,7 +147,7 @@ msgid ""
 "remaining."
 msgstr ""
 
-#: app/templates/auth/login.html:111 app/views.py:1122 app/views.py:1235
+#: app/templates/auth/login.html:116 app/views.py:1122 app/views.py:1235
 #, python-format
 msgid "Incorrect password. You have %(n)d attempts remaining."
 msgstr ""
@@ -160,147 +160,183 @@ msgstr ""
 msgid "Session cleared successfully."
 msgstr ""
 
-#: app/templates/base.html:152
+#: app/templates/base.html:134
 msgid "Language"
 msgstr ""
 
-#: app/templates/base.html:155
+#: app/templates/base.html:137
 msgid "English"
 msgstr ""
 
-#: app/templates/base.html:156
+#: app/templates/base.html:138
 msgid "中文"
 msgstr ""
 
-#: app/templates/base.html:199 app/templates/main/landing.html:54
+#: app/templates/base.html:143 app/templates/materials/detail.html:114
+msgid "MatdataX-I: Functional Materials"
+msgstr ""
+
+#: app/templates/High_temperature_alloy/detail.html:14
+#: app/templates/base.html:148
+msgid "MatdataX-II: Structural Materials"
+msgstr ""
+
+#: app/templates/base.html:153
+msgid "Alloy"
+msgstr ""
+
+#: app/templates/base.html:157
+msgid "Ceramics"
+msgstr ""
+
+#: app/templates/base.html:162
+msgid "Literature Extracted Data"
+msgstr ""
+
+#: app/templates/base.html:165
+msgid "Internal Experimental Data"
+msgstr ""
+
+#: app/templates/base.html:168
+msgid "Model Predicted Data"
+msgstr ""
+
+#: app/templates/articles/listing.html:26 app/templates/articles/view.html:18
+#: app/templates/base.html:176 app/templates/base.html:288
+msgid "Articles"
+msgstr ""
+
+#: app/templates/base.html:181 app/templates/main/landing.html:62
 msgid "AI Tools"
 msgstr ""
 
-#: app/templates/base.html:203
+#: app/templates/base.html:185
 msgid "Active Learning"
 msgstr ""
 
-#: app/templates/base.html:206
+#: app/templates/base.html:188
 msgid "Image Recognition"
 msgstr ""
 
-#: app/templates/base.html:209
+#: app/templates/base.html:191
 msgid "Natural Language Processing"
 msgstr ""
 
-#: app/templates/base.html:212
+#: app/templates/base.html:194
 msgid "LLM"
 msgstr ""
 
-#: app/templates/base.html:233
+#: app/templates/base.html:210
 msgid "More"
 msgstr ""
 
-#: app/templates/base.html:241
+#: app/templates/base.html:218
 msgid "We"
 msgstr ""
 
-#: app/templates/base.html:244 app/templates/base.html:317
+#: app/templates/base.html:221 app/templates/base.html:295
 #: app/templates/members/index.html:10
 msgid "Team"
 msgstr ""
 
-#: app/templates/base.html:245 app/templates/members/detail.html:47
+#: app/templates/base.html:222 app/templates/members/detail.html:47
 msgid "Publications"
 msgstr ""
 
-#: app/templates/base.html:246
+#: app/templates/base.html:223
 msgid "Achievements"
 msgstr ""
 
-#: app/templates/base.html:247
+#: app/templates/base.html:224
 msgid "Join Us"
 msgstr ""
 
-#: app/templates/base.html:257
+#: app/templates/base.html:234
 msgid "Logout"
 msgstr ""
 
-#: app/templates/base.html:261
+#: app/templates/base.html:238
 msgid "Guest"
 msgstr ""
 
 #: app/templates/Ceramics/Experiment/index.html:45
-#: app/templates/Ceramics/Literature/index.html:45
-#: app/templates/High_temperature_alloy/index.html:138
-#: app/templates/base.html:263 app/templates/main/database.html:374
+#: app/templates/Ceramics/Literature/index.html:45 app/templates/base.html:240
+#: app/templates/main/database.html:389
 msgid "Apply"
 msgstr ""
 
-#: app/templates/base.html:264
+#: app/templates/auth/login.html:79 app/templates/base.html:241
 msgid "Login"
 msgstr ""
 
+#: app/templates/base.html:283 app/templates/base.html:315
+msgid "MatdataX"
+msgstr ""
+
+#: app/templates/base.html:285
+msgid "Copyright"
+msgstr ""
+
 #: app/templates/High_temperature_alloy/detail.html:11
-#: app/templates/base.html:308 app/templates/materials/detail.html:109
+#: app/templates/base.html:286 app/templates/materials/detail.html:109
 msgid "Home"
 msgstr ""
 
-#: app/templates/base.html:309
-msgid "Materials Database"
+#: app/templates/base.html:287
+msgid "Functional Materials"
 msgstr ""
 
-#: app/templates/articles/listing.html:26 app/templates/articles/view.html:18
-#: app/templates/base.html:310
-msgid "Articles"
-msgstr ""
-
-#: app/templates/base.html:311
+#: app/templates/base.html:289
 msgid "User Portal"
 msgstr ""
 
-#: app/templates/base.html:315
+#: app/templates/base.html:293
 msgid "Resources"
 msgstr ""
 
-#: app/templates/base.html:318
+#: app/templates/base.html:296
 msgid "CAS"
 msgstr ""
 
-#: app/templates/base.html:319
+#: app/templates/base.html:297
 msgid "IMR"
 msgstr ""
 
-#: app/templates/base.html:320
+#: app/templates/base.html:298
 msgid "IMR Graduate School"
 msgstr ""
 
-#: app/templates/base.html:324
+#: app/templates/base.html:302
 msgid "Community"
 msgstr ""
 
-#: app/templates/base.html:326
+#: app/templates/base.html:304
 msgid "Seminars (Coming Soon)"
 msgstr ""
 
-#: app/templates/base.html:327
+#: app/templates/base.html:305
 msgid "Documentation"
 msgstr ""
 
-#: app/templates/base.html:328
+#: app/templates/base.html:306
 msgid "AI Assistant"
 msgstr ""
 
-#: app/templates/base.html:329
+#: app/templates/base.html:307
 msgid "Support"
 msgstr ""
 
-#: app/templates/base.html:339
-msgid "Technical Stack: Flask · Plotly · Three.js · Valkey · PostgreSQL"
+#: app/templates/base.html:313
+msgid "MatdataX Logo"
 msgstr ""
 
-#: app/templates/base.html:340
+#: app/templates/base.html:317
 msgid ""
 "Record & Compliance: Placeholder ICP Record · All rights reserved by IMR "
 "MatdataX."
 msgstr ""
 
-#: app/templates/base.html:341
+#: app/templates/base.html:318
 msgid "Powered by"
 msgstr ""
 
@@ -322,21 +358,21 @@ msgstr ""
 #: app/templates/Ceramics/Experiment/index.html:29
 #: app/templates/Ceramics/Literature/index.html:29
 #: app/templates/High_temperature_alloy/index.html:108
-#: app/templates/main/database.html:327
+#: app/templates/main/database.html:342
 msgid "Per Page"
 msgstr ""
 
 #: app/templates/Ceramics/Experiment/index.html:38
 #: app/templates/Ceramics/Literature/index.html:38
 #: app/templates/High_temperature_alloy/index.html:130
-#: app/templates/main/database.html:352
+#: app/templates/main/database.html:367
 msgid "Columns"
 msgstr ""
 
 #: app/templates/Ceramics/Experiment/index.html:40
 #: app/templates/Ceramics/Literature/index.html:40
 #: app/templates/High_temperature_alloy/index.html:132
-#: app/templates/main/database.html:354
+#: app/templates/main/database.html:369
 msgid "Optional Columns"
 msgstr ""
 
@@ -349,18 +385,29 @@ msgstr ""
 #: app/templates/High_temperature_alloy/index.html:151
 #: app/templates/High_temperature_alloy/index.html:152
 #: app/templates/High_temperature_alloy/index.html:153
-#: app/templates/main/database.html:391 app/templates/main/database.html:392
-#: app/templates/main/database.html:393
+#: app/templates/main/database.html:406 app/templates/main/database.html:407
+#: app/templates/main/database.html:408
 msgid "Hide this column"
 msgstr ""
 
 #: app/templates/Ceramics/Experiment/index.html:74
-#: app/templates/High_temperature_alloy/index.html:171
+#: app/templates/High_temperature_alloy/index.html:154
+#: app/templates/High_temperature_alloy/index.html:172
+msgid "Detail"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:81
+#: app/templates/High_temperature_alloy/index.html:179
+msgid "No results found."
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:95
+#: app/templates/High_temperature_alloy/index.html:196
 msgid "Process Information"
 msgstr ""
 
-#: app/templates/Ceramics/Experiment/index.html:75
-#: app/templates/High_temperature_alloy/index.html:172
+#: app/templates/Ceramics/Experiment/index.html:96
+#: app/templates/High_temperature_alloy/index.html:197
 msgid "Close"
 msgstr ""
 
@@ -410,13 +457,13 @@ msgstr ""
 
 #: app/templates/High_temperature_alloy/detail.html:143
 #: app/templates/High_temperature_alloy/index.html:42
-#: app/templates/High_temperature_alloy/index.html:176
+#: app/templates/High_temperature_alloy/index.html:201
 msgid "Process type"
 msgstr ""
 
 #: app/templates/High_temperature_alloy/detail.html:145
 #: app/templates/High_temperature_alloy/index.html:46
-#: app/templates/High_temperature_alloy/index.html:180
+#: app/templates/High_temperature_alloy/index.html:205
 msgid "Heat treatment process"
 msgstr ""
 
@@ -447,7 +494,7 @@ msgid "Search materials, MP IDs, space groups..."
 msgstr ""
 
 #: app/templates/High_temperature_alloy/index.html:23
-#: app/templates/chat/chat.html:16 app/templates/main/database.html:174
+#: app/templates/chat/chat.html:24 app/templates/main/database.html:174
 msgid "Clear"
 msgstr ""
 
@@ -459,24 +506,24 @@ msgstr ""
 #: app/templates/High_temperature_alloy/index.html:56
 #: app/templates/High_temperature_alloy/index.html:66
 #: app/templates/High_temperature_alloy/index.html:74
-#: app/templates/main/database.html:218 app/templates/main/database.html:235
-#: app/templates/main/database.html:249
+#: app/templates/main/database.html:233 app/templates/main/database.html:250
+#: app/templates/main/database.html:264
 msgid "Min"
 msgstr ""
 
 #: app/templates/High_temperature_alloy/index.html:57
 #: app/templates/High_temperature_alloy/index.html:67
 #: app/templates/High_temperature_alloy/index.html:75
-#: app/templates/main/database.html:220 app/templates/main/database.html:237
-#: app/templates/main/database.html:251
+#: app/templates/main/database.html:235 app/templates/main/database.html:252
+#: app/templates/main/database.html:266
 msgid "to"
 msgstr ""
 
 #: app/templates/High_temperature_alloy/index.html:58
 #: app/templates/High_temperature_alloy/index.html:68
 #: app/templates/High_temperature_alloy/index.html:76
-#: app/templates/main/database.html:222 app/templates/main/database.html:239
-#: app/templates/main/database.html:253
+#: app/templates/main/database.html:237 app/templates/main/database.html:254
+#: app/templates/main/database.html:268
 msgid "Max"
 msgstr ""
 
@@ -485,7 +532,7 @@ msgid "Reset"
 msgstr ""
 
 #: app/templates/High_temperature_alloy/index.html:93
-#: app/templates/main/database.html:283
+#: app/templates/main/database.html:298
 msgid ""
 "Please enter search criteria or select at least one filter before "
 "searching."
@@ -495,8 +542,8 @@ msgstr ""
 msgid "Results"
 msgstr ""
 
-#: app/templates/High_temperature_alloy/index.html:154
-msgid "Detail"
+#: app/templates/High_temperature_alloy/index.html:138
+msgid "Add Property"
 msgstr ""
 
 #: app/templates/articles/listing.html:10
@@ -507,7 +554,7 @@ msgstr ""
 msgid "Search contents..."
 msgstr ""
 
-#: app/templates/articles/listing.html:25 app/templates/main/database.html:204
+#: app/templates/articles/listing.html:25 app/templates/main/database.html:219
 msgid "All"
 msgstr ""
 
@@ -519,22 +566,26 @@ msgstr ""
 msgid "Changelog"
 msgstr ""
 
-#: app/templates/articles/listing.html:43
+#: app/templates/articles/listing.html:29 app/templates/articles/view.html:20
+msgid "Legal"
+msgstr ""
+
+#: app/templates/articles/listing.html:55
 msgid "Read More"
 msgstr ""
 
-#: app/templates/articles/listing.html:50
+#: app/templates/articles/listing.html:62
 msgid "No content found"
 msgstr ""
 
-#: app/templates/articles/listing.html:52
+#: app/templates/articles/listing.html:64
 #, python-format
 msgid ""
 "No results found for \"%(query)s\". Try different keywords or browse by "
 "category."
 msgstr ""
 
-#: app/templates/articles/listing.html:54
+#: app/templates/articles/listing.html:66
 msgid "There is no content in this category yet."
 msgstr ""
 
@@ -542,11 +593,15 @@ msgstr ""
 msgid "Table of contents"
 msgstr ""
 
-#: app/templates/articles/view.html:14 app/templates/articles/view.html:56
+#: app/templates/articles/view.html:14 app/templates/articles/view.html:72
 msgid "Contents"
 msgstr ""
 
-#: app/templates/articles/view.html:45
+#: app/templates/articles/view.html:51
+msgid "Keywords"
+msgstr ""
+
+#: app/templates/articles/view.html:61
 msgid "Back to Contents"
 msgstr ""
 
@@ -604,68 +659,67 @@ msgid ""
 " use the email channel above:"
 msgstr ""
 
-#: app/templates/auth/apply.html:76 app/templates/auth/apply.html:180
-msgid "Template copied to clipboard"
-msgstr ""
-
-#: app/templates/auth/apply.html:85
+#: app/templates/auth/apply.html:80
 msgid ""
 "The online application form is temporarily unavailable. Please use the "
 "email channel on the left."
 msgstr ""
 
-#: app/templates/auth/apply.html:88
+#: app/templates/auth/apply.html:83
 msgid "Apply to Become a User"
 msgstr ""
 
-#: app/templates/auth/apply.html:103
+#: app/templates/auth/apply.html:98
 msgid "Enter your full name"
 msgstr ""
 
-#: app/templates/auth/apply.html:111 app/templates/auth/login.html:37
+#: app/templates/auth/apply.html:106 app/templates/auth/login.html:37
 msgid "Enter your email address"
 msgstr ""
 
-#: app/templates/auth/apply.html:119
+#: app/templates/auth/apply.html:114
 msgid "Enter your desired username"
 msgstr ""
 
-#: app/templates/auth/apply.html:127
+#: app/templates/auth/apply.html:122
 msgid "Enter your affiliation (optional)"
 msgstr ""
 
-#: app/templates/auth/apply.html:133
+#: app/templates/auth/apply.html:128
 msgid "Reason"
 msgstr ""
 
-#: app/templates/auth/apply.html:135
+#: app/templates/auth/apply.html:130
 msgid "Describe your purpose or need for access"
 msgstr ""
 
-#: app/templates/auth/apply.html:141 app/templates/auth/apply.html:146
+#: app/templates/auth/apply.html:136 app/templates/auth/apply.html:141
 #: app/templates/auth/login.html:51 app/templates/auth/login.html:56
 msgid "Captcha"
 msgstr ""
 
-#: app/templates/auth/apply.html:144 app/templates/auth/login.html:54
+#: app/templates/auth/apply.html:139 app/templates/auth/login.html:54
 msgid "Enter the captcha"
 msgstr ""
 
-#: app/templates/auth/apply.html:149 app/templates/auth/login.html:59
+#: app/templates/auth/apply.html:144 app/templates/auth/login.html:59
 msgid "Click to refresh"
 msgstr ""
 
-#: app/templates/auth/apply.html:156
+#: app/templates/auth/apply.html:151
 msgid "Submit Application"
 msgstr ""
 
-#: app/templates/auth/apply.html:157 app/templates/auth/login.html:80
+#: app/templates/auth/apply.html:156 app/templates/auth/login.html:84
 msgid "Back to Database"
 msgstr ""
 
-#: app/templates/auth/login.html:22 app/templates/auth/login.html:79
-#: app/templates/auth/login.html:108 app/templates/auth/login.html:125
-#: app/templates/auth/login.html:131
+#: app/templates/auth/apply.html:182
+msgid "Template copied to clipboard"
+msgstr ""
+
+#: app/templates/auth/login.html:22 app/templates/auth/login.html:113
+#: app/templates/auth/login.html:130 app/templates/auth/login.html:136
 msgid "Log In"
 msgstr ""
 
@@ -685,20 +739,20 @@ msgstr ""
 msgid "Enter your password"
 msgstr ""
 
-#: app/templates/auth/login.html:107 app/templates/auth/login.html:124
-#: app/templates/auth/login.html:131
+#: app/templates/auth/login.html:112 app/templates/auth/login.html:129
+#: app/templates/auth/login.html:136
 msgid "Sign In"
 msgstr ""
 
-#: app/templates/auth/login.html:109
+#: app/templates/auth/login.html:114
 msgid "Login successful. Redirecting to MatdataX in 2 seconds…"
 msgstr ""
 
-#: app/templates/auth/login.html:126 app/templates/auth/login.html:131
+#: app/templates/auth/login.html:131 app/templates/auth/login.html:136
 msgid "Administrator Sign In"
 msgstr ""
 
-#: app/templates/auth/login.html:127 app/templates/auth/login.html:131
+#: app/templates/auth/login.html:132 app/templates/auth/login.html:136
 msgid "Log In as Administrator"
 msgstr ""
 
@@ -707,18 +761,22 @@ msgid "Chat"
 msgstr ""
 
 #: app/templates/chat/chat.html:13
+msgid "Model"
+msgstr ""
+
+#: app/templates/chat/chat.html:21
 msgid "Type your question here..."
 msgstr ""
 
-#: app/templates/chat/chat.html:13
+#: app/templates/chat/chat.html:21
 msgid "Your Message"
 msgstr ""
 
-#: app/templates/chat/chat.html:15
+#: app/templates/chat/chat.html:23
 msgid "Send"
 msgstr ""
 
-#: app/templates/chat/chat.html:17
+#: app/templates/chat/chat.html:25
 msgid "Export"
 msgstr ""
 
@@ -727,7 +785,7 @@ msgid "Periodic Table"
 msgstr ""
 
 #: app/templates/components/periodic_table.html:7
-#: app/templates/main/database.html:313
+#: app/templates/main/database.html:328
 msgid "Clear All"
 msgstr ""
 
@@ -1267,16 +1325,28 @@ msgstr ""
 msgid "Elements"
 msgstr ""
 
-#: app/templates/main/database.html:184
+#: app/templates/main/database.html:189
 msgid "Filter by Property:"
 msgstr ""
 
-#: app/templates/main/database.html:202
+#: app/templates/main/database.html:195 app/templates/materials/detail.html:160
+msgid "SC"
+msgstr ""
+
+#: app/templates/main/database.html:198
+msgid "BCD"
+msgstr ""
+
+#: app/templates/main/database.html:201
+msgid "DW"
+msgstr ""
+
+#: app/templates/main/database.html:217
 msgid "Materials Type"
 msgstr ""
 
-#: app/templates/main/database.html:205 app/templates/main/database.html:401
-#: app/templates/main/database.html:407 app/templates/materials/detail.html:232
+#: app/templates/main/database.html:220 app/templates/main/database.html:416
+#: app/templates/main/database.html:422 app/templates/materials/detail.html:232
 #: app/templates/materials/detail.html:339
 #: app/templates/materials/detail.html:340
 #: app/templates/materials/detail.html:341
@@ -1285,57 +1355,57 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
-#: app/templates/main/database.html:206
+#: app/templates/main/database.html:221
 msgid "Metal"
 msgstr ""
 
-#: app/templates/main/database.html:207
+#: app/templates/main/database.html:222
 msgid "Semimetal"
 msgstr ""
 
-#: app/templates/main/database.html:208
+#: app/templates/main/database.html:223
 msgid "Semiconductor"
 msgstr ""
 
-#: app/templates/main/database.html:209
+#: app/templates/main/database.html:224
 msgid "Insulator"
 msgstr ""
 
-#: app/templates/main/database.html:215 app/templates/main/database.html:361
-#: app/templates/main/database.html:364 app/templates/main/database.html:392
+#: app/templates/main/database.html:230 app/templates/main/database.html:376
+#: app/templates/main/database.html:379 app/templates/main/database.html:407
 msgid "Band Gap (eV)"
 msgstr ""
 
-#: app/templates/main/database.html:232
+#: app/templates/main/database.html:247
 msgid "Max Shift Current (μA/V²)"
 msgstr ""
 
-#: app/templates/main/database.html:246 app/templates/main/database.html:355
-#: app/templates/main/database.html:358 app/templates/main/database.html:391
+#: app/templates/main/database.html:261 app/templates/main/database.html:370
+#: app/templates/main/database.html:373 app/templates/main/database.html:406
 msgid "Fermi Level (eV)"
 msgstr ""
 
-#: app/templates/main/database.html:262 app/templates/main/database.html:388
+#: app/templates/main/database.html:277 app/templates/main/database.html:403
 msgid "MP-ID"
 msgstr ""
 
-#: app/templates/main/database.html:264
+#: app/templates/main/database.html:279
 msgid "e.g., mp-12345"
 msgstr ""
 
-#: app/templates/main/database.html:269 app/templates/main/database.html:390
+#: app/templates/main/database.html:284 app/templates/main/database.html:405
 msgid "Space Group"
 msgstr ""
 
-#: app/templates/main/database.html:271
+#: app/templates/main/database.html:286
 msgid "e.g., 194 or P6_3/mmc"
 msgstr ""
 
-#: app/templates/main/database.html:299
+#: app/templates/main/database.html:314
 msgid "Searching with filters:"
 msgstr ""
 
-#: app/templates/main/database.html:319
+#: app/templates/main/database.html:334
 #, python-format
 msgid ""
 "\n"
@@ -1348,29 +1418,29 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: app/templates/main/database.html:367 app/templates/main/database.html:370
-#: app/templates/main/database.html:393
+#: app/templates/main/database.html:382 app/templates/main/database.html:385
+#: app/templates/main/database.html:408
 msgid "Max SC (μA/V²)"
 msgstr ""
 
-#: app/templates/main/database.html:387
+#: app/templates/main/database.html:402
 msgid "ID"
 msgstr ""
 
-#: app/templates/main/database.html:389
+#: app/templates/main/database.html:404
 msgid "Material Name"
 msgstr ""
 
-#: app/templates/main/database.html:394
+#: app/templates/main/database.html:409
 msgid "Actions"
 msgstr ""
 
-#: app/templates/main/database.html:407 app/templates/main/database.html:408
-#: app/templates/main/database.html:413
+#: app/templates/main/database.html:422 app/templates/main/database.html:423
+#: app/templates/main/database.html:428
 msgid "N/A"
 msgstr ""
 
-#: app/templates/main/database.html:420 app/templates/materials/detail.html:197
+#: app/templates/main/database.html:435 app/templates/materials/detail.html:197
 #: app/templates/materials/detail.html:198
 #: app/templates/materials/detail.html:199
 #: app/templates/materials/detail.html:200
@@ -1383,84 +1453,74 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: app/templates/main/database.html:428
+#: app/templates/main/database.html:442
 msgid "View in MP"
 msgstr ""
 
-#: app/templates/main/database.html:447
+#: app/templates/main/database.html:462
 msgid "Previous"
 msgstr ""
 
-#: app/templates/main/database.html:462
-msgid "Language"
+#: app/templates/main/database.html:477
+msgid "Next"
 msgstr ""
 
 #: app/templates/main/landing.html:19
-msgid "A large language model for the materials database, providing professional guidance."
+msgid ""
+"Explore and discover materials, accelerating materials science research "
+"and innovation. We provide comprehensive data and analysis tools on "
+"material composition, structure, preparation processes, and "
+"physicochemical properties."
 msgstr ""
 
 #: app/templates/main/landing.html:21
-msgid "Start Exploring"
+msgid "Explore More"
 msgstr ""
 
-#: app/templates/main/landing.html:39
+#: app/templates/main/landing.html:48
 msgid "Comprehensive Material Data"
 msgstr ""
 
-#: app/templates/main/landing.html:40
+#: app/templates/main/landing.html:49
 msgid ""
 "Providing detailed material properties, crystal structures, and "
 "electronic structure data to support in-depth materials research."
 msgstr ""
 
-#: app/templates/main/landing.html:44
-msgid "3D Crystal Structure Visualization"
-msgstr ""
-
-#: app/templates/main/landing.html:45
-msgid ""
-"Using advanced three-dimensional visualization technology to intuitively "
-"display material crystal structures."
-msgstr ""
-
-#: app/templates/main/landing.html:49
+#: app/templates/main/landing.html:55
 msgid "Data Processing Tools"
 msgstr ""
 
-#: app/templates/main/landing.html:50
+#: app/templates/main/landing.html:56
 msgid "Providing data visualization, data cleaning, and data labeling tools."
 msgstr ""
 
-#: app/templates/main/landing.html:55
+#: app/templates/main/landing.html:63
 msgid ""
 "Providing active learning deployment tools, self-trained large language "
 "models, and multimodal models."
 msgstr ""
 
-#: app/templates/main/landing.html:59
-msgid "Advanced Search Features"
+#: app/templates/main/landing.html:69
+msgid "Large Language Model"
 msgstr ""
 
-#: app/templates/main/landing.html:60
+#: app/templates/main/landing.html:70
 msgid ""
-"Powerful search and filtering capabilities to quickly find the required "
-"material data."
+"A large language model for the materials database, providing professional"
+" guidance."
 msgstr ""
 
-#: app/templates/main/landing.html:73
+#: app/templates/main/landing.html:88
 msgid "Material Data"
 msgstr ""
 
-#: app/templates/main/landing.html:77
+#: app/templates/main/landing.html:95
 msgid "Physical Properties"
 msgstr ""
 
-#: app/templates/main/landing.html:81
+#: app/templates/main/landing.html:102
 msgid "Online Service"
-msgstr ""
-
-#: app/templates/materials/detail.html:114
-msgid "MatdataX-I：功能材料"
 msgstr ""
 
 #: app/templates/materials/detail.html:134
@@ -1479,10 +1539,6 @@ msgstr ""
 #: app/templates/materials/detail.html:260
 #: app/templates/materials/detail.html:279
 msgid "Band Structure"
-msgstr ""
-
-#: app/templates/materials/detail.html:160
-msgid "SC"
 msgstr ""
 
 #: app/templates/materials/detail.html:161
