@@ -68,7 +68,7 @@ msgstr "你好 %(name)s"
 msgid ""
 "We have received your application. We will review it and contact you via "
 "email."
-msgstr "我们已经收到了您的申请。我们将审查它，并通过电子邮件与您联系。"
+msgstr "我们已经收到了您的申请。我们将会及时审查，并通过电子邮件与您联系。"
 
 #: app/views.py:461
 msgid "Summary:"
@@ -235,7 +235,6 @@ msgstr "更多"
 msgid "We"
 msgstr "我们"
 
-# 新增：模块重命名为 Team
 #: app/templates/base.html:221 app/templates/base.html:295
 #: app/templates/members/index.html:10
 msgid "Team"
@@ -261,8 +260,6 @@ msgstr "登出"
 msgid "Guest"
 msgstr "游客"
 
-# Chinese translations for PROJECT.
-# ===== 申请页 i18n 新增条目 =====
 #: app/templates/Ceramics/Experiment/index.html:45
 #: app/templates/Ceramics/Literature/index.html:45 app/templates/base.html:240
 #: app/templates/main/database.html:389
@@ -288,7 +285,7 @@ msgstr "首页"
 
 #: app/templates/base.html:287
 msgid "Functional Materials"
-msgstr "MatdataX-I：功能材料"
+msgstr "功能材料"
 
 #: app/templates/base.html:289
 msgid "User Portal"
@@ -458,7 +455,7 @@ msgstr "元素占比图"
 
 #: app/templates/High_temperature_alloy/detail.html:50
 msgid "All element values are 0"
-msgstr ""
+msgstr "所有元素值为0"
 
 #: app/templates/High_temperature_alloy/detail.html:143
 #: app/templates/High_temperature_alloy/index.html:42
@@ -532,11 +529,9 @@ msgstr "至"
 msgid "Max"
 msgstr "最大值"
 
-# ===== 新增：High Temperature Alloy 数据库与详情页 =====
 #: app/templates/High_temperature_alloy/index.html:84
-#, fuzzy
 msgid "Reset"
-msgstr "结果"
+msgstr "重置"
 
 #: app/templates/High_temperature_alloy/index.html:93
 #: app/templates/main/database.html:298
@@ -545,15 +540,13 @@ msgid ""
 "searching."
 msgstr "在搜索前请输入条件或至少选择一个筛选项。"
 
-# ===== 新增：High Temperature Alloy 数据库与详情页 =====
 #: app/templates/High_temperature_alloy/index.html:104
 msgid "Results"
 msgstr "结果"
 
 #: app/templates/High_temperature_alloy/index.html:138
-#, fuzzy
 msgid "Add Property"
-msgstr "基本性质"
+msgstr "添加属性"
 
 #: app/templates/articles/listing.html:10
 msgid "Documentation & Contents"
@@ -711,7 +704,7 @@ msgstr "元素关联"
 
 #: app/templates/auth/apply.html:130
 msgid "Describe your purpose or need for access"
-msgstr ""
+msgstr "描述你的用途或需求"
 
 #: app/templates/auth/apply.html:136 app/templates/auth/apply.html:141
 #: app/templates/auth/login.html:51 app/templates/auth/login.html:56
@@ -778,7 +771,7 @@ msgstr "以管理员身份登录"
 
 #: app/templates/chat/chat.html:8
 msgid "Chat"
-msgstr "大语音模型"
+msgstr "大语言模型"
 
 #: app/templates/chat/chat.html:13
 msgid "Model"
@@ -1276,7 +1269,7 @@ msgstr "半导体"
 
 #: app/templates/errors/429.html:30
 msgid "Human Verification"
-msgstr "人机验证"
+msgstr "真人验证"
 
 #: app/templates/errors/429.html:32
 msgid "Electrons are in random motion."
@@ -1352,15 +1345,15 @@ msgstr "通过性质筛选"
 
 #: app/templates/main/database.html:195 app/templates/materials/detail.html:160
 msgid "SC"
-msgstr "SC：位移电流"
+msgstr "位移电流"
 
 #: app/templates/main/database.html:198
 msgid "BCD"
-msgstr "BCD：贝里曲率偶极子"
+msgstr "贝里曲率偶极子"
 
 #: app/templates/main/database.html:201
 msgid "DW"
-msgstr "DW：本征电导率"
+msgstr "本征电导率"
 
 #: app/templates/main/database.html:217
 msgid "Materials Type"
@@ -1377,9 +1370,8 @@ msgid "Unknown"
 msgstr "未知"
 
 #: app/templates/main/database.html:221
-#, fuzzy
 msgid "Metal"
-msgstr "详情"
+msgstr "金属"
 
 #: app/templates/main/database.html:222
 msgid "Semimetal"
@@ -1496,7 +1488,7 @@ msgstr "探索与发现新材料，加速材料科学的研究与创新。我们
 
 #: app/templates/main/landing.html:21
 msgid "Explore More"
-msgstr "探索"
+msgstr "进入数据库"
 
 #: app/templates/main/landing.html:48
 msgid "Comprehensive Material Data"
@@ -1796,7 +1788,6 @@ msgstr "返回目录"
 msgid "Supervisors"
 msgstr "导师"
 
-# 补充：文章详情页与 TOC 使用的“Contents”键
 #: app/templates/members/index.html:35
 msgid "Students"
 msgstr "学生"
