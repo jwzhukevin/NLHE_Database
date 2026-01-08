@@ -270,11 +270,40 @@ def download_cif(material_id):
 # (三) AI聊天 API (Chat Streaming API)
 # ==============================================================================
 
+# 全局缓存SiliconFlow API密钥
+SILICONFLOW_API_KEY = None
+
+def _get_siliconflow_api_key():
+    """
+    读取并缓存SiliconFlow API密钥。
+    返回密钥字符串，如果文件不存在或为空则返回空字符串。
+    """
+    global SILICONFLOW_API_KEY
+    if SILICONFLOW_API_KEY is not None:
+        return SILICONFLOW_API_KEY
+    
+    try:
+        key_path = os.path.join(current_app.root_path, 'static', 'chat_api', 'siliconflow_cloud.key')
+        if not os.path.exists(key_path):
+            current_app.logger.warning("SiliconFlow API key file not found.")
+            SILICONFLOW_API_KEY = "" 
+            return ""
+        
+        with open(key_path, 'r') as f:
+            key = f.read().strip()
+            SILICONFLOW_API_KEY = key
+            return key
+    except Exception as e:
+        current_app.logger.error(f"Error reading SiliconFlow API key: {e}")
+        SILICONFLOW_API_KEY = ""
+        return ""
+
+
 @bp.route('/chat/stream', methods=['POST'])
 @login_required
 def chat_stream():
     """
-    处理流式聊天请求，连接本地Ollama大语言模型并实时返回响应。
+    处理流式聊天请求，根据模型名称智能选择本地Ollama或云端SiliconFlow API。
     """
     try:
         # --- 1. 解析前端请求 --- #
@@ -282,77 +311,116 @@ def chat_stream():
         messages = data.get('messages') or []
         model = data.get('model', 'deepseek-r1:14b').strip()
         lang = data.get('lang', 'en')
-        show_thinking = data.get('show_thinking', False)
-
 
         # --- 2. 设置日志与会话文件路径 --- #
         username = getattr(current_user, 'username', 'guest')
         base_dir = os.path.join(current_app.root_path, 'static', 'chat', username)
         os.makedirs(base_dir, exist_ok=True)
-
-        # 为每个聊天会话创建一个独立的JSONL文件用于存档
         session_filename = session.get('chat_session_file')
         if not session_filename:
             session_filename = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
             session['chat_session_file'] = session_filename
-        
         session_log_path = os.path.join(base_dir, session_filename)
         audit_log_path = os.path.join(base_dir, f"audit-{datetime.now().strftime('%Y%m%d')}.log")
 
         # --- 3. 写入请求历史到会话文件 --- #
         _log_chat_request(session_log_path, username, model, lang, session_filename, messages)
 
-        # --- 4. 构造流式响应 --- #
-        # 使用生成器函数来流式地从Ollama获取数据并转发给前端
-        def stream_generator():
-            final_assistant_message = ''
-            error_text = None
-            total_chars = 0
-            ollama_url = 'http://127.0.0.1:11434/api/chat'
-            payload = {'model': model, 'messages': messages, 'stream': True}
+        # --- 4. 构造并返回流式响应 --- #
+        ip_addr = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        
+        # 根据模型名称选择不同的生成器
+        if '/' in model:  # SiliconFlow模型，格式如 'deepseek-ai/deepseek-llm-67b-chat'
+            generator = _siliconflow_stream_generator(model, messages, audit_log_path, session_log_path, username, ip_addr, session_filename)
+        else:  # 本地Ollama模型
+            generator = _ollama_stream_generator(model, messages, audit_log_path, session_log_path, username, ip_addr, session_filename)
 
-            try:
-                # 使用 stream=True 来保持连接，并设置超时
-                with requests.post(ollama_url, json=payload, stream=True, timeout=60) as resp:
-                    if resp.status_code != 200:
-                        error_text = f'Ollama API Error ({resp.status_code}): {resp.text}'
-                        yield error_text
-                        return
-
-                    # 逐行读取流式响应
-                    for line in resp.iter_lines(decode_unicode=True):
-                        if not line:
-                            continue
-                        try:
-                            chunk = json.loads(line)
-                            content = chunk.get('message', {}).get('content', '')
-                            if content:
-                                final_assistant_message += content
-                                total_chars += len(content)
-                                yield content
-                            # 当模型输出结束时，停止读取
-                            if chunk.get('done'):
-                                break
-                        except json.JSONDecodeError:
-                            continue # 忽略无效的JSON行
-                
-                # 将完整的模型回复写入会话日志
-                if final_assistant_message:
-                    _log_chat_response(session_log_path, final_assistant_message)
-
-            except requests.exceptions.RequestException as e:
-                error_text = f"Connection error to Ollama: {e}"
-                yield error_text
-            finally:
-                # --- 5. 写入审计日志 --- #
-                ip_addr = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-                _log_audit_record(audit_log_path, username, ip_addr, model, session_filename, total_chars, error_text)
-
-        return Response(stream_generator(), mimetype='text/plain; charset=utf-8')
+        return Response(generator, mimetype='text/plain; charset=utf-8')
 
     except Exception as e:
         current_app.logger.error(f"[API chat_stream] Unhandled error: {e}")
         return Response(f"An unexpected error occurred on the server: {e}", status=500, mimetype='text/plain')
+
+def _ollama_stream_generator(model, messages, audit_log_path, session_log_path, username, ip_addr, session_filename):
+    """生成器函数，用于处理对本地Ollama的流式请求。"""
+    final_assistant_message = ''
+    error_text = None
+    total_chars = 0
+    ollama_url = 'http://127.0.0.1:11434/api/chat'
+    payload = {'model': model, 'messages': messages, 'stream': True}
+
+    try:
+        with requests.post(ollama_url, json=payload, stream=True, timeout=60) as resp:
+            if resp.status_code != 200:
+                error_text = f'Ollama API Error ({resp.status_code}): {resp.text}'
+                yield error_text
+                return
+            for line in resp.iter_lines(decode_unicode=True):
+                if not line:
+                    continue
+                try:
+                    chunk = json.loads(line)
+                    content = chunk.get('message', {}).get('content', '')
+                    if content:
+                        final_assistant_message += content
+                        total_chars += len(content)
+                        yield content
+                    if chunk.get('done'):
+                        break
+                except json.JSONDecodeError:
+                    continue
+        if final_assistant_message:
+            _log_chat_response(session_log_path, final_assistant_message)
+    except requests.exceptions.RequestException as e:
+        error_text = f"Connection error to Ollama: {e}"
+        yield error_text
+    finally:
+        _log_audit_record(audit_log_path, username, ip_addr, model, session_filename, total_chars, error_text)
+
+def _siliconflow_stream_generator(model, messages, audit_log_path, session_log_path, username, ip_addr, session_filename):
+    """生成器函数，用于处理对SiliconFlow云端API的流式请求。"""
+    final_assistant_message = ''
+    error_text = None
+    total_chars = 0
+    api_key = _get_siliconflow_api_key()
+
+    if not api_key:
+        error_text = "SiliconFlow API key is missing or invalid."
+        yield error_text
+        _log_audit_record(audit_log_path, username, ip_addr, model, session_filename, 0, error_text)
+        return
+
+    api_url = 'https://api.siliconflow.cn/v1/chat/completions'
+    headers = {'Authorization': f'Bearer {api_key}'}
+    payload = {'model': model, 'messages': messages, 'stream': True}
+
+    try:
+        with requests.post(api_url, json=payload, headers=headers, stream=True, timeout=60) as resp:
+            if resp.status_code != 200:
+                error_text = f'SiliconFlow API Error ({resp.status_code}): {resp.text}'
+                yield error_text
+                return
+            for line in resp.iter_lines(decode_unicode=True):
+                if line.startswith('data: '):
+                    line_data = line[len('data: '):].strip()
+                    if line_data == '[DONE]':
+                        break
+                    try:
+                        chunk = json.loads(line_data)
+                        content = chunk.get('choices', [{}])[0].get('delta', {}).get('content', '')
+                        if content:
+                            final_assistant_message += content
+                            total_chars += len(content)
+                            yield content
+                    except json.JSONDecodeError:
+                        continue
+        if final_assistant_message:
+            _log_chat_response(session_log_path, final_assistant_message)
+    except requests.exceptions.RequestException as e:
+        error_text = f"Connection error to SiliconFlow: {e}"
+        yield error_text
+    finally:
+        _log_audit_record(audit_log_path, username, ip_addr, model, session_filename, total_chars, error_text)
 
 
 # --- 聊天日志辅助函数 --- #
