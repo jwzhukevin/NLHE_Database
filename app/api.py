@@ -284,13 +284,6 @@ def chat_stream():
         lang = data.get('lang', 'en')
         show_thinking = data.get('show_thinking', False)
 
-        # 如果用户选择“显示思考过程”，则向模型注入一个特定的系统提示
-        if show_thinking and model == 'deepseek-r1:14b':
-            thinking_prompt = {
-                'role': 'system',
-                'content': 'Please provide a step-by-step thinking process before giving the final answer.'
-            }
-            messages = list(messages) + [thinking_prompt]
 
         # --- 2. 设置日志与会话文件路径 --- #
         username = getattr(current_user, 'username', 'guest')

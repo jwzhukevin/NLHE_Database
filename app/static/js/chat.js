@@ -80,21 +80,68 @@
       const reader = resp.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let done = false;
-      let acc = '';
+
+      // --- 新的流式处理逻辑 ---
+      let fullResponse = '';
+      let buffer = '';
+      let isThinking = false;
+      let thinkingContainer = null;
+      const answerContainer = document.createElement('div');
+      bubble.appendChild(answerContainer);
+
+      const shouldShowThinking = elShowThinking ? elShowThinking.checked : false;
+
+      // 简单的Markdown转换，支持换行
+      const markdownToHtml = (text) => {
+          return escapeHtml(text).replace(/\n/g, '<br>');
+      };
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
-        const chunk = decoder.decode(value || new Uint8Array(), { stream: !done });
-        if (chunk) {
-          acc += chunk;
-          bubble.textContent = acc;
-          elMessages.scrollTop = elMessages.scrollHeight;
+        buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+
+        // 状态机：处理buffer中的文本
+        let consumed = 0;
+        if (!isThinking && buffer.includes('Thinking...')) {
+            const idx = buffer.indexOf('Thinking...');
+            const preText = buffer.substring(0, idx);
+            answerContainer.innerHTML += markdownToHtml(preText);
+            isThinking = true;
+            consumed = idx + 'Thinking...'.length;
+
+            if (shouldShowThinking) {
+                thinkingContainer = document.createElement('div');
+                thinkingContainer.className = 'thinking-process';
+                thinkingContainer.innerHTML = '<h6><i class="fas fa-brain"></i> Thinking...</h6>';
+                bubble.insertBefore(thinkingContainer, answerContainer);
+            }
+        } else if (isThinking && buffer.includes('...done thinking.')) {
+            const idx = buffer.indexOf('...done thinking.');
+            const thinkingText = buffer.substring(0, idx);
+            if (shouldShowThinking && thinkingContainer) {
+                thinkingContainer.innerHTML += markdownToHtml(thinkingText);
+            }
+            isThinking = false;
+            consumed = idx + '...done thinking.'.length;
+        } else if (!isThinking) {
+            answerContainer.innerHTML += markdownToHtml(buffer);
+            consumed = buffer.length;
+        } else if (isThinking) {
+            if (shouldShowThinking && thinkingContainer) {
+                thinkingContainer.innerHTML += markdownToHtml(buffer);
+            }
+            consumed = buffer.length;
         }
+
+        fullResponse += buffer;
+        buffer = buffer.substring(consumed);
+        elMessages.scrollTop = elMessages.scrollHeight;
       }
+      // --- 流式处理逻辑结束 ---
 
       // 记录 assistant 完整回复到历史（用于继续上下文）
-      history.push({ role: 'assistant', content: acc });
+      history.push({ role: 'assistant', content: fullResponse });
     } catch (e) {
       bubble.textContent = `[Error] ${e.message || e}`;
     } finally {

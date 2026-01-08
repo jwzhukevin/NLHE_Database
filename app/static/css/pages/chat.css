@@ -77,3 +77,27 @@
     display: flex;
     gap: 0.5rem;
 }
+
+/* --- 新增：思考过程容器样式 --- */
+.msg.assistant .bubble .thinking-process {
+  background-color: #f0f0f0; /* 浅灰色背景 */
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.msg.assistant .bubble .thinking-process h6 {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.msg.assistant .bubble .thinking-process h6 .fa-brain {
+  margin-right: 8px;
+  color: #888;
+}
