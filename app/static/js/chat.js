@@ -10,6 +10,8 @@
   const btnSend = document.getElementById('send-btn');
   const btnClear = document.getElementById('clear-btn');
   const btnExport = document.getElementById('export-btn');
+  const elModelSelect = document.getElementById('model-select');
+  const elShowThinking = document.getElementById('show-thinking-checkbox');
 
   let history = [];
   let inFlight = false;
@@ -57,8 +59,9 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: history,
-          model: 'deepseek-r1:14b',
-          lang: window.CURRENT_LOCALE || 'en'
+          model: elModelSelect ? elModelSelect.value : 'deepseek-r1:14b',
+          lang: window.CURRENT_LOCALE || 'en',
+          show_thinking: elShowThinking ? elShowThinking.checked : false
         })
       });
 

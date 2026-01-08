@@ -430,8 +430,18 @@ def chat_stream():
     """
     data = request.get_json(silent=True) or {}
     messages = data.get('messages') or []
-    model = 'deepseek-r1:14b'  # 硬编码模型
+    model = data.get('model', 'deepseek-r1:14b').strip()
     lang = data.get('lang') or 'en'
+    show_thinking = data.get('show_thinking', False)
+
+    # --- 根据选项修改模型输入 --- #
+    if show_thinking and model == 'deepseek-r1:14b':
+        thinking_prompt = {
+            'role': 'system',
+            'content': 'Please provide a step-by-step thinking process before giving the final answer.'
+        }
+        # 确保 messages 是可修改的列表副本
+        messages = list(messages) + [thinking_prompt]
 
     # --- 日志与存档设置 --- #
     username = getattr(current_user, 'username', 'user') or 'user'

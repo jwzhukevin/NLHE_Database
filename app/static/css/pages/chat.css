@@ -18,6 +18,25 @@
     overflow: auto;
 }
 
+.chat-options {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* 在模型选择器和开关之间增加间距 */
+    margin-bottom: 12px;
+}
+
+.model-selector, .thinking-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.model-selector label, .thinking-toggle label {
+    font-weight: 500;
+    color: #4A5568; /* Gray-700 */
+    white-space: nowrap; /* 防止标签文本换行 */
+}
+
 .msg {
     display: flex;
     margin-bottom: 0.75rem;
