@@ -516,12 +516,13 @@ def chat_stream():
 
     return Response(stream_generator(), mimetype='text/plain; charset=utf-8')
 
+#（已移除占位限制相关 API）
+
 # 为流式端点豁免 CSRF（仅此端点）
 try:
     from . import csrf as _csrf
     if _csrf is not None:
         _csrf.exempt(chat_stream)
-except Exception:
+except (ImportError, AttributeError):
+    # 如果没有找到 CSRF 模块或豁免功能，则静默处理
     pass
-
-#（已移除占位限制相关 API）
