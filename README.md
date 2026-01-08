@@ -130,8 +130,6 @@ NLHE_Database/
 
 - **网页路由**：`/add`、`/materials/edit/...`、`/materials/delete/...` 均已移除（返回 404）。
 - **写操作 API**：以下端点统一返回 410 Gone（只读模式禁用写入）：
-  - `POST /api/structure/upload/<id>`
-  - `POST /api/structure/update-names`
   - `POST /api/materials/update-band-gap`
 - **管理员机制**：`User.is_admin()` 恒为 `False`，不再区分管理员与普通用户。
 - **CLI 管理**：只允许创建普通用户，示例：

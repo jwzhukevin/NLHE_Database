@@ -19,7 +19,7 @@
     - `css/`、`js/`、`images/`
     - `fonts/`：验证码所需字体（`DejaVuSans.ttf`、`DejaVuSans-Bold.ttf`）
     - `materials/IMR-*/`：材料数据（结构/能带/属性 JSON/SC 数据等）
-  - `api.py`：结构等数据的 JSON API（如 `get_structure()`、`upload_structure()`）。
+  - `api.py`：结构等数据的 JSON API（如 `get_structure()`）。
   - `views.py`：页面路由与后台表单（如 `add()`、`edit()`）。
 - `config/i18n/babel.cfg`：Babel 抽取配置
 - `docs/`
@@ -48,7 +48,7 @@
   - 后台表单：材料新增/编辑，写入静态目录与数据库
 
 - API 服务（`app/api.py`）
-  - 提供 JSON 接口：如材料结构获取 `get_structure()`、结构上传 `upload_structure()`
+  - 提供 JSON 接口：如材料结构获取 `get_structure()`
 
 - 搜索优化与缓存（`app/search_optimizer.py`）
   - 缓存键管理、统计接口（CLI 侧）
@@ -108,7 +108,6 @@ app/search_optimizer.py
   - 相关：`app/api.py`
   - 要点：
     - `get_structure(material_id)`：读取材料结构并返回 JSON
-    - `upload_structure(material_id)`：接收并保存结构文件，更新名称/对称信息
 
 - 搜索与缓存
   - 相关：`app/search_optimizer.py`、`app/__init__.py`

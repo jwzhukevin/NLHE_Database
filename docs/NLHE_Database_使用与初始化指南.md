@@ -181,7 +181,6 @@ pip install -r requirements.txt
 
 - 3D 可视化与 API（参考 `app/api.py`）
   - 获取结构：`GET /api/structure/<int:material_id>`（返回结构 JSON）
-  - 上传结构：`POST /api/structure/upload/<int:material_id>`（更新材料名称）
   - 超晶胞等转换：见相关 API 端点说明
 
 ---
