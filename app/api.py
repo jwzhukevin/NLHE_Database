@@ -306,6 +306,10 @@ def chat_stream():
     处理流式聊天请求，根据模型名称智能选择本地Ollama或云端SiliconFlow API。
     """
     try:
+        # --- 0. 预热API密钥缓存 --- #
+        # 在请求上下文中调用此函数，以安全地缓存密钥供生成器稍后使用
+        _get_siliconflow_api_key()
+
         # --- 1. 解析前端请求 --- #
         data = request.get_json(silent=True) or {}
         messages = data.get('messages') or []
@@ -400,7 +404,12 @@ def _siliconflow_stream_generator(model, messages, audit_log_path, session_log_p
                 error_text = f'SiliconFlow API Error ({resp.status_code}): {resp.text}'
                 yield error_text
                 return
-            for line in resp.iter_lines(decode_unicode=True):
+            for byte_line in resp.iter_lines():
+                if not byte_line:
+                    continue
+                
+                line = byte_line.decode('utf-8')  # 强制使用UTF-8解码
+
                 if line.startswith('data: '):
                     line_data = line[len('data: '):].strip()
                     if line_data == '[DONE]':
