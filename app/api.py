@@ -54,7 +54,7 @@ def _find_structure_file_path(material_id, material_name=None):
 # (一) 材料结构数据 API (Structure Data APIs)
 # ==============================================================================
 
-@bp.route('/structure/<int:material_id>', methods=['GET'])
+@bp.route('/database/functional_materials/structure/<int:material_id>', methods=['GET'])
 def get_structure(material_id):
     """
     获取指定ID材料的基础结构数据。
@@ -84,12 +84,12 @@ def get_structure(material_id):
         return jsonify({"error": "An internal error occurred."}), 500
 
 
-@bp.route('/structure', methods=['GET'])
+@bp.route('/database/functional_materials/structure', methods=['GET'])
 def get_structure_by_params():
     """
     通过URL查询参数 `?material_id=<id>` 获取结构数据。
     
-    这是 /api/structure/<id> 的一种备用形式，方便某些前端工具直接调用。
+    这是详情页调用的主要结构数据接口。
     """
     try:
         material_id_str = request.args.get('material_id')
@@ -111,7 +111,7 @@ def get_structure_by_params():
         return jsonify({"error": "An internal error occurred."}), 500
 
 
-@bp.route('/structure/<int:material_id>/conventional', methods=['GET'])
+@bp.route('/database/functional_materials/structure/<int:material_id>/conventional', methods=['GET'])
 def get_conventional_cell(material_id):
     """
     获取指定材料的“传统晶胞”(conventional cell)结构数据。
@@ -135,7 +135,7 @@ def get_conventional_cell(material_id):
         return jsonify({"error": "Failed to process conventional cell."}), 500
 
 
-@bp.route('/structure/<int:material_id>/primitive', methods=['GET'])
+@bp.route('/database/functional_materials/structure/<int:material_id>/primitive', methods=['GET'])
 def get_primitive_cell(material_id):
     """
     获取指定材料的“原始晶胞”(primitive cell)结构数据。
@@ -159,7 +159,7 @@ def get_primitive_cell(material_id):
         return jsonify({"error": "Failed to process primitive cell."}), 500
 
 
-@bp.route('/structure/<int:material_id>/supercell', methods=['GET'])
+@bp.route('/database/functional_materials/structure/<int:material_id>/supercell', methods=['GET'])
 def get_supercell(material_id):
     """
     根据请求参数动态生成并返回“超晶胞”(supercell)结构。
@@ -207,7 +207,7 @@ def get_supercell(material_id):
 # (二) 结构文件下载 API (File Download API)
 # ==============================================================================
 
-@bp.route('/structure/<int:material_id>/cif', methods=['GET'])
+@bp.route('/database/functional_materials/structure/<int:material_id>/cif', methods=['GET'])
 def download_cif(material_id):
     """
     提供CIF格式的结构文件下载功能，支持动态生成超晶胞后下载。

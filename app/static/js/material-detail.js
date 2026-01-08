@@ -531,10 +531,7 @@ function loadCrystalStructureData() {
     const materialName = window.materialData.name;
 
     // 创建API请求URL
-    let url = `/api/database/functional_materials/structure?material_id=${materialId}`;
-    if (!materialId && materialName) {
-        url = `/api/structure?material_name=${materialName}`;
-    }
+    const url = `/api/database/functional_materials/structure?material_id=${materialId}`;
 
     // 发送请求获取晶体结构数据
     fetch(url)
