@@ -18,7 +18,7 @@ from .material_importer import extract_chemical_formula_from_cif
 
 # 创建API蓝图
 # 定义前缀为/api的路由组
-bp = Blueprint('api', __name__, url_prefix='/api/database/functional_materials')
+bp = Blueprint('api', __name__, url_prefix='/api')
 
 @bp.route('/structure/<int:material_id>', methods=['GET'])
 def get_structure(material_id):

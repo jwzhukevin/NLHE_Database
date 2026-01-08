@@ -464,55 +464,29 @@ def create_app():
             app.logger.warning(f"初始化格式化ID时发生错误: {str(e)}")
 
     # --- 蓝图注册（模块化路由） ---
-    # 使用应用上下文确保数据库操作在正确的环境中执行
-    with app.app_context():  # 确保在应用上下文中操作（避免上下文缺失错误）
-        # 导入各个功能模块的蓝图
-        from .views import bp as views_bp  # 导入主视图蓝图
-        from .errors import bp as errors_bp  # 导入错误处理蓝图
-        from .commands import bp as commands_bp, register_commands  # 导入 CLI 命令蓝图和注册函数
-        # [新增导入] 注册缓存失效监听与缓存统计访问器
-        from .search_optimizer import (
-            register_material_cache_invalidation,
-            get_search_cache_stats,
-            search_cache,
-        )
-
-        # 注册蓝图到应用实例
-        app.register_blueprint(views_bp)  # 注册主视图路由
-        app.register_blueprint(errors_bp)  # 注册错误处理路由
-        app.register_blueprint(commands_bp)  # 注册命令行接口
-        
-        # 注册API蓝图（用于提供JSON接口）
+    with app.app_context():
+        # 将所有蓝图的导入和注册放在函数内部，以避免循环导入问题
         from .api import bp as api_bp
-        app.register_blueprint(api_bp)  # 注册API路由
-        
-        # 注册内容蓝图（用于文档和内容展示）
+        from .views import bp as views_bp
+        from .errors import bp as errors_bp
+        from .commands import bp as commands_bp, register_commands
         from .articles import articles as articles_bp
-        app.register_blueprint(articles_bp)  # 注册内容路由
-
-        # 注册聊天蓝图
         from .chat import chat_bp
-        app.register_blueprint(chat_bp)
-
-        # 新增：注册高温合金 CSV 数据蓝图（/High_temperature_alloy）
-        # 说明：将新的 Blueprint 接入应用，使列表/查询/详情路由生效
         from .high_temperature_alloy import high_temperature_alloy_bp
-        app.register_blueprint(high_temperature_alloy_bp)
+        from .ceramics_experiment import ceramics_experiment
+        from .ceramics_literature import ceramics_literature
+        from .search_optimizer import register_material_cache_invalidation, get_search_cache_stats, search_cache
 
-        # 新增：注册陶瓷-实验与陶瓷-文献蓝图
-        # 路由前缀：/Ceramics/experiment 与 /Ceramics/literature
-        try:
-            from .ceramics_experiment import ceramics_experiment
-            app.register_blueprint(ceramics_experiment)
-            app.logger.info("Blueprint registered: ceramics_experiment")
-        except Exception as e:
-            app.logger.warning(f"Register ceramics_experiment failed: {e}")
-        try:
-            from .ceramics_literature import ceramics_literature
-            app.register_blueprint(ceramics_literature)
-            app.logger.info("Blueprint registered: ceramics_literature")
-        except Exception as e:
-            app.logger.warning(f"Register ceramics_literature failed: {e}")
+        # 注册蓝图
+        app.register_blueprint(api_bp)
+        app.register_blueprint(views_bp)
+        app.register_blueprint(errors_bp)
+        app.register_blueprint(commands_bp)
+        app.register_blueprint(articles_bp)
+        app.register_blueprint(chat_bp)
+        app.register_blueprint(high_temperature_alloy_bp)
+        app.register_blueprint(ceramics_experiment)
+        app.register_blueprint(ceramics_literature)
 
         # 注入陶瓷三个子模块的数据条数（带 mtime 缓存）
         from .csv_config import get_csv_path as _get_ai_csv_path
@@ -697,5 +671,6 @@ def create_app():
         # 在应用上下文中进行安全检查
         with app.app_context():
             safe_init_check()
+
 
     return app  # 返回完全初始化的应用实例
