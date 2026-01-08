@@ -422,104 +422,16 @@ def update_material_metal_type(material_id):
 
 # ===================== Chat Streaming Endpoint =====================
 
-def _stream_siliconflow(model, messages, api_key):
-    """流式调用云端模型 (SiliconFlow) 并返回生成器。"""
-    url = 'https://api.siliconflow.cn/v1/chat/completions'
-    headers = {
-        'Authorization': f'Bearer {api_key}',
-        'Content-Type': 'application/json'
-    }
-    payload = {
-        'model': model,
-        'messages': messages,
-        'stream': True
-    }
-
-    with requests.post(url, headers=headers, json=payload, stream=True, timeout=60) as resp:
-        if resp.status_code != 200:
-            err = resp.text
-            err_text = f'Upstream {resp.status_code}: {err}'
-            yield err_text, None, err_text
-            return
-        
-        resp.encoding = 'utf-8'
-        assistant_acc = ''
-        for raw_line in resp.iter_lines(decode_unicode=False):
-            if not raw_line:
-                continue
-            line = raw_line.decode('utf-8', 'ignore').strip()
-            if line == 'data: [DONE]':
-                break
-            if not line.startswith('data:'):
-                continue
-            try:
-                j = json.loads(line[len('data:'):].strip())
-                choices = j.get('choices') or []
-                delta = (choices[0].get('delta') if choices else {}) or {}
-                content = delta.get('content')
-                if content:
-                    assistant_acc += content
-                    yield content, assistant_acc, None
-            except Exception:
-                continue
-
-def _stream_ollama(model, messages):
-    """流式调用本地 Ollama 模型并返回生成器。"""
-    url = 'http://127.0.0.1:11434/api/chat'
-    payload = {
-        'model': model,
-        'messages': messages,
-        'stream': True
-    }
-
-    with requests.post(url, json=payload, stream=True, timeout=60) as resp:
-        if resp.status_code != 200:
-            err = resp.text
-            err_text = f'Ollama {resp.status_code}: {err}'
-            yield err_text, None, err_text
-            return
-
-        resp.encoding = 'utf-8'
-        assistant_acc = ''
-        for raw_line in resp.iter_lines(decode_unicode=False):
-            if not raw_line:
-                continue
-            line = raw_line.decode('utf-8', 'ignore').strip()
-            try:
-                j = json.loads(line)
-                content = j.get('message', {}).get('content', '')
-                if content:
-                    assistant_acc += content
-                    yield content, assistant_acc, None
-                if j.get('done'):
-                    break
-            except json.JSONDecodeError:
-                continue
-
 @bp.route('/chat/stream', methods=['POST'])
 @login_required
 def chat_stream():
     """
-    流式聊天端点，支持多模型后端（云端/本地 Ollama）。
-
-    输入（JSON）：
-      - messages: [{role: 'user'|'assistant'|'system', content: str}, ...]
-      - model: 'qwen25-7b-gpu' (本地), 'tencent/Hunyuan-MT-7B' (云端) 等
-      - lang: 'zh'|'en'（可选）
+    流式聊天端点，固定调用本地 deepseek-r1:14b 模型。
     """
     data = request.get_json(silent=True) or {}
     messages = data.get('messages') or []
-    raw_model = (data.get('model') or '').strip()
+    model = 'deepseek-r1:14b'  # 硬编码模型
     lang = data.get('lang') or 'en'
-
-    # --- 模型与后端路由 --- #
-    is_ollama = 'qwen' in raw_model.lower()
-    if is_ollama:
-        model = raw_model
-    elif not raw_model or raw_model.lower() in ('deepseek-chat', 'deepseek'):
-        model = 'tencent/Hunyuan-MT-7B'
-    else:
-        model = raw_model
 
     # --- 日志与存档设置 --- #
     username = getattr(current_user, 'username', 'user') or 'user'
@@ -532,19 +444,6 @@ def chat_stream():
         session['chat_session_file'] = session_filename
     file_path = os.path.join(base_dir, session_filename)
     audit_path = os.path.join(base_dir, f"audit-{datetime.now().strftime('%Y%m%d')}.log")
-
-    # --- API Key (仅云端需要) --- #
-    api_key = ''
-    if not is_ollama:
-        key_path = os.path.join(current_app.root_path, 'static', 'chat_api', 'siliconflow_cloud.key')
-        try:
-            with open(key_path, 'r') as f:
-                api_key = f.read().strip()
-        except FileNotFoundError:
-            api_key = os.getenv('SILICONFLOW_API_KEY', '')
-        
-        if not api_key:
-            return Response('Server missing SILICONFLOW_API_KEY for cloud models', status=500, mimetype='text/plain; charset=utf-8')
 
     # --- 预取上下文信息 --- #
     logger_ref = current_app.logger
@@ -562,34 +461,49 @@ def chat_stream():
     except Exception as e:
         logger_ref.warning(f'failed to write chat meta/messages: {e}')
 
-    # --- 流式生成器 --- #
+    # --- 流式生成器 (Ollama) --- #
     def stream_generator():
         total_len = 0
         err_text = None
         final_assistant_message = ''
+        url = 'http://127.0.0.1:11434/api/chat'
+        payload = {
+            'model': model,
+            'messages': messages,
+            'stream': True
+        }
 
         try:
-            if is_ollama:
-                streamer = _stream_ollama(model, messages)
-            else:
-                streamer = _stream_siliconflow(model, messages, api_key)
-
-            for chunk, full_text, error in streamer:
-                if error:
-                    err_text = error
-                    yield error
+            with requests.post(url, json=payload, stream=True, timeout=60) as resp:
+                if resp.status_code != 200:
+                    err = resp.text
+                    err_text = f'Ollama {resp.status_code}: {err}'
+                    yield err_text
                     return
-                if chunk:
-                    total_len += len(chunk)
-                    final_assistant_message = full_text
-                    yield chunk
+
+                resp.encoding = 'utf-8'
+                for raw_line in resp.iter_lines(decode_unicode=False):
+                    if not raw_line:
+                        continue
+                    line = raw_line.decode('utf-8', 'ignore').strip()
+                    try:
+                        j = json.loads(line)
+                        content = j.get('message', {}).get('content', '')
+                        if content:
+                            final_assistant_message += content
+                            total_len += len(content)
+                            yield content
+                        if j.get('done'):
+                            break
+                    except json.JSONDecodeError:
+                        continue
 
             # 写入 assistant 最终回复
             if final_assistant_message:
                 with open(file_path, 'a', encoding='utf-8') as f:
                     f.write(json.dumps({'type': 'message', 'role': 'assistant', 'content': final_assistant_message}, ensure_ascii=False) + '\n')
         except requests.exceptions.RequestException as e:
-            err_text = f"Connection error to model backend: {e}"
+            err_text = f"Connection error to Ollama: {e}"
             yield err_text
         finally:
             # 审计
