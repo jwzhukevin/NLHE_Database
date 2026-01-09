@@ -42,7 +42,7 @@
                 <label class="menu-check" data-field="bending_strength"><input type="checkbox" value="bending_strength" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}强度 (MPa){% else %}Bending Strength (MPa){% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <label class="menu-check" data-field="space_group"><input type="checkbox" value="space_group" checked><i class="fas fa-bolt field-icon" aria-hidden="true"></i><span class="menu-check-text">{% if current_locale == 'zh' %}空间群{% else %}Space Group{% endif %}</span><i class="far fa-eye field-visibility" aria-hidden="true"></i></label>
                 <div class="menu-actions">
-                  <button type="button" class="button-primary-small" id="applyColsBtn">{{ _('Apply') }}</button>
+                  <button type="button" class="button-primary-small" id="applyColsBtn">{{ pgettext('columns', 'Apply') }}</button>
                 </div>
               </div>
             </div>

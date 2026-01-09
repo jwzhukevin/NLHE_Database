@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-07 20:41+0800\n"
+"POT-Creation-Date: 2026-01-09 22:33+0800\n"
 "PO-Revision-Date: 2025-08-19 17:01+0800\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh\n"
@@ -61,6 +61,7 @@ msgid "[MatdataX] We have received your application"
 msgstr "[MatdataX] 我们已经收到了您的申请"
 
 #: app/views.py:457
+#, python-format
 msgid "Hello %(name)s,"
 msgstr "你好 %(name)s"
 
@@ -260,9 +261,7 @@ msgstr "登出"
 msgid "Guest"
 msgstr "游客"
 
-#: app/templates/Ceramics/Experiment/index.html:45
-#: app/templates/Ceramics/Literature/index.html:45 app/templates/base.html:240
-#: app/templates/main/database.html:389
+#: app/templates/base.html:240
 msgid "Apply"
 msgstr "申请"
 
@@ -376,6 +375,14 @@ msgstr "列"
 #: app/templates/main/database.html:369
 msgid "Optional Columns"
 msgstr "可选列"
+
+#: app/templates/Ceramics/Experiment/index.html:45
+#: app/templates/Ceramics/Literature/index.html:45
+#: app/templates/High_temperature_alloy/index.html:138
+#: app/templates/main/database.html:389
+msgctxt "columns"
+msgid "Apply"
+msgstr "应用"
 
 #: app/templates/Ceramics/Experiment/index.html:57
 #: app/templates/Ceramics/Experiment/index.html:58
@@ -496,7 +503,7 @@ msgid "Search materials, MP IDs, space groups..."
 msgstr "搜索材料、MP ID、空间群..."
 
 #: app/templates/High_temperature_alloy/index.html:23
-#: app/templates/chat/chat.html:24 app/templates/main/database.html:174
+#: app/templates/chat/chat.html:29 app/templates/main/database.html:174
 msgid "Clear"
 msgstr "清空"
 
@@ -543,10 +550,6 @@ msgstr "在搜索前请输入条件或至少选择一个筛选项。"
 #: app/templates/High_temperature_alloy/index.html:104
 msgid "Results"
 msgstr "结果"
-
-#: app/templates/High_temperature_alloy/index.html:138
-msgid "Add Property"
-msgstr "添加属性"
 
 #: app/templates/articles/listing.html:10
 msgid "Documentation & Contents"
@@ -773,23 +776,23 @@ msgstr "以管理员身份登录"
 msgid "Chat"
 msgstr "大语言模型"
 
-#: app/templates/chat/chat.html:13
+#: app/templates/chat/chat.html:14
 msgid "Model"
 msgstr "模型"
 
-#: app/templates/chat/chat.html:21
+#: app/templates/chat/chat.html:26
 msgid "Type your question here..."
 msgstr "输入你的问题"
 
-#: app/templates/chat/chat.html:21
+#: app/templates/chat/chat.html:26
 msgid "Your Message"
 msgstr "你的输入"
 
-#: app/templates/chat/chat.html:23
+#: app/templates/chat/chat.html:28
 msgid "Send"
 msgstr "发送"
 
-#: app/templates/chat/chat.html:25
+#: app/templates/chat/chat.html:30
 msgid "Export"
 msgstr "导出"
 
@@ -1364,8 +1367,8 @@ msgstr "材料类型"
 #: app/templates/materials/detail.html:339
 #: app/templates/materials/detail.html:340
 #: app/templates/materials/detail.html:341
+#: app/templates/materials/detail.html:501
 #: app/templates/materials/detail.html:502
-#: app/templates/materials/detail.html:503
 msgid "Unknown"
 msgstr "未知"
 
@@ -1734,37 +1737,33 @@ msgstr "暂无数据"
 msgid "DW Legend"
 msgstr "DW 图例"
 
-#: app/templates/materials/detail.html:456
-msgid "热力学性质"
-msgstr "热力学性质"
-
-#: app/templates/materials/detail.html:458
+#: app/templates/materials/detail.html:457
 msgid "Basic Properties"
 msgstr "基本性质"
 
-#: app/templates/materials/detail.html:463
+#: app/templates/materials/detail.html:462
 msgid "ID:"
 msgstr "编号："
 
-#: app/templates/materials/detail.html:464
+#: app/templates/materials/detail.html:463
 msgid "Fermi Level:"
 msgstr "费米能级："
 
-#: app/templates/materials/detail.html:464
+#: app/templates/materials/detail.html:463
+#: app/templates/materials/detail.html:478
 #: app/templates/materials/detail.html:479
-#: app/templates/materials/detail.html:480
 msgid "Not available yet"
 msgstr "暂无数据"
 
-#: app/templates/materials/detail.html:474
+#: app/templates/materials/detail.html:473
 msgid "Surface Properties"
 msgstr "表面性质"
 
-#: app/templates/materials/detail.html:479
+#: app/templates/materials/detail.html:478
 msgid "Vacuum Level:"
 msgstr "真空能级："
 
-#: app/templates/materials/detail.html:480
+#: app/templates/materials/detail.html:479
 msgid "Work Function:"
 msgstr "功函数："
 
@@ -1791,3 +1790,4 @@ msgstr "导师"
 #: app/templates/members/index.html:35
 msgid "Students"
 msgstr "学生"
+

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-07 21:30+0800\n"
+"POT-Creation-Date: 2026-01-09 22:33+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -259,9 +259,7 @@ msgstr ""
 msgid "Guest"
 msgstr ""
 
-#: app/templates/Ceramics/Experiment/index.html:45
-#: app/templates/Ceramics/Literature/index.html:45 app/templates/base.html:240
-#: app/templates/main/database.html:389
+#: app/templates/base.html:240
 msgid "Apply"
 msgstr ""
 
@@ -374,6 +372,14 @@ msgstr ""
 #: app/templates/High_temperature_alloy/index.html:132
 #: app/templates/main/database.html:369
 msgid "Optional Columns"
+msgstr ""
+
+#: app/templates/Ceramics/Experiment/index.html:45
+#: app/templates/Ceramics/Literature/index.html:45
+#: app/templates/High_temperature_alloy/index.html:138
+#: app/templates/main/database.html:389
+msgctxt "columns"
+msgid "Apply"
 msgstr ""
 
 #: app/templates/Ceramics/Experiment/index.html:57
@@ -494,7 +500,7 @@ msgid "Search materials, MP IDs, space groups..."
 msgstr ""
 
 #: app/templates/High_temperature_alloy/index.html:23
-#: app/templates/chat/chat.html:24 app/templates/main/database.html:174
+#: app/templates/chat/chat.html:29 app/templates/main/database.html:174
 msgid "Clear"
 msgstr ""
 
@@ -540,10 +546,6 @@ msgstr ""
 
 #: app/templates/High_temperature_alloy/index.html:104
 msgid "Results"
-msgstr ""
-
-#: app/templates/High_temperature_alloy/index.html:138
-msgid "Add Property"
 msgstr ""
 
 #: app/templates/articles/listing.html:10
@@ -760,23 +762,23 @@ msgstr ""
 msgid "Chat"
 msgstr ""
 
-#: app/templates/chat/chat.html:13
+#: app/templates/chat/chat.html:14
 msgid "Model"
 msgstr ""
 
-#: app/templates/chat/chat.html:21
+#: app/templates/chat/chat.html:26
 msgid "Type your question here..."
 msgstr ""
 
-#: app/templates/chat/chat.html:21
+#: app/templates/chat/chat.html:26
 msgid "Your Message"
 msgstr ""
 
-#: app/templates/chat/chat.html:23
+#: app/templates/chat/chat.html:28
 msgid "Send"
 msgstr ""
 
-#: app/templates/chat/chat.html:25
+#: app/templates/chat/chat.html:30
 msgid "Export"
 msgstr ""
 
@@ -1350,8 +1352,8 @@ msgstr ""
 #: app/templates/materials/detail.html:339
 #: app/templates/materials/detail.html:340
 #: app/templates/materials/detail.html:341
+#: app/templates/materials/detail.html:501
 #: app/templates/materials/detail.html:502
-#: app/templates/materials/detail.html:503
 msgid "Unknown"
 msgstr ""
 
@@ -1721,37 +1723,33 @@ msgstr ""
 msgid "DW Legend"
 msgstr ""
 
-#: app/templates/materials/detail.html:456
-msgid "热力学性质"
-msgstr ""
-
-#: app/templates/materials/detail.html:458
+#: app/templates/materials/detail.html:457
 msgid "Basic Properties"
 msgstr ""
 
-#: app/templates/materials/detail.html:463
+#: app/templates/materials/detail.html:462
 msgid "ID:"
 msgstr ""
 
-#: app/templates/materials/detail.html:464
+#: app/templates/materials/detail.html:463
 msgid "Fermi Level:"
 msgstr ""
 
-#: app/templates/materials/detail.html:464
+#: app/templates/materials/detail.html:463
+#: app/templates/materials/detail.html:478
 #: app/templates/materials/detail.html:479
-#: app/templates/materials/detail.html:480
 msgid "Not available yet"
 msgstr ""
 
-#: app/templates/materials/detail.html:474
+#: app/templates/materials/detail.html:473
 msgid "Surface Properties"
 msgstr ""
 
-#: app/templates/materials/detail.html:479
+#: app/templates/materials/detail.html:478
 msgid "Vacuum Level:"
 msgstr ""
 
-#: app/templates/materials/detail.html:480
+#: app/templates/materials/detail.html:479
 msgid "Work Function:"
 msgstr ""
 
