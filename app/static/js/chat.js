@@ -32,6 +32,13 @@
   // 简单 Markdown 渲染（安全：先转义，再做基础替换）
   function renderMarkdown(raw) {
     let html = escapeHtml(raw || '');
+    // 标题 # 至 ######
+    html = html.replace(/^###### (.*)$/gm, '<h6>$1</h6>');
+    html = html.replace(/^##### (.*)$/gm, '<h5>$1</h5>');
+    html = html.replace(/^#### (.*)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+    html = html.replace(/^# (.*)$/gm, '<h1>$1</h1>');
     // 代码块 ``` ```
     html = html.replace(/```([\s\S]*?)```/g, (_m, code) => `<pre><code>${code}</code></pre>`);
     // 行内代码 ``
