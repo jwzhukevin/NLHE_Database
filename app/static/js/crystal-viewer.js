@@ -286,6 +286,9 @@ function initCrystalViewer(containerId) {
         updateRaycasterFromMouse();
     });
     controls.update(); // 更新控制器
+    if (controls && typeof controls.saveState === 'function') {
+        controls.saveState();
+    }
 
     // 添加光照系统
     // 添加环境光，提供基础环境光照
@@ -601,6 +604,9 @@ function switchProjection(container) {
         controls.panSpeed = 0.6;
         controls.target.copy(target);
         controls.update();
+        if (controls && typeof controls.saveState === 'function') {
+            controls.saveState();
+        }
         _projectionMode = 'orthographic';
     } else {
         // 切换回透视
@@ -621,6 +627,9 @@ function switchProjection(container) {
         controls.panSpeed = 0.6;
         controls.target.copy(target);
         controls.update();
+        if (controls && typeof controls.saveState === 'function') {
+            controls.saveState();
+        }
         _projectionMode = 'perspective';
     }
     camera.updateProjectionMatrix();
@@ -766,7 +775,9 @@ function animate() {
     requestAnimationFrame(animate);
     
     // 更新控制器状态，实现阻尼效果
-    controls.update();
+    if (controls) {
+        controls.update();
+    }
     
     // 如果启用了自动旋转，旋转晶体结构
     if (isAnimating && crystalGroup) {
@@ -868,7 +879,7 @@ function convertToPrimitiveCell() {
     showLoadingIndicator();
     
     // 调用后端API获取原胞数据
-    fetch(`/api/structure/${materialId}/primitive`)
+    fetch(`/api/database/functional_materials/structure/${materialId}/primitive`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -915,7 +926,7 @@ function convertToConventionalCell() {
     showLoadingIndicator();
     
     // 调用后端API获取传统胞数据
-    fetch(`/api/structure/${materialId}/conventional`)
+    fetch(`/api/database/functional_materials/structure/${materialId}/conventional`)
         .then(response => response.json())
         .then(data => {
             if (data.error) {
@@ -1194,7 +1205,7 @@ function loadCrystalStructure(materialId) {
     window.currentMaterialId = materialId;
     
     // 从API获取结构数据
-    fetch(`/api/structure/${materialId}`)
+    fetch(`/api/database/functional_materials/structure/${materialId}`)
         .then(response => {
             // 检查API响应状态
             if (!response.ok) {
@@ -1586,23 +1597,60 @@ function resetCameraPosition(structureData) {
     const center = boundingBox.getCenter(new THREE.Vector3());
     const size = boundingBox.getSize(new THREE.Vector3());
     
-    // 计算适当的相机距离
     const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    let cameraDistance = (maxDim / 2) / Math.tan(fov / 2);
-    
-    // 将相机定位到立体中心的正面位置，增加距离系数以确保更好的视野
+    const safeMaxDim = Math.max(maxDim, 1);
     const direction = new THREE.Vector3(1, 1, 1).normalize();
+
+    // 获取当前视口宽高比，用于正交视锥计算
+    const viewWidth = (renderer && renderer.domElement) ? renderer.domElement.clientWidth : 0;
+    const viewHeight = (renderer && renderer.domElement) ? renderer.domElement.clientHeight : 0;
+    const aspect = (viewWidth > 0 && viewHeight > 0) ? (viewWidth / viewHeight) : 1;
+
+    if (camera && camera.isOrthographicCamera) {
+        // 正交相机：根据结构尺寸设置正交视锥，避免扩胞后结构超出视锥导致“消失”
+        const padding = 1.35;
+        const frustumHeight = safeMaxDim * padding;
+        const frustumWidth = frustumHeight * aspect;
+        camera.left = -frustumWidth / 2;
+        camera.right = frustumWidth / 2;
+        camera.top = frustumHeight / 2;
+        camera.bottom = -frustumHeight / 2;
+        camera.zoom = 1;
+
+        const cameraDistance = safeMaxDim * 2.6;
+        camera.near = 0.1;
+        camera.far = Math.max(1000, cameraDistance * 10);
+        camera.position.copy(center).add(direction.multiplyScalar(cameraDistance));
+        camera.lookAt(center);
+        camera.updateProjectionMatrix();
+
+        controls.target.copy(center);
+        controls.update();
+        if (controls && typeof controls.saveState === 'function') {
+            controls.saveState();
+        }
+
+        console.log("相机(正交)已重置到中心位置:", center);
+        console.log("结构大小:", size);
+        return;
+    }
+
+    // 透视相机：保持原逻辑
+    const fov = (camera && camera.fov ? camera.fov : 45) * (Math.PI / 180);
+    const cameraDistance = (safeMaxDim / 2) / Math.tan(fov / 2);
+    camera.near = Math.max(0.1, cameraDistance / 100);
+    camera.far = Math.max(1000, cameraDistance * 20);
     camera.position.copy(center).add(direction.multiplyScalar(cameraDistance * 1.8));
     camera.lookAt(center);
-    
-    // 设置控制器的目标为晶体结构的中心，确保旋转围绕中心点进行
+    camera.updateProjectionMatrix();
+
     controls.target.copy(center);
-    
-    // 更新控制器
     controls.update();
-    
-    console.log("相机已重置到中心位置:", center);
+    if (controls && typeof controls.saveState === 'function') {
+        controls.saveState();
+    }
+
+    console.log("相机(透视)已重置到中心位置:", center);
     console.log("相机距离:", cameraDistance);
     console.log("结构大小:", size);
 }
@@ -1844,7 +1892,13 @@ function resetView() {
     // 重置晶体组的旋转
     crystalGroup.rotation.set(0, 0, 0);
     // 重置轨道控制器，恢复初始视角
-    controls.reset();
+    if (controls) {
+        controls.reset();
+        controls.update();
+    }
+    if (camera) {
+        camera.updateProjectionMatrix();
+    }
 }
 
 /**

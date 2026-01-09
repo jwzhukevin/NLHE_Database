@@ -591,8 +591,15 @@ function updateCrystalStructureDisplay(data) {
     const currentSpaceGroup = spaceGroupElement.textContent.trim();
 
     // 只有当前显示"Loading..."时才从API更新
-    if (currentSpaceGroup === 'Loading...' && data.symmetry && data.symmetry.space_group_symbol) {
-        const spaceGroup = `${data.symmetry.space_group_symbol} (${data.symmetry.space_group_number})`;
+    const sgSymbol = data && data.symmetry
+        ? (data.symmetry.space_group_symbol || data.symmetry.symbol)
+        : null;
+    const sgNumber = data && data.symmetry
+        ? (data.symmetry.space_group_number || data.symmetry.number)
+        : null;
+
+    if (currentSpaceGroup === 'Loading...' && sgSymbol) {
+        const spaceGroup = sgNumber ? `${sgSymbol} (${sgNumber})` : `${sgSymbol}`;
         spaceGroupElement.textContent = spaceGroup;
     }
 
@@ -626,13 +633,24 @@ function updateCrystalStructureDisplay(data) {
  */
 function updateAtomicCoordinatesDisplay(data) {
     // 添加原子坐标信息
-    if (data.sites && Array.isArray(data.sites)) {
+    const sites = (data && Array.isArray(data.sites))
+        ? data.sites
+        : (data && Array.isArray(data.atoms))
+            ? data.atoms.map(atom => ({
+                species: [{ element: atom.element }],
+                xyz: atom.position,
+                frac_coords: atom.frac_coords,
+                wyckoff: atom.properties && atom.properties.wyckoff ? atom.properties.wyckoff : undefined
+            }))
+            : null;
+
+    if (sites && Array.isArray(sites)) {
         const atomListElement = document.getElementById('atom-list');
-        const totalAtoms = data.sites.length;
+        const totalAtoms = sites.length;
 
         // 创建元素计数对象
         const elementCounts = {};
-        data.sites.forEach(site => {
+        sites.forEach(site => {
             const element = site.species[0].element;
             elementCounts[element] = (elementCounts[element] || 0) + 1;
         });
@@ -689,7 +707,7 @@ function updateAtomicCoordinatesDisplay(data) {
 
         // 添加所有原子的信息，不再限制显示数量
         for (let i = 0; i < totalAtoms; i++) {
-            const site = data.sites[i];
+            const site = sites[i];
             const element = site.species[0].element;
 
             // 笛卡尔坐标（默认显示）
@@ -1022,8 +1040,8 @@ function bindRelationsControls(container) {
     const simInput = container.querySelector('.rel-sim-input');
     const simRange = container.querySelector('.rel-sim-range');
     const simValue = container.querySelector('.rel-sim-value');
-    const btnApply = container.querySelector('.rel-apply');
-    const btnReset = container.querySelector('.rel-reset');
+    const btnApply = container.querySelector('.rel-apply-btn');
+    const btnReset = container.querySelector('.rel-reset-btn');
 
     const cfg = window.relationsConfig || { ...DEFAULT_RELATIONS_CONFIG };
     if (zeroInput) zeroInput.value = cfg.zeroThreshold.toFixed(2);

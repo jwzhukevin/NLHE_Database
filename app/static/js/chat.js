@@ -89,9 +89,10 @@
       });
 
       // 如果响应不是流式文本，很可能是登录会话过期被重定向到了HTML登录页
-      if (!resp.ok || !resp.body || !resp.headers.get('Content-Type').includes('text/plain')) {
+      const contentType = (resp.headers.get('Content-Type') || '').toLowerCase();
+      if (!resp.ok || !resp.body || !contentType.includes('text/plain')) {
           // 检查是否为登录重定向
-          if (resp.headers.get('Content-Type').includes('text/html')) {
+          if (contentType.includes('text/html')) {
               // 刷新页面，让用户重新登录
               window.location.reload();
               return; // 终止执行

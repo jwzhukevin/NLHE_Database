@@ -415,7 +415,8 @@ function parseAndPlotSCData(dataText, container) {
         }
         
         // 重置图表按钮
-        document.getElementById('resetBtn').addEventListener('click', function() {
+        const resetBtn = document.getElementById('resetBtn');
+        if (resetBtn) resetBtn.addEventListener('click', function() {
             console.log('SC图表: 重置按钮被点击');
 
             // 重置状态：显示所有曲线
