@@ -366,6 +366,53 @@
         window.location.search = params.toString();
     };
 
+    document.getElementById('htaClearSearchBtn')?.addEventListener('click', () => {
+        const clearBtn = document.getElementById('htaClearSearchBtn');
+        const searchInput = document.getElementById('htaSearchInput');
+        if (searchInput) searchInput.value = '';
+
+        const advancedInputs = document.querySelectorAll('#advancedSearch input, #advancedSearch select');
+        advancedInputs.forEach(input => {
+            if (input instanceof HTMLInputElement) {
+                if (input.type === 'text' || input.type === 'number' || input.type === 'hidden') {
+                    input.value = '';
+                }
+            } else if (input instanceof HTMLSelectElement) {
+                if (input.multiple) {
+                    Array.from(input.options).forEach(o => { o.selected = false; });
+                } else {
+                    input.selectedIndex = 0;
+                }
+            }
+        });
+
+        const suggestions = document.getElementById('htaSearchSuggestions');
+        if (suggestions) suggestions.style.display = 'none';
+
+        try { localStorage.removeItem('hta_search_state'); } catch {}
+
+        if (clearBtn) {
+            const originalText = clearBtn.textContent;
+            const originalBg = clearBtn.style.backgroundColor;
+            const originalColor = clearBtn.style.color;
+            const originalBorder = clearBtn.style.borderColor;
+
+            clearBtn.textContent = 'Cleared!';
+            clearBtn.style.backgroundColor = '#10b981';
+            clearBtn.style.color = 'white';
+            clearBtn.style.borderColor = '#10b981';
+
+            setTimeout(() => {
+                clearBtn.textContent = originalText;
+                clearBtn.style.backgroundColor = originalBg;
+                clearBtn.style.color = originalColor;
+                clearBtn.style.borderColor = originalBorder;
+            }, 1000);
+        }
+
+        if (searchInput) searchInput.focus();
+    });
+
     document.getElementById('btn-query')?.addEventListener('click', () => runSearch(1));
     document.getElementById('btn-query-adv')?.addEventListener('click', () => runSearch(1));
     document.getElementById('htaSearchInput')?.addEventListener('keydown', (e) => {

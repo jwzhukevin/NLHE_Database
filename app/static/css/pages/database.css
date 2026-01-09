@@ -218,7 +218,7 @@
 /* [Deprecated 20250930] #applyColsBtn.btn.small 专属视觉删除；如需强调，请在模板添加 btn--primary/btn--accent 等修饰类 */
 .per-page-current {
   font-weight: 600;
-  color: #ffffff; /* 在蓝色按钮背景上保持高对比度 */
+  color: var(--primary-color);
   margin-left: 2px;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15); /* 轻微阴影增强可读性 */
 }
