@@ -29,6 +29,24 @@
     }[s]));
   }
 
+  // 简单 Markdown 渲染（安全：先转义，再做基础替换）
+  function renderMarkdown(raw) {
+    let html = escapeHtml(raw || '');
+    // 代码块 ``` ```
+    html = html.replace(/```([\s\S]*?)```/g, (_m, code) => `<pre><code>${code}</code></pre>`);
+    // 行内代码 ``
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // 粗体 ** **
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // 斜体 * * 或 _ _
+    html = html.replace(/(\*|_)([^*_]+)\1/g, '<em>$2</em>');
+    // 链接 [text](http...)
+    html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    // 换行
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
+
   async function send() {
     if (inFlight) return;
     const content = (elInput.value || '').trim();
@@ -82,35 +100,8 @@
       // --- 新的流式处理逻辑 ---
       let fullResponse = '';
       let buffer = '';
-      let isThinking = false;
-      let thinkingContainer = null;
       const answerContainer = document.createElement('div');
       bubble.appendChild(answerContainer);
-
-      // 简单的Markdown转换，支持换行
-      const markdownToHtml = (text) => {
-          return escapeHtml(text).replace(/\n/g, '<br>');
-      };
-
-      // 折叠容器创建函数
-      const ensureThinkingContainer = () => {
-          if (thinkingContainer) return thinkingContainer;
-          const wrapper = document.createElement('details');
-          wrapper.className = 'thinking-process';
-          wrapper.open = false;
-          const summary = document.createElement('summary');
-          summary.innerHTML = '<i class="fas fa-brain"></i> Thinking... (click to toggle)';
-          const content = document.createElement('div');
-          content.className = 'thinking-body';
-          wrapper.appendChild(summary);
-          wrapper.appendChild(content);
-          bubble.insertBefore(wrapper, answerContainer);
-          thinkingContainer = content;
-          return thinkingContainer;
-      };
-
-      const THINK_START = 'Thinking...';
-      const THINK_END = '...done thinking.';
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
@@ -118,25 +109,9 @@
         buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
 
         // 状态机：处理buffer中的文本
-        let consumed = 0;
-        if (!isThinking && buffer.includes(THINK_START)) {
-            const idx = buffer.indexOf(THINK_START);
-            const preText = buffer.substring(0, idx);
-            answerContainer.innerHTML += markdownToHtml(preText);
-            isThinking = true;
-            consumed = idx + THINK_START.length;
-        } else if (isThinking && buffer.includes(THINK_END)) {
-            const idx = buffer.indexOf(THINK_END);
-            const thinkingText = buffer.substring(0, idx);
-            ensureThinkingContainer().innerHTML += markdownToHtml(thinkingText);
-            isThinking = false;
-            consumed = idx + THINK_END.length;
-        } else if (!isThinking) {
-            answerContainer.innerHTML += markdownToHtml(buffer);
-            consumed = buffer.length;
-        } else if (isThinking) {
-            ensureThinkingContainer().innerHTML += markdownToHtml(buffer);
-            consumed = buffer.length;
+        let consumed = buffer.length;
+        if (consumed > 0) {
+            answerContainer.innerHTML += renderMarkdown(buffer);
         }
 
         fullResponse += buffer;
