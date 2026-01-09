@@ -11,7 +11,6 @@
   const btnClear = document.getElementById('clear-btn');
   const btnExport = document.getElementById('export-btn');
   const elModelSelect = document.getElementById('model-select');
-  const elShowThinking = document.getElementById('show-thinking-checkbox');
 
   let history = [];
   let inFlight = false;
@@ -60,8 +59,7 @@
         body: JSON.stringify({
           messages: history,
           model: elModelSelect ? elModelSelect.value : 'deepseek-r1:14b',
-          lang: window.CURRENT_LOCALE || 'en',
-          show_thinking: elShowThinking ? elShowThinking.checked : false
+          lang: window.CURRENT_LOCALE || 'en'
         })
       });
 
@@ -89,12 +87,30 @@
       const answerContainer = document.createElement('div');
       bubble.appendChild(answerContainer);
 
-      const shouldShowThinking = elShowThinking ? elShowThinking.checked : false;
-
       // 简单的Markdown转换，支持换行
       const markdownToHtml = (text) => {
           return escapeHtml(text).replace(/\n/g, '<br>');
       };
+
+      // 折叠容器创建函数
+      const ensureThinkingContainer = () => {
+          if (thinkingContainer) return thinkingContainer;
+          const wrapper = document.createElement('details');
+          wrapper.className = 'thinking-process';
+          wrapper.open = false;
+          const summary = document.createElement('summary');
+          summary.innerHTML = '<i class="fas fa-brain"></i> Thinking... (click to toggle)';
+          const content = document.createElement('div');
+          content.className = 'thinking-body';
+          wrapper.appendChild(summary);
+          wrapper.appendChild(content);
+          bubble.insertBefore(wrapper, answerContainer);
+          thinkingContainer = content;
+          return thinkingContainer;
+      };
+
+      const THINK_START = 'Thinking...';
+      const THINK_END = '...done thinking.';
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
@@ -103,34 +119,23 @@
 
         // 状态机：处理buffer中的文本
         let consumed = 0;
-        if (!isThinking && buffer.includes('Thinking...')) {
-            const idx = buffer.indexOf('Thinking...');
+        if (!isThinking && buffer.includes(THINK_START)) {
+            const idx = buffer.indexOf(THINK_START);
             const preText = buffer.substring(0, idx);
             answerContainer.innerHTML += markdownToHtml(preText);
             isThinking = true;
-            consumed = idx + 'Thinking...'.length;
-
-            if (shouldShowThinking) {
-                thinkingContainer = document.createElement('div');
-                thinkingContainer.className = 'thinking-process';
-                thinkingContainer.innerHTML = '<h6><i class="fas fa-brain"></i> Thinking...</h6>';
-                bubble.insertBefore(thinkingContainer, answerContainer);
-            }
-        } else if (isThinking && buffer.includes('...done thinking.')) {
-            const idx = buffer.indexOf('...done thinking.');
+            consumed = idx + THINK_START.length;
+        } else if (isThinking && buffer.includes(THINK_END)) {
+            const idx = buffer.indexOf(THINK_END);
             const thinkingText = buffer.substring(0, idx);
-            if (shouldShowThinking && thinkingContainer) {
-                thinkingContainer.innerHTML += markdownToHtml(thinkingText);
-            }
+            ensureThinkingContainer().innerHTML += markdownToHtml(thinkingText);
             isThinking = false;
-            consumed = idx + '...done thinking.'.length;
+            consumed = idx + THINK_END.length;
         } else if (!isThinking) {
             answerContainer.innerHTML += markdownToHtml(buffer);
             consumed = buffer.length;
         } else if (isThinking) {
-            if (shouldShowThinking && thinkingContainer) {
-                thinkingContainer.innerHTML += markdownToHtml(buffer);
-            }
+            ensureThinkingContainer().innerHTML += markdownToHtml(buffer);
             consumed = buffer.length;
         }
 
