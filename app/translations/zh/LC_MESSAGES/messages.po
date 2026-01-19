@@ -1358,6 +1358,10 @@ msgstr "贝里曲率偶极子"
 msgid "DW"
 msgstr "本征电导率"
 
+#: app/templates/main/database.html:203
+msgid "Six-Membered Ring Materials"
+msgstr "六元环材料"
+
 #: app/templates/main/database.html:217
 msgid "Materials Type"
 msgstr "材料类型"

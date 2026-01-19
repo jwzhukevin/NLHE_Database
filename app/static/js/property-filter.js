@@ -34,6 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentUrl = new URL(window.location.href);
         const params = currentUrl.searchParams;
 
+        // 特殊选项：六元环材料（空条件搜索）
+        if (propName === 'prop_none') {
+            currentUrl.search = '';
+            window.location.href = currentUrl.toString();
+            return;
+        }
+
         // 根据按钮当前是否已有 'active' 类来决定是添加还是删除参数
         // 注意：此时 classList.toggle 还没执行，所以逻辑是反的
         if (button.classList.contains('active')) {

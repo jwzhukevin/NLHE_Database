@@ -62,6 +62,10 @@ msgstr "BCD"
 msgid "DW"
 msgstr "DW"
 
+#: app/templates/main/database.html:203
+msgid "Six-Membered Ring Materials"
+msgstr "Hexagonal materials"
+
 # Copyright (C) 2025 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
