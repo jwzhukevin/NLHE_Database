@@ -1359,7 +1359,7 @@ msgid "DW"
 msgstr "本征电导率"
 
 #: app/templates/main/database.html:203
-msgid "Six-Membered Ring Materials"
+msgid "Hexagonal materials"
 msgstr "六元环材料"
 
 #: app/templates/main/database.html:217

@@ -63,6 +63,10 @@ msgid "DW"
 msgstr "DW"
 
 #: app/templates/main/database.html:203
+msgid "Hexagonal materials"
+msgstr "Hexagonal materials"
+
+#: app/templates/main/database.html:203
 msgid "Six-Membered Ring Materials"
 msgstr "Hexagonal materials"
 
