@@ -26,7 +26,7 @@ from flask import (
 
 import duckdb  # 依赖在 requirements 中追加
 
-from ...services.csv_config import get_csv_path
+from ....services.csv_config import get_csv_path
 
 # --------------------------
 # 蓝图定义

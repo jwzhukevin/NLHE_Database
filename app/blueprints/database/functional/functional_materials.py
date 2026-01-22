@@ -47,11 +47,11 @@ def index():
     """
     材料数据库页：展示材料列表，支持搜索、过滤与分页。
     """
-    from ..models import Material
-    from .. import db
-    from ..services import QueryOptimizer, performance_monitor, cached_search
-    from ..services import chemical_parser
-    from ..security import sanitize_input
+    from ....models import Material
+    from .... import db
+    from ....services import QueryOptimizer, performance_monitor, cached_search
+    from ....services import chemical_parser
+    from ....security import sanitize_input
 
     try:
         search_params = {
@@ -212,9 +212,9 @@ def index():
 @functional_materials_bp.route('/IMR-<string:material_id>')
 def detail(material_id):
     """材料详情页"""
-    from ..models import Material
-    from .. import db
-    from ..services import band_analyzer
+    from ....models import Material
+    from .... import db
+    from ....services import band_analyzer
 
     try:
         numeric_id = int(material_id)
@@ -313,8 +313,8 @@ def detail(material_id):
 @functional_materials_bp.route('/by-mp/<string:mp_id>')
 def material_by_mp(mp_id):
     """通过 MP 编号跳转到 IMR 详情页"""
-    from ..models import Material
-    from .. import db
+    from ....models import Material
+    from .... import db
 
     try:
         material = db.session.query(Material).filter(Material.mp_id == mp_id).first()

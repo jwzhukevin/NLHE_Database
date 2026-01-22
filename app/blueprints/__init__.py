@@ -6,7 +6,7 @@
 from .main import main_bp
 from .auth import auth_bp
 from .members import members_bp
-from .functional_materials import functional_materials_bp
+from .database.functional import functional_materials_bp
 from .search_api import search_api_bp
 
 __all__ = [

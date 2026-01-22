@@ -472,7 +472,7 @@ def create_app():
         from .commands import bp as commands_bp, register_commands
         from .blueprints.articles import articles as articles_bp
         from .blueprints.chat import chat_bp
-        from .blueprints.structural import high_temperature_alloy_bp, ceramics_experiment, ceramics_literature
+        from .blueprints.database.structural import high_temperature_alloy_bp, ceramics_experiment, ceramics_literature
         from .services import register_material_cache_invalidation, get_search_cache_stats, search_cache
         
         # 新增：导入拆分后的蓝图
