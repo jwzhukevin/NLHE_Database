@@ -1,4 +1,7 @@
 {
-    "terminal.explorerKind": "external",
-    "terminal.integrated.defaultProfile.windows": "Ubuntu-24.04 (WSL)"
+    "python.defaultInterpreterPath": "${workspaceFolder}/NLHE/bin/python",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/app"
+    ],
+    "python.analysis.typeCheckingMode": "basic"
 }
