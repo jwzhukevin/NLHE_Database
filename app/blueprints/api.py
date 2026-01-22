@@ -17,8 +17,8 @@ from flask import (Blueprint, Response, current_app, jsonify, request, session)
 from flask_login import current_user, login_required
 from pymatgen.io.cif import CifWriter
 
-from .models import Material
-from .structure_parser import (
+from ..models import Material
+from ..services.structure_parser import (
     _process_structure, find_structure_file, generate_supercell, parse_cif_file
 )
 
@@ -472,7 +472,7 @@ def _log_audit_record(audit_path, user, ip, model, title, length, error):
 
 # 为流式聊天端点豁免CSRF保护，因为它不使用传统的表单提交机制
 try:
-    from . import csrf as _csrf
+    from .. import csrf as _csrf
     if _csrf is not None:
         _csrf.exempt(chat_stream)
 except (ImportError, AttributeError):

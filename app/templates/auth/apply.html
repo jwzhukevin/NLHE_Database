@@ -85,7 +85,7 @@
           <!-- 提示区（与登录页一致，可承载 flash 消息） -->
           <div id="apply-message" class="login-message" role="status" aria-live="polite"></div>
 
-          <form method="post" class="login-form" id="apply-form" action="{{ url_for('views.apply') }}">
+          <form method="post" class="login-form" id="apply-form" action="{{ url_for('auth.apply') }}">
             {% if csrf_token %}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             {% endif %}
@@ -138,7 +138,7 @@
               <div class="captcha-container">
                 <input type="text" id="captcha" name="captcha" placeholder="{{ _('Enter the captcha') }}" maxlength="5" required class="captcha-input" />
                 <div class="captcha-image-wrapper">
-                  <img id="captcha-img" src="{{ url_for('views.captcha') }}" alt="{{ _('Captcha') }}" class="captcha-image" />
+                  <img id="captcha-img" src="{{ url_for('auth.captcha') }}" alt="{{ _('Captcha') }}" class="captcha-image" />
                   <div class="captcha-refresh-hint">
                     <i class="fas fa-sync-alt"></i>
                     <span>{{ _('Click to refresh') }}</span>
@@ -149,7 +149,7 @@
 
             <div class="form-actions">
               <button type="submit" class="button-login" id="apply-button">{{ _('Submit Application') }}</button>
-              <a href="{{ url_for('views.index') }}" class="button-return">
+              <a href="{{ url_for('functional_materials.index') }}" class="button-return">
                 <svg class="svg-icon" viewBox="0 0 20 20" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1.5 10c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5-3.806 8.5-8.5 8.5-8.5-3.806-8.5-8.5zm8.5 7.5c4.142 0 7.5-3.358 7.5-7.5s-3.358-7.5-7.5-7.5-7.5 3.358-7.5 7.5 3.358 7.5 7.5 7.5zm-2-10.5l-2.5 3h1.5v1h2v-1h1.5l-2.5-3zm4 4l2.5-3h-1.5v-1h-2v1h-1.5l2.5 3z"></path>
                 </svg>
@@ -169,7 +169,7 @@
     const captchaImg = document.getElementById('captcha-img');
     if (captchaImg) {
       captchaImg.addEventListener('click', function() {
-        this.src = "{{ url_for('views.captcha') }}?" + Date.now();
+        this.src = "{{ url_for('auth.captcha') }}?" + Date.now();
       });
     }
     // 一键复制邮件模板

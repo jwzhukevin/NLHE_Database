@@ -8,7 +8,7 @@ import glob
 from pymatgen.core import Structure  # pymatgen库用于处理晶体结构
 from pymatgen.io.cif import CifWriter  # 用于生成CIF文件
 from flask import current_app, abort
-from .models import Material
+from ..models import Material
 import re
 
 

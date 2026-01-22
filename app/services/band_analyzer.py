@@ -21,7 +21,7 @@ from flask import current_app
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 import logging
-from . import db
+from .. import db
 
 
 class BandAnalysisConfig:

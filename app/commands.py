@@ -7,10 +7,10 @@ import os
 import json
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
-from .material_importer import extract_chemical_formula_from_cif
+from .services.material_importer import extract_chemical_formula_from_cif
 from pymatgen.core import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from .band_analyzer import band_analyzer
+from .services import band_analyzer
 import functools
 
 # 独立定义命令蓝图 - 用于API路由而非CLI命令

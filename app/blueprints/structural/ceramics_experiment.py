@@ -10,7 +10,7 @@ Ceramics Experiment CSV Module
 from typing import Any, Dict
 import os
 from flask import Blueprint, current_app, jsonify, render_template, request
-from .csv_table import CsvDuckView
+from ...services.csv_table import CsvDuckView
 
 
 def _csv_path(app) -> str:

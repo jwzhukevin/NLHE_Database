@@ -17,7 +17,7 @@
             <h2 style="margin:0 0 1rem; color:#0b3a6d;">{{ _('Supervisors') }}</h2>
             <div class="member-grid">
                 {% for member in supervisors %}
-                <a class="member-card member-card--compact" href="{{ url_for('views.member_detail', slug=member.slug) }}" aria-label="{{ member.name }}">
+                <a class="member-card member-card--compact" href="{{ url_for('members.detail', slug=member.slug) }}" aria-label="{{ member.name }}">
                     <div class="member-photo-wrapper">
                         <img src="{{ url_for('static', filename=member.photo_rel or ('members/' + member.slug + '/' + member.photo)) }}" alt="{{ member.name }}" class="member-photo" loading="lazy">
                     </div>
@@ -35,7 +35,7 @@
             <h2 style="margin:0 0 1rem; color:#0b3a6d;">{{ _('Students') }}</h2>
             <div class="member-grid">
                 {% for member in students %}
-                <a class="member-card member-card--compact" href="{{ url_for('views.member_detail', slug=member.slug) }}" aria-label="{{ member.name }}">
+                <a class="member-card member-card--compact" href="{{ url_for('members.detail', slug=member.slug) }}" aria-label="{{ member.name }}">
                     <div class="member-photo-wrapper">
                         <img src="{{ url_for('static', filename=member.photo_rel or ('members/' + member.slug + '/' + member.photo)) }}" alt="{{ member.name }}" class="member-photo" loading="lazy">
                     </div>
@@ -48,4 +48,4 @@
     </section>
 
     <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/members.css -->
-{% endblock %} 
+{% endblock %}

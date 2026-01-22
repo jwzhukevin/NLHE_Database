@@ -105,13 +105,13 @@ scContainer.innerHTML = `<div class="alert alert-warning">${errorMessage}</div>`
             <div class="nav-left-section">
                 <!-- 面包屑导航 -->
                 <div class="breadcrumb-nav">
-                    <a href="{{ url_for('views.landing') }}" class="breadcrumb-link">
+                    <a href="{{ url_for('main.landing') }}" class="breadcrumb-link">
                         <i class="fas fa-home"></i> {{ _('Home') }}
                     </a>
                     <span class="breadcrumb-separator">
                         <i class="fas fa-chevron-right"></i>
                     </span>
-                    <a href="{{ url_for('views.index') }}" class="breadcrumb-link">{{ _('MatdataX-I: Functional Materials') }}</a>
+                    <a href="{{ url_for('functional_materials.index') }}" class="breadcrumb-link">{{ _('MatdataX-I: Functional Materials') }}</a>
                     <span class="breadcrumb-separator">
                         <i class="fas fa-chevron-right"></i>
                     </span>

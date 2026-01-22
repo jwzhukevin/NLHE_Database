@@ -99,7 +99,7 @@ def create_app():
     ])
 
     # 安全配置
-    from .security_config import SecurityConfig
+    from .security import SecurityConfig
     app.config.update(SecurityConfig.__dict__)
 
     # 会话安全配置
@@ -258,7 +258,7 @@ def create_app():
         """检查会话状态一致性并处理登录/登出消息"""
         from flask import request
         from flask_login import current_user
-        from .auth_manager import LoginStateManager
+        from .security import LoginStateManager
 
         # 跳过静态文件和API路由
         if request.endpoint and (request.endpoint.startswith('static') or
@@ -282,7 +282,7 @@ def create_app():
         头部策略在 security_utils.add_security_headers 中集中维护，
         便于按环境/需求做放开或收紧（如 CSP 的外部资源白名单）。
         """
-        from .security_utils import add_security_headers
+        from .security import add_security_headers
         return add_security_headers(response)
 
     # --- 全局错误处理器：统一渲染错误模板 ---
@@ -325,7 +325,7 @@ def create_app():
             def _worker():
                 # 确保在线程中拥有应用上下文，避免 Working outside of application context 警告
                 try:
-                    from .font_manager import FontManager
+                    from .services import FontManager
                     with app.app_context():
                         # 确保字体目录存在
                         try:
@@ -466,20 +466,24 @@ def create_app():
     # --- 蓝图注册（模块化路由） ---
     with app.app_context():
         # 将所有蓝图的导入和注册放在函数内部，以避免循环导入问题
-        from .api import bp as api_bp
+        from .blueprints.api import bp as api_bp
         from .views import bp as views_bp
         from .errors import bp as errors_bp
         from .commands import bp as commands_bp, register_commands
-        from .articles import articles as articles_bp
-        from .chat import chat_bp
-        from .high_temperature_alloy import high_temperature_alloy_bp
-        from .ceramics_experiment import ceramics_experiment
-        from .ceramics_literature import ceramics_literature
-        from .search_optimizer import register_material_cache_invalidation, get_search_cache_stats, search_cache
+        from .blueprints.articles import articles as articles_bp
+        from .blueprints.chat import chat_bp
+        from .blueprints.structural import high_temperature_alloy_bp, ceramics_experiment, ceramics_literature
+        from .services import register_material_cache_invalidation, get_search_cache_stats, search_cache
+        
+        # 新增：导入拆分后的蓝图
+        from .blueprints import register_blueprints
 
-        # 注册蓝图
+        # 注册拆分后的蓝图（main, auth, members, functional_materials, search_api）
+        register_blueprints(app)
+        
+        # 注册其他蓝图
         app.register_blueprint(api_bp)
-        app.register_blueprint(views_bp)
+        app.register_blueprint(views_bp)  # 保留views_bp用于调试路由
         app.register_blueprint(errors_bp)
         app.register_blueprint(commands_bp)
         app.register_blueprint(articles_bp)
@@ -489,7 +493,7 @@ def create_app():
         app.register_blueprint(ceramics_literature)
 
         # 注入陶瓷三个子模块的数据条数（带 mtime 缓存）
-        from .csv_config import get_csv_path as _get_ai_csv_path
+        from .services.csv_config import get_csv_path as _get_ai_csv_path
 
         # 使用 app.extensions 作为简单缓存容器
         app.extensions.setdefault('csv_counts_cache', {})
@@ -561,7 +565,7 @@ def create_app():
         def init_search_indexes_command():
             """初始化搜索性能优化索引"""
             try:
-                from .search_optimizer import QueryOptimizer
+                from .services import QueryOptimizer
                 QueryOptimizer.create_database_indexes()
                 print("搜索索引初始化完成")
             except Exception as e:
@@ -602,7 +606,7 @@ def create_app():
         def analyze_bands_command():
             """分析所有材料的能带数据并生成band.json文件"""
             try:
-                from .band_analyzer import band_analyzer
+                from .services import band_analyzer
                 from .models import Material
 
                 print("开始分析能带数据...")

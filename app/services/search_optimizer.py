@@ -11,8 +11,8 @@ import threading
 from flask import current_app, request, Response
 from flask_babel import get_locale
 from sqlalchemy import text, and_, or_, event
-from . import db
-from .models import Material
+from .. import db
+from ..models import Material
 
 class SearchCache:
     """

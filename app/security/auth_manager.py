@@ -10,7 +10,7 @@ from flask import session, request, current_app, flash
 from flask_babel import _
 from flask_login import login_user as flask_login_user, logout_user as flask_logout_user, current_user
 from .security_utils import log_security_event, regenerate_session
-from .models import db
+from .. import db
 
 
 class LoginStateManager:

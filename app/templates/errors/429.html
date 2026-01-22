@@ -37,7 +37,7 @@
                     <!-- 简化：移除文字引导，采用居中直观布局 -->
 
                     <div class="captcha-row hv-action">
-                        <img id="captchaImg429" class="captcha-img" src="{{ url_for('views.captcha429') }}" alt="CAPTCHA" width="220" height="48" />
+                        <img id="captchaImg429" class="captcha-img" src="{{ url_for('auth.captcha429') }}" alt="CAPTCHA" width="220" height="48" />
                         <button id="refreshCaptcha429" class="button-secondary" type="button" disabled>
                             <i class="fas fa-sync"></i> {{ _('Refresh') }}
                         </button>
@@ -78,7 +78,7 @@
     const captchaMsg429 = document.getElementById('captchaMsg429');
     const captchaTip = document.getElementById('captchaTip');
     const captchaTipText = document.getElementById('captchaTipText');
-    const backUrl = "{{ url_for('views.index') }}";
+    const backUrl = "{{ url_for('functional_materials.index') }}";
 
     let challengePassed = false; // 解释：仅当“时间到且验证码正确”后为 true
 
@@ -284,7 +284,7 @@
 
     function refreshCaptcha() {
         if (captchaImg429) {
-            const base = "{{ url_for('views.captcha429') }}";
+            const base = "{{ url_for('auth.captcha429') }}";
             captchaImg429.src = base + '?ts=' + Date.now();
         }
         if (refreshCaptcha429) {
@@ -345,7 +345,7 @@
 
         setLoading(true);
         try {
-            const resp = await fetch("{{ url_for('views.verify_captcha_429') }}", {
+            const resp = await fetch("{{ url_for('auth.verify_captcha_429') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

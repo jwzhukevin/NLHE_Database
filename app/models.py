@@ -71,7 +71,7 @@ class User(db.Model, UserMixin):
 
     def check_password_strength(self, password):
         """检查密码强度"""
-        from .security_utils import validate_password_strength
+        from .security import validate_password_strength
         return validate_password_strength(password)
     
     # [Deprecated 20251002] 旧逻辑：is_admin() 已移除（管理员特权彻底删除）。

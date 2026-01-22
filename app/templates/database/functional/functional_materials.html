@@ -10,7 +10,7 @@
     <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（.data-table-container） -->
 
     <!-- ====================== 搜索表单 ====================== -->
-    <form method="GET" action="{{ url_for('views.index') }}" class="search-form" id="searchForm" onsubmit="return validateSearch()">
+    <form method="GET" action="{{ url_for('functional_materials.index') }}" class="search-form" id="searchForm" onsubmit="return validateSearch()">
         <!-- 量子电子动画画布（仅首屏10秒展示，随后渐隐隐藏） -->
         <canvas id="hvElectronsDb" class="hv-electrons" aria-hidden="true"></canvas>
         <!-- [Deprecated 20250913] 内联样式已迁移至 static/css/pages/database.css（.search-form, .hv-electrons） -->
@@ -322,13 +322,13 @@
                         <span class="filter-tag">
                             <span class="filter-key">{{ key|title }}</span>
                             <span class="filter-value">{{ value }}</span>
-                            <a href="{{ url_for('views.index', **(search_params|remove_key(key))) }}" class="remove-filter button-link" title="Remove this filter">
+                            <a href="{{ url_for('functional_materials.index', **(search_params|remove_key(key))) }}" class="remove-filter button-link" title="Remove this filter">
                                 <i class="fas fa-times"></i>
                             </a>
                         </span>
                     {% endif %}
                 {% endfor %}
-                <a href="{{ url_for('views.index') }}" class="clear-all-filters button-link">{{ _('Clear All') }}</a>
+                <a href="{{ url_for('functional_materials.index') }}" class="clear-all-filters button-link">{{ _('Clear All') }}</a>
             </div>
         {% endif %}
     </div>
@@ -418,7 +418,7 @@
                 <td data-col-key="id">{{ material.formatted_id }}</td>
                 <td data-col-key="mp_id">{{ material.mp_id if material.mp_id else _('Unknown') }}</td>
                 <td data-col-key="name">
-                    <a href="{{ url_for('views.detail', material_id=material.id) }}" class="material-link">
+                    <a href="{{ url_for('functional_materials.detail', material_id=material.id) }}" class="material-link">
                         {{ material.name }}
                     </a>
                 </td>
@@ -462,12 +462,12 @@
     {% if pagination.pages > 1 %}
     <div class="pagination">
         {% if pagination.has_prev %}
-		    <a href="{{ url_for('views.index', page=pagination.prev_num, per_page=pagination.per_page, **search_params) }}">« {{ _('Previous') }}</a>
+		    <a href="{{ url_for('functional_materials.index', page=pagination.prev_num, per_page=pagination.per_page, **search_params) }}">« {{ _('Previous') }}</a>
         {% endif %}
 
         {% for page_num in pagination.iter_pages() %}
             {% if page_num %}
-			    <a href="{{ url_for('views.index', page=page_num, per_page=pagination.per_page, **search_params) }}" 
+			    <a href="{{ url_for('functional_materials.index', page=page_num, per_page=pagination.per_page, **search_params) }}"
                    class="{% if page_num == pagination.page %}active{% endif %}">
                     {{ page_num }}
                 </a>
@@ -477,7 +477,7 @@
         {% endfor %}
 
         {% if pagination.has_next %}
-		    <a href="{{ url_for('views.index', page=pagination.next_num, per_page=pagination.per_page, **search_params) }}">{{ _('Next') }} »</a>
+		    <a href="{{ url_for('functional_materials.index', page=pagination.next_num, per_page=pagination.per_page, **search_params) }}">{{ _('Next') }} »</a>
         {% endif %}
     </div>
     {% endif %}
@@ -1531,4 +1531,3 @@ function validateSearch() {
 </script>
 
 {% endblock %}
-
