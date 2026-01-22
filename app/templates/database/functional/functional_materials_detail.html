@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {# 继承base.html模板，这使得detail.html可以共享base.html中定义的全局结构 #}
 
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/database/functional/detail.css', v='20260122') }}">
+{% endblock %}
+
 {% block content %}
 
 <!-- ====================== 外部脚本引入 ====================== -->

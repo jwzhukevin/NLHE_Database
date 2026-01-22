@@ -18,8 +18,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/utilities.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/alerts.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/loader.css', v='20250913') }}">
-    <!-- 3. 特殊页面样式 -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/database/functional/detail.css') }}">
+    <!-- 3. 特殊页面样式（由子模板通过 page_styles block 按需加载） -->
     {% block page_styles %}{% endblock %}
 </head>
 <body>

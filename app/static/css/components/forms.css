@@ -1,13 +1,34 @@
-/* [components/forms.css] 全局表单组件样式（占位，后续逐步沉淀通用规则） */
+/* [components/forms.css] 全局表单组件样式 */
+/* 承载通用的表单结构与视觉样式，供全站复用 */
 
-/* 目前各页面的输入框/表单分布在 pages/*.css 与 main.css 中。 */
-/* 后续可将 .range-inputs、输入框焦点态、通用label/field间距等迁移至此。 */
+/* ===== 高级搜索面板（从 base.css 迁移） ===== */
+.advanced-search {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
 
-/* 通用范围输入行：左右输入+间隔符布局，不设定边框/颜色等视觉属性 */
+/* ===== 范围输入组（从 base.css 迁移） ===== */
+/* 通用范围输入行：左右输入+间隔符布局 */
 .range-inputs {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 10px;
+}
+
+.range-inputs input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.range-inputs span {
+    color: #666;
+    font-size: 14px;
 }
 
 /* 通用表单基线（仅结构排版，不含颜色/边框/阴影） */
