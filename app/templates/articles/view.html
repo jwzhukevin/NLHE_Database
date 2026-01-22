@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block page_styles %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/article_view.css', v='20250913') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/articles/view.css', v='20250913') }}">
 {% endblock %}
 
 {% block content %}
@@ -102,4 +102,4 @@ window.addEventListener('DOMContentLoaded', function() {
     toc.innerHTML = tocHtml;
 });
 </script>
-{% endblock %} 
+{% endblock %}

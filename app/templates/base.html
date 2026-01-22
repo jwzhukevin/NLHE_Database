@@ -7,8 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}">
+    <!-- 1. 基础样式 (变量、重置、导航、页脚) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css', v='20260122') }}">
+    <!-- 2. 全局组件样式 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/buttons.css', v='20260106') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/forms.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/menus.css', v='20250913') }}">
@@ -16,111 +17,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/periodic_table.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/utilities.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/alerts.css', v='20250913') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base/navbar.css', v='20250913') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base/footer.css', v='20250913') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/loader.css', v='20250913') }}">
+    <!-- 3. 特殊页面样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/database/functional/detail.css') }}">
     {% block page_styles %}{% endblock %}
-    <style>
-        /* ========== 全局变量和基础样式 ========== */
-        :root {
-            /* Theme colors */
-            --primary-color: #0047AB;    /* Cobalt blue - primary color */
-            --secondary-color: #1E5CB3;   /* Lighter blue */
-            --accent-color: #007FFF;      /* Sky blue - accent color */
-            --text-color: #333333;        /* Dark gray text */
-            --light-bg: #F5F8FF;          /* Very light blue background */
-            
-    
-            /* Shadows and borders */
-            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-            --input-border: #D9E2F0;
-            --input-focus: #0047AB;
-            --button-hover: #003A8C;
-            
-            /* Spacing and font sizes */
-            --spacing-xs: 0.25rem;    /* 4px */
-            --spacing-sm: 0.5rem;     /* 8px */
-            --spacing-md: 1rem;       /* 16px */
-            --spacing-lg: 1.5rem;     /* 24px */
-            --spacing-xl: 2rem;       /* 32px */
-            
-            /* Font sizes - using clamp for responsive sizing */
-            --font-size-sm: clamp(0.75rem, 0.8vw, 0.875rem);
-            --font-size-base: clamp(0.875rem, 1vw, 1rem);
-            --font-size-lg: clamp(1rem, 1.2vw, 1.25rem);
-            --font-size-xl: clamp(1.25rem, 1.5vw, 1.5rem);
-            
-            /* Button styles */
-            --button-padding: 0.5rem 1rem;
-            --button-radius: 0.375rem;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--light-bg);
-        }
-        
-        /* 确保 Font Awesome 图标不被覆盖 */
-        .fas, .far, .fal, .fab, .fa {
-            font-family: 'Font Awesome 6 Free', 'Font Awesome 6 Brands' !important;
-        }
-
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 10px;
-        }
-        
-        /* ========== 公共组件样式 ========== */
-        /* [DEPRECATED] 按钮基础样式已迁移至 app/static/css/components/buttons.css */
-
-        /* 输入框通用样式 
-         * 适用于文本输入框、下拉选择框和文本区域
-         * 包含了焦点状态的样式变化
-         */
-        input, select, textarea {
-            width: 100%; /* 宽度占满容器 */
-            padding: var(--spacing-sm); /* 内边距 */
-            border: 1px solid var(--input-border); /* 边框样式 */
-            border-radius: var(--button-radius); /* 圆角边框 */
-            font-size: var(--font-size-base); /* 字体大小 */
-            transition: border-color 0.3s; /* 边框颜色变化动画 */
-        }
-
-        /* 输入框获得焦点时的样式 */
-        input:focus,
-        select:focus,
-        textarea:focus {
-            outline: none; /* 移除默认的焦点轮廓 */
-            border-color: var(--input-focus); /* 边框变为主题色 */
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1); /* 添加柔和的阴影效果 */
-        }
-        
-        /* 主内容区域样式 
-         * 定义了页面主要内容的布局和间距
-         */
-        .main-content {
-            padding-top: var(--navbar-height, 74px); /* 动态匹配导航栏高度 */
-            min-height: calc(100vh - 350px); /* 最小高度确保页面填充 */
-            margin-top: 0; /* 移除顶部外边距 */
-            background-color: var(--light-bg); /* 使用浅色背景 */
-        }
-
-        /* 材料详情页面的特殊调整 */
-        .main-content .material-detail-container {
-            padding-top: 0; /* 移除顶部内边距 */
-        }
-
-        
-    </style>
 </head>
 <body>
     <!-- ========== 导航栏 ========== -->
