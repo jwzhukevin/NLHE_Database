@@ -58,7 +58,7 @@ def index():
     search_params = {k: v for k, v in request.args.items()}
     initial_data = _view.query_table(request.args)
     return render_template(
-        'Ceramics/Experiment/index.html',
+        'database/structural/ceramics/experiment.html',
         items=initial_data.get('items', []),
         data=initial_data,
         search_params=search_params

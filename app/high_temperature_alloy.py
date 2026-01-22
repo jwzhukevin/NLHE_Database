@@ -228,7 +228,7 @@ def index():
     search_params = {k: v for k, v in request.args.items()}
     initial_data = _fetch_hta_data(search_params)
     return render_template(
-        'High_temperature_alloy/index.html',
+        'database/structural/ceramics/model_prediction.html',
         items=initial_data.get('items', []),
         data=initial_data,
         search_params=search_params
@@ -318,7 +318,7 @@ def detail(hta_id: str):
     # - 显示可读 ID（来自路由的行号部分）与稳定哈希 ID（HTA-<hash10>）
     # - 模块化布局在模板实现
     return render_template(
-        'High_temperature_alloy/detail.html',
+        'database/structural/ceramics/model_prediction_detail.html',
         hta_display_id=f'HTA-{row_part}',
         hta_hash=hta_hash,
         data=normalized,

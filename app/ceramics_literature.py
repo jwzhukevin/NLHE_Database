@@ -59,7 +59,7 @@ ceramics_literature = Blueprint('ceramics_literature', __name__, url_prefix='/da
 
 @ceramics_literature.route('')
 def index():
-    return render_template('Ceramics/Literature/index.html')
+    return render_template('database/structural/ceramics/literature.html')
 
 
 @ceramics_literature.route('/query')

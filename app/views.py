@@ -215,7 +215,7 @@ def index():
                 per_page=per_page,
                 error_out=False
             )
-            return render_template('main/database.html',
+            return render_template('database/functional/functional_materials.html',
                                  materials=pagination.items,
                                  pagination=pagination,
                                  # per_page 仅用于显示，不参与搜索参数
@@ -326,7 +326,7 @@ def index():
         )
 
         # 渲染模板并传入分页对象与搜索参数
-        return render_template('main/database.html',
+        return render_template('database/functional/functional_materials.html',
                              materials=pagination.items,  # 当前页数据
                              pagination=pagination,  # 分页对象（含页码信息）
                              # per_page 仅用于显示，不参与搜索参数
@@ -337,7 +337,7 @@ def index():
         # 返回空材料列表与空搜索参数
         from flask_sqlalchemy import Pagination
         empty_pagination = Pagination(query=None, page=1, per_page=10, total=0, items=[])
-        return render_template('main/database.html',
+        return render_template('database/functional/functional_materials.html',
                              materials=[],
                              pagination=empty_pagination,
                              search_params={},
