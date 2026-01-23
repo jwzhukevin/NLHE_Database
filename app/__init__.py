@@ -181,7 +181,7 @@ def create_app():
     app.jinja_env.globals.update(_=_)
 
     # 配置Flask-Login
-    login_manager.login_view = 'views.login'  # 未登录时重定向的视图
+    login_manager.login_view = 'auth.login'  # 未登录时重定向的视图（auth蓝图中的login路由）
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
 

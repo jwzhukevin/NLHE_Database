@@ -46,7 +46,7 @@ def generate_captcha_image(text, width=140, height=50, scale_factor=2):
     """
     使用Pillow生成符合网站风格的验证码图片
     """
-    from ..font_manager import FontManager
+    from ..services.font_manager import FontManager
     
     THEME_COLORS = {
         'primary': (0, 71, 171),
@@ -76,7 +76,7 @@ def generate_captcha_image(text, width=140, height=50, scale_factor=2):
     font = FontManager.get_captcha_font(font_size)
 
     if hasattr(font, '_use_embedded') and font._use_embedded:
-        from ..embedded_font import EmbeddedFont
+        from ..services.embedded_font import EmbeddedFont
         return EmbeddedFont.generate_embedded_captcha(text, width, height)
 
     # 装饰点
@@ -174,7 +174,7 @@ def rate_limited():
 @auth_bp.route('/captcha429')
 def captcha429():
     """为429页面生成验证码"""
-    from ..captcha_logger import CaptchaLogger
+    from ..services.captcha_logger import CaptchaLogger
     start_time = time.time()
     try:
         chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -240,7 +240,7 @@ def verify_captcha_429():
 @auth_bp.route('/captcha')
 def captcha():
     """生成验证码图片"""
-    from ..captcha_logger import CaptchaLogger
+    from ..services.captcha_logger import CaptchaLogger
     start_time = time.time()
     try:
         chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -261,7 +261,7 @@ def captcha():
         response.headers['Expires'] = '0'
         return response
     except Exception as e:
-        from ..captcha_logger import CaptchaLogger
+        from ..services.captcha_logger import CaptchaLogger
         CaptchaLogger.log_captcha_generation(
             text_length=5,
             image_size='140x50',
