@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app, db
 from app.models import User
-from app.security_utils import validate_password_strength
+from app.security.security_utils import validate_password_strength
 
 def add_user():
     """添加新用户"""
