@@ -357,6 +357,7 @@ def _ollama_stream_generator(model, messages, audit_log_path, session_log_path, 
         with requests.post(ollama_url, json=payload, stream=True, timeout=60) as resp:
             if resp.status_code != 200:
                 error_text = f'Ollama API Error ({resp.status_code}): {resp.text}'
+                current_app.logger.error(error_text)
                 yield error_text
                 return
             for line in resp.iter_lines(decode_unicode=True):
@@ -402,6 +403,7 @@ def _siliconflow_stream_generator(model, messages, audit_log_path, session_log_p
         with requests.post(api_url, json=payload, headers=headers, stream=True, timeout=60) as resp:
             if resp.status_code != 200:
                 error_text = f'SiliconFlow API Error ({resp.status_code}): {resp.text}'
+                current_app.logger.error(error_text)
                 yield error_text
                 return
             for byte_line in resp.iter_lines():
