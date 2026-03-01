@@ -467,14 +467,5 @@ def _log_audit_record(audit_path, user, ip, model, title, length, error):
 
 
 # ==============================================================================
-# CSRF 豁免设置
+# 模块结束
 # ==============================================================================
-
-# 为流式聊天端点豁免CSRF保护，因为它不使用传统的表单提交机制
-try:
-    from .. import csrf as _csrf
-    if _csrf is not None:
-        _csrf.exempt(chat_stream)
-except (ImportError, AttributeError):
-    # 如果应用中没有配置CSRF模块，则静默忽略
-    pass

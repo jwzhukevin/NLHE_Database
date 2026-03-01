@@ -196,10 +196,12 @@ def create_app():
 
         try:
             from .blueprints.auth import login_json as _login_json
+            from .blueprints.api import chat_stream as _chat_stream
             csrf.exempt(_login_json)
-            app.logger.info("CSRF exempt applied: auth.login_json")
+            csrf.exempt(_chat_stream)
+            app.logger.info("CSRF exempt applied: auth.login_json, api.chat_stream")
         except Exception as e:
-            app.logger.warning(f"Failed to apply CSRF exempt for auth.login_json: {e}")
+            app.logger.warning(f"Failed to apply CSRF exempt: {e}")
     else:
         csrf = None
         app.logger.warning("Flask-WTF not available, CSRF protection disabled")
