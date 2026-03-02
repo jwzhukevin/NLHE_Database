@@ -2,165 +2,22 @@
 """
 成员蓝图
 路由：成员列表页、成员详情页
+
+说明：所有辅助函数统一从 app.utils 导入，避免重复定义。
 """
 from flask import Blueprint, render_template, current_app
 from flask_babel import get_locale
-import os
-import re
-import json
+
+# 统一从 utils.py 导入辅助函数（消除代码重复）
+from ..utils import (
+    to_slug,
+    load_member_profile,
+    select_by_locale,
+    list_member_dirs_by_category,
+    find_member_dir_name,
+)
 
 members_bp = Blueprint('members', __name__, url_prefix='/members')
-
-
-# ==================== 辅助函数 ====================
-
-def to_slug(name):
-    """将姓名转为 slug：小写并移除空白字符。"""
-    if not name:
-        return ''
-    return re.sub(r'\s+', '', str(name).strip().lower())
-
-
-def read_json(path):
-    """安全读取 JSON 文件，失败返回 None。"""
-    try:
-        if os.path.exists(path):
-            with open(path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-    except Exception as e:
-        current_app.logger.warning(f'read_json failed: {path}: {e}')
-    return None
-
-
-def split_achievements(value):
-    """成就字段规范化为列表：支持字符串按行拆分或原生列表。"""
-    if not value:
-        return []
-    if isinstance(value, list):
-        return [str(x).strip() for x in value if str(x).strip()]
-    return [line.strip() for line in str(value).split('\n') if line.strip()]
-
-
-def load_member_profile(slug):
-    """
-    在成员目录下按分类查找 profile.json（兼容新旧分类名）
-    """
-    members_root = os.path.join(current_app.root_path, 'static', 'members')
-
-    def find_dir_name(cat_dir):
-        if not os.path.isdir(cat_dir):
-            return None
-        try:
-            for name in os.listdir(cat_dir):
-                full = os.path.join(cat_dir, name)
-                if os.path.isdir(full) and to_slug(name) == slug:
-                    return name
-        except Exception:
-            return None
-        return None
-
-    supervisors_dir = find_dir_name(os.path.join(members_root, 'Supervisors')) or find_dir_name(os.path.join(members_root, 'Teacher'))
-    students_dir = find_dir_name(os.path.join(members_root, 'Students')) or find_dir_name(os.path.join(members_root, 'Student'))
-    root_dir = find_dir_name(members_root)
-
-    search_paths = []
-    if supervisors_dir:
-        search_paths.append((os.path.join(members_root, 'Supervisors', supervisors_dir, 'profile.json'), 'Supervisors'))
-        search_paths.append((os.path.join(members_root, 'Teacher', supervisors_dir, 'profile.json'), 'Supervisors'))
-    else:
-        search_paths.append((os.path.join(members_root, 'Supervisors', slug, 'profile.json'), 'Supervisors'))
-        search_paths.append((os.path.join(members_root, 'Teacher', slug, 'profile.json'), 'Supervisors'))
-    if students_dir:
-        search_paths.append((os.path.join(members_root, 'Students', students_dir, 'profile.json'), 'Students'))
-        search_paths.append((os.path.join(members_root, 'Student', students_dir, 'profile.json'), 'Students'))
-    else:
-        search_paths.append((os.path.join(members_root, 'Students', slug, 'profile.json'), 'Students'))
-        search_paths.append((os.path.join(members_root, 'Student', slug, 'profile.json'), 'Students'))
-    if root_dir:
-        search_paths.append((os.path.join(members_root, root_dir, 'profile.json'), None))
-    else:
-        search_paths.append((os.path.join(members_root, slug, 'profile.json'), None))
-
-    for path, cat in search_paths:
-        profile = read_json(path)
-        if profile is not None:
-            return profile, (cat or 'profile')
-    return None, None
-
-
-def _list_member_dirs_by_category():
-    """扫描分类目录，返回 {category: [subdir_names]}"""
-    members_root = os.path.join(current_app.root_path, 'static', 'members')
-    result = {'Supervisors': [], 'Students': []}
-    mapping = {
-        'Supervisors': ['Supervisors', 'Teacher'],
-        'Students': ['Students', 'Student'],
-    }
-    for norm_cat, dirs in mapping.items():
-        seen = set()
-        for d in dirs:
-            cat_dir = os.path.join(members_root, d)
-            if os.path.isdir(cat_dir):
-                try:
-                    for name in os.listdir(cat_dir):
-                        full = os.path.join(cat_dir, name)
-                        if os.path.isdir(full) and name not in seen:
-                            result[norm_cat].append(name)
-                            seen.add(name)
-                except Exception:
-                    pass
-    return result
-
-
-def _find_member_dir_name(slug):
-    """根据 slug 在分类目录中查找原始目录名"""
-    members_root = os.path.join(current_app.root_path, 'static', 'members')
-    for cat in ['Supervisors', 'Teacher', 'Students', 'Student']:
-        cat_dir = os.path.join(members_root, cat)
-        if os.path.isdir(cat_dir):
-            try:
-                for name in os.listdir(cat_dir):
-                    full = os.path.join(cat_dir, name)
-                    if os.path.isdir(full) and to_slug(name) == slug:
-                        return name
-            except Exception:
-                continue
-    return None
-
-
-def select_by_locale(profile, member, locale):
-    """根据语言选择显示字段，并内置回退到 DB 字段。"""
-    lang = str(locale) if locale else 'en'
-    prefer_zh = lang.startswith('zh')
-
-    db_title = (member.title or '').strip() if getattr(member, 'title', None) else ''
-    db_bio = (member.bio or '').strip() if getattr(member, 'bio', None) else ''
-    db_ach = split_achievements(getattr(member, 'achievements', '') or '')
-
-    title_zh = (profile or {}).get('title_zh') or ''
-    title_en = (profile or {}).get('title_en') or ''
-    bio_zh = (profile or {}).get('bio_zh') or ''
-    bio_en = (profile or {}).get('bio_en') or ''
-    ach_zh = (profile or {}).get('achievements_zh') or []
-    ach_en = (profile or {}).get('achievements_en') or []
-
-    if prefer_zh:
-        display_title = title_zh or db_title or title_en
-        display_bio = bio_zh or db_bio or bio_en
-        display_achievements = ach_zh or db_ach or ach_en
-    else:
-        display_title = title_en or title_zh or db_title
-        display_bio = bio_en or bio_zh or db_bio
-        display_achievements = ach_en or ach_zh or db_ach
-
-    if not isinstance(display_achievements, list):
-        display_achievements = split_achievements(display_achievements)
-
-    return {
-        'display_title': display_title,
-        'display_bio': display_bio,
-        'display_achievements': display_achievements,
-    }
 
 
 # ==================== 路由 ====================
@@ -179,7 +36,7 @@ def index():
     except Exception:
         current_locale = 'en'
 
-    cats = _list_member_dirs_by_category()
+    cats = list_member_dirs_by_category()
     grouped = {'Supervisors': [], 'Students': []}
     
     for cat, names in cats.items():
@@ -201,7 +58,7 @@ def index():
                 photo = (m.photo or '').strip()
             
             category = found_cat if found_cat in ('Supervisors', 'Students') else cat
-            real_dir = dir_name if category == cat else (_find_member_dir_name(slug) or dir_name)
+            real_dir = dir_name if category == cat else (find_member_dir_name(slug) or dir_name)
             photo_rel = None
             if photo:
                 if category in ('Supervisors', 'Students'):
@@ -234,7 +91,7 @@ def detail(slug):
             target = m
             break
     
-    dir_name = _find_member_dir_name(slug)
+    dir_name = find_member_dir_name(slug)
     if target is None and dir_name is None:
         return render_template('errors/404.html'), 404
 
@@ -266,7 +123,7 @@ def detail(slug):
     photo_rel = None
     real_dir = None
     if category in ('Supervisors', 'Students'):
-        real_dir = _find_member_dir_name(slug) or slug
+        real_dir = find_member_dir_name(slug) or slug
     else:
         real_dir = (dir_name or slug)
     if photo:

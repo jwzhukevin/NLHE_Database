@@ -12,32 +12,10 @@ import re
 import glob
 import math
 
+# 统一从 utils.py 导入辅助函数（消除代码重复）
+from ....utils import get_material_dir, safe_float, safe_int
+
 functional_materials_bp = Blueprint('functional_materials', __name__, url_prefix='/database/functional_materials')
-
-
-# ==================== 辅助函数 ====================
-
-def get_material_dir(material_id):
-    """根据材料ID返回材料目录路径"""
-    base_dir = os.path.join(current_app.root_path, 'static', 'materials')
-    new_dir = os.path.join(base_dir, f'IMR-{material_id}')
-    return new_dir
-
-
-def safe_float(value):
-    """安全地将字符串转换为浮点数"""
-    try:
-        return float(value) if value else None
-    except ValueError:
-        return None
-
-
-def safe_int(value):
-    """安全地将字符串转换为整数"""
-    try:
-        return int(value) if value else None
-    except ValueError:
-        return None
 
 
 # ==================== 路由 ====================

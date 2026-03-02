@@ -57,5 +57,6 @@ def extract_chemical_formula_from_cif(cif_file_path):
                             break
         return chemical_name
     except Exception as e:
-        print(f"Error extracting chemical formula from CIF: {str(e)}")
-        return None 
+        import logging
+        logging.getLogger(__name__).warning(f"Error extracting chemical formula from CIF: {str(e)}")
+        return None

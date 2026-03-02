@@ -126,7 +126,7 @@ def element_analysis():
         elements: 逗号分隔的元素列表
     """
     from ..models import Material
-    from ..chemical_parser import chemical_parser
+    from ..services import chemical_parser
 
     elements_param = request.args.get('elements', '')
     if not elements_param:

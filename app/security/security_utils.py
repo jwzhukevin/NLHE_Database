@@ -10,36 +10,42 @@ from flask import request, abort, current_app, session
 from werkzeug.utils import secure_filename
 from flask_login import current_user
 
-# 创建logs目录
-os.makedirs('logs', exist_ok=True)
+# 创建logs目录（使用绝对路径，避免相对路径在不同工作目录下行为不一致）
+_logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
+os.makedirs(_logs_dir, exist_ok=True)
 
 # 设置安全日志
 security_logger = logging.getLogger('security')
 if not security_logger.handlers:
-    handler = logging.FileHandler('logs/security.log')
+    handler = logging.FileHandler(os.path.join(_logs_dir, 'security.log'))
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     security_logger.addHandler(handler)
     security_logger.setLevel(logging.INFO)
 
 def validate_password_strength(password):
-    """验证密码强度"""
+    """验证密码强度
+    
+    返回:
+        tuple: (is_valid: bool, message: str)
+        消息使用英文，由调用方根据需要翻译
+    """
     if len(password) < 8:
-        return False, "密码至少需要8位字符"
+        return False, "Password must be at least 8 characters long"
     
     if not re.search(r'[A-Z]', password):
-        return False, "密码必须包含大写字母"
+        return False, "Password must contain at least one uppercase letter"
     
     if not re.search(r'[a-z]', password):
-        return False, "密码必须包含小写字母"
+        return False, "Password must contain at least one lowercase letter"
     
     if not re.search(r'\d', password):
-        return False, "密码必须包含数字"
+        return False, "Password must contain at least one digit"
     
     if not re.search(r'[!@#$%^&*(),.?\":{}|<>]', password):
-        return False, "密码必须包含特殊字符"
+        return False, "Password must contain at least one special character"
     
-    return True, "密码强度符合要求"
+    return True, "Password strength is acceptable"
 
 def sanitize_input(text):
     """清理用户输入，防止XSS"""
@@ -89,16 +95,20 @@ def log_security_event(event_type, details, ip_address=None):
     security_logger.warning(f"{event_type} - IP: {ip_address} - Details: {details}")
 
 def require_admin(f):
-    """管理员权限装饰器"""
+    """管理员权限装饰器
+    
+    [Deprecated 20251002] role 字段已从 User 模型移除，
+    此装饰器保留用于向后兼容，但总是拒绝访问。
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
             log_security_event("UNAUTHORIZED_ACCESS", f"Attempted access to {request.endpoint}")
             abort(401)
         
-        if current_user.role != 'admin':
-            log_security_event("PRIVILEGE_ESCALATION", f"User {current_user.username} attempted admin access")
-            abort(403)
+        # role 字段已移除，管理员功能已禁用
+        log_security_event("PRIVILEGE_ESCALATION", f"User {current_user.username} attempted admin access (admin role deprecated)")
+        abort(403)
         
         return f(*args, **kwargs)
     return decorated_function
@@ -114,14 +124,9 @@ def add_security_headers(response):
       若未来接入新三方资源，应在此处集中放开，避免分散配置导致安全策略不一致；
     - 严格传输安全（HSTS）在 HTTPS 环境启用，避免本地开发误伤，故保持注释。
     """
-    headers = {
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-        'X-XSS-Protection': '1; mode=block',
-        # 移除过于严格的CSP，允许必要的外部资源
-        # 'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',  # 仅在HTTPS环境启用
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://threejs.org https://cdn.plot.ly; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https: https://materialsproject.org https://next-gen.materialsproject.org https://www.cas.cn https://github.com;"
-    }
+    # 从 SecurityConfig 读取统一的安全头部，避免两处硬编码不一致
+    from .security_config import SecurityConfig
+    headers = SecurityConfig.SECURITY_HEADERS
 
     for header, value in headers.items():
         response.headers[header] = value

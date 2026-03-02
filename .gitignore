@@ -19,6 +19,7 @@ app/static/materials/
 
 # System
 .DS_Store
+.clinerules
 
 # IDE files
 .vscode/

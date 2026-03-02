@@ -189,17 +189,18 @@ def create_app():
     global csrf, limiter
 
     # CSRF保护
-    global csrf
     if csrf_available:
         csrf = CSRFProtect(app)
         app.logger.info("CSRF protection enabled")
 
         try:
             from .blueprints.auth import login_json as _login_json
-            from .blueprints.api import chat_stream as _chat_stream
+            from .blueprints.auth import verify_captcha_429 as _verify_captcha_429
+            from .blueprints.chat_api import chat_stream as _chat_stream
             csrf.exempt(_login_json)
+            csrf.exempt(_verify_captcha_429)
             csrf.exempt(_chat_stream)
-            app.logger.info("CSRF exempt applied: auth.login_json, api.chat_stream")
+            app.logger.info("CSRF exempt applied: auth.login_json, auth.verify_captcha_429, chat_api.chat_stream")
         except Exception as e:
             app.logger.warning(f"Failed to apply CSRF exempt: {e}")
     else:
@@ -315,33 +316,38 @@ def create_app():
     def handle_500(e):
         return render_template('errors/500.html'), 500
 
-    # --- 非阻塞字体预热（首次请求后启动，避免阻塞应用启动与 preload_app 阶段） ---
-    @app.before_first_request
+    # --- 非阻塞字体预热（应用启动后在后台线程中执行） ---
+    # 注意：Flask 2.3+ 已移除 before_first_request，改用 record_once + before_request 模式
+    _font_preload_done = False
+
+    @app.before_request
     def preload_captcha_fonts_async():
         """
-        验证码字体预热（异步）
+        验证码字体预热（异步，仅首次请求时触发）
 
         说明：
-        - 仅在首个请求后异步触发，避免应用启动阶段等待网络/IO；
+        - 使用闭包变量 _font_preload_done 确保仅触发一次；
         - 在独立线程内确保应用上下文，逐尺寸加载字体，失败不影响主流程；
-        - 结合 FontManager 的“快速失败与缓存”机制，进一步降低超时风险。
+        - 结合 FontManager 的"快速失败与缓存"机制，进一步降低超时风险。
         """
+        nonlocal _font_preload_done
+        if _font_preload_done:
+            return
+        _font_preload_done = True
+
         try:
             sizes = app.config.get('FONT_PRELOAD_SIZES') or []
             if not sizes:
                 return
 
             def _worker():
-                # 确保在线程中拥有应用上下文，避免 Working outside of application context 警告
                 try:
                     from .services import FontManager
                     with app.app_context():
-                        # 确保字体目录存在
                         try:
                             FontManager.ensure_fonts_dir()
                         except Exception as e:
                             app.logger.warning(f"创建字体目录失败: {e}")
-                        # 逐个尺寸预热，不抛出异常
                         for s in sizes:
                             try:
                                 FontManager.get_captcha_font(s)

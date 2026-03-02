@@ -17,11 +17,8 @@
 import os
 import json
 import numpy as np
-from flask import current_app
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 import logging
-from .. import db
 
 
 class BandAnalysisConfig:
@@ -119,13 +116,16 @@ class BandAnalyzer:
             self._save_band_json(material_path, result)
             
             if material:
-                # 优化：仅当数值发生变化时才写入数据库，避免不必要的缓存失效
+                # 仅更新对象属性，不做 db.session 操作
+                # 持久化（commit）由调用方负责，保持服务层无 ORM 副作用
                 if material.band_gap != band_gap or material.materials_type != materials_type:
                     material.band_gap = band_gap
                     material.materials_type = materials_type
-                    db.session.add(material)
-                    db.session.commit()
-                    current_app.logger.info(f"Updated band gap/type for material {material.id}.")
+                    self.logger.info(
+                        f"Updated band gap/type for material "
+                        f"{getattr(material, 'id', '?')}: "
+                        f"gap={band_gap}, type={materials_type}"
+                    )
             
             return result
             

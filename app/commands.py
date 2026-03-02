@@ -11,24 +11,10 @@ from .services.material_importer import extract_chemical_formula_from_cif
 from pymatgen.core import Structure
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from .services import band_analyzer
-import functools
+from .utils import safe_float, safe_int  # 统一从 utils.py 导入（消除代码重复）
 
 # 独立定义命令蓝图 - 用于API路由而非CLI命令
 bp = Blueprint('commands', __name__)
-
-def safe_float(value):
-    """安全转换为浮点数"""
-    try:
-        return float(value) if value not in ('', None) else None
-    except (ValueError, TypeError):
-        return None
-
-def safe_int(value):
-    """安全转换为整数"""
-    try:
-        return int(value) if value not in ('', None) else None
-    except (ValueError, TypeError):
-        return None
 
 # 注册Flask CLI命令
 def register_commands(app):
@@ -66,15 +52,15 @@ def register_commands(app):
             click.echo(f'Username {username} is already taken. Please choose another username.')
             return 1
         
-        # 创建新用户
-        click.echo(f'Creating new {role} account, username: {username} (email: {email})...')
-        user = User(username=username, name=username, email=email, role=role)
+        # 创建新用户（role 字段已废弃，不再传入）
+        click.echo(f'Creating new account, username: {username} (email: {email})...')
+        user = User(username=username, name=username, email=email)
         user.set_password(password)
         db.session.add(user)
 
         try:
             db.session.commit()
-            click.echo(f'User {username} (role: {role}) created successfully.')
+            click.echo(f'User {username} created successfully.')
         except SQLAlchemyError as e:
             db.session.rollback()
             click.echo(f'Error creating user: {str(e)}')

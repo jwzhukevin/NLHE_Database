@@ -54,9 +54,11 @@ class CsvDuckView:
         mtime = os.path.getmtime(csv_path)
         conn = self._get_conn()
         if mtime != self._mtime_cache:
+            # 转义路径中的单引号，防止 SQL 注入
+            safe_csv_path = csv_path.replace("'", "''")
             sql = (
                 f"CREATE OR REPLACE VIEW {self.view_name} AS "
-                f"SELECT * FROM read_csv_auto('{csv_path}', header=True, sample_size=-1, nullstr=['', 'None'])"
+                f"SELECT * FROM read_csv_auto('{safe_csv_path}', header=True, sample_size=-1, nullstr=['', 'None'])"
             )
             conn.execute(sql)
             self._mtime_cache = mtime

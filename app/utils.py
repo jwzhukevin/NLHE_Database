@@ -1,24 +1,19 @@
 # utils.py
 # 公共工具函数模块：提供跨模块共享的辅助函数
+#
+# 重要：本文件是所有通用辅助函数的唯一来源（Single Source of Truth）。
+# 其他模块（blueprints/auth.py、blueprints/members.py、commands.py 等）
+# 应通过 `from ..utils import xxx` 引用，而非重新定义。
 
 import os
 import re
 import json
-import random
-import io
-import time
-from flask import current_app, session, send_file
-from PIL import Image, ImageDraw
+from flask import current_app, request
 
 
-def get_material_dir(material_id):
-    """
-    根据材料ID返回材料目录路径（统一为 IMR-{id}，不再兼容 IMR-00000001 旧格式）。
-    """
-    base_dir = os.path.join(current_app.root_path, 'static', 'materials')
-    new_dir = os.path.join(base_dir, f'IMR-{material_id}')
-    return new_dir
-
+# ==============================================================================
+# (一) 类型转换辅助
+# ==============================================================================
 
 def safe_float(value):
     """
@@ -31,8 +26,8 @@ def safe_float(value):
         float 或 None；转换失败或输入为空时返回 None。
     """
     try:
-        return float(value) if value else None
-    except ValueError:
+        return float(value) if value not in ('', None) else None
+    except (ValueError, TypeError):
         return None
 
 
@@ -47,10 +42,51 @@ def safe_int(value):
         int 或 None；转换失败或输入为空时返回 None。
     """
     try:
-        return int(value) if value else None
-    except ValueError:
+        return int(value) if value not in ('', None) else None
+    except (ValueError, TypeError):
         return None
 
+
+# ==============================================================================
+# (二) 材料目录辅助
+# ==============================================================================
+
+def get_material_dir(material_id):
+    """
+    根据材料ID返回材料目录路径。
+
+    目录策略：
+    - 新标准：`IMR-{id}`（不补零）；
+    - 兼容回退：若新目录不存在，则尝试旧格式 `IMR-{id:08d}`；
+    - 返回值：若两者都不存在，返回新格式路径（调用方可据此创建）。
+    """
+    base_dir = os.path.join(current_app.root_path, 'static', 'materials')
+    new_dir = os.path.join(base_dir, f'IMR-{material_id}')
+    if os.path.exists(new_dir):
+        return new_dir
+    old_dir = os.path.join(base_dir, f'IMR-{int(material_id):08d}')
+    if os.path.exists(old_dir):
+        return old_dir
+    return new_dir
+
+
+# ==============================================================================
+# (三) 网络辅助
+# ==============================================================================
+
+def get_client_ip():
+    """获取客户端IP地址，优先从代理头读取。"""
+    if request.environ.get('HTTP_X_FORWARDED_FOR'):
+        return request.environ['HTTP_X_FORWARDED_FOR']
+    elif request.environ.get('HTTP_X_REAL_IP'):
+        return request.environ['HTTP_X_REAL_IP']
+    else:
+        return request.remote_addr
+
+
+# ==============================================================================
+# (四) 成员目录辅助
+# ==============================================================================
 
 def to_slug(name):
     """将姓名转为 slug：小写并移除空白字符。"""
@@ -203,109 +239,3 @@ def find_member_dir_name(slug):
             except Exception:
                 continue
     return None
-
-
-def get_client_ip():
-    """Get client IP address of the current request"""
-    from flask import request
-    if request.environ.get('HTTP_X_FORWARDED_FOR'):
-        return request.environ['HTTP_X_FORWARDED_FOR']
-    elif request.environ.get('HTTP_X_REAL_IP'):
-        return request.environ['HTTP_X_REAL_IP']
-    else:
-        return request.remote_addr
-
-
-def generate_captcha_image(text, width=140, height=50, scale_factor=2):
-    """
-    使用Pillow生成符合网站风格的验证码图片
-    采用高分辨率渲染后缩放的方式，确保在各种环境下都清晰显示
-    """
-    from .services import FontManager
-    
-    THEME_COLORS = {
-        'primary': (0, 71, 171),
-        'secondary': (30, 92, 179),
-        'accent': (0, 127, 255),
-        'light_bg': (245, 248, 255),
-        'nav_bg': (181, 222, 253),
-        'text_dark': (51, 51, 51),
-    }
-
-    render_width = int(width * scale_factor)
-    render_height = int(height * scale_factor)
-
-    image = Image.new('RGB', (render_width, render_height), color=THEME_COLORS['light_bg'])
-    draw = ImageDraw.Draw(image)
-
-    for y in range(render_height):
-        ratio = y / render_height
-        r = int(THEME_COLORS['light_bg'][0] + (THEME_COLORS['nav_bg'][0] - THEME_COLORS['light_bg'][0]) * ratio * 0.3)
-        g = int(THEME_COLORS['light_bg'][1] + (THEME_COLORS['nav_bg'][1] - THEME_COLORS['light_bg'][1]) * ratio * 0.3)
-        b = int(THEME_COLORS['light_bg'][2] + (THEME_COLORS['nav_bg'][2] - THEME_COLORS['light_bg'][2]) * ratio * 0.3)
-        draw.line([(0, y), (render_width, y)], fill=(r, g, b))
-
-    base_font_size = 32
-    font_size = int(base_font_size * scale_factor)
-    font = FontManager.get_captcha_font(font_size)
-    
-    if hasattr(font, '_use_embedded') and font._use_embedded:
-        from .services import EmbeddedFont
-        return EmbeddedFont.generate_embedded_captcha(text, width, height)
-
-    dot_count = int(30 * scale_factor)
-    dot_size = int(1 * scale_factor)
-    for _ in range(dot_count):
-        x = random.randint(0, render_width)
-        y = random.randint(0, render_height)
-        alpha = random.uniform(0.1, 0.3)
-        base_color = random.choice([THEME_COLORS['primary'], THEME_COLORS['accent']])
-        color = tuple(int(c + (255 - c) * (1 - alpha)) for c in base_color)
-        draw.ellipse([x-dot_size, y-dot_size, x+dot_size, y+dot_size], fill=color)
-
-    try:
-        text_bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-    except AttributeError:
-        text_width = len(text) * int(20 * scale_factor)
-        text_height = int(28 * scale_factor)
-
-    start_x = (render_width - text_width) // 2
-    start_y = (render_height - text_height) // 2
-
-    char_colors = [
-        THEME_COLORS['primary'],
-        THEME_COLORS['secondary'],
-        THEME_COLORS['accent'],
-        THEME_COLORS['text_dark']
-    ]
-
-    char_width = text_width // len(text) if len(text) > 0 else int(20 * scale_factor)
-    offset_range = int(3 * scale_factor)
-
-    for i, char in enumerate(text):
-        color = char_colors[i % len(char_colors)]
-        char_x = start_x + i * char_width + random.randint(-offset_range, offset_range)
-        char_y = start_y + random.randint(-offset_range, offset_range)
-        draw.text((char_x, char_y), char, font=font, fill=color)
-
-    line_width = max(1, int(1 * scale_factor))
-    for _ in range(2):
-        color = random.choice([THEME_COLORS['primary'], THEME_COLORS['accent']])
-        alpha_color = tuple(int(c + (255 - c) * 0.6) for c in color)
-        start_x_line = random.randint(0, render_width // 3)
-        start_y_line = random.randint(render_height // 4, 3 * render_height // 4)
-        end_x_line = random.randint(2 * render_width // 3, render_width)
-        end_y_line = random.randint(render_height // 4, 3 * render_height // 4)
-        draw.line([(start_x_line, start_y_line), (end_x_line, end_y_line)],
-                 fill=alpha_color, width=line_width)
-
-    if scale_factor != 1:
-        image = image.resize((width, height), Image.Resampling.LANCZOS)
-
-    img_buffer = io.BytesIO()
-    image.save(img_buffer, format='PNG', quality=100, optimize=True)
-    img_buffer.seek(0)
-
-    return img_buffer

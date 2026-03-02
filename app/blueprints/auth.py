@@ -13,19 +13,10 @@ import random
 import io
 from PIL import Image, ImageDraw
 
+# 统一从 utils.py 导入辅助函数（消除代码重复）
+from ..utils import get_client_ip
+
 auth_bp = Blueprint('auth', __name__)
-
-
-# ==================== 辅助函数 ====================
-
-def get_client_ip():
-    """获取客户端IP地址"""
-    if request.environ.get('HTTP_X_FORWARDED_FOR'):
-        return request.environ['HTTP_X_FORWARDED_FOR']
-    elif request.environ.get('HTTP_X_REAL_IP'):
-        return request.environ['HTTP_X_REAL_IP']
-    else:
-        return request.remote_addr
 
 
 def check_ip_blocked(view_func):
@@ -207,10 +198,11 @@ def captcha429():
 
 @auth_bp.route('/verify_captcha_429', methods=['POST'])
 def verify_captcha_429():
-    """校验429页面验证码"""
-    from .. import csrf
-    if csrf:
-        csrf.exempt(verify_captcha_429)
+    """校验429页面验证码
+    
+    注意：CSRF 豁免已在 app/__init__.py 的 create_app() 中统一注册，
+    不再在视图函数内部调用 csrf.exempt()。
+    """
     try:
         data = request.get_json(silent=True) or {}
         code = str(data.get('captcha', '')).strip().upper()

@@ -8,7 +8,6 @@ import bcrypt
 from flask_login import UserMixin
 # 从当前包导入共享的SQLAlchemy实例
 from . import db
-from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 
 # 用户模型类（同时继承SQLAlchemy模型和Flask-Login用户接口）
