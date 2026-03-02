@@ -138,22 +138,61 @@
     if (!el) return;
     el.innerHTML = '';
     const pages = Math.max(1, Math.ceil(total / pageSize));
-    const makeBtn = (p, label, disabled) => {
-      const b = document.createElement('button');
-      b.className = 'btn' + (disabled ? ' disabled' : '');
-      b.disabled = !!disabled;
-      b.textContent = label;
-      b.addEventListener('click', () => onPage(p));
-      return b;
+    if (pages <= 1) return;
+
+    const makeLink = (p, label, isActive = false, isDisabled = false) => {
+      const a = document.createElement('a');
+      a.href = '#';
+      if (isActive) a.classList.add('active');
+      if (isDisabled) {
+        a.classList.add('disabled');
+        a.setAttribute('aria-disabled', 'true');
+      }
+      a.textContent = label;
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (isDisabled || p === page) return;
+        onPage(p);
+      });
+      return a;
     };
-    el.appendChild(makeBtn(1, '<<', page === 1));
-    el.appendChild(makeBtn(Math.max(1, page - 1), '<', page === 1));
-    const span = document.createElement('span');
-    span.style.margin = '0 0.5rem';
-    span.textContent = `${page} / ${pages}`;
-    el.appendChild(span);
-    el.appendChild(makeBtn(Math.min(pages, page + 1), '>', page === pages));
-    el.appendChild(makeBtn(pages, '>>', page === pages));
+
+    if (page > 1) el.appendChild(makeLink(page - 1, '« ' + (window._ ? _('Previous') : 'Previous')));
+
+    const iterPages = () => {
+      const out = [];
+      const push = (v) => out.push(v);
+      const leftEdge = 2;
+      const leftCurrent = 2;
+      const rightCurrent = 2;
+      const rightEdge = 2;
+      let last = 0;
+      for (let num = 1; num <= pages; num++) {
+        const inRange =
+          num <= leftEdge ||
+          (num >= page - leftCurrent && num <= page + rightCurrent) ||
+          num > pages - rightEdge;
+        if (inRange) {
+          if (last + 1 !== num) push(null);
+          push(num);
+          last = num;
+        }
+      }
+      return out;
+    };
+
+    iterPages().forEach((p) => {
+      if (p === null) {
+        const s = document.createElement('span');
+        s.className = 'ellipsis';
+        s.textContent = '...';
+        el.appendChild(s);
+        return;
+      }
+      el.appendChild(makeLink(p, String(p), p === page, false));
+    });
+
+    if (page < pages) el.appendChild(makeLink(page + 1, (window._ ? _('Next') : 'Next') + ' »'));
   }
 
   // ===== 每页数量与列显隐 =====
@@ -192,7 +231,7 @@
     }
   }
 
-  function initToolbar(form) {
+  function initToolbar(form, runSearch) {
     // per-page menu
     const perBtn = document.getElementById('perPageBtn');
     const perMenu = document.getElementById('perPageMenu');
@@ -200,7 +239,8 @@
     if (perBtn && perMenu && perCurrent) {
       // 初始化显示
       let ps = '20';
-      try { ps = localStorage.getItem('hta_per_page') || '20'; } catch {}
+      const url = new URL(window.location.href);
+      ps = url.searchParams.get('page_size') || (window.initialData ? window.initialData.page_size : '20');
       perCurrent.textContent = `(${ps})`;
       perBtn.addEventListener('click', () => {
         perMenu.classList.toggle('is-hidden');
@@ -217,7 +257,7 @@
           perBtn.classList.remove('active');
           perBtn.setAttribute('aria-expanded', 'false');
           saveState(form, 1);
-          loadPage(form, 1);
+          if (typeof runSearch === 'function') runSearch(1);
         });
       });
     }
@@ -316,30 +356,7 @@
     } catch {}
   }
 
-  function renderPagination(total, page, pageSize, onPage) {
-    const el = document.getElementById('hta-pagination');
-    if (!el) return;
-    el.innerHTML = '';
-    const pages = Math.max(1, Math.ceil(total / pageSize));
-    const makeBtn = (p, label, disabled) => {
-      const b = document.createElement('button');
-      b.className = 'button-tool-small' + (disabled ? ' disabled' : '');
-      b.disabled = !!disabled;
-      b.textContent = label;
-      b.addEventListener('click', () => onPage(p));
-      return b;
-    };
-    el.appendChild(makeBtn(1, '<<', page === 1));
-    el.appendChild(makeBtn(Math.max(1, page - 1), '<', page === 1));
-    const span = document.createElement('span');
-    span.style.margin = '0 0.5rem';
-    span.textContent = `${page} / ${pages}`;
-    el.appendChild(span);
-    el.appendChild(makeBtn(Math.min(pages, page + 1), '>', page === pages));
-    el.appendChild(makeBtn(pages, '>>', page === pages));
-  }
-
-  function restoreState(form, searchParams) {
+  function restoreState2(form, searchParams) {
     const state = searchParams || {};
     setInputValue(form.querySelector('[name="q"]'), state.q);
     ['crystal_structure','process_type','heat_treatment_process'].forEach(k => {
@@ -430,10 +447,10 @@
     }
 
     if (window.searchParams) {
-        restoreState(form, window.searchParams);
+        restoreState2(form, window.searchParams);
     }
 
-    initToolbar(form);
+    initToolbar(form, runSearch);
     initSorting();
     initProcModal();
     document.querySelectorAll('#hta-table th .col-remove').forEach(btn => {
@@ -448,4 +465,6 @@
       });
     });
   });
+
+  window.openProcModal = openProcModal;
 })();

@@ -25,13 +25,20 @@
           <span class="title2">{{ _('Literature Results') }}</span>
           <div class="table-toolbar">
             <div class="menu per-page">
-              <button type="button" class="button-tool-small" id="perPageBtn" aria-expanded="false">
-                {{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">(20)</span>
-              </button>
+              <button type="button" class="button-tool-small" id="perPageBtn" aria-expanded="false">{{ _('Per Page') }} <span id="perPageCurrent" class="per-page-current">(20)</span></button>
               <div class="menu-panel is-hidden" id="perPageMenu" role="menu" aria-labelledby="perPageBtn">
-                <button type="button" class="menu-item" data-per-page="20"><span class="item-text">20</span></button>
-                <button type="button" class="menu-item" data-per-page="50"><span class="item-text">50</span></button>
-                <button type="button" class="menu-item" data-per-page="100"><span class="item-text">100</span></button>
+                <button type="button" class="menu-item" data-per-page="20">
+                  <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                  <span class="item-text">20</span>
+                </button>
+                <button type="button" class="menu-item" data-per-page="50">
+                  <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                  <span class="item-text">50</span>
+                </button>
+                <button type="button" class="menu-item" data-per-page="100">
+                  <i class="fas fa-list-ol item-icon" aria-hidden="true"></i>
+                  <span class="item-text">100</span>
+                </button>
               </div>
             </div>
             <div class="menu column-visibility">
@@ -79,7 +86,8 @@
       </div>
     </div>
   </div>
+  <!-- 分页导航（由 JS 渲染，确保在无后端 pagination 变量时也能显示） -->
   <div id="cer-lit-pagination" class="pagination"></div>
 </div>
-<script src="{{ url_for('static', filename='js/ceramics_literature.js') }}"></script>
+<script src="{{ url_for('static', filename='js/structural_ceramics_literature.js') }}"></script>
 {% endblock %}

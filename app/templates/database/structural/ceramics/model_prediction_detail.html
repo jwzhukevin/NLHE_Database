@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+ 
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/database/functional/detail.css', v='20260122') }}">
+{% endblock %}
+ 
 {% block content %}
 
 <!-- 顶部材料导航条（对齐 materials/detail.html 的结构） -->
@@ -49,35 +54,82 @@
             <div class="pie-wrapper" style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
               <svg id="elementsPie" width="260" height="260" viewBox="0 0 260 260" aria-label="{{ _('Elements Pie Chart') }}" data-all-zero-text="{{ _('All element values are 0') }}"></svg>
               <div class="pie-legend" id="elementsLegend" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;"></div>
+              <div id="elementsInfo" style="font-size:0.95rem;color:#334155;text-align:center;min-height:1.2em;"></div>
             </div>
-            <!-- 以 JSON 形式注入元素数据，避免在 JS 中直接嵌入 Jinja 表达式 -->
             <script id="elementsData" type="application/json">{{ {
-              'Ag': ('%.2f'|format(data['Ag']|float))|float,
-              'Au': ('%.2f'|format(data['Au']|float))|float,
-              'Cu': ('%.2f'|format(data['Cu']|float))|float,
-              'I':  ('%.2f'|format(data['I']|float))|float,
-              'K':  ('%.2f'|format(data['K']|float))|float,
-              'S':  ('%.2f'|format(data['S']|float))|float,
-              'Se': ('%.2f'|format(data['Se']|float))|float,
-              'Te': ('%.2f'|format(data['Te']|float))|float
+              'material': (data['Material'] or '')
             }|tojson }}</script>
             <script>
             (function(){
-              // 解释：从 JSON script 读取数据，避免在 JS 中混入 Jinja 表达式导致的语法提示
               const jsonEl = document.getElementById('elementsData');
-              let data = {};
-              try { data = JSON.parse(jsonEl.textContent || '{}'); } catch(_) { data = {}; }
-              const colors = { Ag:'#3b82f6',Au:'#f59e0b',Cu:'#10b981',I:'#ef4444',K:'#8b5cf6',S:'#f97316',Se:'#22c55e',Te:'#06b6d4' };
-              const entries = Object.entries(data).filter(([k,v])=>Number(v)>0);
-              const total = entries.reduce((s,[,v])=>s+Number(v),0);
+              let payload = {};
+              try { payload = JSON.parse(jsonEl.textContent || '{}'); } catch(_) { payload = {}; }
+
+              function parseMaterialFormula(text){
+                const raw = (text || '').toString().trim();
+                if (!raw) return [];
+
+                const s = raw.replace(/\s+/g, '');
+                const re = /([A-Z][a-z]?)(\d+(?:\.\d+)?|\.\d+)?/g;
+                const map = new Map();
+                let m;
+                while ((m = re.exec(s)) !== null) {
+                  const el = m[1];
+                  const numRaw = m[2];
+                  let val = 1;
+                  if (numRaw !== undefined && numRaw !== '') {
+                    const n = Number(numRaw);
+                    if (Number.isFinite(n)) val = n;
+                  }
+                  map.set(el, (map.get(el) || 0) + val);
+                }
+                return Array.from(map.entries())
+                  .map(([el, v]) => ({ el, v }))
+                  .filter(x => Number(x.v) > 0);
+              }
+
+              function hashToHue(symbol){
+                let h = 0;
+                for (let i = 0; i < symbol.length; i++) h = (h * 131 + symbol.charCodeAt(i)) >>> 0;
+                return h % 360;
+              }
+
+              function hueDistance(a, b){
+                const d = Math.abs(a - b) % 360;
+                return Math.min(d, 360 - d);
+              }
+
+              function buildColorMap(entries){
+                const hues = [];
+                const out = new Map();
+                entries.forEach(it => {
+                  let hue = hashToHue(it.el);
+                  let guard = 0;
+                  while (hues.some(h => hueDistance(h, hue) < 18) && guard < 30) {
+                    hue = (hue + 29) % 360;
+                    guard++;
+                  }
+                  hues.push(hue);
+                  out.set(it.el, `hsl(${hue} 75% 50%)`);
+                });
+                return out;
+              }
+
+              const entries = parseMaterialFormula(payload.material).sort((a,b)=>b.v-a.v);
+              const total = entries.reduce((sum, it) => sum + Number(it.v || 0), 0);
               const svg = document.getElementById('elementsPie'); if (!svg) return;
+              const legend = document.getElementById('elementsLegend');
+              const info = document.getElementById('elementsInfo');
+              svg.innerHTML = '';
+              if (legend) legend.innerHTML = '';
+              if (info) info.textContent = '';
+              const colorMap = buildColorMap(entries);
               const cx=130, cy=130, r=100;
               if (total<=0) {
                 const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
                 circle.setAttribute('cx',cx); circle.setAttribute('cy',cy); circle.setAttribute('r',r);
                 circle.setAttribute('fill','#f1f5f9');
                 svg.appendChild(circle);
-                const legend = document.getElementById('elementsLegend');
                 if (legend) {
                   const span = document.createElement('span');
                   span.style.color = '#64748b';
@@ -87,8 +139,29 @@
                 }
                 return;
               }
+
+              function setSelected(symbol, value){
+                const v = Number(value || 0);
+                const pct = total > 0 ? (v/total)*100 : 0;
+                if (info) info.textContent = `${symbol}: ${v.toFixed(2)} (${pct.toFixed(1)}%)`;
+                svg.querySelectorAll('path[data-el]').forEach(p => {
+                  const isActive = p.getAttribute('data-el') === symbol;
+                  p.style.opacity = isActive ? '1' : '0.75';
+                  p.style.stroke = isActive ? '#0f172a' : 'none';
+                  p.style.strokeWidth = isActive ? '2' : '0';
+                });
+                if (legend) {
+                  legend.querySelectorAll('[data-el]').forEach(el => {
+                    const isActive = el.getAttribute('data-el') === symbol;
+                    el.style.fontWeight = isActive ? '700' : '400';
+                  });
+                }
+              }
+
               let angle = -Math.PI/2;
-              entries.forEach(([k,v])=>{
+              entries.forEach((it)=>{
+                const k = it.el;
+                const v = Number(it.v || 0);
                 const frac = v/total;
                 const theta = frac*2*Math.PI;
                 const x1 = cx + r*Math.cos(angle);
@@ -104,26 +177,35 @@
                 ].join(' ');
                 const path = document.createElementNS('http://www.w3.org/2000/svg','path');
                 path.setAttribute('d', d);
-                path.setAttribute('fill', colors[k] || '#94a3b8');
+                path.setAttribute('fill', colorMap.get(k) || '#94a3b8');
+                path.setAttribute('data-el', k);
+                path.style.cursor = 'pointer';
+                path.addEventListener('click', () => setSelected(k, v));
                 svg.appendChild(path);
                 angle += theta;
               });
-              // 生成图例（JS 构建，避免在 HTML 中嵌入 Jinja 表达式）
-              const legend = document.getElementById('elementsLegend');
               if (legend) {
-                entries.forEach(([k,v])=>{
+                entries.forEach((it)=>{
+                  const k = it.el;
+                  const v = Number(it.v || 0);
+                  const pct = (v/total)*100;
                   const wrap = document.createElement('span');
                   wrap.style.display = 'inline-flex';
                   wrap.style.alignItems = 'center';
                   wrap.style.gap = '6px';
+                  wrap.style.cursor = 'pointer';
+                  wrap.setAttribute('data-el', k);
                   const dot = document.createElement('span');
                   dot.style.width = '10px'; dot.style.height = '10px';
-                  dot.style.borderRadius = '50%'; dot.style.background = colors[k] || '#94a3b8';
+                  dot.style.borderRadius = '50%'; dot.style.background = colorMap.get(k) || '#94a3b8';
                   const label = document.createElement('span');
-                  label.textContent = `${k}: ${Number(v).toFixed(2)}`;
+                  label.textContent = `${k}: ${Number(v).toFixed(2)} (${pct.toFixed(1)}%)`;
                   wrap.appendChild(dot); wrap.appendChild(label); legend.appendChild(wrap);
+                  wrap.addEventListener('click', () => setSelected(k, v));
                 });
               }
+
+              if (entries.length) setSelected(entries[0].el, entries[0].v);
             })();
             </script>
             <div style="margin-top:0.5rem;text-align:center;">
